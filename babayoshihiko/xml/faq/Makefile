@@ -1,9 +1,10 @@
-# $Id: Makefile,v 1.1.1.1 2004/02/08 14:15:52 babayoshihiko Exp $
+# $Id: Makefile,v 1.3 2004/02/10 06:53:39 babayoshihiko Exp $
 
 # process XML files with stylesheet to produce HTML
 
 basedir = ..
 
+STYLESHEET_WEBSITE = $(basedir)/finkdoc-website.i18n.xsl
 WANT_HTML = 1
 DESTDIR = faq
 
@@ -17,8 +18,9 @@ BASE_TARGET = index.php general.php relations.php \
 #SOURCE += $(patsubst %.xml,%.ja.xml, $(BASE_SOURCE))
 SOURCE = $(foreach  LANGUAGE, $(LANGUAGES), $(patsubst %.xml,%.$(LANGUAGE).xml, $(BASE_SOURCE)))
 
-TARGET = $(foreach  LANGUAGE, $(LANGUAGES), $(patsubst %.php,%.$(LANGUAGE).php, $(BASE_TARGET)))
+TARGET = $(BASE_TARGET)
+TARGET += $(foreach  LANGUAGE, $(LANGUAGES), $(patsubst %.php,%.$(LANGUAGE).php, $(BASE_TARGET)))
 
-include $(basedir)/Makefile.common
+include $(basedir)/Makefile.i18n.common
 
 # eof
