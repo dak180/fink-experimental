@@ -4,7 +4,7 @@
 <document filename="index" lang="en" >
 <title>Create a Fink Package - Quick Start</title>
 <shorttitle>Packaging Quick Start</shorttitle>
-<cvsid>$Id: quick-start-pkg.en.xml,v 1.4 2004/07/15 09:05:40 chris01 Exp $</cvsid>
+<cvsid>$Id: quick-start-pkg.en.xml,v 1.5 2004/07/15 11:02:03 chris01 Exp $</cvsid>
 
 <preface>
 <p>
@@ -414,6 +414,12 @@ from the files in <tt>%i</tt>. These files are later installed into
 <tt>%i</tt> please consult the 
 <link url="http://fink.sourceforge.net/doc/packaging/format.php#percent">
 Packaging Manual</link>.
+</p>
+<p>
+Normally the lines in the Script fields are passed line by line to the shell.
+But the <tt>#! /bin/sh -ev</tt> line makes fink run it as a separate script.
+The parameter <tt>-e</tt> means &quot;die on error&quot; and <tt>-v</tt> means
+&quot;verbose&quot;.
 </p>
 <p>
 So, let's validate the package again and try to rebuild it:
