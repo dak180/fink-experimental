@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.6 2003/04/09 23:53:39 fingolfin Exp $
+# $Id: Makefile,v 1.1.1.1 2004/02/12 12:21:35 babayoshihiko Exp $
 
 # process XML files with stylesheet to produce HTML
 
@@ -6,7 +6,7 @@ basedir = ..
 
 STYLESHEET_WEBSITE = $(basedir)/finkdoc-website.i18n.xsl
 WANT_HTML = 1
-DESTDIR = faq
+DESTDIR = doc/users-guide
 
 LANGUAGES = en ja
 BASE_SOURCE = uguide.xml
