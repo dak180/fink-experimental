@@ -3,7 +3,7 @@
 <document filename="index" lang="en">
   <title>Fink User's Guide</title>
   <shorttitle>User's Guide</shorttitle>
-  <cvsid>$Id: uguide.en.xml,v 1.2 2004/10/20 13:36:15 alexkhansen Exp $</cvsid>
+  <cvsid>$Id: uguide.en.xml,v 1.5 2004/10/21 07:23:05 chris01 Exp $</cvsid>
   <preface>
     <p>
 This document gives an overview over all features of Fink.
@@ -522,7 +522,7 @@ E: Sorry, broken packages</codeblock>
       <p>What has happened is that the package you are trying to install depends on another package that can't be distributed as a binary, due to licensing requirements.  You must install the dependency from source (see the next section).</p>
     </section>
     <section name="src">
-      <title>Installing Packages Binary and Source Packages with fink</title>
+      <title>Installing Binary and Source Packages with fink</title>
       <p>
 The <code>fink</code> tool will allow you to install packages that are not yet
 available in the <xref chapter="intro" section="src-vs-bin">binary
