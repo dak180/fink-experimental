@@ -3,7 +3,7 @@
 <document filename="index" >
 <title>Fink ユーザーガイド</title>
 <shorttitle>ユーザーガイド</shorttitle>
-<cvsid>$Id: uguide.xml,v 1.29 2003/11/13 15:54:41 rangerrick Exp $</cvsid>
+<cvsid>$Id: uguide.xml,v 1.1 2004/01/25 00:10:23 babayoshihiko Exp $</cvsid>
 <preface>
 <p>
 <em>このドキュメントは未完成です。</em>
@@ -537,7 +537,7 @@ CVS を有効にすることで、バイナリディストリビューション�
 最新の一覧に更新し、全てのパッケージを更新するだけです。
 </p>
 <p>
-dselect の場合、&quot;[U]pdate&quot; を押して &quot;[I]nstall&quot するだけです。
+dselect の場合、&quot;[U]pdate&quot; を押して &quot;[I]nstall&quot; するだけです。
 もちろん、この間に &quot;[S]elect&quot; を実行して選択されたものと新しいパッケージを確認することもできます。
 </p>
 <p>
