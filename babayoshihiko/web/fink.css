@@ -1,4 +1,4 @@
-/* $Id: fink.css,v 1.1.1.1 2004/03/08 00:27:37 babayoshihiko Exp $ */
+/* $Id: fink.css,v 1.2 2004/03/08 01:50:21 babayoshihiko Exp $ */
 /* A good way to get colors which fit well together is to use the color wheel
  found at http://www.pixy.cz/apps/barvy/. Many of the colors in this CSS style
  were created by starting at #ffcc66 (hue 70, saturation 60, brightness 100),
@@ -24,8 +24,6 @@ table {
 }
 
 table.header {
-	margin: 0px ;
-	padding: 1em ;
 }
 
 table.main {
