@@ -4,7 +4,7 @@
 <document filename="index" lang="en" >
 <title>Create a Fink Package - Quick Start</title>
 <shorttitle>Packaging Quick Start</shorttitle>
-<cvsid>$Id: quick-start-pkg.en.xml,v 1.5 2004/07/15 11:02:03 chris01 Exp $</cvsid>
+<cvsid>$Id: quick-start-pkg.en.xml,v 1.6 2004/07/15 13:14:26 chris01 Exp $</cvsid>
 
 <preface>
 <p>
@@ -149,7 +149,7 @@ finkdev% fink build packagename
 <p>
 Watch the output of the build process carefully for errors or warnings.
 Especially make sure that everything is installed into the build directory
-(which is located at <tt>/sw/src/root-maxwell-0.5.1-1/sw</tt>) from where
+(which is located at <tt>/sw/src/root-packagename-%v-%r/sw</tt>) from where
 fink builds the binary package. Nothing should be installed directly into
 <tt>/sw</tt>.
 </p>
