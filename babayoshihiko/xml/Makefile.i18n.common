@@ -1,5 +1,5 @@
 # Hey Emacs, this is a -*- makefile -*-
-# $Id: Makefile.common,v 1.2 2004/02/10 05:23:56 babayoshihiko Exp $
+# $Id: Makefile.i18n.common,v 1.1 2004/02/10 18:11:33 babayoshihiko Exp $
 
 # common rules for processing XML documents
 # post-processing needed to add PHP processing instructions
@@ -37,7 +37,7 @@ endif
 
 all: $(all_targets)
 	echo "Creating generic PHP files" \
-	$(foreach  PHPFILE, $(BASE_TARGET), && echo "<? require_once 'phpLang.inc.php'; ?>" >$(PHPFILE))
+	$(foreach  PHPFILE, $(BASE_TARGET), && echo "<? require_once '../phpLang.inc.php'; ?>" >$(PHPFILE))
 	
 clean:
 	rm -rf *.rdf *.php *.html *.txt *.tmp *.inc
