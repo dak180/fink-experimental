@@ -1,10 +1,11 @@
+#!/usr/bin/make -f
 # Fink maintainer's utility to automatically validate fink info files
 # and perform some basic cleanup tasks within the dists
 # subdirectories.
 #
 # Put this file in /sw/fink/dists then cd /sw/fink/dists
 # or cd /sw/fink/dists/experimental/carstenklapp
-# Type 'make' for usage information.
+# Type './finkutil' for usage information.
 
 p=/sw
 DISTS=${p}/fink/dists
@@ -44,7 +45,7 @@ usage :
 	@echo "along with Fink; if not, write to the Free Software"
 	@echo "Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA"
 	@echo " "
-	@echo "\$$Id: Makefile,v 1.1 2002/12/08 21:26:10 carstenklapp Exp $$"
+	@echo "\$$Id: Makefile,v 1.2 2002/12/08 21:38:03 carstenklapp Exp $$"
 	@echo " "
 	@echo "Fink maintainer's utility to automatically validate fink info files"
 	@echo "and perform some basic cleanup tasks within the dists"
@@ -52,12 +53,12 @@ usage :
 	@echo " "
 	@echo "Usage:"
 	@echo " "
-	@echo "make -j1 check    validate all fink info files"
+	@echo "finkutil [-j1]] check    validate all fink info files"
 	@echo " "
-	@echo "make cleancvs     delete all cvs temp & emacs temp files (.#*) in ${p}"
-	@echo "make clean        delete .DS_Store files in ${p}"
-	@echo "make clean~       delete all backup files (*.info~ and *.patch~) in ${p}"
-	@echo "make cleanall     do all three clean actions"
+	@echo "finkutil cleancvs        delete all cvs temp & emacs temp files (.#*) in ${p}"
+	@echo "finkutil clean           delete all .DS_Store files in ${p}"
+	@echo "finkutil clean~          delete all backup files (*.info~ and *.patch~) in ${p}"
+	@echo "finkutil cleanall        do all three clean actions"
 	@echo " "
 
 $(CHECKDIRS) :
