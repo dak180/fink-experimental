@@ -1,5 +1,5 @@
 <?
-/* $Id: footer.inc,v 1.26 2004/02/29 06:06:50 babayoshihiko Exp $ */
+/* $Id: footer.inc,v 1.1.1.1 2004/03/08 00:27:37 babayoshihiko Exp $ */
 ?>
 
 </td></tr>
@@ -33,7 +33,6 @@
 		<?
 		if ($dyndate == 1) {
 		 	print FOOTER_GENERATED_DYNAMICALLY;
-		 	$date = 0;
 		} elseif ($dyndate) {
 			print gmstrftime(FOOTER_DATABASE_LAST_UPDATED, $dyndate);
 		} else {
