@@ -9,6 +9,7 @@
 
 p=/sw
 DISTS=${p}/fink/dists
+me=${p}/fink/dists/experimental/carstenklapp/finkutil
 
 FINK=${p}/bin/fink
 FINK_COMMAND=check
@@ -45,7 +46,7 @@ usage :
 	@echo "along with Fink; if not, write to the Free Software"
 	@echo "Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA"
 	@echo " "
-	@echo "\$$Id: Makefile,v 1.2 2002/12/08 21:38:03 carstenklapp Exp $$"
+	@echo "\$$Id: finkutil,v 1.1 2002/12/08 23:15:15 carstenklapp Exp $$"
 	@echo " "
 	@echo "Fink maintainer's utility to automatically validate fink info files"
 	@echo "and perform some basic cleanup tasks within the dists"
@@ -69,7 +70,7 @@ $(BRANCHES) :
 	@echo "validating branch $@..."
 	@echo " "
 	@cd $(DISTS)/$@/crypto/finkinfo/ && pwd && $(FINK) $(FINK_COMMAND) *.info $(FILTER_COMMAND)
-	@$(MAKE) $(CHECKDIRS) DIST=$@
+	@$(MAKE) -f ${me} $(CHECKDIRS) DIST=$@
 	@echo "done branch $@."
 	@echo " "
 
