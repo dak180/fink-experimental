@@ -1,5 +1,5 @@
 <?
-/* $Id: header.inc,v 1.62 2004/02/29 13:10:56 babayoshihiko Exp $ */
+/* $Id: header.inc,v 1.1.1.1 2004/03/08 00:27:37 babayoshihiko Exp $ */
 // +--------------------------------------------------------------------------+
 // | header.inc                                                               |
 // +--------------------------------------------------------------------------+
@@ -268,7 +268,7 @@ function insert_sub ($navbox, $active_page) {
 			display: block ; 
 			border-style: solid ; 
 			border-width: 0px 0px 4px 0px ; 
-			border-color: #fc9 ; 
+			border-color: #fc6 ; 
 			text-align: center ; 
 			margin: 0px ;
 			padding: 6px 3px">
