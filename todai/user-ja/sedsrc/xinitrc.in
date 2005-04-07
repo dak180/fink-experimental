@@ -1,0 +1,8 @@
+#! /bin/sh
+# $Id: xinitrc.in,v 1.6 2004/07/21 17:58:41 shinra Exp $
+# For old user-ja compatibility
+if test -f @FINK_PREFIX@/etc/xinitrc-override; then
+    . @FINK_PREFIX@/etc/xinitrc-override
+else
+    . @FINK_PREFIX@/bin/xinitrc.sh
+fi

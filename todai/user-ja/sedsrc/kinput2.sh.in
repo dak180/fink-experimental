@@ -1,0 +1,9 @@
+# $Id: kinput2.sh.in,v 1.5 2004/05/04 20:31:54 shinra Exp $
+: ${xinitrc_kinput2_enable=YES}
+case "x$xinitrc_kinput2_enable" in
+    x[Yy][Ee][Ss])
+    if test -x @FINK_PREFIX@/bin/kinput2; then
+	@FINK_PREFIX@/bin/kinput2 -canna -xim &
+    fi
+    ;;
+esac

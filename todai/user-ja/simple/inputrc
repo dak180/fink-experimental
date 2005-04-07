@@ -1,0 +1,5 @@
+# $Id: inputrc,v 1.1 2004/04/27 08:51:18 shinra Exp $
+set input-meta on
+set convert-meta off
+set output-meta on
+set editing-mode emacs
