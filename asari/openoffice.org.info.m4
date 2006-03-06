@@ -1,6 +1,6 @@
 divert(-1)
 changequote([, ])
-dnl $Id: openoffice.org.info.m4,v 1.6 2006/02/15 16:57:44 aida_s Exp $
+dnl $Id: openoffice.org.info.m4,v 1.7 2006/02/21 18:04:22 aida_s Exp $
 dnl Usage: m4 -DTREE=xxx [-DMODE=Normal|DumpMirrors|DumpSnapshotMirrors] openoffice.org.info.m4
 
 dnl ### Configurations ###
@@ -368,8 +368,8 @@ CompileScript: <<
 
   set -e
 
-  if ${CXX:-"g++"} --version | /usr/bin/grep -q 'i686.*4\.0\.1.*5250'; then
-    echo "Xcode 2.2.1 for Intel is buggy." >&2
+  if ${CXX:-"g++"} --version | /usr/bin/grep -q 'build 5250'; then
+    echo "Xcode 2.2.1 is buggy." >&2
     exit 2
   fi
 
