@@ -1,6 +1,6 @@
 divert(-1)
 changequote([, ])
-dnl $Id: openoffice.org.info.m4,v 1.9 2006/03/08 05:31:04 aida_s Exp $
+dnl $Id: openoffice.org.info.m4,v 1.10 2006/03/08 07:14:36 aida_s Exp $
 dnl Usage: m4 -DTREE=xxx [-DMODE=Normal|DumpMirrors|DumpSnapshotMirrors] openoffice.org.info.m4
 
 dnl ### Configurations ###
@@ -449,7 +449,7 @@ ifelse(USE_FINK_PYTHON, 1,
   # Include libdb_java-4.2.jnilib to DYLD_LIBRARY_PATH so that Java can find it
   /usr/bin/sed -i.bak \
     -e"/^\(setenv \)*SOLARLIB/s|-L/usr/lib|-L%b/FINKLIBS -L%p/lib/freetype219/lib -L%p/lib -L/usr/lib|" \
-    -e"/^\(setenv \)*SOLARINC/s|-I/usr/X11R6/include -I/usr/X11R6/include/freetype2|-I%p/include/db4 -I%p/lib/freetype219/include/freetype2 -I%p/lib/freetype219/include -I%p/include -I/usr/X1186/include|" \
+    -e"/^\(setenv \)*SOLARINC/s|-I/usr/X11R6/include -I/usr/X11R6/include/freetype2|-I%p/include/db4 -I%p/lib/freetype219/include/freetype2 -I%p/lib/freetype219/include -I%p/include -I/usr/X11R6/include|" \
     -e"/^\(setenv \)*DYLD_LIBRARY_PATH/s|/lib|/lib:%b/FINKLIBS|" \
     -e"/^\(setenv \)*PROFULLSWITCH/s|product=full|--dlv_switch -link product=full|" \
     MacOSX${machine}Env.Set MacOSX${machine}Env.Set.sh
