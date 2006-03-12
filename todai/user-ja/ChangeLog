@@ -1,4 +1,9 @@
 2006-03-12 AIDA Shinra <shinra@j10n.org>
+* 3.0 release
+* sedsrc/user-ja.el.in: customize utf-translate-cjk-unicode-range also
+  on Emacs22.
+
+2006-03-12 AIDA Shinra <shinra@j10n.org>
 * Document and copyright
 * doc/COPYRIGHT-en.txt: added
 * doc/canna.COPYRIGHT.txt: added
@@ -227,4 +232,4 @@
 2004-04-12 AIDA Shinra <shinra@j10n.org>
 * Initial revision
 
-$Id: ChangeLog,v 1.4 2006/03/12 11:01:51 aida_s Exp $
+$Id: ChangeLog,v 1.5 2006/03/12 13:55:53 aida_s Exp $
