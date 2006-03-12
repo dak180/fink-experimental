@@ -1,4 +1,4 @@
-# $Id: xmodmap-ja.sh.in,v 1.4 2004/05/04 20:31:54 shinra Exp $
+# $Id: xmodmap-ja.sh.in,v 1.1.1.1 2005/04/07 12:31:26 aida_s Exp $
 : ${xinitrc_xmodmap_ja_enable=YES}
 case "x$xinitrc_xmodmap_ja_enable" in
     x[Yy][Ee][Ss])
