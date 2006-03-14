@@ -1,6 +1,6 @@
 divert(-1)
 changequote([, ])
-dnl $Id: openoffice.org.info.m4,v 1.10 2006/03/08 07:14:36 aida_s Exp $
+dnl $Id: openoffice.org.info.m4,v 1.11 2006/03/11 14:54:50 aida_s Exp $
 dnl Usage: m4 -DTREE=xxx [-DMODE=Normal|DumpMirrors|DumpSnapshotMirrors] openoffice.org.info.m4
 
 dnl ### Configurations ###
@@ -419,12 +419,7 @@ CompileScript: <<
   esac
 
   # Create a log file
-  tmpdir=`/sw/sbin/mktemp -d /tmp/fink-ooo.XXXXXX`
-  test -n "$tmpdir"
-  trap 'rm -rf "$tmpdir"' 0
-  /usr/bin/mkfifo "$tmpdir/log"
-  /usr/bin/tee -i %n-%v-%r.buildlog < "$tmpdir/log" &
-  exec 3>"$tmpdir/log"
+  exec 3> >(/usr/bin/tee -i %n-%v-%r.buildlog)
 
   # $X_LDFLAGS is needed to configure with X correctly.  
   export X_LDFLAGS=$LDFLAGS
