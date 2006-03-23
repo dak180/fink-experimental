@@ -21,12 +21,13 @@
 ;; OTHER TORTUOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR 
 ;; PERFORMANCE OF THIS SOFTWARE. 
 
-;;  $Id: user-ja.canna,v 1.1 2004/04/27 10:15:50 shinra Exp $
+;;  $Id: user-ja.canna,v 1.1.1.1 2005/04/07 12:31:26 aida_s Exp $
 
 ;; gcanna(cannadic)を利用するか。
 
+;; (load "nonexistent.canna" t) syntax is only supported by canna >= 3.7p3-5.
 (if (not (boundp 'use-gcanna))
-    (setq use-gcanna t))
+    (setq use-gcanna (load (concat canna-directory "/gcannatest.canna") t)))
 
 ;; 記号置き換え変換を利用するか。
 
