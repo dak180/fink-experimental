@@ -1,3 +1,8 @@
+2006-04-10 AIDA Shinra <shinra@j10n.org>
+* 3.1 release
+* sedsrc/user-ja-conf.in: We want C-Space to work as Emacs set-mark-command
+  instead of SpotLight shortcut. Disable it.
+
 2006-03-24 AIDA Shinra <shinra@j10n.org>
 * user-ja.info.in: reduce Depends
 * sedsrc/user-ja.el.in: use yc only if available.
@@ -238,4 +243,4 @@
 2004-04-12 AIDA Shinra <shinra@j10n.org>
 * Initial revision
 
-$Id: ChangeLog,v 1.6 2006/03/12 14:52:15 aida_s Exp $
+$Id: ChangeLog,v 1.7 2006/03/23 18:53:45 aida_s Exp $
