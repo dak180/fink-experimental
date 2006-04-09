@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: build.sh,v 1.3 2006/03/12 11:01:51 aida_s Exp $
+# $Id: build.sh,v 1.4 2006/03/12 13:55:53 aida_s Exp $
 # vim: set sw=4:
 set -e
 
@@ -221,7 +221,10 @@ while test "$#" -gt 0; do
 	-d|--debug) set -x ;;
 	-h|--help) showhelp; exit ;;
 	-*) badarg "$1"; exit ;;
-	*=*) eval "$1" ;;
+	*=*)
+        var=`expr "$1" : '\\([^=]*\\)'`
+        value=`expr "$1" : '[^=]*=\\(.*\\)'`
+        eval $var'=$value';;
 	*) mode="$1"; shift; break ;;
     esac
     shift

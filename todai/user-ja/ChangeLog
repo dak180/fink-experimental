@@ -1,4 +1,9 @@
 2006-04-10 AIDA Shinra <shinra@j10n.org>
+* 3.2 release
+* sedsrc/user-ja-conf.in: Previous change does not work at all. Backouted.
+* build.sh: quoting
+
+2006-04-10 AIDA Shinra <shinra@j10n.org>
 * 3.1 release
 * sedsrc/user-ja-conf.in: We want C-Space to work as Emacs set-mark-command
   instead of SpotLight shortcut. Disable it.
@@ -243,4 +248,4 @@
 2004-04-12 AIDA Shinra <shinra@j10n.org>
 * Initial revision
 
-$Id: ChangeLog,v 1.7 2006/03/23 18:53:45 aida_s Exp $
+$Id: ChangeLog,v 1.8 2006/04/09 22:58:57 aida_s Exp $
