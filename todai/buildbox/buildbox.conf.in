@@ -1,0 +1,9 @@
+# Sample buildbox.conf
+# This file must be a bourne-shell script
+# $Id: buildbox.conf.in,v 1.1 2006/03/15 12:49:11 shinra Exp $
+
+# Mandatory
+buildbox_root='@BUILDBOX_ROOT@'
+
+# Optional
+disable_sys_emacs=YES

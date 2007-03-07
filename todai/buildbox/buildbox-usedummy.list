@@ -1,0 +1,17 @@
+# $Id: buildbox-usedummy.list,v 1.4 2006/07/08 15:28:44 shinra Exp $
+sbin/init
+sbin/mount
+sbin/umount
+usr/bin/autoconf
+usr/bin/autoheader
+usr/bin/autom4te
+usr/bin/automake
+usr/bin/automake-1.6
+usr/bin/autoreconf
+usr/bin/autoscan
+usr/bin/autoupdate
+usr/bin/xcodebuild
+usr/sbin/sendmail
+Developer/Tools/DeRez
+Developer/Tools/RezWack
+Developer/Tools/UnRezWack
