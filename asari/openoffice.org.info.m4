@@ -1,6 +1,6 @@
 divert(-1)
 changequote([, ])
-dnl $Id: openoffice.org.info.m4,v 1.20 2007/05/06 22:18:33 asari Exp $
+dnl $Id: openoffice.org.info.m4,v 1.21 2007/05/07 09:28:35 asari Exp $
 dnl Usage: m4 -DTREE=xxx [-DMODE=Normal|DumpMirrors|DumpSnapshotMirrors] openoffice.org.info.m4
 
 dnl ### Configurations ###
@@ -306,7 +306,7 @@ Source2: http://tools.openoffice.org/unowinreg_prebuild/680/unowinreg.dll
 Source2-MD5: e3a0b76dcd876f3d721ee7183729153d
 
 PatchFile: %n.patch
-PatchFile-MD5: 91f3a422c41b0bc0d3ef62d276174e71
+PatchFile-MD5: fe26721181f7a75048aef6fd72f5f2f4
 PatchScript: <<
   #!/bin/bash -ev
   /usr/bin/sed 's|@PREFIX@|%p|g;s|@PKGNAME@|%n|g' %{PatchFile} | /usr/bin/patch -p0
