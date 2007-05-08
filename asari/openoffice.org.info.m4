@@ -1,6 +1,6 @@
 divert(-1)
 changequote([, ])
-dnl $Id: openoffice.org.info.m4,v 1.21 2007/05/07 09:28:35 asari Exp $
+dnl $Id: openoffice.org.info.m4,v 1.22 2007/05/08 20:06:40 asari Exp $
 dnl Usage: m4 -DTREE=xxx [-DMODE=Normal|DumpMirrors|DumpSnapshotMirrors] openoffice.org.info.m4
 
 dnl ### Configurations ###
@@ -306,7 +306,7 @@ Source2: http://tools.openoffice.org/unowinreg_prebuild/680/unowinreg.dll
 Source2-MD5: e3a0b76dcd876f3d721ee7183729153d
 
 PatchFile: %n.patch
-PatchFile-MD5: fe26721181f7a75048aef6fd72f5f2f4
+PatchFile-MD5: 78bd0acfe2105c0d551e1cad403c20ce
 PatchScript: <<
   #!/bin/bash -ev
   /usr/bin/sed 's|@PREFIX@|%p|g;s|@PKGNAME@|%n|g' %{PatchFile} | /usr/bin/patch -p0
@@ -409,7 +409,7 @@ CompileScript: <<
   # Check the architecture
   case %m in
     powerpc) machine=PPC;;
-    i386) machine=Intel;;
+    i386) machine=X86;;
     *) echo 'Unknown architecture'; exit 1;;
   esac
 
