@@ -1,6 +1,6 @@
 divert(-1)
 changequote([, ])
-dnl $Id: openoffice.org.info.m4,v 1.23 2007/05/08 21:17:48 asari Exp $
+dnl $Id: openoffice.org.info.m4,v 1.24 2007/05/10 02:05:14 asari Exp $
 dnl Usage: m4 -DTREE=xxx [-DMODE=Normal|DumpMirrors|DumpSnapshotMirrors] openoffice.org.info.m4
 
 dnl ### Configurations ###
@@ -296,7 +296,8 @@ MIRROR(1, [nam-US], [http://openoffice.mirrors.tds.net/pub/openoffice/])
 ifelse(eval((STR_EQ(MODE, [Normal]) && DEFINED([SNAPSHOT])) ||
              STR_EQ(MODE, [DumpSnapshotMirrors])),
   1, [divert(0)], [divert(-1)])dnl
-MIRROR(1, [Primary], [ftp://ooopackages.good-day.net/pub/OpenOffice.org/sources/])
+MIRROR(1, [A], [http://fink.sodan.ecc.u-tokyo.ac.jp/pkgdists/])
+MIRROR(1, [B], [ftp://ooopackages.good-day.net/pub/OpenOffice.org/sources/])
 ifelse(MODE, [Normal], [divert(0)], [divert(-1)])dnl
 [<<
 Source: mirror:custom:]SOURCE[
