@@ -1,3 +1,7 @@
+2008-02-15 Tomoaki Okayama <okayama@sodan.ecc.u-tokyo.ac.jp>
+* 3.3 release
+* sedsrc/user-ja.el.in: Add entries in utf-translate-cjk-set-unicode-range.
+
 2008-02-04 Tomoaki Okayama <okayama@sodan.ecc.u-tokyo.ac.jp>
 * 3.2+cvs-1.11
 * Just correct a revision of ChangeLog.
@@ -256,4 +260,4 @@
 2004-04-12 AIDA Shinra <shinra@j10n.org>
 * Initial revision
 
-$Id: ChangeLog,v 1.10 2008/02/03 20:46:35 okayama Exp $
+$Id: ChangeLog,v 1.11 2008/02/03 20:52:28 okayama Exp $
