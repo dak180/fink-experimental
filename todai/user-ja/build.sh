@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: build.sh,v 1.4 2006/03/12 13:55:53 aida_s Exp $
+# $Id: build.sh,v 1.5 2006/04/09 23:31:43 aida_s Exp $
 # vim: set sw=4:
 set -e
 
@@ -118,6 +118,9 @@ doinstall() {
     go $mkinstalldirscmd -m 755 "$destdir$fink_sysconfdir/profile.d"
     go $installcmd -m 755 user-ja.sh "$destdir$fink_sysconfdir/profile.d/zz90user-ja.sh"
     go $installcmd -m 755 user-ja.csh "$destdir$fink_sysconfdir/profile.d/zz90user-ja.csh"
+
+    go $mkinstalldirscmd -m 755 "$destdir$fink_sysconfdir/app-defaults/ja_JP.eucJP"
+    go $installcmd -m 644 Tgif "$destdir$fink_sysconfdir/app-defaults/ja_JP.eucJP"
 
     go_cd "$firstpwd"
     go_cd "$srcdir/etcmlterm"
