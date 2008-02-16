@@ -1,4 +1,4 @@
-# $Id: user-ja.info.in,v 1.3 2006/03/07 13:29:10 aida_s Exp $
+# $Id: user-ja.info.in,v 1.4 2006/03/23 18:53:46 aida_s Exp $
 Package: user-ja
 Version: @FULLVERSION@
 # Revision is always 1
@@ -7,7 +7,7 @@ Description: Configuration files for Japanese UTF-8 environment
 Type: nosource
 License: Public Domain
 Maintainer: Todai Fink Team <fink@sodan.ecc.u-tokyo.ac.jp>
-Depends: efont-unicode, shinonome, xinitrc
+Depends: efont-unicode, shinonome, xinitrc (>= 1.2-1)
 Conflicts: kinput2 (<< 3.1-6), canna (<< 3.7p3-5), cannadic (<< 0.95c-2)
 Enhances: emacsen, canna, mlterm, vim
 Patch: %n.patch

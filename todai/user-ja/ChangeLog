@@ -1,4 +1,9 @@
 2008-02-16 Tomoaki Okayama <okayama@sodan.ecc.u-tokyo.ac.jp>
+* 3.5 release
+* sedsrc/user-ja-conf.in: Flexible setting for app_to_run (on Leopard).
+  This requires xinitrc (>= 1.2-1).
+
+2008-02-16 Tomoaki Okayama <okayama@sodan.ecc.u-tokyo.ac.jp>
 * 3.4 release
 * sedsrc/user-ja-conf.in: Launch mlterm at X11 startup.
 
@@ -268,4 +273,4 @@
 2004-04-12 AIDA Shinra <shinra@j10n.org>
 * Initial revision
 
-$Id: ChangeLog,v 1.13 2008/02/15 14:51:20 okayama Exp $
+$Id: ChangeLog,v 1.14 2008/02/16 02:49:13 okayama Exp $
