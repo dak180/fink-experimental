@@ -1,5 +1,5 @@
 ;; Language environment settings
-;; $Id: user-ja.el.in,v 1.5 2008/02/03 20:46:36 okayama Exp $
+;; $Id: user-ja.el.in,v 1.6 2008/02/15 06:18:48 okayama Exp $
 
 ;; Setup Japanese UTF-8 environment.
 ;; Recent Emacs 22 (22.0.50.cvs20060118) is enough clever for us
@@ -41,6 +41,7 @@
               (fboundp 'mac-toggle-input-method))
          ;; 22.1-3003 with inline_patch-1.0.3
          (setq default-input-method "MacOSX")
+         (setq mac-pass-key-to-system-on-read-only-buffer t)
          (add-hook 'minibuffer-setup-hook 'mac-change-language-to-us)
          (when (fboundp 'mac-translate-from-yen-to-backslash)
            (mac-translate-from-yen-to-backslash)))
