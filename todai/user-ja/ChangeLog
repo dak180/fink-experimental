@@ -1,4 +1,9 @@
 2008-02-18 Tomoaki Okayama <okayama@sodan.ecc.u-tokyo.ac.jp>
+* 4.0 release
+* sedsrc/user-ja-conf.in: The builtin echo in sh(1) does not accept
+  the -n option on Leopard. Use /bin/echo -n instead.
+
+2008-02-18 Tomoaki Okayama <okayama@sodan.ecc.u-tokyo.ac.jp>
 * 3.9 release
 * build.sh: Change the location of doc files.
 
@@ -298,4 +303,4 @@
 2004-04-12 AIDA Shinra <shinra@j10n.org>
 * Initial revision
 
-$Id: ChangeLog,v 1.18 2008/02/17 15:53:31 okayama Exp $
+$Id: ChangeLog,v 1.19 2008/02/17 16:11:55 okayama Exp $
