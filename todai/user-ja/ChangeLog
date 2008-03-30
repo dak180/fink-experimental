@@ -1,3 +1,7 @@
+2008-03-31 Tomoaki Okayama <okayama@sodan.ecc.u-tokyo.ac.jp>
+* 4.1 release
+* sedsrc/user-ja.sh.in: Add XMODIFIERS entry for uim.
+
 2008-02-18 Tomoaki Okayama <okayama@sodan.ecc.u-tokyo.ac.jp>
 * 4.0 release
 * sedsrc/user-ja-conf.in: The builtin echo in sh(1) does not accept
@@ -303,4 +307,4 @@
 2004-04-12 AIDA Shinra <shinra@j10n.org>
 * Initial revision
 
-$Id: ChangeLog,v 1.19 2008/02/17 16:11:55 okayama Exp $
+$Id: ChangeLog,v 1.20 2008/02/18 05:28:27 okayama Exp $
