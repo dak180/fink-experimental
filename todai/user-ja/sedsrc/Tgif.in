@@ -7,7 +7,7 @@
 !	identical to the default values used in tgif.  You should use
 !	as few of these as possible!
 !
-! @(#)$Header: /mm2/home/cvs/bc-src/tgif/tgif.Xdefaults,v 1.9 2005/01/15 00:19:32 william Exp $
+! @(#)$Header: /cvsroot/fink/experimental/todai/user-ja/sedsrc/Tgif.in,v 1.1 2008/02/16 14:02:28 okayama Exp $
 !
 !Tgif.Geometry:			640x512-40+20
 !Tgif.IconGeometry:		-224+82
@@ -411,7 +411,7 @@ Tgif.PreeditType:		overthespot
 !Tgif.Lang:			ja_JP.EUC
 !Tgif.Lang:			ja_JP.ujis
 Tgif.Lang:			ja_JP.eucJP
-Tgif.Modifiers:			@im=kinput2
+!Tgif.Modifiers:			@im=kinput2
 Tgif.ConvSelection:		_JAPANESE_CONVERSION
 !
 ! After release 4.0
