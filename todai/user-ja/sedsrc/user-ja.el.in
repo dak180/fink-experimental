@@ -1,5 +1,5 @@
 ;; Language environment settings
-;; $Id: user-ja.el.in,v 1.6 2008/02/15 06:18:48 okayama Exp $
+;; $Id: user-ja.el.in,v 1.7 2008/02/17 04:23:31 okayama Exp $
 
 ;; Setup Japanese UTF-8 environment.
 ;; Recent Emacs 22 (22.0.50.cvs20060118) is enough clever for us
@@ -45,9 +45,12 @@
          (add-hook 'minibuffer-setup-hook 'mac-change-language-to-us)
          (when (fboundp 'mac-translate-from-yen-to-backslash)
            (mac-translate-from-yen-to-backslash)))
-        ((eq current-language-environment "Japanese")
-         (if (fboundp 'force-yc-input-mode) ;; assuming site-start.d/50yc.el
-             (force-yc-input-mode)))))
+        ((equal current-language-environment "Japanese")
+         (cond
+          ((assoc "japanese-anthy" input-method-alist)
+           (setq default-input-method "japanese-anthy"))
+          ((assoc "japanese-yc" input-method-alist)
+           (setq default-input-mehtod "japanese-yc"))))))
 ;; For Todai Fink Team's obsolete emacs21-carbon package.
 ;; As we moved utf-8m.el into emacs22-carbon, utf-8m is not available
 ;; on emacs21-carbon now.
