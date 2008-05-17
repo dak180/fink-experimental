@@ -1,5 +1,5 @@
 ;; Language environment settings
-;; $Id: user-ja.el.in,v 1.7 2008/02/17 04:23:31 okayama Exp $
+;; $Id: user-ja.el.in,v 1.8 2008/05/17 19:46:34 okayama Exp $
 
 ;; Setup Japanese UTF-8 environment.
 ;; Recent Emacs 22 (22.0.50.cvs20060118) is enough clever for us
@@ -50,7 +50,7 @@
           ((assoc "japanese-anthy" input-method-alist)
            (setq default-input-method "japanese-anthy"))
           ((assoc "japanese-yc" input-method-alist)
-           (setq default-input-mehtod "japanese-yc"))))))
+           (setq default-input-method "japanese-yc"))))))
 ;; For Todai Fink Team's obsolete emacs21-carbon package.
 ;; As we moved utf-8m.el into emacs22-carbon, utf-8m is not available
 ;; on emacs21-carbon now.
