@@ -1,3 +1,7 @@
+2008-05-24 Tomoaki Okayama <okayama@sodan.ecc.u-tokyo.ac.jp>
+* 4.2+cvs-1.24
+* doc/user-ja.txt: Add a description of uim for tgif.
+
 2008-05-18 Tomoaki Okayama <okayama@sodan.ecc.u-tokyo.ac.jp>
 * 4.2 release
 * sedsrc/user-ja.el.in: Use anthy-el if available.
@@ -315,4 +319,4 @@
 2004-04-12 AIDA Shinra <shinra@j10n.org>
 * Initial revision
 
-$Id: ChangeLog,v 1.22 2008/04/02 18:09:17 okayama Exp $
+$Id: ChangeLog,v 1.23 2008/05/17 19:46:34 okayama Exp $
