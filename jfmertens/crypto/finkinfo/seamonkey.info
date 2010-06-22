@@ -1,13 +1,13 @@
 Info2: <<
 Package: seamonkey
 # For alpha or beta versions :
-# Version according to mozilla/config/milestone.txt ("mozilla-version"),
+# Version according to mozilla/config/milestone.txt ("mozilla-version"), # would be 1.9.3a5pre _ too low !
 # rather than suite/config/version.txt ("seamonkey-version", =%type_raw[ver]), to leave room for growth till 2.0
 # For releases: ver=%v = 'release version' ; i.e. from suite/config/version-*.txt
 Version: 2.0.4
-Revision: 2
+Revision: 4
 ## parameters needed at several places :
-Type: sys_nspr (no), ver (%v)
+Type: sys_nspr (no), ver (2.1a1)
 
 #Architecture: i386, powerpc
 Depends: %N2-shlibs (= %v-%r), bzip2-shlibs
@@ -36,7 +36,7 @@ BuildDepends: <<
 	libhunspell (>= 1.2.8-1005),
 	libidl2 (>= 0.8.13-2),
 	libjpeg8,
-	(%type_raw[sys_nspr] = .) nspr.0d,
+	(%type_raw[sys_nspr] = .) nspr.0d (>= 4.8.4-4),
 	openssl098-dev (>= 0.9.8l-1),
 	orbit2-dev (>= 2.14.17-2),
 	pango1-xft2-ft219-dev (>= 1.24.5-6),
@@ -49,7 +49,7 @@ BuildDepends: <<
 	x11-dev
 <<
 ## esound and libcanberra0 : probably not needed in the build...
-# for sqlite3 dep, must wait that upgrade currently in tracker gets committed to unstable ..
+# sed : used in info file; findutils : 'find -xtype" used in mozilla/toolkit/mozapps/installer/packager.mk, l. 464
 ##
 # Tentatively deleting expat1, glitz, libiconv-dev, pixman, pth2-dev, xft2-dev : leftovers from previous versions,
 # no evidence of need from otool, nor by analyzing headers used
@@ -63,13 +63,14 @@ BuildDepends: <<
 # Also still left to run it once with DYLD_BIND_AT_LAUNCH, DYLD_PRINT_LIBRARIES and DYLD_PRINT_LIBRARIES_POST_LAUNCH
 # to check no runtime-deps are omitted..  DONE
 
+# requires  -DSQLITE_SECURE_DELETE=1 -DSQLITE_ENABLE_FTS3=1  to be added to SetCFLAGS in sqlite3.info
 # build uses yacc; mine is from fink's bison ..; hope system's is OK. Similarly for python, perl, most of coreutils, etc
 
 GCC: 4.0
 
-Source-MD5: 1a7f94a46890a60e0fb3340e567000c0
+Source-MD5: 16d87bc961e5c9153c8553fb1dc73320
 Source: mirror:custom:mozilla.org/%N/releases/%type_raw[ver]/source/%N-%type_raw[ver].source.tar.bz2
-SourceDirectory: comm-1.9.1
+SourceDirectory: comm-central
 CustomMirror: <<
   Primary: http://ftp.mozilla.org/pub/
 #  nam-US: ftp://ftp.tux.org/pub/net/mozilla/
@@ -80,8 +81,8 @@ CustomMirror: <<
 #### PATCHING
 
 ## The patchfile just imports a "fink" subdir.
-PatchFile: %n.tbz
-PatchFile-MD5: 1d3b67c85a12edbbfe6b928deeb20a23
+PatchFile: %n.patch
+PatchFile-MD5: 97204f5c47a32433cd0dd7e4e00ba4c9
 PatchScript: <<
  #!/bin/sh -ev
 ### Make list of files patched (too difficult to track otherwise which ones have already been patched,
@@ -91,7 +92,6 @@ PatchScript: <<
  patchlst=`echo \
 	mozilla/modules/libpref/src/nsPrefService.cpp \
 	mozilla/gfx/thebes/public/gfxQuartzSurface.h \
-	mozilla/gfx/thebes/src/gfxQuartzFontCache.mm \
 	mozilla/gfx/thebes/src/gfxASurface.cpp \
 	mailnews/addrbook/build/Makefile.in \
 	mozilla/toolkit/library/Makefile.in \
@@ -111,8 +111,9 @@ PatchScript: <<
 	mozilla/toolkit/crashreporter/nsExceptionHandler.cpp \
 	mozilla/xpcom/base/nsStackWalk.cpp mailnews/addrbook/public/nsAbBaseCID.h \
 	mozilla/{configure.in,security/coreconf/Darwin.mk} \
-	mozilla/build/unix/mozilla-config.in \
 	directory/c-sdk/ldap/libraries/liblber/lber-int.h \
+	mozilla/js/src/{jscntxt.h,jsscope.cpp,jstypedarray.cpp} \
+	mozilla/xpcom/io/nsLocalFileUnix.cpp \
 	mozilla/netwerk/build/Makefile.in \
 	mozilla/extensions/auth/Makefile.in \
 	mozilla/gfx/thebes/src/Makefile.in \
@@ -129,10 +130,11 @@ PatchScript: <<
 	mozilla/widget/src/gtk2/nsSound.cpp \
 	|tr ' ' '\n'|sort -u|xargs`
  for f in $patchlst; do cp -p $f $f.bak; done
+# mozilla/gfx/thebes/src/gfxQuartzFontCache.mm  and  mozilla/build/unix/mozilla-config.in  no longer exist apparently
 
  if [ -e /usr/X11/include/X11/X.h ]; then
    Xdir="/usr/X11"
- elif [ -e /usr/X11/include/X11R6/X.h ]; then
+ elif [ -e /usr/X11R6/include/X11/X.h ]; then
    Xdir="/usr/X11R6"
  else
    echo "Could not determine X11 prefix"
@@ -140,7 +142,7 @@ PatchScript: <<
  fi
 
 ### import "fink" directory :
- tar -oxjf %{PatchFile}
+ patch -p1 < %{PatchFile}
  sed -i'' -e 's,Pr,%p,g' -e "s,Xd,$Xdir," `find fink -type f`
  sed -ri'' -e '/XP_BEOS/,+3s;endif;&\t, "fink.js";' mozilla/modules/libpref/src/nsPrefService.cpp
 
@@ -154,7 +156,7 @@ PatchScript: <<
  sed -i'' -e \
  's,Carbon/Carbon.h,/System/Library/Frameworks/ApplicationServices.framework/Frameworks/CoreGraphics.framework/Headers/CGContext.h,' \
 	mozilla/gfx/thebes/public/gfxQuartzSurface.h
- sed -i'' -e 's,Carbon\.h,Carbon/&,' mozilla/gfx/thebes/src/gfxQuartzFontCache.mm
+# sed -i'' -e 's,Carbon\.h,Carbon/&,' mozilla/gfx/thebes/src/gfxQuartzFontCache.mm # (no longer exists apparently)
 
 ## Either of the 2 following attempts should be viable.
 #### FIRST ATTEMPT FOR CAIRO_QUARTZ (ends up with needing to add --enable-quartz-image  to cairo.info) 
@@ -176,7 +178,7 @@ PatchScript: <<
 #### OTHER ATTEMPT FOR CAIRO_QUARTZ : disable any quartz support altogether...
  sed -i'' -e 's,CAIRO_HAS_QUARTZ_SURFACE,&NO,' -e 's,XP_MACOSX,&NO,' mozilla/gfx/thebes/src/gfxASurface.cpp
 
- sed -i'' -e 's,Cocoa,AddressBook,' mailnews/addrbook/build/Makefile.in
+ sed -i'' -e 's,Cocoa,AddressBook -framework Foundation,' mailnews/addrbook/build/Makefile.in
 
 ####
  # the need for -lcrypto comes from the symbols MD5_Init and MD5_Final, used in
@@ -227,11 +229,15 @@ endif\
  sed -i'' -e 's, -fpascal-strings,,' -e 's, -no-cpp-precomp,,' mozilla/{configure.in,security/coreconf/Darwin.mk}
 ### The next appears (-ed??) needed eg when building yelp...                                
 ### maybe also in mozilla/xulrunner/installer/libxul{-unstable,}.pc.in ?
- sed -i'' -e 's,lxpcom,& -lxpcom_core,' mozilla/build/unix/mozilla-config.in
+# sed -i'' -e 's,lxpcom,& -lxpcom_core,' mozilla/build/unix/mozilla-config.in  # (no longer exists apparently)
 ### The following is "for safety",  to avoid "implicit declaration" warnings :
  sed -ri'' -e 's,\(XP_OS2\) \&\& \!defined\(DARWIN\)$,\(XP_OS2\),' directory/c-sdk/ldap/libraries/liblber/lber-int.h
 
 #### MISC
+### Try substituting 'calloc', when used with 1 argument, by j%N_calloc (there is already a js_calloc, among many others..):
+ sed -i'' -e 's,\([^_]\)\(calloc(\),\1%N_\2,' mozilla/js/src/{jscntxt.h,jsscope.cpp,jstypedarray.cpp}
+### inversion of arguments in call to  quotactl (and there is no sys/sysmacros.h) :
+sed -i'' -e '/sysmacros.h/d' -e 's;\(QCMD(Q_GETQUOTA, USRQUOTA)\), \(deviceName.get()\);\2, \1;' mozilla/xpcom/io/nsLocalFileUnix.cpp
 ### libresolv
  # configure fails to detect libresolv (hence the 'env' before ./configure),
  # and even if it would detect it, it forgets to add -lresolv to LIBS
@@ -272,7 +278,7 @@ endif\
 ###  autoconf2.13 (!) needed, and fink has no corresponding automake, so autoreconf can't be used..
 # for f in `find . -name configure.in`; do cd `sed -e 's,/[^/]*$,,'<<<"$f$"`; autoconf; cd -; done
 
-### Uncomment to check builddeps (.deps dirs and .pp files are created only in the mozilla subdir):
+### Uncomment to check builddeps :
 #  sed -ri'' -e 's,CPPFLAGS%%,CPPFLAGS -H%%,' `find . -name configure`
 
 ## Finally, for who prefers to see a unfied patch _ this creates "patch" in the build-dir :
@@ -297,7 +303,7 @@ endif\
 #  mozilla/xpfe/components/autocomplete/src/nsAutoComplete.o
 ConfigureParams: <<
  --enable-macos-target=${MACOSX_DEPLOYMENT_TARGET} --enable-optimize=-Os --disable-debug --enable-strip --enable-tests --with-pthreads \
- --with-default-mozilla-five-home=%p/lib/%N-2 --mandir=%p/share/man --with-qtdir=%p --x-includes='' --x-libraries='' \
+ --with-default-mozilla-five-home=%p/lib/%N-2 --mandir=%p/share/man --with-qtdir=%p \
  --enable-application=suite --enable-calendar --enable-default-toolkit=cairo-gtk2 --enable-xul --enable-places \
  --enable-image-decoders=all --enable-image-encoders=all --enable-necko-protocols=all \
  --enable-ctl --enable-canvas --enable-update-packaging --enable-storage --enable-profilesharing --enable-startup-notification \
@@ -358,8 +364,9 @@ CompileScript: <<
  cxvers=`$ctst --dumpversion 2>&1|cut -f1 -d:|sed -e 's,.*-,,' -e 's,\.,,' -e 's,\..*,,'`
  if [ $cxvers -le 41 ]; then cplus="--enable-cplus"; else cplus=''; fi
 
- env ac_cv_func_res_ninit=yes ./configure %c $enable64 $cplus
- make -w
+ env ac_cv_func_res_ninit=yes ./configure %c $enable64 $cplus --x-includes=$Xdir/include --x-libraries=$Xdir/lib
+ make -j1 -w
+# fink-package-precedence --depfile-ext='\.pp' . || :
 <<
 
 #### INSTALL
@@ -465,7 +472,7 @@ SplitOff: <<
 	fontconfig2-shlibs, freetype219-shlibs, gconf2-shlibs, glib2-shlibs, gnome-vfs2-unified-shlibs,
 	gtk+2-shlibs, libart2-shlibs, libbonobo2-shlibs, libbonoboui2-shlibs, libcanberra0-shlibs (>= 0.23-202),
 	libgettext8-shlibs, libgnome2-shlibs, libgnomecanvas2-shlibs, libgnomeui2-shlibs (>= 2.24.2-2),
-	libhunspell-shlibs (>= 1.2.8-1005), libjpeg8-shlibs, (%type_raw[sys_nspr] = .) nspr.0d-shlibs,
+	libhunspell-shlibs (>= 1.2.8-1005), libjpeg8-shlibs, (%type_raw[sys_nspr] = .) nspr.0d-shlibs (>= 4.8.4-4),
 	openssl098-shlibs (>= 0.9.8l-1), orbit2-shlibs, pango1-xft2-ft219-shlibs, popt-shlibs, 
 	sqlite3-shlibs(>= 3.6.16.1), startup-notification-shlibs (>= 0.9-2), x11-shlibs
   <<
@@ -605,11 +612,6 @@ which requires ft219 (and hence possibly the corresponding pango for consistency
 
 A bunch of warnings still to look at:
 warning: invalid access to non-static data member '...' of NULL object
-
-Also: %p/lib/lib/seamonkey/pango.modules is probably not properly installed _
-  and anyway, what do those 2 modules add to the existing pango ones?
-  If not (which I presume), is there a way to get seamonkey to use the existing ones,
-  and to omit this part of build (related to --enable-ctl?), w/o losing any functionality ??
 
 A couple of details:
    --enable-macos-target=10.4 (or: whatever tree it is put in) is needed because else
