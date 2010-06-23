@@ -1,12 +1,12 @@
 Package: mizar-semantic-mml
 Description: Semantic HTML presentation of the MML
-Version: 4.130.1076
+Version: 4.145.1096
 Revision: 1
 Replaces: mizar-semantic-mml (<= 4.66.942)
 License: Commercial
 Homepage: http://mmlquery.mizar.org
 Source: ftp://mizar.uwb.edu.pl/pub/xmlmml/html_abstr.%v.tar.gz
-Source-MD5: 8420ca8c00a2ee8f74152115077a32de
+Source-MD5: 344ecbfa7f4e088a061ce0fa70a7931e
 CompileScript: <<
 <<
 SourceDirectory: html
