@@ -1,10 +1,10 @@
 Package: apt
 Version: 0.7.25.3
-Revision: 2
+Revision: 3
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12), libtool2, docbook-xsl
 Depends: %N-shlibs (= %v-%r), dpkg (>= 1.15.5.6-1)
-Source: http://ftp.debian.org/debian/pool/main/a/apt/apt_0.7.25.3.tar.gz
+Source: http://ftp.debian.org/debian/pool/main/a/apt/apt_%v.tar.gz
 Source-MD5: ee59a90b91764aefeb5eb0f29d5cab96
 SourceDirectory: %n-%v
 PatchFile: %n.patch
@@ -24,6 +24,7 @@ CompileScript: <<
  rm buildlib/config.guess buildlib/config.sub
  ln -s %p/share/libtool/config/config.sub buildlib/config.sub
  ln -s %p/share/libtool/config/config.guess buildlib/config.guess
+ autoconf
  ./configure %c
  #make -f makefile.wrap NOISY=1
  mkdir -p build/doc/doxygen
