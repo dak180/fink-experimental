@@ -95,11 +95,14 @@ PatchScript: <<
 	mozilla/gfx/thebes/src/gfxASurface.cpp \
 	mailnews/addrbook/build/Makefile.in \
 	mozilla/toolkit/library/Makefile.in \
+	mozilla/toolkit/crashreporter/google-breakpad/src/common/mac/macho_walker.cc \
 	mozilla/toolkit/mozapps/installer/packager.mk \
+	suite/installer/Makefile.in \
 	{,mozilla/{,js/src/}}configure{.in,} \
 	{,mozilla/{,js/src/}}config/{config,rules}.mk {directory/c-sdk,mozilla/nsprpub}/configure{.in,} \
 	mozilla/security/{coreconf/Darwin,nss/lib/freebl/config}.mk \
 	mozilla/modules/plugin/sdk/samples/unixprinting/Makefile.in \
+	mozilla/security/nss/lib/ckfw/builtins/config.mk \
 	{,mozilla/}configure{.in,} \
 	mozilla/nsprpub/configure{.in,} \
 	mozilla/config/add-chrome.pl \
@@ -128,6 +131,7 @@ PatchScript: <<
 	mozilla/widget/src/{gtk2/nsIdleServiceGTK,qt/nsIdleServiceQt}.cpp \
 	mozilla/widget/src/gtk2/nsScreenManagerGtk.cpp \
 	mozilla/widget/src/gtk2/nsSound.cpp \
+	suite/installer/package-manifest.in \
 	|tr ' ' '\n'|sort -u|xargs`
  for f in $patchlst; do cp -p $f $f.bak; done
 # mozilla/gfx/thebes/src/gfxQuartzFontCache.mm  and  mozilla/build/unix/mozilla-config.in  no longer exist apparently
@@ -183,10 +187,16 @@ PatchScript: <<
 ####
  # the need for -lcrypto comes from the symbols MD5_Init and MD5_Final, used in
  # toolkit/crashreporter/google-breakpad/src/common/mac/{file,macho}_id.cc, and defined nowhere in the builddir...
- #  -->  since it is only for that, SWITCH to system-openssl ! (next not needed as long as crashreporter has to be disabled)
- sed -i'' -e 's,EXTRA_DSO_LIBS),& -lcrypto,' mozilla/toolkit/library/Makefile.in
- # allow to do a "make install" even on Darwin !
+ #  -->  since it is only for that, SWITCH to system-openssl ! (next not needed when crashreporter is disabled (64bit))
+ sed -i'' -e 's,EXTRA_DSO_LIBS),& -lcrypto,' -e '/AudioUnit/a\
+	-framework Foundation \\' mozilla/toolkit/library/Makefile.in
+ sed -i'' -e '/CPU_TYPE_X86/a\
+#elif __x86_64__\
+	cpu_type = CPU_TYPE_X86;' mozilla/toolkit/crashreporter/google-breakpad/src/common/mac/macho_walker.cc
+ # allow to do a "make install" even on Darwin ! (first command is unoperative with new alpha version,
+ # though that 'installer' dir still exists..
  sed -i'' -e 's, Darwin,,' mozilla/toolkit/mozapps/installer/packager.mk
+ sed -i'' -e 's,Darwin,NoDarwin,' suite/installer/Makefile.in
 ####
 
 ### Getting "reasonable" install_names (libs are not versioned! and their "install_name" would else just be
@@ -201,6 +211,8 @@ PatchScript: <<
  sed -ri'' -e \
    "s;rules.mk;&\nEXTRA_DSO_LDOPTS := \$\(subst install_name \$\(mozappdir\)/,install_name %p/lib/%N-$V/plugins/,\$\(EXTRA_DSO_LDOPTS\)\);" \
    mozilla/modules/plugin/sdk/samples/unixprinting/Makefile.in
+# Also, make libnssckbi build the same (bundle or dylib) in 32 and 64bit _ choose dylib for safety:
+ sed -i'' -e 's,Darwin,No&,' mozilla/security/nss/lib/ckfw/builtins/config.mk
 
 #### we want a gtk2 build:
  sed -i'' -e 's, -DXP_MACOSX -DNO_X11, -DX11,' {,mozilla/}configure{.in,}
@@ -274,6 +286,9 @@ sed -i'' -e '/sysmacros.h/d' -e 's;\(QCMD(Q_GETQUOTA, USRQUOTA)\), \(deviceName.
  sed -ri'' -e 's,libesd\.so\.0,%p/lib/libesd.0.dylib,' -e 's,libcanberra\.so\.0,%p/lib/libcanberra.0.dylib,' \
    mozilla/widget/src/gtk2/nsSound.cpp
 
+## install:
+  sed -ri'' -e 's,(libnullplugin).so,\1@DLL_SUFFIX@,' suite/installer/package-manifest.in
+
 ### For alpha or beta versions : need to create configure scripts
 ###  autoconf2.13 (!) needed, and fink has no corresponding automake, so autoreconf can't be used..
 # for f in `find . -name configure.in`; do cd `sed -e 's,/[^/]*$,,'<<<"$f$"`; autoconf; cd -; done
@@ -302,23 +317,24 @@ sed -i'' -e '/sysmacros.h/d' -e 's;\(QCMD(Q_GETQUOTA, USRQUOTA)\), \(deviceName.
 # --enable-libxul leads to "/bld/seamonkey-1.9.1b3pre-1/mozilla/dist/bin/XUL: No such file or directory" in linking
 #  mozilla/xpfe/components/autocomplete/src/nsAutoComplete.o
 ConfigureParams: <<
- --enable-macos-target=${MACOSX_DEPLOYMENT_TARGET} --enable-optimize=-Os --disable-debug --enable-strip --enable-tests --with-pthreads \
+ --enable-macos-target=${MACOSX_DEPLOYMENT_TARGET} --enable-optimize=-Os --enable-mobile-optimize \
+ --disable-debug --enable-strip --enable-tests --with-pthreads \
  --with-default-mozilla-five-home=%p/lib/%N-2 --mandir=%p/share/man --with-qtdir=%p \
  --enable-application=suite --enable-calendar --enable-default-toolkit=cairo-gtk2 --enable-xul --enable-places \
  --enable-image-decoders=all --enable-image-encoders=all --enable-necko-protocols=all \
  --enable-ctl --enable-canvas --enable-update-packaging --enable-storage --enable-profilesharing --enable-startup-notification \
- --enable-xpctools --enable-url-classifier --enable-ipv6 --enable-ldap-experimental --with-sasl \
+ --enable-xpctools --enable-url-classifier --enable-ipv6 --enable-ldap-experimental --with-sasl --enable-smil \
  --with-x --enable-xinerama --enable-xprint --enable-pango --enable-xft --enable-postscript \
  --enable-svg --enable-svg-renderer=cairo --enable-system-cairo --enable-system-lcms --enable-glitz --enable-system-sqlite \
  --with-system-mng --with-system-jpeg --with-system-zlib --with-system-bz2 (%type_raw[sys_nspr] = .) --with-system-nspr \
- --enable-auto-deps --enable-md --disable-necko-wifi --disable-crashreporter --enable-safe-browsing --enable-system-hunspell \
+ --enable-auto-deps --enable-md --disable-necko-wifi --enable-safe-browsing --enable-system-hunspell \
  --enable-help-viewer --enable-ipcd --enable-oji --enable-javaxpcom --enable-single-profile --disable-static-mail \
  --build=%m-apple-darwin`uname -r|cut -f1 -d.` --host=%m-apple-darwin`uname -r|cut -f1 -d.` \
  --enable-update-packaging --enable-update-channel=beta
 <<
 ###### Last line is for private use !
-## disable-necko-wifi : mozilla/configure has 'elif test "$OS_ARCH" = "Darwin"; then  NECKO_WIFI=1'
-## but mozilla/netwerk/wifi/src/nsWifiScannerUnix.cpp fails to find iwlib.h (new in 2.03)
+## disable-necko-wifi : mozilla/configure has 'elif test "$OS_ARCH" = "Darwin"; then  NECKO_WIFI=1' # no longer .
+## but mozilla/netwerk/wifi/src/nsWifiScannerUnix.cpp fails to find iwlib.h (new in 2.03) # still true, thus keep, for safety
 #
 # "--with-system-png" : "configure: error: --with-system-png won't work because the system's libpng doesn't have APNG support"
 # no -fstrict-aliasing in '--enable-optimize', else "dereferencing type-punned pointer will break strict-aliasing rules" warnings
@@ -354,9 +370,11 @@ CompileScript: <<
 # next can't be used, though all undefined symbols have a ' (from ...)'; apparently dynamic linking is hidden via use of PRLibrary
 # v=`uname -r|cut -f1 -d.`; if [ $v -ge 9 ]; then export LDFLAGS="$LDFLAGS -Wl,-dead_strip_dylibs" ; fi
 ### possibly some redundancy in the next _ but most of it seems needed :
+## (Also, crashreporter still has to be disabled in 64bit; too many errors "cast from '...' to 'uint32_t' loses precision"
+## compiling dump_syms.mm..).
  if grep -q 64 %p/var/lib/fink/path-prefix-10.6/compiler_wrapper
-	then export USE_64=1; enable64="--enable-64bit"
-	else enable64="--disable-64bit"
+	then export USE_64=1; enable64="--enable-64bit --disable-crashreporter"
+	else enable64="--disable-64bit --enable-crashreporter"
  fi
 # next is for trouble with rcthrread.h:190 with c++ >= 4.2 (better to fix the problem!)
 # [ Trying to get this +/- right, independently of the presence or no of "SetCC" or "SetCXX" and of sw_vers .. ]
@@ -378,17 +396,12 @@ make -j1 install DESTDIR=%d INSTALL_SDK=1
 # rm or link duplicate files
 pushd %i > /dev/null
 rm -fR lib/%N-%type_raw[ver]/extensions/inspector@mozilla.org/platform/{OS2,WINNT}
-cd share/idl/%N-%type_raw[ver]/stable; for f in *; do ln -fs ../unstable/$f; done; cd -
-pushd include/%N-%type_raw[ver]/stable > /dev/null; for f in *.{h,api}; do ln -fs ../unstable/$f; done
-for d in obsolete private; do cd $d; for f in *.h; do ln -fs ../../unstable/$f; done; cd -; done
-cd md; for f in *.cfg; do ln -fs ../../unstable/$f; done; cd -
-popd > /dev/null
 ln -fs ../../include/%N-%type_raw[ver]/unstable/xpcom-config.h lib/%N-devel-%type_raw[ver]
-# to be uncommented again when re-enabling crashreporter (in principle next time)
-#ln -fs ../MainMenu.nib/classes.nib lib/%N-%type_raw[ver]/crashreporter.app/Contents/Resources/English.lproj/MainMenuRTL.nib
+# to be uncommented again when re-enabling crashreporter (in principle next time) (no such files left apparently..)
+# ln -fs ../MainMenu.nib/classes.nib lib/%N-%type_raw[ver]/crashreporter.app/Contents/Resources/English.lproj/MainMenuRTL.nib
 popd > /dev/null
 
-## Fix install_names of plugins (were completely baroque, all in different ways)
+## Fix install_names of plugins (were completely baroque, all in different ways) (NO MORE plugins ..! ?)
 V=`cut -f1 -d. <<<"%type_raw[ver]"`
 cd %i/lib/%N-%type_raw[ver]/plugins
 for f in *.dylib; do
@@ -440,8 +453,8 @@ ln -fs %p/lib/%N-%type_raw[ver]/chrome/icons/default/editorWindow.png %i/share/p
 ln -fs %p/lib/%N-%type_raw[ver]/chrome/icons/default/msgcomposeWindow.png %i/share/pixmaps/%N_msgcomposeWindow.png
 ln -fs %p/lib/%N-%type_raw[ver]/chrome/icons/default/messengerWindow.png %i/share/pixmaps/%N_mailnews.png
 # find something ad-hoc for the rest ...
-cp -p calendar/base/themes/pinstripe/cal-icon32.png %i/share/pixmaps/%N_calendar.png
-cp -p suite/branding/icons/gtk/chatzilla-window.xpm %i/share/pixmaps/%N_chatzilla.xpm
+cp -p calendar/base/themes/pinstripe/images/cal-icon32.png %i/share/pixmaps/%N_calendar.png
+cp -p suite/branding/nightly/icons/gtk/chatzilla-window.xpm %i/share/pixmaps/%N_chatzilla.xpm
 cp -p mail/themes/qute/mail/newsblog/rss-feed.png %i/share/pixmaps/%N_news.png
 ### And all others remain in ???
 # ls -l %p/bld/mozilla-1.7.11-5/mozilla/dist/bin/chrome/icons/default
@@ -486,8 +499,8 @@ SplitOff: <<
 	lib/%N-%type_raw[ver]/lib*.dylib
 	lib/%N-%type_raw[ver]/chrome
 	lib/%N-%type_raw[ver]/components
-	lib/%N-%type_raw[ver]/greprefs
-	lib/%N-%type_raw[ver]/plugins
+	lib/%N-%type_raw[ver]/greprefs.js
+	lib/%N-%type_raw[ver]/*plugins
 	lib/%N-%type_raw[ver]/res
 	lib/%N-?
 	share/doc/%N2-shlibs
@@ -497,10 +510,10 @@ SplitOff: <<
 # (or even all those not in %p/lib/%N-2/sdk/lib ?), and omit them.
   Shlibs: <<
 	%p/lib/%N-2/libfreebl3.dylib 1.0.0 %n (>= 1.0-1)
-	%p/lib/%N-2/libgfxpsshar.dylib 1.0.0 %n (>= 1.0-1)
+	%p/lib/%N-2/libmozalloc.dylib 1.0.0 %n (>= 2.0.9-1)
 	%p/lib/%N-2/libgkgfx.dylib 1.0.0 %n (>= 1.0-1)
+	%p/lib/%N-2/libgfxutils.dylib 1.0.0 %n (>= 2.0.9-1)
 	%p/lib/%N-2/libgtkxtbin.dylib 1.0.0 %n (>= 1.0-1)
-	%p/lib/%N-2/libjsj.dylib 1.0.0 %n (>= 1.0-1)
 	%p/lib/%N-2/libldap60.dylib 1.0.0 %n (>= 1.0-1)
 	%p/lib/%N-2/libldif60.dylib 1.0.0 %n (>= 1.0-1)
 	%p/lib/%N-2/libmozjs.dylib 1.0.0 %n (>= 1.0-1)
@@ -508,7 +521,8 @@ SplitOff: <<
 	(%type_raw[sys_nspr] = no) %p/lib/%N-2/libnspr4.dylib 1.0.0 %n (>= 1.0-1)
 	%p/lib/%N-2/libnss3.dylib 1.0.0 %n (>= 1.0-1)
 	%p/lib/%N-2/libnssdbm3.dylib 1.0.0 %n (>= 1.0-1)
-	%p/lib/seamonkey-2/libnssutil3.dylib 1.0.0 %n (>= 1.0-1)
+	%p/lib/%N-2/libnssutil3.dylib 1.0.0 %n (>= 1.0-1)
+	%p/lib/%N-2/libnssckbi.dylib 1.0.0 %n (>= 2.0.9-1)
 	(%type_raw[sys_nspr] = no) %p/lib/%N-2/libplc4.dylib 1.0.0 %n (>= 1.0-1)
 	(%type_raw[sys_nspr] = no) %p/lib/%N-2/libplds4.dylib 1.0.0 %n (>= 1.0-1)
 	%p/lib/%N-2/libprldap60.dylib 1.0.0 %n (>= 1.0-1)
@@ -519,10 +533,13 @@ SplitOff: <<
 	%p/lib/%N-2/libxpcom.dylib 1.0.0 %n (>= 1.0-1)
 	%p/lib/%N-2/libxpcom_core.dylib 1.0.0 %n (>= 1.0-1)
 	%p/lib/%N-2/libxul.dylib 1.0.0 %n (>= 1.0-1)
-	%p/lib/%N-2/plugins/libnptest.dylib 1.0.0 %n (>= 1.0-1)
+	%p/lib/%N-2/libycbcr.dylib 1.0.0 %n (>= 2.0.9-1)
 	%p/lib/%N-2/plugins/libnullplugin.dylib 1.0.0 %n (>= 1.0-1)
-	%p/lib/%N-2/plugins/libunixprintplugin.dylib 1.0.0 %n (>= 1.0-1)
   <<
+#	%p/lib/%N-2/libgfxpsshar.dylib 1.0.0 %n (>= 1.0-1)
+#	%p/lib/%N-2/libjsj.dylib 1.0.0 %n (>= 1.0-1)
+#	%p/lib/%N-2/plugins/libnptest.dylib 1.0.0 %n (>= 1.0-1)
+#	%p/lib/%N-2/plugins/libunixprintplugin.dylib 1.0.0 %n (>= 1.0-1)
 <<
 
 SplitOff2: <<
@@ -556,9 +573,9 @@ SplitOff2: <<
  # make non-versioned symlinks
 #	ln -fs %N-$V %i/lib/%N	#	This one only later, when current seamonkey is phased out; next as substitute
 	ln -fs %N-$V %i/lib/mozilla
-	ln -fs %N-%type_raw[ver]/unstable %i/share/idl/%N-$V
+	ln -fs %N-%type_raw[ver] %i/share/idl/%N-$V
 	ln -fs %N-$V %i/share/idl/%N
-	ln -fs %N-%type_raw[ver]/unstable %i/include/%N-$V
+	ln -fs %N-%type_raw[ver] %i/include/%N-$V
 	ln -fs %N-$V %i/include/%N
 	# the following symlinks correspond to ones in the %N-devel dir, which got folded in the main one
 	cd %i/lib/%N-%type_raw[ver]
