@@ -36,6 +36,7 @@ BuildDepends: <<
 	libhunspell (>= 1.2.8-1005),
 	libidl2 (>= 0.8.13-2),
 	libjpeg8,
+	libnotify,
 	(%type_raw[sys_nspr] = .) nspr.0d (>= 4.8.4-4),
 	openssl098-dev (>= 0.9.8l-1),
 	orbit2-dev (>= 2.14.17-2),
@@ -43,9 +44,9 @@ BuildDepends: <<
 	pkgconfig (>= 0.23-2),
 	popt (>= 1.14-1),
 	sed,
-        sqlite3 (>= 3.6.21-1),
-        sqlite3-dev (>= 3.6.21-1),
-        startup-notification-dev (>= 0.9-2),
+	sqlite3 (>= 3.6.21-1),
+	sqlite3-dev (>= 3.6.21-1),
+	startup-notification-dev (>= 0.9-2),
 	x11-dev
 <<
 ## esound and libcanberra0 : probably not needed in the build...
@@ -55,8 +56,8 @@ BuildDepends: <<
 # no evidence of need from otool, nor by analyzing headers used
 # [ uncommment last line of PatchScript, then :
 ## egrep '^\.+ /' /sw/var/logs/seamonkey.log|sed -r -e 's,^\.+ ,,'|sort -u|egrep -v -e '^/usr/' -e '^/System/' -e '/bld/seamonkey'|xargs dpkg -S|cut -f1 -d:|sort -u|xargs
-# atk1 bzip2-dev cairo dbus-glib1.2-dev dbus1.3-dev fontconfig2-dev freetype219 gconf2-dev glib2-dev gnome-vfs2-unified-dev 
-# gtk+2-dev libbonobo2-dev libgettext8-dev libgnome2-dev libgnomeui2-dev libidl2 libjpeg8 pango1-xft2-ft219-dev popt 
+# atk1 bzip2-dev cairo dbus-glib1.2-dev dbus1.3-dev fontconfig2-dev freetype219 gconf2-dev glib2-dev gnome-vfs2-unified-dev
+# gtk+2-dev libbonobo2-dev libgettext8-dev libgnome2-dev libgnomeui2-dev libidl2 libjpeg8 pango1-xft2-ft219-dev popt
 # sqlite3-dev startup-notification-dev
 # ]
 ##
@@ -96,10 +97,9 @@ PatchScript: <<
 	mailnews/addrbook/build/Makefile.in \
 	mozilla/toolkit/library/Makefile.in \
 	mozilla/toolkit/crashreporter/google-breakpad/src/common/mac/macho_walker.cc \
-	mozilla/toolkit/mozapps/installer/packager.mk \
 	suite/installer/Makefile.in \
 	{,mozilla/{,js/src/}}configure{.in,} \
-	{,mozilla/{,js/src/}}config/{config,rules}.mk {directory/c-sdk,mozilla/nsprpub}/configure{.in,} \
+	{,mozilla/{,js/src/}}config/rules.mk {directory/c-sdk,mozilla/nsprpub}/configure{.in,} \
 	mozilla/security/{coreconf/Darwin,nss/lib/freebl/config}.mk \
 	mozilla/modules/plugin/sdk/samples/unixprinting/Makefile.in \
 	mozilla/security/nss/lib/ckfw/builtins/config.mk \
@@ -163,7 +163,7 @@ PatchScript: <<
 # sed -i'' -e 's,Carbon\.h,Carbon/&,' mozilla/gfx/thebes/src/gfxQuartzFontCache.mm # (no longer exists apparently)
 
 ## Either of the 2 following attempts should be viable.
-#### FIRST ATTEMPT FOR CAIRO_QUARTZ (ends up with needing to add --enable-quartz-image  to cairo.info) 
+#### FIRST ATTEMPT FOR CAIRO_QUARTZ (ends up with needing to add --enable-quartz-image  to cairo.info)
  ## we have to delete a number of targets because fink's cairo has --disable-quartz-image
  ## better to disable any quartz support altogether? What could be its use?
  #### we need this time the quartz cpp srcs _ but don't include twice nsUnicodeRange.cpp
@@ -193,9 +193,7 @@ PatchScript: <<
  sed -i'' -e '/CPU_TYPE_X86/a\
 #elif __x86_64__\
 	cpu_type = CPU_TYPE_X86;' mozilla/toolkit/crashreporter/google-breakpad/src/common/mac/macho_walker.cc
- # allow to do a "make install" even on Darwin ! (first command is unoperative with new alpha version,
- # though that 'installer' dir still exists..
- sed -i'' -e 's, Darwin,,' mozilla/toolkit/mozapps/installer/packager.mk
+ # allow to do a "make install" on Darwin w/o app
  sed -i'' -e 's,Darwin,NoDarwin,' suite/installer/Makefile.in
 ####
 
@@ -206,7 +204,7 @@ PatchScript: <<
  # for consistency, remove the : "-Wl,-executable_path,$(LIBXUL_DIST)/bin" from the link commands
  sed -ri'' -e "s,.*executable_path.*,    MOZ_FIX_LINK_PATHS=''," {,mozilla/{,js/src/}}configure{.in,}
  sed -ri'' -e "s,(install_name|dylib_file) +@executable_path,\1 %p/lib/%N-$V,g" \
-	{,mozilla/{,js/src/}}config/{config,rules}.mk {directory/c-sdk,mozilla/nsprpub}/configure{.in,} \
+	{,mozilla/{,js/src/}}config/rules.mk {directory/c-sdk,mozilla/nsprpub}/configure{.in,} \
 	mozilla/security/{coreconf/Darwin,nss/lib/freebl/config}.mk
  sed -ri'' -e \
    "s;rules.mk;&\nEXTRA_DSO_LDOPTS := \$\(subst install_name \$\(mozappdir\)/,install_name %p/lib/%N-$V/plugins/,\$\(EXTRA_DSO_LDOPTS\)\);" \
@@ -239,7 +237,7 @@ endif\
 
 ### remove obsolete flags:
  sed -i'' -e 's, -fpascal-strings,,' -e 's, -no-cpp-precomp,,' mozilla/{configure.in,security/coreconf/Darwin.mk}
-### The next appears (-ed??) needed eg when building yelp...                                
+### The next appears (-ed??) needed eg when building yelp...
 ### maybe also in mozilla/xulrunner/installer/libxul{-unstable,}.pc.in ?
 # sed -i'' -e 's,lxpcom,& -lxpcom_core,' mozilla/build/unix/mozilla-config.in  # (no longer exists apparently)
 ### The following is "for safety",  to avoid "implicit declaration" warnings :
@@ -333,8 +331,8 @@ ConfigureParams: <<
  --enable-update-packaging --enable-update-channel=beta
 <<
 ###### Last line is for private use !
-## disable-necko-wifi : mozilla/configure has 'elif test "$OS_ARCH" = "Darwin"; then  NECKO_WIFI=1' # no longer .
-## but mozilla/netwerk/wifi/src/nsWifiScannerUnix.cpp fails to find iwlib.h (new in 2.03) # still true, thus keep, for safety
+## disable-necko-wifi : mozilla/netwerk/wifi/src/nsWifiScannerUnix.cpp needs iwlib.h;
+## ensure consistent builds if someone has such a file.
 #
 # "--with-system-png" : "configure: error: --with-system-png won't work because the system's libpng doesn't have APNG support"
 # no -fstrict-aliasing in '--enable-optimize', else "dereferencing type-punned pointer will break strict-aliasing rules" warnings
@@ -345,9 +343,9 @@ ConfigureParams: <<
 
 ####  BUILD
 
-# Possibly remove next 2 settings for a release _ one role is to test how this might fare under 10.6 ..
-SetCC: gcc-4.2
-SetCXX: c++-4.2
+# gcc-4.2 is now default for darwin* (available on 10.4?); allow for gcc just to test the build with --enable-cplus.
+#SetCC: gcc
+#SetCXX: c++
 NoSetLDFLAGS: true
 SetLDFLAGS: -L%b/mozilla/dist/lib -L%b/mozilla/dist/bin -L%p/lib/fontconfig2/lib
 NoSetCPPFLAGS: true
@@ -376,9 +374,10 @@ CompileScript: <<
 	then export USE_64=1; enable64="--enable-64bit --disable-crashreporter"
 	else enable64="--disable-64bit --enable-crashreporter"
  fi
-# next is for trouble with rcthrread.h:190 with c++ >= 4.2 (better to fix the problem!)
-# [ Trying to get this +/- right, independently of the presence or no of "SetCC" or "SetCXX" and of sw_vers .. ]
- ctst=$CXX; if test -z $ctst; then ctst=$CC; if test -z $ctst; then ctst="/usr/bin/c++"; fi; fi
+# next is for trouble with mozilla/nsprpub/pr/src/cplus/rcthread.h:190 with c++ >= 4.2
+# (better to fix the problem! : "error: ISO C++ forbids declaration of 'RCPrimordialThread' with no type")
+# [ Trying to get this +/- right, independently of the presence or no of "SetCC" or "SetCXX" ]
+ ctst=$CXX; if test -z $ctst; then ctst=$CC; if test -z $ctst; then ctst="/usr/bin/c++-4.2"; fi; fi
  cxvers=`$ctst --dumpversion 2>&1|cut -f1 -d:|sed -e 's,.*-,,' -e 's,\.,,' -e 's,\..*,,'`
  if [ $cxvers -le 41 ]; then cplus="--enable-cplus"; else cplus=''; fi
 
@@ -409,6 +408,19 @@ for f in *.dylib; do
 done
 cd -
 
+# Supplementary installs (else errors in Error Console):
+for f in tp-cmdline.js nsUrlClassifierLib.js nsUrlClassifierListManager.js libtestdynamic.dylib libMyService.dylib \
+ libxpcomsample.dylib nsSample.js httpd.js libxpctest.dylib libxpctools.dylib reftest-cmdline.js libtestcrasher.dylib \
+ nsLDAPDataSource.js
+ do
+	if test -e mozilla/dist/bin/components/$f
+		then cp -pL mozilla/dist/bin/components/$f %i/lib/%N-%type_raw[ver]/components
+		else echo "WARNING: mozilla/dist/bin/components/$f  does not exist"
+	fi
+ done
+
+# Permissions :
+chmod a-x %i/lib/%N-%type_raw[ver]/components/*
 ## Make unversioned symlinks (more in dev splitoff):
 ln -fs %N-%type_raw[ver] %i/lib/%N-$V
 
@@ -478,15 +490,15 @@ ConfFiles: %p/etc/%N/prefs.js
 SplitOff: <<
   Package: %N2-shlibs
   # in deps, all 'otool_deps' are listed, and those that are not recursive deps of some other are versioned
-  # With dead_strip_dylibs, atk1-shlibs, libart2-shlibs, libbonobo2-shlibs, libbonoboui2-shlibs, libgettext8-shlibs, 
+  # With dead_strip_dylibs, atk1-shlibs, libart2-shlibs, libbonobo2-shlibs, libbonoboui2-shlibs, libgettext8-shlibs,
   # libgnomecanvas2-shlibs, libgnomeui2-shlibs, openssl098-shlibs, orbit2-shlibs, popt-shlibs  disappear from otool_deps
   Depends: <<
-	atk1-shlibs, cairo-shlibs, cyrus-sasl2-shlibs, dbus-glib1.2-shlibs, dbus1.3-shlibs, esound-shlibs,
+	atk1-shlibs, cairo-shlibs, cyrus-sasl2-shlibs, dbus-glib1.2-shlibs, dbus1.3-shlibs,
 	fontconfig2-shlibs, freetype219-shlibs, gconf2-shlibs, glib2-shlibs, gnome-vfs2-unified-shlibs,
-	gtk+2-shlibs, libart2-shlibs, libbonobo2-shlibs, libbonoboui2-shlibs, libcanberra0-shlibs (>= 0.23-202),
-	libgettext8-shlibs, libgnome2-shlibs, libgnomecanvas2-shlibs, libgnomeui2-shlibs (>= 2.24.2-2),
-	libhunspell-shlibs (>= 1.2.8-1005), libjpeg8-shlibs, (%type_raw[sys_nspr] = .) nspr.0d-shlibs (>= 4.8.4-4),
-	openssl098-shlibs (>= 0.9.8l-1), orbit2-shlibs, pango1-xft2-ft219-shlibs, popt-shlibs, 
+	gtk+2-shlibs, libart2-shlibs, libbonobo2-shlibs, libbonoboui2-shlibs, libgettext8-shlibs,
+	libgnome2-shlibs, libgnomecanvas2-shlibs, libgnomeui2-shlibs (>= 2.24.2-2), libhunspell-shlibs (>= 1.2.8-1005),
+	libjpeg8-shlibs, libnotify-shlibs,  (%type_raw[sys_nspr] = .) nspr.0d-shlibs (>= 4.8.4-4),
+	openssl098-shlibs (>= 0.9.8l-1), orbit2-shlibs, pango1-xft2-ft219-shlibs, popt-shlibs,
 	sqlite3-shlibs(>= 3.6.16.1), startup-notification-shlibs (>= 0.9-2), x11-shlibs
   <<
   DocFiles: mozilla/LEGAL mozilla/LICENSE
@@ -544,7 +556,7 @@ SplitOff: <<
 
 SplitOff2: <<
   Package: %N2-dev
-## Currently the symlink %p/lib/%N in this pkg would cause conflict with existing seamonkey. 
+## Currently the symlink %p/lib/%N in this pkg would cause conflict with existing seamonkey.
 ## Intend as an upgrade strategy to first put this out w/o this symlink,
 ## and then, as soon as dependent pkgs have switched their deps, introduce the symlink
 ## at the next new version.
