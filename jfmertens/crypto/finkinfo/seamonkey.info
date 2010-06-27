@@ -38,15 +38,16 @@ BuildDepends: <<
 	libjpeg8,
 	libnotify,
 	(%type_raw[sys_nspr] = .) nspr.0d (>= 4.8.4-4),
-	openssl098-dev (>= 0.9.8l-1),
 	orbit2-dev (>= 2.14.17-2),
 	pango1-xft2-ft219-dev (>= 1.24.5-6),
+	pixman,
 	pkgconfig (>= 0.23-2),
 	popt (>= 1.14-1),
 	sed,
 	sqlite3 (>= 3.6.21-1),
 	sqlite3-dev (>= 3.6.21-1),
 	startup-notification-dev (>= 0.9-2),
+	system-openssl-dev,
 	x11-dev
 <<
 ## esound and libcanberra0 : probably not needed in the build...
@@ -125,6 +126,7 @@ PatchScript: <<
 	mozilla/js/src/xpconnect/shell/Makefile.in \
 	mozilla/xpcom/typelib/xpidl/Makefile.in \
 	mozilla/nsprpub/pr/src/Makefile.in \
+	mozilla/embedding/browser/gtk/tests/Makefile.in \
 	mozilla/gfx/src/psshared/nsCUPSShim.cpp \
 	mozilla/{toolkit/xre/nsNativeAppSupportUnix,modules/libpr0n/decoders/icon/gtk/nsIconChannel}.cpp \
 	mozilla/widget/src/gtk2/nsBidiKeyboard.cpp \
@@ -187,7 +189,7 @@ PatchScript: <<
 ####
  # the need for -lcrypto comes from the symbols MD5_Init and MD5_Final, used in
  # toolkit/crashreporter/google-breakpad/src/common/mac/{file,macho}_id.cc, and defined nowhere in the builddir...
- #  -->  since it is only for that, SWITCH to system-openssl ! (next not needed when crashreporter is disabled (64bit))
+ #  -->  since it is only for that, SWITCH to system-openssl (done) ! (next not needed when crashreporter is disabled (64bit))
  sed -i'' -e 's,EXTRA_DSO_LIBS),& -lcrypto,' -e '/AudioUnit/a\
 	-framework Foundation \\' mozilla/toolkit/library/Makefile.in
  sed -i'' -e '/CPU_TYPE_X86/a\
@@ -266,7 +268,15 @@ sed -i'' -e '/sysmacros.h/d' -e 's;\(QCMD(Q_GETQUOTA, USRQUOTA)\), \(deviceName.
  sed -i'' -e 's,sed -E,sed -r,' mozilla/xpcom/typelib/xpidl/Makefile.in
 ### link nspr with g++ when using --enable-cplus
  sed -ri'' -e 's,cplus$,&\n\tMKSHLIB = \$(CCC) \$(DSO_LDOPTS) -o \$@,' mozilla/nsprpub/pr/src/Makefile.in
-
+## set flag-ordering right
+ sed -ri'' -e '/MOZ_ENABLE_GTK2/,/endif/d' -e '/SunOS/i \
+ifdef MOZ_ENABLE_GTK2\
+EXTRA_LIBS		+= \\\
+		$(XLDFLAGS) \\\
+		$(XLIBS) \\\
+		$(NULL)\
+endif\
+' mozilla/embedding/browser/gtk/tests/Makefile.in
 ### Fixing SOME calls to PR_LoadLibrary ... (using proper install_names..) _ just looked at those with a hard-coded string.
 ### Possibly this would make the use of -dead_strip_dylibs safe ? (cf CompileScript)
 ### Would need to check all binaries where PR_LoadLibrary appears..
@@ -307,6 +317,8 @@ sed -i'' -e '/sysmacros.h/d' -e 's;\(QCMD(Q_GETQUOTA, USRQUOTA)\), \(deviceName.
 <<
 
 #### CONFIGURE
+# x-libraries and -x-includes can't be set to empty to avoid having them come too early in the link command
+# (eg, for TestGtkEmbed), relying just on CPATH and LIBRARY_PATH; the build-system itself needs them..
 
 ## can't enable static : "configure: error: Only one of --enable-shared or --enable-static must be specified."
 ## (and reluctant to impose 2 full builds on the user...)
@@ -383,7 +395,8 @@ CompileScript: <<
 
  env ac_cv_func_res_ninit=yes ./configure %c $enable64 $cplus --x-includes=$Xdir/include --x-libraries=$Xdir/lib
  make -j1 -w
-# fink-package-precedence --depfile-ext='\.pp' . || :
+
+ fink-package-precedence --depfile-ext='\.pp,\.Plo,\.Po' --prohibit-bdep=%N,%N-dev,%N-shlibs,%N2-dev,%N2-shlibs . || :
 <<
 
 #### INSTALL
@@ -498,7 +511,7 @@ SplitOff: <<
 	gtk+2-shlibs, libart2-shlibs, libbonobo2-shlibs, libbonoboui2-shlibs, libgettext8-shlibs,
 	libgnome2-shlibs, libgnomecanvas2-shlibs, libgnomeui2-shlibs (>= 2.24.2-2), libhunspell-shlibs (>= 1.2.8-1005),
 	libjpeg8-shlibs, libnotify-shlibs,  (%type_raw[sys_nspr] = .) nspr.0d-shlibs (>= 4.8.4-4),
-	openssl098-shlibs (>= 0.9.8l-1), orbit2-shlibs, pango1-xft2-ft219-shlibs, popt-shlibs,
+	orbit2-shlibs, pango1-xft2-ft219-shlibs, popt-shlibs,
 	sqlite3-shlibs(>= 3.6.16.1), startup-notification-shlibs (>= 0.9-2), x11-shlibs
   <<
   DocFiles: mozilla/LEGAL mozilla/LICENSE
