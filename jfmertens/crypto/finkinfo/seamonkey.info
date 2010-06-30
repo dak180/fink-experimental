@@ -4,12 +4,11 @@ Package: seamonkey
 # Version according to mozilla/config/milestone.txt ("mozilla-version"), # would be 1.9.3a5pre _ too low !
 # rather than suite/config/version.txt ("seamonkey-version", =%type_raw[ver]), to leave room for growth till 2.0
 # For releases: ver=%v = 'release version' ; i.e. from suite/config/version-*.txt
-Version: 2.0.4
-Revision: 4
+Version: 2.0.5.9
+Revision: 1
 ## parameters needed at several places :
 Type: sys_nspr (no), ver (2.1a1)
 
-#Architecture: i386, powerpc
 Depends: %N2-shlibs (= %v-%r), bzip2-shlibs
 BuildDepends: <<
 	atk1 (>= 1.28.0-2),
@@ -20,6 +19,7 @@ BuildDepends: <<
 	dbus-glib1.2-dev (>= 0.84-1),
 	findutils,
 	fink (>= 0.27.2-1),
+	fink-package-precedence (>= 0.8-1),
 	fontconfig2-dev (>= 2.8.0-3),
 	freetype219 (>= 2.3.12-1),
 	gconf2-dev (>= 2.28.0-3),
@@ -114,10 +114,12 @@ PatchScript: <<
 	mozilla/modules/libpr0n/decoders/icon/Makefile.in\
 	mozilla/toolkit/crashreporter/nsExceptionHandler.cpp \
 	mozilla/xpcom/base/nsStackWalk.cpp mailnews/addrbook/public/nsAbBaseCID.h \
-	mozilla/{configure.in,security/coreconf/Darwin.mk} \
+	{,mozilla{,/js/src}/}configure{,.in} mozilla/security/coreconf/Darwin.mk \
+	directory/c-sdk/{configure{,.in},config/Rhapsody.mk} \
 	directory/c-sdk/ldap/libraries/liblber/lber-int.h \
 	mozilla/js/src/{jscntxt.h,jsscope.cpp,jstypedarray.cpp} \
 	mozilla/xpcom/io/nsLocalFileUnix.cpp \
+	mozilla/nsprpub/pr/src/cplus/rcthread.h \
 	mozilla/netwerk/build/Makefile.in \
 	mozilla/extensions/auth/Makefile.in \
 	mozilla/gfx/thebes/src/Makefile.in \
@@ -237,8 +239,10 @@ endif\
  sed -i'' -e 's,XP_MACOSX,__APPLE__,' mozilla/toolkit/crashreporter/nsExceptionHandler.cpp \
 	mozilla/xpcom/base/nsStackWalk.cpp mailnews/addrbook/public/nsAbBaseCID.h
 
-### remove obsolete flags:
- sed -i'' -e 's, -fpascal-strings,,' -e 's, -no-cpp-precomp,,' mozilla/{configure.in,security/coreconf/Darwin.mk}
+### remove obsolete or APPLE_ONLY flags:
+ sed -i'' -e 's, -fpascal-strings,,' -e 's, -no-cpp-precomp,,' -e 's, -Wmost, -Wall,' -e 's, -Oz, -Os,' \
+	{,mozilla{,/js/src}/}configure{,.in} mozilla/security/coreconf/Darwin.mk \
+	directory/c-sdk/{configure{,.in},config/Rhapsody.mk}
 ### The next appears (-ed??) needed eg when building yelp...
 ### maybe also in mozilla/xulrunner/installer/libxul{-unstable,}.pc.in ?
 # sed -i'' -e 's,lxpcom,& -lxpcom_core,' mozilla/build/unix/mozilla-config.in  # (no longer exists apparently)
@@ -250,6 +254,11 @@ endif\
  sed -i'' -e 's,\([^_]\)\(calloc(\),\1%N_\2,' mozilla/js/src/{jscntxt.h,jsscope.cpp,jstypedarray.cpp}
 ### inversion of arguments in call to  quotactl (and there is no sys/sysmacros.h) :
 sed -i'' -e '/sysmacros.h/d' -e 's;\(QCMD(Q_GETQUOTA, USRQUOTA)\), \(deviceName.get()\);\2, \1;' mozilla/xpcom/io/nsLocalFileUnix.cpp
+### attempt to fix problem with --enable-cplus under c++ > 4.0
+## Else: "rcthread.h:190: error: ISO C++ forbids declaration of 'RCPrimordialThread' with no type"
+sed -i'' -e '/PR_IMPLEMENT(RCThread)/i \
+class RCPrimordialThread;\
+' mozilla/nsprpub/pr/src/cplus/rcthread.h
 ### libresolv
  # configure fails to detect libresolv (hence the 'env' before ./configure),
  # and even if it would detect it, it forgets to add -lresolv to LIBS
@@ -327,11 +336,10 @@ endif\
 # --enable-libxul leads to "/bld/seamonkey-1.9.1b3pre-1/mozilla/dist/bin/XUL: No such file or directory" in linking
 #  mozilla/xpfe/components/autocomplete/src/nsAutoComplete.o
 ConfigureParams: <<
- --enable-macos-target=${MACOSX_DEPLOYMENT_TARGET} --enable-optimize=-Os --enable-mobile-optimize \
- --disable-debug --enable-strip --enable-tests --with-pthreads \
- --with-default-mozilla-five-home=%p/lib/%N-2 --mandir=%p/share/man --with-qtdir=%p \
- --enable-application=suite --enable-calendar --enable-default-toolkit=cairo-gtk2 --enable-xul --enable-places \
- --enable-image-decoders=all --enable-image-encoders=all --enable-necko-protocols=all \
+ --enable-macos-target=${MACOSX_DEPLOYMENT_TARGET} --enable-optimize=-Os --enable-mobile-optimize --disable-debug \
+ --enable-strip --with-pthreads --enable-cplus --with-default-mozilla-five-home=%p/lib/%N-2 --mandir=%p/share/man \
+ --with-qtdir=%p --enable-application=suite --enable-calendar --enable-default-toolkit=cairo-gtk2 --enable-xul \
+ --enable-places --enable-image-decoders=all --enable-image-encoders=all --enable-necko-protocols=all \
  --enable-ctl --enable-canvas --enable-update-packaging --enable-storage --enable-profilesharing --enable-startup-notification \
  --enable-xpctools --enable-url-classifier --enable-ipv6 --enable-ldap-experimental --with-sasl --enable-smil \
  --with-x --enable-xinerama --enable-xprint --enable-pango --enable-xft --enable-postscript \
@@ -350,14 +358,12 @@ ConfigureParams: <<
 # no -fstrict-aliasing in '--enable-optimize', else "dereferencing type-punned pointer will break strict-aliasing rules" warnings
 ##
 # --with-system-nss ?
-##
-# Remove the  --enable-tests  when putting in unstable ?
 
 ####  BUILD
 
-# gcc-4.2 is now default for darwin* (available on 10.4?); allow for gcc just to test the build with --enable-cplus.
-#SetCC: gcc
-#SetCXX: c++
+# gcc-4.2 is now default for darwin* (available on 10.4?); allow for others for testing.
+#SetCC: gcc-4
+#SetCXX: c++-4
 NoSetLDFLAGS: true
 SetLDFLAGS: -L%b/mozilla/dist/lib -L%b/mozilla/dist/bin -L%p/lib/fontconfig2/lib
 NoSetCPPFLAGS: true
@@ -386,24 +392,30 @@ CompileScript: <<
 	then export USE_64=1; enable64="--enable-64bit --disable-crashreporter"
 	else enable64="--disable-64bit --enable-crashreporter"
  fi
-# next is for trouble with mozilla/nsprpub/pr/src/cplus/rcthread.h:190 with c++ >= 4.2
-# (better to fix the problem! : "error: ISO C++ forbids declaration of 'RCPrimordialThread' with no type")
-# [ Trying to get this +/- right, independently of the presence or no of "SetCC" or "SetCXX" ]
- ctst=$CXX; if test -z $ctst; then ctst=$CC; if test -z $ctst; then ctst="/usr/bin/c++-4.2"; fi; fi
- cxvers=`$ctst --dumpversion 2>&1|cut -f1 -d:|sed -e 's,.*-,,' -e 's,\.,,' -e 's,\..*,,'`
- if [ $cxvers -le 41 ]; then cplus="--enable-cplus"; else cplus=''; fi
 
- env ac_cv_func_res_ninit=yes ./configure %c $enable64 $cplus --x-includes=$Xdir/include --x-libraries=$Xdir/lib
- make -j1 -w
+ env ac_cv_func_res_ninit=yes ./configure %c $enable64 --x-includes=$Xdir/include --x-libraries=$Xdir/lib
+ make -j1 -w all
+<<
 
+#### TEST
+
+InfoTest: <<
+TestSuiteSize: medium
+TestConfigureParams: --enable-tests
+TestScript: <<
+#!/bin/sh -ev
+ set +e
+ make -j1 -w -k check reftest crashtest xpcshell-tests package-tests \
+	 mochitest mochitest-plain mochitest-chrome mochitest-browser-chrome mochitest-a11y || :
  fink-package-precedence --depfile-ext='\.pp,\.Plo,\.Po' --prohibit-bdep=%N,%N-dev,%N-shlibs,%N2-dev,%N2-shlibs . || :
+<<
 <<
 
 #### INSTALL
 
 InstallScript: <<
 #!/bin/sh -ev
-make -j1 install DESTDIR=%d INSTALL_SDK=1
+make -j1 -w install DESTDIR=%d INSTALL_SDK=1
 
 # rm or link duplicate files
 pushd %i > /dev/null
