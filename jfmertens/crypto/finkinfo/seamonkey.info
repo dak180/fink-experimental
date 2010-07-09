@@ -18,6 +18,7 @@ BuildDepends: <<
 	cyrus-sasl2-dev	(>= 2.1.23-2),
 	dbus1.3-dev (>= 1.2.16-101),
 	dbus-glib1.2-dev (>= 0.84-1),
+	esound,
 	findutils,
 	fink (>= 0.27.2-1),
 	fink-package-precedence (>= 0.8-1),
@@ -30,6 +31,7 @@ BuildDepends: <<
 	libart2 (>= 2.3.20-1),
 	libbonobo2-dev (>= 2.24.2-2),
 	libbonoboui2-dev (>= 2.24.2-2),
+	libcanberra0,
 	libgettext8-dev,
 	libgnome2-dev (>= 2.28.0-1),
 	libgnomecanvas2-dev (>= 2.26.0-3),
@@ -51,6 +53,7 @@ BuildDepends: <<
 	system-openssl-dev,
 	x11-dev
 <<
+# esound and libcanberra0 probably not needed a bdeps; just the -shlibs as deps (cf %N2-shlibs).
 # sed : used in info file; findutils : 'find -xtype" used in mozilla/toolkit/mozapps/installer/packager.mk, l. 464
 ##
 # no evidence of need from otool, nor by analyzing headers used
@@ -537,10 +540,11 @@ SplitOff: <<
   # in deps, all 'otool_deps' are listed, and those that are not recursive deps of some other are versioned
   # With dead_strip_dylibs, atk1-shlibs, libart2-shlibs, libbonobo2-shlibs, libbonoboui2-shlibs, libgettext8-shlibs,
   # libgnomecanvas2-shlibs, libgnomeui2-shlibs, openssl098-shlibs, orbit2-shlibs, popt-shlibs  disappear from otool_deps
+  # For esound and libcanberra0, cf %b/patch
   Depends: <<
-	atk1-shlibs, cairo-shlibs, cyrus-sasl2-shlibs, dbus-glib1.2-shlibs, dbus1.3-shlibs,
+	atk1-shlibs, cairo-shlibs, cyrus-sasl2-shlibs, dbus-glib1.2-shlibs, dbus1.3-shlibs, esound-shlibs,
 	fontconfig2-shlibs, freetype219-shlibs, gconf2-shlibs, glib2-shlibs, gnome-vfs2-unified-shlibs,
-	gtk+2-shlibs, libart2-shlibs, libbonobo2-shlibs, libbonoboui2-shlibs, libgettext8-shlibs,
+	gtk+2-shlibs, libart2-shlibs, libbonobo2-shlibs, libbonoboui2-shlibs, libcanberra0-shlibs, libgettext8-shlibs,
 	libgnome2-shlibs, libgnomecanvas2-shlibs, libgnomeui2-shlibs (>= 2.24.2-2), libhunspell-shlibs (>= 1.2.8-1005),
 	libjpeg8-shlibs, libnotify-shlibs,  (%type_raw[sys_nspr] = .) nspr.0d-shlibs (>= 4.8.4-4),
 	orbit2-shlibs, pango1-xft2-ft219-shlibs, popt-shlibs,
