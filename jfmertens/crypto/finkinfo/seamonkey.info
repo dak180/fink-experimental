@@ -5,9 +5,10 @@ Package: seamonkey
 # rather than suite/config/version.txt ("seamonkey-version", =%type_raw[ver]), to leave room for growth till 2.0
 # For releases: ver=%v = 'release version' ; i.e. from suite/config/version-*.txt
 Version: 2.0.5.9
-Revision: 1
+Revision: 2
+Distribution: 10.5, 10.6
 ## parameters needed at several places :
-Type: sys_nspr (no), ver (2.1a1)
+Type: sys_nspr (no), ver (2.1a2)
 
 Depends: %N2-shlibs (= %v-%r), bzip2-shlibs
 BuildDepends: <<
@@ -50,10 +51,8 @@ BuildDepends: <<
 	system-openssl-dev,
 	x11-dev
 <<
-## esound and libcanberra0 : probably not needed in the build...
 # sed : used in info file; findutils : 'find -xtype" used in mozilla/toolkit/mozapps/installer/packager.mk, l. 464
 ##
-# Tentatively deleting expat1, glitz, libiconv-dev, pixman, pth2-dev, xft2-dev : leftovers from previous versions,
 # no evidence of need from otool, nor by analyzing headers used
 # [ uncommment last line of PatchScript, then :
 ## egrep '^\.+ /' /sw/var/logs/seamonkey.log|sed -r -e 's,^\.+ ,,'|sort -u|egrep -v -e '^/usr/' -e '^/System/' -e '/bld/seamonkey'|xargs dpkg -S|cut -f1 -d:|sort -u|xargs
@@ -65,12 +64,12 @@ BuildDepends: <<
 # Also still left to run it once with DYLD_BIND_AT_LAUNCH, DYLD_PRINT_LIBRARIES and DYLD_PRINT_LIBRARIES_POST_LAUNCH
 # to check no runtime-deps are omitted..  DONE
 
-# requires  -DSQLITE_SECURE_DELETE=1 -DSQLITE_ENABLE_FTS3=1  to be added to SetCFLAGS in sqlite3.info
+# requires  -DSQLITE_SECURE_DELETE=1 -DSQLITE_ENABLE_FTS3=1 -DSQLITE_ENABLE_UNLOCK_NOTIFY  to be added to SetCFLAGS in sqlite3.info
 # build uses yacc; mine is from fink's bison ..; hope system's is OK. Similarly for python, perl, most of coreutils, etc
 
 GCC: 4.0
 
-Source-MD5: 16d87bc961e5c9153c8553fb1dc73320
+Source-MD5: 77f09afc021691893090a9e8eeed5e75
 Source: mirror:custom:mozilla.org/%N/releases/%type_raw[ver]/source/%N-%type_raw[ver].source.tar.bz2
 SourceDirectory: comm-central
 CustomMirror: <<
@@ -99,6 +98,7 @@ PatchScript: <<
 	mozilla/toolkit/library/Makefile.in \
 	mozilla/toolkit/crashreporter/google-breakpad/src/common/mac/macho_walker.cc \
 	suite/installer/Makefile.in \
+	mozilla/build/automation-build.mk \
 	{,mozilla/{,js/src/}}configure{.in,} \
 	{,mozilla/{,js/src/}}config/rules.mk {directory/c-sdk,mozilla/nsprpub}/configure{.in,} \
 	mozilla/security/{coreconf/Darwin,nss/lib/freebl/config}.mk \
@@ -117,7 +117,7 @@ PatchScript: <<
 	{,mozilla{,/js/src}/}configure{,.in} mozilla/security/coreconf/Darwin.mk \
 	directory/c-sdk/{configure{,.in},config/Rhapsody.mk} \
 	directory/c-sdk/ldap/libraries/liblber/lber-int.h \
-	mozilla/js/src/{jscntxt.h,jsscope.cpp,jstypedarray.cpp} \
+	mozilla/js/src/{jscntxt.h,jsscope.cpp,jstypedarray.cpp,jsapi.cpp} \
 	mozilla/xpcom/io/nsLocalFileUnix.cpp \
 	mozilla/nsprpub/pr/src/cplus/rcthread.h \
 	mozilla/netwerk/build/Makefile.in \
@@ -135,7 +135,6 @@ PatchScript: <<
 	mozilla/widget/src/{gtk2/nsIdleServiceGTK,qt/nsIdleServiceQt}.cpp \
 	mozilla/widget/src/gtk2/nsScreenManagerGtk.cpp \
 	mozilla/widget/src/gtk2/nsSound.cpp \
-	suite/installer/package-manifest.in \
 	|tr ' ' '\n'|sort -u|xargs`
  for f in $patchlst; do cp -p $f $f.bak; done
 # mozilla/gfx/thebes/src/gfxQuartzFontCache.mm  and  mozilla/build/unix/mozilla-config.in  no longer exist apparently
@@ -198,7 +197,9 @@ PatchScript: <<
 #elif __x86_64__\
 	cpu_type = CPU_TYPE_X86;' mozilla/toolkit/crashreporter/google-breakpad/src/common/mac/macho_walker.cc
  # allow to do a "make install" on Darwin w/o app
- sed -i'' -e 's,Darwin,NoDarwin,' suite/installer/Makefile.in
+ sed -i'' -e 's,Darwin,No&,' suite/installer/Makefile.in
+ # and, for 'make check' :
+ sed  -ri'' -e '/Camino.app/,+9s,Darwin,No&,' mozilla/build/automation-build.mk
 ####
 
 ### Getting "reasonable" install_names (libs are not versioned! and their "install_name" would else just be
@@ -250,8 +251,8 @@ endif\
  sed -ri'' -e 's,\(XP_OS2\) \&\& \!defined\(DARWIN\)$,\(XP_OS2\),' directory/c-sdk/ldap/libraries/liblber/lber-int.h
 
 #### MISC
-### Try substituting 'calloc', when used with 1 argument, by j%N_calloc (there is already a js_calloc, among many others..):
- sed -i'' -e 's,\([^_]\)\(calloc(\),\1%N_\2,' mozilla/js/src/{jscntxt.h,jsscope.cpp,jstypedarray.cpp}
+### Try substituting 'calloc', when used with 1 argument, by %N_calloc (there is already a js_calloc, among many others..):
+ sed -i'' -e 's,\([^_]\)\(calloc(\),\1%N_\2,' mozilla/js/src/{jscntxt.h,jsscope.cpp,jstypedarray.cpp,jsapi.cpp}
 ### inversion of arguments in call to  quotactl (and there is no sys/sysmacros.h) :
 sed -i'' -e '/sysmacros.h/d' -e 's;\(QCMD(Q_GETQUOTA, USRQUOTA)\), \(deviceName.get()\);\2, \1;' mozilla/xpcom/io/nsLocalFileUnix.cpp
 ### attempt to fix problem with --enable-cplus under c++ > 4.0
@@ -303,14 +304,21 @@ endif\
  sed -ri'' -e 's,libesd\.so\.0,%p/lib/libesd.0.dylib,' -e 's,libcanberra\.so\.0,%p/lib/libcanberra.0.dylib,' \
    mozilla/widget/src/gtk2/nsSound.cpp
 
-## install:
-  sed -ri'' -e 's,(libnullplugin).so,\1@DLL_SUFFIX@,' suite/installer/package-manifest.in
+## install: (libnullplugin seems to have disappeared here, in 2.1alpha2)
+##  sed -ri'' -e 's,(libnullplugin).so,\1@DLL_SUFFIX@,' suite/installer/package-manifest.in
 
 ### For alpha or beta versions : need to create configure scripts
 ###  autoconf2.13 (!) needed, and fink has no corresponding automake, so autoreconf can't be used..
 # for f in `find . -name configure.in`; do cd `sed -e 's,/[^/]*$,,'<<<"$f$"`; autoconf; cd -; done
 
-### Uncomment to check builddeps :
+## The next one is largely redundant now: with "-m", the 'fink-pkg-precedence' command in the TestScript
+## seems to catch all those.. Leave anwyay the comment till one has a proof that this can't give any improvement. 
+### Uncomment to check builddeps, then :
+## egrep '^\.+ /' %p/var/logs/seamonkey.log|sed -r -e 's,^\.+ ,,'|sort -u|egrep -v -e '^/usr/' -e '^/System/' -e '/bld/seamonkey'|xargs dpkg -S|cut -f1 -d:|sort -u|xargs
+# atk1 bzip2-dev cairo dbus-glib1.2-dev dbus1.3-dev fontconfig2-dev freetype219 gconf2-dev glib2-dev gnome-vfs2-unified-dev 
+# gtk+2-dev libbonobo2-dev libgettext8-dev libgnome2-dev libgnomeui2-dev libidl2 libjpeg8 pango1-xft2-ft219-dev popt 
+# sqlite3-dev startup-notification-dev
+
 #  sed -ri'' -e 's,CPPFLAGS%%,CPPFLAGS -H%%,' `find . -name configure`
 
 ## Finally, for who prefers to see a unfied patch _ this creates "patch" in the build-dir :
@@ -348,9 +356,11 @@ ConfigureParams: <<
  --enable-auto-deps --enable-md --disable-necko-wifi --enable-safe-browsing --enable-system-hunspell \
  --enable-help-viewer --enable-ipcd --enable-oji --enable-javaxpcom --enable-single-profile --disable-static-mail \
  --build=%m-apple-darwin`uname -r|cut -f1 -d.` --host=%m-apple-darwin`uname -r|cut -f1 -d.` \
- --enable-update-packaging --enable-update-channel=beta
+ --enable-update-packaging --enable-update-channel=beta --enable-tests
 <<
+# mv --enable-tests to TestConfigureParams ASAP
 ###### Last line is for private use !
+###### (and \ at its end, with blak line after configure call, is to hack around a difficulty with TestConfigureParams)
 ## disable-necko-wifi : mozilla/netwerk/wifi/src/nsWifiScannerUnix.cpp needs iwlib.h;
 ## ensure consistent builds if someone has such a file.
 #
@@ -393,20 +403,30 @@ CompileScript: <<
 	else enable64="--disable-64bit --enable-crashreporter"
  fi
 
- env ac_cv_func_res_ninit=yes ./configure %c $enable64 --x-includes=$Xdir/include --x-libraries=$Xdir/lib
+ env ac_cv_func_res_ninit=yes ./configure $enable64 --x-includes=$Xdir/include --x-libraries=$Xdir/lib %c
  make -j1 -w all
 <<
 
 #### TEST
 
 InfoTest: <<
-TestSuiteSize: medium
-TestConfigureParams: --enable-tests
+TestSuiteSize: large
+#TestConfigureParams: --enable-tests
 TestScript: <<
 #!/bin/sh -ev
  set +e
- make -j1 -w -k check reftest crashtest xpcshell-tests package-tests \
-	 mochitest mochitest-plain mochitest-chrome mochitest-browser-chrome mochitest-a11y || :
+## X11 must be running (but build can be done even in Terminal.app;
+## the tested seamonkey will create its own browser window_even if some other instance is already running_, and write to it).
+## Dirty trick (maybe also start X if none is running ?):
+ export DISPLAY=`ls -1 /tmp/launch-*/org.x:*|head -n1`
+# dirty trick seems needed, next seems to fail [though KDE seems to work OK with DISPLAY=:0 or DISPLAY=:0.0
+# (and I'm more used to the "0.0" thing) _ but would really like to find again exact syntax and semantics] ...
+# if [ x$DISPLAY == x ] ; then export DISPLAY=:0.0 ; fi
+ export DYLD_LIBRARY_PATH=%b/mozilla/dist/lib:%b/mozilla/dist/components:%b/mozilla/dist/bin/plugins:%b/mozilla/dist/xpi-stage/lightning/components
+ make -j1 -w -k check reftest crashtest xpcshell-tests package-tests mochitest || :
+ make -j1 -w -k -C mozilla jstestbrowser || :
+ make -j1 -w -k -C mailnews xpcshell-tests || :
+ unset DYLD_LIBRARY_PATH
  fink-package-precedence --depfile-ext='\.pp,\.Plo,\.Po' --prohibit-bdep=%N,%N-dev,%N-shlibs,%N2-dev,%N2-shlibs . || :
 <<
 <<
@@ -427,11 +447,11 @@ popd > /dev/null
 
 ## Fix install_names of plugins (were completely baroque, all in different ways) (NO MORE plugins ..! ?)
 V=`cut -f1 -d. <<<"%type_raw[ver]"`
-cd %i/lib/%N-%type_raw[ver]/plugins
-for f in *.dylib; do
-	install_name_tool -id %p/lib/%N-$V/plugins/$f $f
-done
-cd -
+#cd %i/lib/%N-%type_raw[ver]/plugins
+#for f in *.dylib; do
+#	install_name_tool -id %p/lib/%N-$V/plugins/$f $f
+#done
+#cd -
 
 # Supplementary installs (else errors in Error Console):
 for f in tp-cmdline.js nsUrlClassifierLib.js nsUrlClassifierListManager.js libtestdynamic.dylib libMyService.dylib \
@@ -571,12 +591,12 @@ SplitOff: <<
 	%p/lib/%N-2/libxpcom_core.dylib 1.0.0 %n (>= 1.0-1)
 	%p/lib/%N-2/libxul.dylib 1.0.0 %n (>= 1.0-1)
 	%p/lib/%N-2/libycbcr.dylib 1.0.0 %n (>= 2.0.9-1)
-	%p/lib/%N-2/plugins/libnullplugin.dylib 1.0.0 %n (>= 1.0-1)
   <<
 #	%p/lib/%N-2/libgfxpsshar.dylib 1.0.0 %n (>= 1.0-1)
 #	%p/lib/%N-2/libjsj.dylib 1.0.0 %n (>= 1.0-1)
 #	%p/lib/%N-2/plugins/libnptest.dylib 1.0.0 %n (>= 1.0-1)
 #	%p/lib/%N-2/plugins/libunixprintplugin.dylib 1.0.0 %n (>= 1.0-1)
+#	%p/lib/%N-2/plugins/libnullplugin.dylib 1.0.0 %n (>= 1.0-1)
 <<
 
 SplitOff2: <<
