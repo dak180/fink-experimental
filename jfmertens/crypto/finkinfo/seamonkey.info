@@ -53,7 +53,8 @@ BuildDepends: <<
 	system-openssl-dev,
 	x11-dev
 <<
-# esound and libcanberra0 probably not needed a bdeps; just the -shlibs as deps (cf %N2-shlibs).
+# esound and libcanberra0 needed a bdeps because of patch below of PR_LoadLibrary calls; else just the -shlibs might suffice as deps.
+# Some gail pkg is probably also a dep; cf. nsApplicationAccessibleWrap.cpp, nsNativeAppSupportUnix.cpp, mozcontainer.c, nsAccessibilityHelper.cpp.
 # sed : used in info file; findutils : 'find -xtype" used in mozilla/toolkit/mozapps/installer/packager.mk, l. 464
 ##
 # no evidence of need from otool, nor by analyzing headers used
@@ -120,7 +121,6 @@ PatchScript: <<
 	{,mozilla{,/js/src}/}configure{,.in} mozilla/security/coreconf/Darwin.mk \
 	directory/c-sdk/{configure{,.in},config/Rhapsody.mk} \
 	directory/c-sdk/ldap/libraries/liblber/lber-int.h \
-	mozilla/js/src/{jscntxt.h,jsscope.cpp,jstypedarray.cpp,jsapi.cpp} \
 	mozilla/xpcom/io/nsLocalFileUnix.cpp \
 	mozilla/nsprpub/pr/src/cplus/rcthread.h \
 	mozilla/netwerk/build/Makefile.in \
@@ -133,11 +133,23 @@ PatchScript: <<
 	mozilla/nsprpub/pr/src/Makefile.in \
 	mozilla/embedding/browser/gtk/tests/Makefile.in \
 	mozilla/gfx/src/psshared/nsCUPSShim.cpp \
-	mozilla/{toolkit/xre/nsNativeAppSupportUnix,modules/libpr0n/decoders/icon/gtk/nsIconChannel}.cpp \
-	mozilla/widget/src/gtk2/nsBidiKeyboard.cpp \
+	mozilla/{toolkit/{xre/nsNativeAppSupportUnix,crashreporter/client/crashreporter_linux},modules/libpr0n/decoders/icon/gtk/nsIconChannel}.cpp \
+	mozilla/{widget/src/gtk2/nsBidiKeyboard,dom/plugins/PluginModuleChild}.cpp \
 	mozilla/widget/src/{gtk2/nsIdleServiceGTK,qt/nsIdleServiceQt}.cpp \
 	mozilla/widget/src/gtk2/nsScreenManagerGtk.cpp \
-	mozilla/widget/src/gtk2/nsSound.cpp \
+	mozilla/widget/src/{gtk2,qt}/nsSound.cpp \
+	mozilla/{extensions/pref/system-pref/src/gconf/nsSystemPrefService,toolkit/crashreporter/client/crashreporter_gtk_common}.cpp \
+	mozilla/layout/generic/test/test_backspace_delete.xul \
+	mozilla/gfx/thebes/src/GLContextProvider{GLX,OSMesa}.cpp \
+	mozilla/extensions/auth/nsAuthGSSAPI.cpp \
+	mozilla/accessible/src/atk/nsApplicationAccessibleWrap.cpp \
+	mozilla/accessible/src/atk/nsApplicationAccessibleWrap.cpp \
+	mozilla/toolkit/crashreporter/google-breakpad/src/common/linux/{http_upload,libcurl_wrapper}.cc \
+	mozilla/toolkit/system/gnome/nsGIOService.cpp \
+	mozilla/{security/nss/lib/nss/nssinit.c,ipc/chromium/src/base/nss_init.cc} \
+	mozilla/extensions/java/xpcom/interfaces/org/mozilla/xpcom/Mozilla.java \
+	mozilla/{modules/plugin/test/unit/head,toolkit/mozapps/extensions/test/xpcshell/test}_plugins.js \
+	mozilla/modules/plugin/base/src/nsPluginsDirUnix.cpp \
 	|tr ' ' '\n'|sort -u|xargs`
  for f in $patchlst; do cp -p $f $f.bak; done
 # mozilla/gfx/thebes/src/gfxQuartzFontCache.mm  and  mozilla/build/unix/mozilla-config.in  no longer exist apparently
@@ -254,8 +266,6 @@ endif\
  sed -ri'' -e 's,\(XP_OS2\) \&\& \!defined\(DARWIN\)$,\(XP_OS2\),' directory/c-sdk/ldap/libraries/liblber/lber-int.h
 
 #### MISC
-### Try substituting 'calloc', when used with 1 argument, by %N_calloc (there is already a js_calloc, among many others..):
- sed -i'' -e 's,\([^_]\)\(calloc(\),\1%N_\2,' mozilla/js/src/{jscntxt.h,jsscope.cpp,jstypedarray.cpp,jsapi.cpp}
 ### inversion of arguments in call to  quotactl (and there is no sys/sysmacros.h) :
 sed -i'' -e '/sysmacros.h/d' -e 's;\(QCMD(Q_GETQUOTA, USRQUOTA)\), \(deviceName.get()\);\2, \1;' mozilla/xpcom/io/nsLocalFileUnix.cpp
 ### attempt to fix problem with --enable-cplus under c++ > 4.0
@@ -290,22 +300,48 @@ EXTRA_LIBS		+= \\\
 		$(NULL)\
 endif\
 ' mozilla/embedding/browser/gtk/tests/Makefile.in
-### Fixing SOME calls to PR_LoadLibrary ... (using proper install_names..) _ just looked at those with a hard-coded string.
+### Fixing SOME calls to PR_LoadLibrary or dlopen ... (using proper install_names..) _ just looked at those with a hard-coded string.
 ### Possibly this would make the use of -dead_strip_dylibs safe ? (cf CompileScript)
 ### Would need to check all binaries where PR_LoadLibrary appears..
 ### Use of otool -D below is legal, since names of deps must change if install_names do. And this avoids hard-coding things here.
  sed -ri'' -e 's,libcups\.so\.2,/usr/lib/libcups.dylib,' mozilla/gfx/src/psshared/nsCUPSShim.cpp
  sed -ri'' -e	's,libgnomeui-2\.so\.0,%p/lib/libgnomeui-2.0.dylib,' -e 's,libgnome-2.so.0,%p/lib/libgnome-2.0.dylib,' \
-   -e "s,libgnomevfs-2\.so\.0,`otool -D %p/lib/libgnomevfs-2.dylib|fgrep -v :`," \
-   mozilla/{toolkit/xre/nsNativeAppSupportUnix,modules/libpr0n/decoders/icon/gtk/nsIconChannel}.cpp
+	-e "s,libgnomevfs-2\.so\.0,`otool -D %p/lib/libgnomevfs-2.dylib|fgrep -v :`," \
+	mozilla/{toolkit/{xre/nsNativeAppSupportUnix,crashreporter/client/crashreporter_linux},modules/libpr0n/decoders/icon/gtk/nsIconChannel}.cpp
  sed -ri'' -e "s,libgtk-x11-2\.0\.so\.0,`otool -D %p/lib/libgtk-x11-2.0.dylib|fgrep -v :`," \
-   mozilla/widget/src/gtk2/nsBidiKeyboard.cpp
+	mozilla/{widget/src/gtk2/nsBidiKeyboard,dom/plugins/PluginModuleChild}.cpp
  sed -ri'' -e	"s,libXss\.so\.1,`otool -D $Xdir/lib/libXss.1.dylib|fgrep -v :`," \
-   mozilla/widget/src/{gtk2/nsIdleServiceGTK,qt/nsIdleServiceQt}.cpp
+	mozilla/widget/src/{gtk2/nsIdleServiceGTK,qt/nsIdleServiceQt}.cpp
  sed -ri'' -e "s,libXinerama\.so\.1,`otool -D $Xdir/lib/libXinerama.1.dylib|fgrep -v :`," \
-   mozilla/widget/src/gtk2/nsScreenManagerGtk.cpp
- sed -ri'' -e 's,libesd\.so\.0,%p/lib/libesd.0.dylib,' -e 's,libcanberra\.so\.0,%p/lib/libcanberra.0.dylib,' \
-   mozilla/widget/src/gtk2/nsSound.cpp
+	mozilla/widget/src/gtk2/nsScreenManagerGtk.cpp
+ sed -ri'' -e "s,libesd\.so\.0,`otool -D %p/lib/libesd.dylib|fgrep -v :`," \
+	-e "s,libcanberra\.so\.0,`otool -D %p/lib/libcanberra.dylib|fgrep -v :`,"  mozilla/widget/src/{gtk2,qt}/nsSound.cpp
+ sed -ri'' -e "s,libgconf-2.so.4,`otool -D %p/lib/libgconf-2.dylib|fgrep -v :`," -e 's,libgconf-2.so,%p/lib/libgconf-2.dylib,' \
+	mozilla/{extensions/pref/system-pref/src/gconf/nsSystemPrefService,toolkit/crashreporter/client/crashreporter_gtk_common}.cpp
+ sed -ri'' -e "s,libpango-1.0.so.0,`otool -D %p/lib/libpango-1.0.dylib|fgrep -v :`," \
+	mozilla/layout/generic/test/test_backspace_delete.xul
+ sed -ri'' -e "s,libGL.so.1,`otool -D $Xdir/lib/libGL.dylib|fgrep -v :`," mozilla/gfx/thebes/src/GLContextProviderGLX.cpp
+ sed -ri'' -e "s,osmesalib[.]get[(][)],\"`otool -D $Xdir/lib/libOSMesa.dylib|fgrep -v :`\"," \
+	mozilla/gfx/thebes/src/GLContextProviderOSMesa.cpp
+ sed -ri'' -e 's,libgssapi_krb5[.]so[.]2,/usr/lib/libgssapi_krb5.dylib,' mozilla/extensions/auth/nsAuthGSSAPI.cpp
+ sed -ri'' -e "s,libatk-1[.]0[.]so[.]0,`otool -D %p/lib/libatk-1.0.dylib|fgrep -v :`," \
+	-e 's,":/usr/lib,":%p/lib:/usr/lib,' mozilla/accessible/src/atk/nsApplicationAccessibleWrap.cpp
+ sed -ri'' -e "s,libatk-bridge.so.0,%p/lib/gtk-2.0/modules/libatk-bridge.so," \
+	mozilla/accessible/src/atk/nsApplicationAccessibleWrap.cpp
+ sed -ri'' -e "s,libcurl.so.3,`otool -D %p/lib/libcurl.3.dylib|fgrep -v :`," \
+	-e "s,libcurl.so.4,`otool -D %p/lib/libcurl.4.dylib|fgrep -v :`," \
+	-e "s,libcurl.so,`otool -D %p/lib/libcurl.dylib|fgrep -v :`," \
+	mozilla/toolkit/crashreporter/google-breakpad/src/common/linux/{http_upload,libcurl_wrapper}.cc
+ sed -ri'' -e "s,libgio-2.0.so,`otool -D %p/lib/libgio-2.0.dylib|fgrep -v :`," mozilla/toolkit/system/gnome/nsGIOService.cpp
+ sed -ri'' -e "s,libnssckbi.so,%p/lib/$N-$V/libnssckbi.dylib," \
+	mozilla/{security/nss/lib/nss/nssinit.c,ipc/chromium/src/base/nss_init.cc}
+ sed -ri'' -e "s,libxpcom.so,%p/lib/$N-$V/libxpcom.dylib," \
+	mozilla/extensions/java/xpcom/interfaces/org/mozilla/xpcom/Mozilla.java
+ sed -ri'' -e "s,libnptest.so,%p/lib/$N-$V/libnptest.dylib," \
+	mozilla/{modules/plugin/test/unit/head,toolkit/mozapps/extensions/test/xpcshell/test}_plugins.js
+ sed -ri'' -e "s,/usr/X11R6/lib/libXt.so.6,`otool -D $Xdir/lib/libXt.dylib|fgrep -v :`," \
+	-e "s,libXext.so,`otool -D $Xdir/lib/libXext.dylib|fgrep -v :`," \
+	mozilla/modules/plugin/base/src/nsPluginsDirUnix.cpp
 
 ## install: (libnullplugin seems to have disappeared here, in 2.1alpha2)
 ##  sed -ri'' -e 's,(libnullplugin).so,\1@DLL_SUFFIX@,' suite/installer/package-manifest.in
@@ -466,6 +502,7 @@ for f in tp-cmdline.js nsUrlClassifierLib.js nsUrlClassifierListManager.js libte
 		else echo "WARNING: mozilla/dist/bin/components/$f  does not exist"
 	fi
  done
+ cp -p mozilla/toolkit/content/contentAreaUtils.js %i/lib/%N-%type_raw[ver]/components
 
 # Permissions :
 chmod a-x %i/lib/%N-%type_raw[ver]/components/*
@@ -537,12 +574,13 @@ ConfFiles: %p/etc/%N/prefs.js
 
 SplitOff: <<
   Package: %N2-shlibs
-  # in deps, all 'otool_deps' are listed, and those that are not recursive deps of some other are versioned
+  # in deps, all 'otool_deps' are listed (with others, from dlopen etc),
+  # and those that are not recursive deps of some other are versioned
   # With dead_strip_dylibs, atk1-shlibs, libart2-shlibs, libbonobo2-shlibs, libbonoboui2-shlibs, libgettext8-shlibs,
   # libgnomecanvas2-shlibs, libgnomeui2-shlibs, openssl098-shlibs, orbit2-shlibs, popt-shlibs  disappear from otool_deps
   # For esound and libcanberra0, cf %b/patch
   Depends: <<
-	atk1-shlibs, cairo-shlibs, cyrus-sasl2-shlibs, dbus-glib1.2-shlibs, dbus1.3-shlibs, esound-shlibs,
+	atk1-shlibs, at-spi, cairo-shlibs, cyrus-sasl2-shlibs, dbus-glib1.2-shlibs, dbus1.3-shlibs, esound-shlibs,
 	fontconfig2-shlibs, freetype219-shlibs, gconf2-shlibs, glib2-shlibs, gnome-vfs2-unified-shlibs,
 	gtk+2-shlibs, libart2-shlibs, libbonobo2-shlibs, libbonoboui2-shlibs, libcanberra0-shlibs, libgettext8-shlibs,
 	libgnome2-shlibs, libgnomecanvas2-shlibs, libgnomeui2-shlibs (>= 2.24.2-2), libhunspell-shlibs (>= 1.2.8-1005),
