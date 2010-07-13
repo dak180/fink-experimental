@@ -19,7 +19,6 @@ BuildDepends: <<
 	dbus1.3-dev (>= 1.2.16-101),
 	dbus-glib1.2-dev (>= 0.84-1),
 	esound,
-	findutils,
 	fink (>= 0.27.2-1),
 	fink-package-precedence (>= 0.8-1),
 	fontconfig2-dev (>= 2.8.0-3),
@@ -41,6 +40,7 @@ BuildDepends: <<
 	libjpeg8,
 	libnotify,
 	(%type_raw[sys_nspr] = .) nspr.0d (>= 4.8.4-4),
+	openssl098-dev,
 	orbit2-dev (>= 2.14.17-2),
 	pango1-xft2-ft219-dev (>= 1.24.5-6),
 	pixman,
@@ -50,12 +50,13 @@ BuildDepends: <<
 	sqlite3 (>= 3.6.21-1),
 	sqlite3-dev (>= 3.6.21-1),
 	startup-notification-dev (>= 0.9-2),
-	system-openssl-dev,
 	x11-dev
 <<
+# openssl098 should be replaced by system-openssl, since used only "by accident", for innocuous things. But needs right flag-ordering then -> later...
 # esound and libcanberra0 needed a bdeps because of patch below of PR_LoadLibrary calls; else just the -shlibs might suffice as deps.
-# Some gail pkg is probably also a dep; cf. nsApplicationAccessibleWrap.cpp, nsNativeAppSupportUnix.cpp, mozcontainer.c, nsAccessibilityHelper.cpp.
-# sed : used in info file; findutils : 'find -xtype" used in mozilla/toolkit/mozapps/installer/packager.mk, l. 464
+# Check still code in  nsApplicationAccessibleWrap.cpp, nsNativeAppSupportUnix.cpp, mozcontainer.c and nsAccessibilityHelper.cpp
+# to be completely sure only libgail.so (from gtk+2) is used, and nothing from a gail pkg proper.
+# sed : used in info file.
 ##
 # no evidence of need from otool, nor by analyzing headers used
 # [ uncommment last line of PatchScript, then :
@@ -301,46 +302,48 @@ EXTRA_LIBS		+= \\\
 endif\
 ' mozilla/embedding/browser/gtk/tests/Makefile.in
 ### Fixing SOME calls to PR_LoadLibrary or dlopen ... (using proper install_names..) _ just looked at those with a hard-coded string.
-### Possibly this would make the use of -dead_strip_dylibs safe ? (cf CompileScript)
-### Would need to check all binaries where PR_LoadLibrary appears..
-### Use of otool -D below is legal, since names of deps must change if install_names do. And this avoids hard-coding things here.
- sed -ri'' -e 's,libcups\.so\.2,/usr/lib/libcups.dylib,' mozilla/gfx/src/psshared/nsCUPSShim.cpp
- sed -ri'' -e	's,libgnomeui-2\.so\.0,%p/lib/libgnomeui-2.0.dylib,' -e 's,libgnome-2.so.0,%p/lib/libgnome-2.0.dylib,' \
-	-e "s,libgnomevfs-2\.so\.0,`otool -D %p/lib/libgnomevfs-2.dylib|fgrep -v :`," \
+### Possibly this would make the use of -dead_strip_dylibs safe too ? (cf CompileScript)
+### Would still need to check all binaries where PR_LoadLibrary or dlopen appears..
+### I just can't believe in a correct translation of "libfoo.x.so.y" into "%p/lib/lifoo.x.y.dylib" _ a fortiori in dlopen calls... 
+### There is some overkill in the following list, remains to prune it of some items where the code would anyway do the right thing
+### Use of otool -D below is legal (except possibly for -lXext and -lOSMesa _ + others in $Xdir? _, but there anyway nothing is..),
+### since names of deps must change if install_names do. And this avoids hard-coding too many things here.
+ inst_nm () { otool -D $1 |fgrep -v : ; }
+ sed -ri'' -e "s,libcups\.so\.2,`inst_nm /usr/lib/libcups.2.dylib`," mozilla/gfx/src/psshared/nsCUPSShim.cpp
+ sed -ri'' -e "s,libgnomeui-2\.so\.0,`inst_nm %p/lib/libgnomeui-2.dylib`," \
+	-e "s,libgnome-2.so.0,`inst_nm %p/lib/libgnome-2.dylib`," \
+	-e "s,libgnomevfs-2\.so\.0,`inst_nm %p/lib/libgnomevfs-2.dylib`," \
 	mozilla/{toolkit/{xre/nsNativeAppSupportUnix,crashreporter/client/crashreporter_linux},modules/libpr0n/decoders/icon/gtk/nsIconChannel}.cpp
- sed -ri'' -e "s,libgtk-x11-2\.0\.so\.0,`otool -D %p/lib/libgtk-x11-2.0.dylib|fgrep -v :`," \
+ sed -ri'' -e "s,libgtk-x11-2\.0\.so\.0,`inst_nm %p/lib/libgtk-x11-2.0.dylib`," \
 	mozilla/{widget/src/gtk2/nsBidiKeyboard,dom/plugins/PluginModuleChild}.cpp
- sed -ri'' -e	"s,libXss\.so\.1,`otool -D $Xdir/lib/libXss.1.dylib|fgrep -v :`," \
+ sed -ri'' -e "s,libXss\.so\.1,`inst_nm $Xdir/lib/libXss.1.dylib`," \
 	mozilla/widget/src/{gtk2/nsIdleServiceGTK,qt/nsIdleServiceQt}.cpp
- sed -ri'' -e "s,libXinerama\.so\.1,`otool -D $Xdir/lib/libXinerama.1.dylib|fgrep -v :`," \
+ sed -ri'' -e "s,libXinerama\.so\.1,`inst_nm $Xdir/lib/libXinerama.1.dylib`," \
 	mozilla/widget/src/gtk2/nsScreenManagerGtk.cpp
- sed -ri'' -e "s,libesd\.so\.0,`otool -D %p/lib/libesd.dylib|fgrep -v :`," \
-	-e "s,libcanberra\.so\.0,`otool -D %p/lib/libcanberra.dylib|fgrep -v :`,"  mozilla/widget/src/{gtk2,qt}/nsSound.cpp
- sed -ri'' -e "s,libgconf-2.so.4,`otool -D %p/lib/libgconf-2.dylib|fgrep -v :`," -e 's,libgconf-2.so,%p/lib/libgconf-2.dylib,' \
+ sed -ri'' -e "s,libesd\.so\.0,`inst_nm %p/lib/libesd.dylib`," \
+	-e "s,libcanberra\.so\.0,`inst_nm %p/lib/libcanberra.dylib`,"  mozilla/widget/src/{gtk2,qt}/nsSound.cpp
+ sed -ri'' -e "s,libgconf-2.so.4,`inst_nm %p/lib/libgconf-2.dylib`," -e "s,libgconf-2.so,`inst_nm %p/lib/libgconf-2.dylib`," \
 	mozilla/{extensions/pref/system-pref/src/gconf/nsSystemPrefService,toolkit/crashreporter/client/crashreporter_gtk_common}.cpp
- sed -ri'' -e "s,libpango-1.0.so.0,`otool -D %p/lib/libpango-1.0.dylib|fgrep -v :`," \
-	mozilla/layout/generic/test/test_backspace_delete.xul
- sed -ri'' -e "s,libGL.so.1,`otool -D $Xdir/lib/libGL.dylib|fgrep -v :`," mozilla/gfx/thebes/src/GLContextProviderGLX.cpp
- sed -ri'' -e "s,osmesalib[.]get[(][)],\"`otool -D $Xdir/lib/libOSMesa.dylib|fgrep -v :`\"," \
-	mozilla/gfx/thebes/src/GLContextProviderOSMesa.cpp
- sed -ri'' -e 's,libgssapi_krb5[.]so[.]2,/usr/lib/libgssapi_krb5.dylib,' mozilla/extensions/auth/nsAuthGSSAPI.cpp
- sed -ri'' -e "s,libatk-1[.]0[.]so[.]0,`otool -D %p/lib/libatk-1.0.dylib|fgrep -v :`," \
+ sed -ri'' -e "s,libpango-1.0.so.0,`inst_nm %p/lib/libpango-1.0.dylib`," mozilla/layout/generic/test/test_backspace_delete.xul
+ sed -ri'' -e "s,libGL.so.1,`inst_nm $Xdir/lib/libGL.1.dylib`," mozilla/gfx/thebes/src/GLContextProviderGLX.cpp
+ sed -ri'' -e "s,osmesalib[.]get[(][)],\"`inst_nm $Xdir/lib/libOSMesa.dylib`\"," mozilla/gfx/thebes/src/GLContextProviderOSMesa.cpp
+ sed -ri'' -e "s,libgssapi_krb5[.]so[.]2,`inst_nm /usr/lib/libgssapi_krb5.dylib`," mozilla/extensions/auth/nsAuthGSSAPI.cpp
+ sed -ri'' -e "s,libatk-1[.]0[.]so[.]0,`inst_nm %p/lib/libatk-1.0.dylib`," \
 	-e 's,":/usr/lib,":%p/lib:/usr/lib,' mozilla/accessible/src/atk/nsApplicationAccessibleWrap.cpp
  sed -ri'' -e "s,libatk-bridge.so.0,%p/lib/gtk-2.0/modules/libatk-bridge.so," \
 	mozilla/accessible/src/atk/nsApplicationAccessibleWrap.cpp
- sed -ri'' -e "s,libcurl.so.3,`otool -D %p/lib/libcurl.3.dylib|fgrep -v :`," \
-	-e "s,libcurl.so.4,`otool -D %p/lib/libcurl.4.dylib|fgrep -v :`," \
-	-e "s,libcurl.so,`otool -D %p/lib/libcurl.dylib|fgrep -v :`," \
+ sed -ri'' -e "s,libcurl.so.3,`inst_nm %p/lib/libcurl.3.dylib`," \
+	-e "s,libcurl.so.4,`inst_nm %p/lib/libcurl.4.dylib`," -e "s,libcurl.so,`inst_nm %p/lib/libcurl.dylib`," \
 	mozilla/toolkit/crashreporter/google-breakpad/src/common/linux/{http_upload,libcurl_wrapper}.cc
- sed -ri'' -e "s,libgio-2.0.so,`otool -D %p/lib/libgio-2.0.dylib|fgrep -v :`," mozilla/toolkit/system/gnome/nsGIOService.cpp
+ sed -ri'' -e "s,libgio-2.0.so,`inst_nm %p/lib/libgio-2.0.dylib`," mozilla/toolkit/system/gnome/nsGIOService.cpp
  sed -ri'' -e "s,libnssckbi.so,%p/lib/$N-$V/libnssckbi.dylib," \
 	mozilla/{security/nss/lib/nss/nssinit.c,ipc/chromium/src/base/nss_init.cc}
  sed -ri'' -e "s,libxpcom.so,%p/lib/$N-$V/libxpcom.dylib," \
 	mozilla/extensions/java/xpcom/interfaces/org/mozilla/xpcom/Mozilla.java
  sed -ri'' -e "s,libnptest.so,%p/lib/$N-$V/libnptest.dylib," \
 	mozilla/{modules/plugin/test/unit/head,toolkit/mozapps/extensions/test/xpcshell/test}_plugins.js
- sed -ri'' -e "s,/usr/X11R6/lib/libXt.so.6,`otool -D $Xdir/lib/libXt.dylib|fgrep -v :`," \
-	-e "s,libXext.so,`otool -D $Xdir/lib/libXext.dylib|fgrep -v :`," \
+ sed -ri'' -e "s,/usr/X11R6/lib/libXt.so.6,`inst_nm $Xdir/lib/libXt.6.dylib`," \
+	-e "s,libXext.so,`inst_nm $Xdir/lib/libXext.dylib`," \
 	mozilla/modules/plugin/base/src/nsPluginsDirUnix.cpp
 
 ## install: (libnullplugin seems to have disappeared here, in 2.1alpha2)
@@ -451,6 +454,8 @@ CompileScript: <<
 InfoTest: <<
 TestSuiteSize: large
 #TestConfigureParams: --enable-tests
+# there are 1 or 2 tests that seem to hang from time to time; in that case, a "kill -TERM pid", where <pid> is the last
+# process in the corresponding terminal window will allow things to continue ...
 TestScript: <<
 #!/bin/sh -ev
  set +e
@@ -585,7 +590,7 @@ SplitOff: <<
 	gtk+2-shlibs, libart2-shlibs, libbonobo2-shlibs, libbonoboui2-shlibs, libcanberra0-shlibs, libgettext8-shlibs,
 	libgnome2-shlibs, libgnomecanvas2-shlibs, libgnomeui2-shlibs (>= 2.24.2-2), libhunspell-shlibs (>= 1.2.8-1005),
 	libjpeg8-shlibs, libnotify-shlibs,  (%type_raw[sys_nspr] = .) nspr.0d-shlibs (>= 4.8.4-4),
-	orbit2-shlibs, pango1-xft2-ft219-shlibs, popt-shlibs,
+	openssl098-shlibs, orbit2-shlibs, pango1-xft2-ft219-shlibs, popt-shlibs,
 	sqlite3-shlibs(>= 3.6.16.1), startup-notification-shlibs (>= 0.9-2), x11-shlibs
   <<
   DocFiles: mozilla/LEGAL mozilla/LICENSE
