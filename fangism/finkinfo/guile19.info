@@ -91,7 +91,9 @@ SplitOff2: <<
     lib/libguile-srfi-srfi-1-v-4.*
     lib/libguile-srfi-srfi-60-v-3.*
     lib/libguilereadline-v-18.*
-    share/guile/2.0
+    share/guile/2.0/[A-Za-rt-z]*
+    share/guile/2.0/scripts/[A-Zac-z]*
+    share/guile/2.0/srfi
   <<
   Shlibs: <<
     !%p/lib/libguile-srfi-srfi-1-v-4.4.dylib
