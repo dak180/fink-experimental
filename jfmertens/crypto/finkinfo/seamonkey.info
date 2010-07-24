@@ -53,21 +53,28 @@ BuildDepends: <<
 	x11-dev
 <<
 # openssl098 should be replaced by system-openssl, since used only "by accident", for innocuous things. But needs right flag-ordering then -> later...
+# Further, in my 32bit build here, headers from openssl098-dev are used, while none in 64bit.. check!
 # esound and libcanberra0 needed a bdeps because of patch below of PR_LoadLibrary calls; else just the -shlibs might suffice as deps.
-# Check still code in  nsApplicationAccessibleWrap.cpp, nsNativeAppSupportUnix.cpp, mozcontainer.c and nsAccessibilityHelper.cpp
+# Check still code in nsApplicationAccessibleWrap.cpp, nsNativeAppSupportUnix.cpp, mozcontainer.c and nsAccessibilityHelper.cpp
 # to be completely sure only libgail.so (from gtk+2) is used, and nothing from a gail pkg proper.
 # sed : used in info file.
 ##
 # no evidence of need from otool, nor by analyzing headers used
 # [ uncommment last line of PatchScript, then :
 ## egrep '^\.+ /' /sw/var/logs/seamonkey.log|sed -r -e 's,^\.+ ,,'|sort -u|egrep -v -e '^/usr/' -e '^/System/' -e '/bld/seamonkey'|xargs dpkg -S|cut -f1 -d:|sort -u|xargs
-# atk1 bzip2-dev cairo dbus-glib1.2-dev dbus1.3-dev fontconfig2-dev freetype219 gconf2-dev glib2-dev gnome-vfs2-unified-dev
-# gtk+2-dev libbonobo2-dev libgettext8-dev libgnome2-dev libgnomeui2-dev libidl2 libjpeg8 pango1-xft2-ft219-dev popt
+# atk1 bzip2-dev cairo dbus-glib1.2-dev dbus1.3-dev fontconfig2-dev freetype219 gconf2-dev glib2-dev gnome-vfs2-unified-dev gtk+2-dev 
+# libbonobo2-dev libgettext8-dev libgnome2-dev libgnomeui2-dev libidl2 libjpeg8 libnotify openssl098-dev pango1-xft2-ft219-dev pixman popt 
 # sqlite3-dev startup-notification-dev
 # ]
 ##
 # Also still left to run it once with DYLD_BIND_AT_LAUNCH, DYLD_PRINT_LIBRARIES and DYLD_PRINT_LIBRARIES_POST_LAUNCH
-# to check no runtime-deps are omitted..  DONE
+# to check no runtime-deps are omitted..  Done; yields (all of them among the recursive deps, except for uim. -> OK) ::
+#atk1-shlibs audiofile-shlibs cairo-shlibs cyrus-sasl2-shlibs dbus-glib1.2-shlibs dbus1.3-shlibs esound-shlibs expat1-shlibs fontconfig2-shlibs 
+#freetype219-shlibs gconf2-shlibs glib2-shlibs glitz-shlibs gnome-keyring-shlibs gnome-vfs2-unified-shlibs gstreamer-0.10-shlibs gtk+2-shlibs 
+#libart2-shlibs libavahi-client3-shlibs libavahi-common3-shlibs libavahi-glib1-shlibs libbonobo2-shlibs libbonoboui2-shlibs libcanberra0-shlibs 
+#libgettext3-shlibs libgettext8-shlibs libgnome2-shlibs libgnomecanvas2-shlibs libgnomeui2-shlibs libhunspell-shlibs libiconv libjpeg8-shlibs 
+#libnotify-shlibs libogg-shlibs libpng14-shlibs libpng3-shlibs libtool2-shlibs libvorbis0-shlibs libxml2-shlibs openssl098-shlibs orbit2-shlibs 
+#pango1-xft2-ft219-shlibs pixman-shlibs popt-shlibs seamonkey seamonkey2-shlibs sqlite3-shlibs startup-notification-shlibs uim-gtk2 uim-shlibs
 
 # requires  -DSQLITE_SECURE_DELETE=1 -DSQLITE_ENABLE_FTS3=1 -DSQLITE_ENABLE_UNLOCK_NOTIFY  to be added to SetCFLAGS in sqlite3.info
 # build uses yacc; mine is from fink's bison ..; hope system's is OK. Similarly for python, perl, most of coreutils, etc
@@ -82,7 +89,6 @@ CustomMirror: <<
 #  nam-US: ftp://ftp.tux.org/pub/net/mozilla/
 #  asi-JP: http://www.t.ring.gr.jp/pub/net/www/mozilla/
 <<
-#SourceDirectory: mozilla
 
 #### PATCHING
 
@@ -151,6 +157,7 @@ PatchScript: <<
 	mozilla/extensions/java/xpcom/interfaces/org/mozilla/xpcom/Mozilla.java \
 	mozilla/{modules/plugin/test/unit/head,toolkit/mozapps/extensions/test/xpcshell/test}_plugins.js \
 	mozilla/modules/plugin/base/src/nsPluginsDirUnix.cpp \
+	mozilla/xpcom/io/nsAppFileLocationProvider.cpp \
 	|tr ' ' '\n'|sort -u|xargs`
  for f in $patchlst; do cp -p $f $f.bak; done
 # mozilla/gfx/thebes/src/gfxQuartzFontCache.mm  and  mozilla/build/unix/mozilla-config.in  no longer exist apparently
@@ -330,21 +337,24 @@ endif\
  sed -ri'' -e "s,libgssapi_krb5[.]so[.]2,`inst_nm /usr/lib/libgssapi_krb5.dylib`," mozilla/extensions/auth/nsAuthGSSAPI.cpp
  sed -ri'' -e "s,libatk-1[.]0[.]so[.]0,`inst_nm %p/lib/libatk-1.0.dylib`," \
 	-e 's,":/usr/lib,":%p/lib:/usr/lib,' mozilla/accessible/src/atk/nsApplicationAccessibleWrap.cpp
- sed -ri'' -e "s,libatk-bridge.so.0,%p/lib/gtk-2.0/modules/libatk-bridge.so," \
+ sed -ri'' -e "s,lib(atk-bridge|gail).so,%p/lib/gtk-2.0/modules/lib\1.so," \
 	mozilla/accessible/src/atk/nsApplicationAccessibleWrap.cpp
  sed -ri'' -e "s,libcurl.so.3,`inst_nm %p/lib/libcurl.3.dylib`," \
 	-e "s,libcurl.so.4,`inst_nm %p/lib/libcurl.4.dylib`," -e "s,libcurl.so,`inst_nm %p/lib/libcurl.dylib`," \
 	mozilla/toolkit/crashreporter/google-breakpad/src/common/linux/{http_upload,libcurl_wrapper}.cc
  sed -ri'' -e "s,libgio-2.0.so,`inst_nm %p/lib/libgio-2.0.dylib`," mozilla/toolkit/system/gnome/nsGIOService.cpp
- sed -ri'' -e "s,libnssckbi.so,%p/lib/$N-$V/libnssckbi.dylib," \
+ sed -ri'' -e "s,libnssckbi.(so|dylib),%p/lib/%N-$V/libnssckbi.dylib," \
 	mozilla/{security/nss/lib/nss/nssinit.c,ipc/chromium/src/base/nss_init.cc}
- sed -ri'' -e "s,libxpcom.so,%p/lib/$N-$V/libxpcom.dylib," \
+ sed -ri'' -e "s,libxpcom.so,%p/lib/%N-$V/libxpcom.dylib," \
 	mozilla/extensions/java/xpcom/interfaces/org/mozilla/xpcom/Mozilla.java
- sed -ri'' -e "s,libnptest.so,%p/lib/$N-$V/libnptest.dylib," \
+ sed -ri'' -e "s,libnptest.so,%p/lib/%N-$V/libnptest.dylib," \
 	mozilla/{modules/plugin/test/unit/head,toolkit/mozapps/extensions/test/xpcshell/test}_plugins.js
  sed -ri'' -e "s,/usr/X11R6/lib/libXt.so.6,`inst_nm $Xdir/lib/libXt.6.dylib`," \
 	-e "s,libXext.so,`inst_nm $Xdir/lib/libXext.dylib`," \
 	mozilla/modules/plugin/base/src/nsPluginsDirUnix.cpp
+
+### setup common plugin-dir for all mozilla-derived pkgs (thanks HansPeter!):
+ sed -ri -e 's,/usr/lib(64|)(/mozilla/plugins),%p/lib/mozilla,' mozilla/xpcom/io/nsAppFileLocationProvider.cpp
 
 ## install: (libnullplugin seems to have disappeared here, in 2.1alpha2)
 ##  sed -ri'' -e 's,(libnullplugin).so,\1@DLL_SUFFIX@,' suite/installer/package-manifest.in
@@ -386,13 +396,13 @@ endif\
 # --enable-libxul leads to "/bld/seamonkey-1.9.1b3pre-1/mozilla/dist/bin/XUL: No such file or directory" in linking
 #  mozilla/xpfe/components/autocomplete/src/nsAutoComplete.o
 ConfigureParams: <<
- --enable-macos-target=${MACOSX_DEPLOYMENT_TARGET} --enable-optimize=-Os --enable-mobile-optimize --disable-debug \
- --enable-strip --with-pthreads --enable-cplus --with-default-mozilla-five-home=%p/lib/%N-2 --mandir=%p/share/man \
- --with-qtdir=%p --enable-application=suite --enable-calendar --enable-default-toolkit=cairo-gtk2 --enable-xul \
- --enable-places --enable-image-decoders=all --enable-image-encoders=all --enable-necko-protocols=all \
+ --enable-macos-target=${MACOSX_DEPLOYMENT_TARGET} --enable-optimize=-Os --enable-mobile-optimize --disable-debug --enable-strip \
+ --with-pthreads --with-default-mozilla-five-home=%p/lib/%N-2 --mandir=%p/share/man --with-l10n-base=%p/share/locale/l10n \
+ --with-qtdir=%p --enable-application=suite --enable-calendar --enable-default-toolkit=cairo-gtk2 --enable-xul --enable-cplus \
+ --enable-places --enable-image-decoders=all --enable-image-encoders=all --enable-necko-protocols=all --enable-accessibility \
  --enable-ctl --enable-canvas --enable-update-packaging --enable-storage --enable-profilesharing --enable-startup-notification \
  --enable-xpctools --enable-url-classifier --enable-ipv6 --enable-ldap-experimental --with-sasl --enable-smil \
- --with-x --enable-xinerama --enable-xprint --enable-pango --enable-xft --enable-postscript \
+ --with-x --enable-xinerama --enable-xprint --enable-gio --enable-pango --enable-xft --enable-postscript \
  --enable-svg --enable-svg-renderer=cairo --enable-system-cairo --enable-system-lcms --enable-glitz --enable-system-sqlite \
  --with-system-mng --with-system-jpeg --with-system-zlib --with-system-bz2 (%type_raw[sys_nspr] = .) --with-system-nspr \
  --enable-auto-deps --enable-md --disable-necko-wifi --enable-safe-browsing --enable-system-hunspell \
@@ -403,8 +413,9 @@ ConfigureParams: <<
 # mv --enable-tests to TestConfigureParams ASAP
 ###### Last line is for private use !
 ###### (and \ at its end, with blak line after configure call, is to hack around a difficulty with TestConfigureParams)
-## disable-necko-wifi : mozilla/netwerk/wifi/src/nsWifiScannerUnix.cpp needs iwlib.h;
-## ensure consistent builds if someone has such a file.
+## disable-necko-wifi; else
+## "nsWifiScannerMac.cpp:62: error: no 'nsresult nsWifiMonitor::DoScanWithCoreWLAN()' member function declared in class 'nsWifiMonitor'",
+## and same with "nsWifiMonitor::DoScanOld()" at l. 137.
 #
 # "--with-system-png" : "configure: error: --with-system-png won't work because the system's libpng doesn't have APNG support"
 # no -fstrict-aliasing in '--enable-optimize', else "dereferencing type-punned pointer will break strict-aliasing rules" warnings
@@ -676,7 +687,6 @@ SplitOff2: <<
 	for f in *.a; do mv $f ../..; ln -fs  ../../$f; done
  # make non-versioned symlinks
 #	ln -fs %N-$V %i/lib/%N	#	This one only later, when current seamonkey is phased out; next as substitute
-	ln -fs %N-$V %i/lib/mozilla
 	ln -fs %N-%type_raw[ver] %i/share/idl/%N-$V
 	ln -fs %N-$V %i/share/idl/%N
 	ln -fs %N-%type_raw[ver] %i/include/%N-$V
