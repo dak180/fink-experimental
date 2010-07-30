@@ -1,7 +1,7 @@
 Info2: <<
 Package: grass64%type_pkg[pgsql]
 Type: pgsql (. -pgsql)
-Distribution: 10.5
+Distribution: 10.4, 10.5, 10.6
 Version: 6.4.0
 Revision: 2
 
@@ -25,7 +25,8 @@ Depends: <<
 	%n-shlibs (=%v-%r)
 <<
 BuildDepends: <<
-    fink (>= 0.28), xcode (>= 3.1),
+    fink (>= 0.28),
+        ncurses-dev,
 	libiconv-dev, readline5, libgettext3-dev, gettext-tools,
 	fftw3,
 	gdal-dev, 
@@ -39,12 +40,16 @@ BuildDepends: <<
 Source: http://grass.itc.it/grass64/source/grass-%vRC5.tar.gz
 Source-MD5: 4689a50c5fd66c1e0493ec127081e142
 
+# Patch Phase.
+PatchFile: %n.patch
+PatchFile-MD5: e72fb05e1f9112a0219b7be04e0d62e7
+PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 
 # Compile Phase.
 SetCFLAGS: -I%p/include
-SetLDFLAGS: -L%p/lib
+SetLDFLAGS: -L%p/lib -lcurses
 
-ConfigureParams: --with-freetype --with-freetype-includes=%p/lib/freetype219/include/freetype2 --with-freetype-libs=%p/lib/freetype219/lib --with-gdal=%p/bin/gdal-config --with-proj --with-proj-includes=%p/include --with-proj-libs=%p/lib --with-proj-share=%p/share/proj --with-jpeg-includes=%p/include --with-jpeg-libs=%p/lib --with-png-includes=%p/include --with-png-libs=%p/lib --with-tiff-includes=%p/include --with-tiff-libs=%p/lib --without-mysql --with-odbc --with-sqlite --with-sqlite-libs=/usr/lib --with-sqlite-includes=/usr/include --with-fftw-includes=%p/include --with-fftw-libs=%p/lib --with-cxx --with-tcltk-includes="/System/Library/Frameworks/Tcl.framework/Headers /System/Library/Frameworks/Tk.framework/Headers /System/Library/Frameworks/Tk.framework/PrivateHeaders" --with-tcltk-libs=/usr/lib --with-opengl=aqua --with-opengl-includes="/System/Library/Frameworks/OpenGL.framework/Headers /System/Library/Frameworks/GLUT.framework/Headers /System/Library/Frameworks/AGL.framework/Headers" --with-opengl-libs="-framework OpenGL -framework OpenGLU -framework AGL" --without-x --without-motif --without-glw --without-readline --prefix=%p/Applications --enable-macosx-app
+ConfigureParams: --with-freetype --with-freetype-includes=%p/lib/freetype219/include/freetype2 --with-freetype-libs=%p/lib/freetype219/lib --with-gdal=%p/bin/gdal-config --with-proj --with-proj-includes=%p/include --with-proj-libs=%p/lib --with-proj-share=%p/share/proj --with-jpeg-includes=%p/include --with-jpeg-libs=%p/lib --with-png-includes=%p/include --with-png-libs=%p/lib --with-tiff-includes=%p/include --with-tiff-libs=%p/lib --without-mysql --with-odbc --with-sqlite --with-sqlite-libs=/usr/lib --with-sqlite-includes=/usr/include --with-fftw-includes=%p/include --with-fftw-libs=%p/lib --with-cxx --with-tcltk-includes="/System/Library/Frameworks/Tcl.framework/Headers /System/Library/Frameworks/Tk.framework/Headers /System/Library/Frameworks/Tk.framework/PrivateHeaders" --with-tcltk-libs=/usr/lib --with-opengl=aqua --with-opengl-includes="/System/Library/Frameworks/OpenGL.framework/Headers /System/Library/Frameworks/GLUT.framework/Headers /System/Library/Frameworks/AGL.framework/Headers" --with-opengl-libs="-framework OpenGL -framework OpenGLU -framework AGL" --without-x --without-motif --without-glw --without-readline --prefix=%p/Applications --enable-macosx-app --with-curses
 
 
 
@@ -53,11 +58,11 @@ CompileScript: <<
   if [ "%type_raw[pgsql]" == "." ]; then
     ./configure %c --without-postgres
   else
-    ./configure %c --with-postgres  --with-postgres-includes=%p/include/postgresql
+    ./configure %c --with-postgres --with-postgres-includes=%p/include/postgresql
   fi
     
   # Overwrites TCLTKLIBS (='-ltcl -ltk')
-  make TCLTKLIBPATH='-framework Tcl -framework Tk' TCLTKLIBS=''
+  make TCLTKLIBPATH='-framework Tcl -framework Tk' TCLTKLIBS='' GISBASE_SYSTEM='%p/lib/GRASS/%v' MACOSX_SUPPDIR='%p/lib/GRASS/%v'
 <<
 
 
@@ -65,7 +70,13 @@ CompileScript: <<
 # Install Phase.
 InstallScript: <<
 #!/bin/sh -xe
-  make install INST_DIR='%i/Applications/GRASS-6.4.app/Contents/MacOS'
+  make install INST_DIR='%i/Applications/GRASS-6.4.app/Contents/MacOS' GISBASE_SYSTEM='%i/lib/GRASS/%v' MACOSX_SUPPDIR='%i/lib/GRASS/%v'
+  cp dist.i386-apple-darwin10.3.0/GRASS-6.4.app/Contents/MacOS/GRASS %i/Applications/GRASS-6.4.app/Contents/MacOS/GRASS
+  cp dist.i386-apple-darwin10.3.0/GRASS-6.4.app/Contents/MacOS/grass.sh %i/Applications/GRASS-6.4.app/Contents/MacOS/grass.sh
+  cp dist.i386-apple-darwin10.3.0/GRASS-6.4.app/Contents/Info.plist %i/Applications/GRASS-6.4.app/Contents/Info.plist
+  cp dist.i386-apple-darwin10.3.0/GRASS-6.4.app/Contents/PkgInfo %i/Applications/GRASS-6.4.app/Contents/PkgInfo
+  cp -R dist.i386-apple-darwin10.3.0/GRASS-6.4.app/Contents/Resources %i/Applications/GRASS-6.4.app/Contents/Resources
+
   
   install_name_tool -id "%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_I.%vRC5.dylib" %i/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_I.%vRC5.dylib
   install_name_tool -id "%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_arraystats.%vRC5.dylib" %i/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_arraystats.%vRC5.dylib
@@ -187,56 +198,6 @@ SplitOff: <<
     Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_vect.dylib
     Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_vedit.dylib
   <<
-  Shlibs: <<
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_I.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_arraystats.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_bitmap.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_btree.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_cdhc.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_cluster.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_datetime.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_dbmibase.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_dbmiclient.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_dbmidriver.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_dbstubs.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_dgl.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_dig2.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_display.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_driver.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_dspf.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_edit.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_form.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_g3d.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_gis.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_gmath.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_gpde.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_gproj.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_interpdata.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_interpfl.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_lidar.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_linkm.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_lrs.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_nviz.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_ogsf.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_pngdriver.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_psdriver.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_qtree.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_raster.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_rli.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_rowio.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_rtree.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_segment.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_shape.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_sim.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_sites.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_sqlp.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_stats.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_symb.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_trans.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_vask.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_vect.dylib
-    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_vedit.dylib
-  <<
   DocFiles:
 <<
 
@@ -251,13 +212,14 @@ SplitOff2: <<
   Conflicts: grass64-shlibs, grass64-pgsql-shlibs
   Replaces: grass64-shlibs, grass64-pgsql-shlibs
   Depends: <<
+  	ncurses-shlibs,
 	fftw3-shlibs, 
 	gdal-shlibs, 
 	gettext, libjpeg-shlibs, libpng3-shlibs, libtiff-shlibs,
 	(%type_raw[pgsql] = -pgsql) postgresql83-shlibs,
 	unixodbc2-shlibs | unixodbc2-nox-shlibs
 <<
-  Files: Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_*.%v*.dylib
+  Files: Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_*.%v*.dylib lib/GRASS
   Shlibs: <<
     %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_I.%vRC5.dylib 6.4.0 %n (>= 6.4.0-1) 32
     %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_arraystats.%vRC5.dylib 6.4.0 %n (>= 6.4.0-1) 32
@@ -310,11 +272,13 @@ SplitOff2: <<
   <<
   DocFiles:
 <<
+
+
 DescPort: <<
 Based on standard configure options. Non-standard configured variants are 
 also avaiable, e.g. grass64-pgsql for PostgreSQL support.
 
-OpenGL is currently disabled due to build time erros in visualization/nviz.
+Added -lcurses to LDFALGS.
 
 Uses MacOSX's TclTk because visualization/nviz uses OS's tcltk.
 

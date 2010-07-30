@@ -1,0 +1,11 @@
+diff -ruN grass-6.4.0RC5-orig/macosx/Makefile grass-6.4.0RC5/macosx/Makefile
+--- grass-6.4.0RC5-orig/macosx/Makefile	2010-02-18 19:05:28.000000000 +0900
++++ grass-6.4.0RC5/macosx/Makefile	2010-07-30 16:08:29.000000000 +0900
+@@ -67,7 +67,6 @@
+ 	-${INSTALL} ${GRASS_HOME}/gem/gem6 ${prefix}/${MACOSX_APP_NAME}/Contents/MacOS 2>/dev/null
+ 	-cd ${GISBASE} ; tar cBf - modbuild | (cd ${MACOSX_SUPPDIR} ; tar xBf - ) 2>/dev/null
+ 	@# help file package - in the future files will go in /Library/Documentation/Help
+-	${LN_DIR} "${INST_DIR}/docs/html" /Library/Documentation/Help/GRASS-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}
+ 
+ # create a packagemaker installer package.
+ # pretty much the same as install, but needs intermediate install location
