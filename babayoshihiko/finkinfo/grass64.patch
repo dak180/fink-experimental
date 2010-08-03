@@ -1,71 +1,52 @@
-diff -ruN grass-6.4.0RC5-orig/macosx/Makefile grass-6.4.0RC5/macosx/Makefile
---- grass-6.4.0RC5-orig/macosx/Makefile	2010-02-18 19:05:28.000000000 +0900
-+++ grass-6.4.0RC5/macosx/Makefile	2010-08-02 19:29:18.000000000 +0900
-@@ -5,7 +5,7 @@
+diff -ruN grass-6.4.0RC6-orig/macosx/Makefile grass-6.4.0RC6/macosx/Makefile
+--- grass-6.4.0RC6-orig/macosx/Makefile	2010-02-19 06:16:31.000000000 +0900
++++ grass-6.4.0RC6/macosx/Makefile	2010-08-03 08:19:13.000000000 +0900
+@@ -4,8 +4,8 @@
+ 
  MACOSX_APP_NAME = GRASS-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.app
  MACOSX_APPDIR = ${MACOSX_APP_NAME}/Contents/MacOS
- INST_DIR_MACOSX = ${prefix}/${MACOSX_APPDIR}
+-INST_DIR_MACOSX = ${prefix}/${MACOSX_APPDIR}
 -MACOSX_SUPPDIR = /Library/GRASS/${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}
++INST_DIR_MACOSX = ${INST_DIR}/Applications/${MACOSX_APPDIR}
 +MACOSX_SUPPDIR = ${INST_DIR}/lib/GRASS/${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}
  MACOSX_BUNDLE_PREFIX = ${GRASS_HOME}/macosx/dist/${MACOSX_APPDIR}
  VER_MINOR_REL = `printf "%d0%d" ${GRASS_VERSION_MINOR} ${GRASS_VERSION_RELEASE}`
  VER_DATE = `date +"%g%m%d"`
-@@ -46,28 +46,29 @@
- # differences that make it simpler to have a separate install target.
+@@ -50,12 +50,12 @@
  
- real-install-macosx:
--	${MAKE_DIR_CMD} ${INST_DIR}
-+	${MAKE_DIR_CMD} ${INST_DIR}/Applications
-+	cp -R ${ARCH_DISTDIR}/${MACOSX_APP_NAME} ${INST_DIR}/Applications/${MACOSX_APP_NAME}
- 	${MAKE} macosx-support-dir
- 	-cd ${GISBASE} ; tar cBf - ${MACOSX_APP_NAME} | (cd ${prefix} ; tar xBf - ) 2>/dev/null
--	-cd ${GISBASE} ; tar cBf - bin | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
--	-cd ${GISBASE} ; tar cBf - bwidget | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
--	-cd ${GISBASE} ; tar cBf - docs | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
--	-cd ${GISBASE} ; tar cBf - driver | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
--	-cd ${GISBASE} ; tar cBf - etc | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
--	-cd ${GISBASE} ; tar cBf - fonts | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
--	-cd ${GISBASE} ; tar cBf - man | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
--	-cd ${GISBASE} ; tar cBf - scripts | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
--	if [ ${LOCALE} -eq 1 ] ; then cd ${GISBASE} ; tar cBf - locale | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null ; fi
--	-cd ${GISBASE} ; tar cBf - include | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
--	-cd ${GISBASE} ; tar cBf - lib | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
--	-sed 's#'${GISBASE}'#'${INST_DIR}'#g' ${GISBASE}/etc/monitorcap > ${INST_DIR}/etc/monitorcap
--	-chmod -R a+rX ${prefix}/${MACOSX_APP_NAME} 2>/dev/null
--	-touch ${prefix}/${MACOSX_APP_NAME}
-+	-cd ${GISBASE} ; tar cBf - bin | (cd ${INST_DIR}/Applications/${MACOSX_APP_NAME}/Contents/MacOS ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - bwidget | (cd ${INST_DIR}/Applications/${MACOSX_APP_NAME}/Contents/MacOS ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - docs | (cd ${INST_DIR}/Applications${MACOSX_APP_NAME}/Contents/MacOS ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - driver | (cd ${INST_DIR}/Applications/${MACOSX_APP_NAME}/Contents/MacOS ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - etc | (cd ${INST_DIR}/Applications/${MACOSX_APP_NAME}/Contents/MacOS ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - fonts | (cd ${INST_DIR}/Applications/${MACOSX_APP_NAME}/Contents/MacOS ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - man | (cd ${INST_DIR}/Applications/${MACOSX_APP_NAME}/Contents/MacOS ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - scripts | (cd ${INST_DIR}/Applications/${MACOSX_APP_NAME}/Contents/MacOS ; tar xBf - ) 2>/dev/null
-+	if [ ${LOCALE} -eq 1 ] ; then cd ${GISBASE} ; tar cBf - locale | (cd ${INST_DIR}/Applications/${MACOSX_APP_NAME}/Contents/MacOS ; tar xBf - ) 2>/dev/null ; fi
-+	-cd ${GISBASE} ; tar cBf - include | (cd ${INST_DIR}/Applications/${MACOSX_APP_NAME}/Contents/MacOS ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - lib | (cd ${INST_DIR}/Applications/${MACOSX_APP_NAME}/Contents/MacOS ; tar xBf - ) 2>/dev/null
-+	-sed 's#'${GISBASE}'#'@PREFIX@/Applications/${MACOSX_APP_NAME}/Contents/MacOS'#g' ${GISBASE}/etc/monitorcap > ${INST_DIR}/Applications/${MACOSX_APP_NAME}/Contents/MacOS/etc/monitorcap
-+	-chmod -R a+rX ${INST_DIR}/Applications/${MACOSX_APP_NAME} 2>/dev/null
-+	-touch ${INST_DIR}/Applications/${MACOSX_APP_NAME}
- 	-cd ${GRASS_HOME} ; tar cBf - gem/skeleton | (cd ${INST_DIR}/etc ; tar xBf - ) 2>/dev/null
--	-${INSTALL} ${GRASS_HOME}/gem/gem6 ${prefix}/${MACOSX_APP_NAME}/Contents/MacOS 2>/dev/null
-+	-${INSTALL} ${GRASS_HOME}/gem/gem6 ${INST_DIR}/Applications/${MACOSX_APP_NAME}/Contents/MacOS 2>/dev/null
+ # Duplicated, mostly, from the top-level makefile.
+ 
+-real-install-macosx: INST_DIR_TARGET = ${INST_DIR}
+-real-install-macosx: PREFIX_TARGET = ${prefix}
++real-install-macosx: INST_DIR_TARGET = ${INST_DIR_MACOSX}
++real-install-macosx: PREFIX_TARGET = ${INST_DIR}
+ real-install-macosx: install-basic-macosx macosx-support-dir bundle-macosx
  	-cd ${GISBASE} ; tar cBf - modbuild | (cd ${MACOSX_SUPPDIR} ; tar xBf - ) 2>/dev/null
- 	@# help file package - in the future files will go in /Library/Documentation/Help
--	${LN_DIR} "${INST_DIR}/docs/html" /Library/Documentation/Help/GRASS-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}
-+	@#
+ 	@# help file package
+-	${LN_DIR} "${INST_DIR_TARGET}/docs/html" /Library/Documentation/Help/GRASS-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}
++	@# ${LN_DIR} "${INST_DIR_TARGET}/docs/html" ${INST_DIR}/share/doc/GRASS-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}
  
  # create a packagemaker installer package.
  # pretty much the same as install, but needs intermediate install location
-diff -ruN grass-6.4.0RC5-orig/macosx/modbuild/Makefile grass-6.4.0RC5/macosx/modbuild/Makefile
---- grass-6.4.0RC5-orig/macosx/modbuild/Makefile	2010-02-18 19:05:28.000000000 +0900
-+++ grass-6.4.0RC5/macosx/modbuild/Makefile	2010-08-02 13:14:41.000000000 +0900
-@@ -53,7 +53,7 @@
- 	-e 's,^RUN_GISBASE.*,RUN_GISBASE = $$(GISBASE),g' \
- 	$(MODULE_TOPDIR)/include/Make/Platform.make > $(ARCH_DISTDIR)/modbuild/include/Make/Platform.make
- 	-cp $(MODULE_TOPDIR)/include/Make/Rules.make $(ARCH_DISTDIR)/modbuild/include/Make/
--	sed -e 's,GISRC=$$(RUN_GISBASE),GISRC=/Library/GRASS/$(GRASS_VERSION_MAJOR).$(GRASS_VERSION_MINOR)/modbuild/dist.$$(ARCH),g' $(MODULE_TOPDIR)/include/Make/Script.make > $(ARCH_DISTDIR)/modbuild/include/Make/Script.make
-+	sed -e 's,GISRC=$$(RUN_GISBASE),GISRC=@PREFIX@/lib/GRASS/$(GRASS_VERSION_MAJOR).$(GRASS_VERSION_MINOR)/modbuild/dist.$$(ARCH),g' $(MODULE_TOPDIR)/include/Make/Script.make > $(ARCH_DISTDIR)/modbuild/include/Make/Script.make
- 	-cp $(MODULE_TOPDIR)/include/Make/Shlib.make $(ARCH_DISTDIR)/modbuild/include/Make/
- 	-cp $(MODULE_TOPDIR)/include/Make/Stlib.make $(ARCH_DISTDIR)/modbuild/include/Make/
- 	mkdir -p $(ARCH_DISTDIR)/modbuild/tools/g.html2man
+@@ -85,7 +85,7 @@
+ 
+ install-basic-macosx:
+ 	${MAKE_DIR_CMD} ${INST_DIR_TARGET}
+-	-cd ${GISBASE} ; tar cBf - ${MACOSX_APP_NAME} | (cd ${PREFIX_TARGET} ; tar xBf - ) 2>/dev/null
++	-cd ${GISBASE} ; tar cBf - ${MACOSX_APP_NAME} | (cd ${PREFIX_TARGET}/Applications ; tar xBf - ) 2>/dev/null
+ 	-cd ${GISBASE} ; tar cBf - $(FILES) | (cd ${INST_DIR_TARGET} ; tar xBf - ) 2>/dev/null
+ 	-cd ${GISBASE} ; tar cBf - bin | (cd ${INST_DIR_TARGET} ; tar xBf - ) 2>/dev/null
+ 	-cd ${GISBASE} ; tar cBf - bwidget | (cd ${INST_DIR_TARGET} ; tar xBf - ) 2>/dev/null
+@@ -99,10 +99,10 @@
+ 	-cd ${GISBASE} ; tar cBf - include | (cd ${INST_DIR_TARGET} ; tar xBf - ) 2>/dev/null
+ 	-cd ${GISBASE} ; tar cBf - lib | (cd ${INST_DIR_TARGET} ; tar xBf - ) 2>/dev/null
+ 	-sed 's#'${GISBASE}'#'${INST_DIR_TARGET}'#g' ${GISBASE}/etc/monitorcap > ${INST_DIR_TARGET}/etc/monitorcap
+-	-chmod -R a+rX ${PREFIX_TARGET}/${MACOSX_APP_NAME} 2>/dev/null
++	-chmod -R a+rX ${PREFIX_TARGET}/Applications/${MACOSX_APP_NAME} 2>/dev/null
+ 	-cd ${GRASS_HOME} ; tar cBf - gem/skeleton | (cd ${INST_DIR_TARGET}/etc ; tar xBf - ) 2>/dev/null
+ 	-${INSTALL} ${GRASS_HOME}/gem/gem6 ${INST_DIR_TARGET} 2>/dev/null
+-	-touch ${PREFIX_TARGET}/${MACOSX_APP_NAME}
++	-touch ${PREFIX_TARGET}/Applications/${MACOSX_APP_NAME}
+ 
+ macosx-support-dir:
+ 	${MAKE_DIR_CMD} ${MACOSX_SUPPDIR}
