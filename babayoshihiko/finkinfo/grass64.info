@@ -3,7 +3,7 @@ Package: grass64%type_pkg[gui]
 Type: gui (-mac -x11)
 Distribution: (%type_raw[gui] = -x11) 10.4, (%type_raw[gui] = -x11) 10.5, (%type_raw[gui] = -x11) 10.6, (%type_raw[gui] = -aqua) 10.6
 Version: 6.4.0
-Revision: 6
+Revision: 6.2
 Provides: grass64
 Conflicts: grass64, grass64-aqua, grass64-pgsql-aqua, grass64-x11, grass64-pgsql-x11
 Replaces: grass64, grass64-aqua, grass64-pgsql-aqua, grass64-x11, grass64-pgsql-x11
@@ -53,7 +53,7 @@ Source-MD5: cbb98b579155f8e9864b4e98e4423568
 
 # Patch Phase.
 PatchFile: grass64.patch
-PatchFile-MD5: 060d8c3101bdfd0efe5d164c8479e9e0
+PatchFile-MD5: 20a639ed0078627ed6acd265a4026138
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 
 # Compile Phase.
@@ -76,7 +76,7 @@ CompileScript: <<
     perl -pi -e "s|^TCLTKLIBPATH|TCLTKLIBPATH        =  -framework Tcl -framework Tk #|" include/Make/Platform.make
     perl -pi -e "s|^TCLTKLIBS|TCLTKLIBS           =  #|" include/Make/Platform.make
   else
-    ./configure %c $PGSQLPARAM --with-x --x-includes=/usr/X11R6/include --x-libraries=/usr/X11R6/lib --without-tcltk --with-wxwidgets=%p/bin/wx-config --with-opengl=no
+    ./configure %c $PGSQLPARAM --with-x --x-includes=/usr/X11R6/include --x-libraries=/usr/X11R6/lib --with-tcltk-includes=%p/include --with-tcltk-libs=%p/lib --with-wxwidgets=%p/bin/wx-config --with-opengl=no
   fi
     # INST_DIR is set to set dylib install name
     make INST_DIR='%p/Applications/GRASS-6.4.app/Contents/MacOS'
@@ -88,6 +88,11 @@ CompileScript: <<
 InstallScript: <<
 #!/bin/sh -xe
   make install INST_DIR='%i' GISBASE_SYSTEM='%i/lib/GRASS/%v'
+  if [ "%type_raw[gui]" == "-mac" ]; then
+    perl -pi -e "s|MACOSX11|%p|g" %i/Applications/GRASS-6.4.app/Contents/MacOS/grass.sh
+  else
+    perl -pi -e "s|MACOSX11|/usr/local|g" %i/Applications/GRASS-6.4.app/Contents/MacOS/grass.sh
+  fi
 <<
 DocFiles: 
 
