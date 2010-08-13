@@ -1,6 +1,6 @@
 Info3: <<
 Package: firefox3
-Version: 3.6.6
+Version: 3.6.8
 Revision: 1
 Architecture: i386, powerpc
 Distribution: 10.4
@@ -52,7 +52,7 @@ BuildDepends: <<
 <<
 Source: http://releases.mozilla.org/pub/mozilla.org/firefox/releases/%v/source/firefox-%v.source.tar.bz2
 SourceDirectory: mozilla-1.9.2
-Source-MD5: c9a071b31bb90d05edfb93117d0a7537
+Source-MD5: 0ee5f14fd8be07513d16131027ebcb61
 PatchFile: %n.patch
 PatchFile-MD5: 00a2d23a64604187bf7d33c7f5c14b28
 PatchScript: <<
