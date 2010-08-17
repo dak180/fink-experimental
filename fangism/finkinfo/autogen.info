@@ -86,4 +86,5 @@ space, which breaks the recursive configure for sub-directories.
 <<
 Homepage: http://www.gnu.org/software/autogen/
 License: GPL
-Maintainer: David Bacher <drbacher@alum.mit.edu>
+Maintainer: David Fang <fangism@users.sourceforge.net>
+# Former Maintainer: David Bacher <drbacher@alum.mit.edu>
