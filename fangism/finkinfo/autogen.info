@@ -15,7 +15,7 @@ SplitOff: <<
  Files: lib/libguileopts.*.dylib lib/libopts.*.dylib 
  Shlibs: <<
   %p/lib/libguileopts.0.dylib 1.0.0 %n (>= 5.4.2-2)
-  %p/lib/libopts.25.dylib 34.0.0 %n (>= 5.8.4-2)
+  %p/lib/libopts.25.dylib 34.0.0 %n (>= 5.10-1)
 <<
  DocFiles: README ChangeLog AUTHORS COPYING INSTALL NEWS NOTES THANKS TODO VERSION
 <<
@@ -84,7 +84,9 @@ compiler warnings could be avoided -- because it's definition causes
 the CPPFLAGS assignment (-no-cpp-precomp -I/sw/include) to include a
 space, which breaks the recursive configure for sub-directories.
 <<
+DescPackaging: <<
+  Previous versions by David Bacher <drbacher@alum.mit.edu>.
+<<
 Homepage: http://www.gnu.org/software/autogen/
 License: GPL
 Maintainer: David Fang <fangism@users.sourceforge.net>
-# Former Maintainer: David Bacher <drbacher@alum.mit.edu>
