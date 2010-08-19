@@ -75,10 +75,10 @@ ConfigureParams: <<
   PKG_CONFIG_PATH="%p/lib/pango-ft219/lib/pkgconfig:%p/lib/fontconfig2/lib/pkgconfig:%p/lib/freetype219/lib/pkgconfig:$PKG_CONFIG_PATH" \ 
   FREETYPE_CONFIG=%p/lib/freetype219/bin/freetype-config
 <<
-PatchFile: %n.patch
-PatchFile-MD5: 12ba1e8b79608f4c05d49ae6da56d96b
+# PatchFile: %n.patch
+# PatchFile-MD5: 12ba1e8b79608f4c05d49ae6da56d96b
 PatchScript: <<
-  %{default_script}
+#  %{default_script}
   perl -pi -e 's/-L. -l(wesnoth-core)/lib\1.a/' src/Makefile.am
 <<
 CompileScript: <<
