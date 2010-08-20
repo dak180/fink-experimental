@@ -1,0 +1,148 @@
+Info2: <<
+Package: scilab%type_pkg[-atlas]
+Type: -atlas (boolean)
+Version: 5.2.2
+Revision: 1
+Maintainer: None <fink-devel@lists.sourceforge.net>
+Depends: readline5-shlibs, tcltk, (%type_raw[-atlas] != -atlas) xaw3d-shlibs, %N-shlibs (>= %v-%r)
+BuildDepends: <<
+	fink (>= 0.24.12), suitesparse,
+	gcc45, fftw3, hdf5-18, libxml2, pcre, libgettext8-dev, libiconv-dev, libncurses5, libsablot, ocaml, readline5, tcltk-dev, x11-dev,
+	(%type_pkg[-atlas]) atlas (>= 3.8.1-1),
+	libxml2,
+	(%type_raw[-atlas] != -atlas) xaw3d
+<<
+Conflicts: %{Ni}, %{Ni}-atlas
+Replaces:  %{Ni}, %{Ni}-atlas
+Source: http://www.%{Ni}.org/download/%v/%{Ni}-%v-src.tar.gz
+SourceDirectory: %{Ni}-%v
+Source-MD5: 35e8a22edb348f405360d3a07ed4faab
+PatchScript: <<
+#!/bin/sh -ev
+###### CHECK : 's,-module,& -bundle_loader %p/lib/scilab-%v/bin/scilex,' : which is correct bundle_loader now ?
+ sed -i.bak -e 's,--quiet,,' -e 's,^\t@,\t,'  Makemex.in
+<<
+
+ConfigureParams: <<
+ --with-fink-prefix=%p --with-gfortran --with-tcl-include=%p/include --with-tcl-library=%p/lib --with-ocaml --without-gui \
+ --without-pvm --x-includes=/usr/X11R6/include --x-libraries=/usr/X11R6/lib --build=%m-apple-darwin`uname -r|cut -f1 -d.` \
+ --host=%m-apple-darwin`uname -r|cut -f1 -d.` --with-tk-include=%p/include --with-tk-library=%p/lib \
+ --with-hdf5-include=%p/lib/hdf5-18/include  --with-hdf5-library=%p/lib/hdf5-18/lib --with-libiconv-prefix=%p \
+ --with-libintl-prefix=%p --with-fftw-include=%p/include --with-fftw-library=%p/lib --with-libxml2=%p --with-pcre=%p \
+ --with-umfpack-library=%p/lib --with-umfpack-include=%p/include/suitesparse --without-tk --without-matio --disable-build-help
+<<
+SetLIBRARY_PATH: %p/lib
+CompileScript: <<
+ #!/bin/sh -ev
+ export CPATH=%p/include
+ export PKG_CONFIG_PATH=%p/lib/pango-ft219/lib/pkgconfig:%p/lib/freetype219/lib/pkgconfig:%p/lib/fontconfig2/lib/pkgconfig:$PKG_CONFIG_PATH
+ c="%c"; if test %type_raw[-atlas] == "-atlas" ; then c="$c --with-blas-library=%p/lib --with-lapack-library=%p/lib"; fi
+ ./configure $c
+ sed -ri'' -e 's,-I%p/+include([^/]),\1,g' -e 's,-L%p/+lib([^/]),\1,g' config.status 
+
+## A quick fix to avoid
+## "make: *** No rule to make target `../../libs/doublylinkedlist/libscidoublylinkedlist.la', needed by `libscirenderer.la'. Stop."
+ cd libs/doublylinkedlist; make libscidoublylinkedlist.la; cd -
+## "make: *** No rule to make target `../../modules/output_stream/libscioutput_stream.la', needed by `libscirenderer.la'. Stop."
+ cd modules/output_stream; make libscioutput_stream.la; cd -
+## "make[3]: *** No rule to make target `../../modules/renderer/libscirenderer.la', needed by `libsciscicos_blocks.la'. Stop."
+ cd modules/renderer; make libscirenderer.la; cd -
+
+ make all
+
+ fink-package-precedence . --prohibit-bdep=%N
+<<
+InstallScript: <<
+#!/bin/sh -ev
+ make install DESTDIR=%d
+ sed -i'' -e 's; -framework Cocoa;-Wl,-framework,Cocoa;' %I/lib/%{Ni}/lib{javasci,scilab{,-cli},scilocalization}.la
+<<
+Splitoff: <<
+  Package: %N-shlibs
+  Depends: <<
+	(%type_pkg[-atlas]) atlas-shlibs, fftw3-shlibs, gcc45-shlibs, hdf5-18-shlibs, libgettext8-shlibs, libiconv,
+	libncurses5-shlibs, libxml2-shlibs, pcre-shlibs
+  <<
+  Files: lib/%{Ni}/*.{0,5}.dylib
+  ## most of the following are probably private, except for libscilab _ and some others ?
+  Shlibs: <<
+	%p/lib/%{Ni}/libjavasci.5.dylib			6.0.0	%n 	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libmat.5.dylib			6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libmex.5.dylib			6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libmx.5.dylib			6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libsciaction_binding.5.dylib	6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libsciapi_scilab.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libsciarnoldi.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libsciboolean.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscicacsd.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscicall_scilab.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscicompletion.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libsciconsole-disable.0.dylib	1.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscicore.5.dylib			6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscidata_structures.5.dylib	6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscidifferential_equations.5.dylib 6.0.0 %n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscidouble.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscidoublylinkedlist.5.dylib	6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscidynamic_link.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscidynamiclibrary.5.dylib	6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscielementary_functions.5.dylib	6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscifftw.5.dylib			6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscifileio.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscifunctions.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscigraphic_export-disable.0.dylib 1.0.0 %n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscigraphics-disable.5.dylib	6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscigui-disable.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscihashtable.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscihdf5-forceload-disable.5.dylib 6.0.0 %n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscihdf5-forceload.5.dylib	6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscihdf5.5.dylib			6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscihelptools.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscihistory_manager.5.dylib	6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libsciinteger.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libsciinterpolation.5.dylib	6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libsciintersci.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libsciio.5.dylib			6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscijvm-disable.0.dylib		1.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscilab-cli.0.dylib		1.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscilab.0.dylib			1.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscilibst.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscilinear_algebra.5.dylib	6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscilocalization.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscimalloc.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscimatio.0.dylib		1.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscioptimization.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscioutput_stream.5.dylib	6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscipolynomials.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscipvm.5.dylib			6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscirandlib.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libsciscicos.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libsciscicos_blocks.5.dylib	6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscishell.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscisignal_processing.5.dylib	6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscisound.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscisparse.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscispecial_functions.5.dylib	6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscispreadsheet.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscistatistics.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscistring.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscisundials.0.dylib		1.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscisymbolic.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscitclsci.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscitime.5.dylib			6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libsciumfpack.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libsciwindows_tools.5.dylib	6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscixcos-disable.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+	%p/lib/%{Ni}/libscixpad-disable.5.dylib		6.0.0	%n	(>= 5.2.2-1)
+  <<
+<<
+Splitoff2: <<
+  Package: %N-dev
+  BuildDependsOnly: true
+  Depends: %N-shlibs (= %v-%r)
+  Files: include lib/%{Ni}/*.dylib
+<<
+
+Description: Software package for numerical computations
+License: OSI-Approved
+Homepage: http://www.scilab.org
+<<
