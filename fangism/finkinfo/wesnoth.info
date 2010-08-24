@@ -22,7 +22,7 @@ BuildDepends: <<
   libpng3,
   freetype219,
   libiconv-dev,
-  libgettext3-dev,
+  libgettext8-dev,
   gettext-tools,
   pango1-xft2-ft219-dev,
   boost1.41.cmake,
@@ -43,7 +43,7 @@ Depends: <<
   libpng3-shlibs,
   freetype219-shlibs,
   libiconv,
-  libgettext3-shlibs,
+  libgettext8-shlibs,
   pango1-xft2-ft219-shlibs,
   boost1.41.cmake-shlibs
 <<
@@ -60,26 +60,26 @@ ConfigureParams: <<
   --enable-tools \
   --enable-server \
   --enable-campaign-server \
-  --with-freetype-prefix=%p/lib/freetype219 \
-  --with-freetype-exec-prefix=%p/lib/freetype219 \
   --disable-dependency-tracking \
   --without-x \
-  --without-zipios \
   --disable-sdltest \
   --with-server-gid=admin \
   --with-server-uid=root \
-  --disable-python \
   --disable-python-install \
   --with-boost=%p \
   --disable-strict-compilation \
-  PKG_CONFIG_PATH="%p/lib/pango-ft219/lib/pkgconfig:%p/lib/fontconfig2/lib/pkgconfig:%p/lib/freetype219/lib/pkgconfig:$PKG_CONFIG_PATH" \ 
+  PKG_CONFIG_PATH="%p/lib/pango-ft219/lib/pkgconfig:%p/lib/fontconfig2/lib/pkgconfig:%p/lib/freetype219/lib/pkgconfig:$PKG_CONFIG_PATH" \
   FREETYPE_CONFIG=%p/lib/freetype219/bin/freetype-config
 <<
 # PatchFile: %n.patch
 # PatchFile-MD5: 12ba1e8b79608f4c05d49ae6da56d96b
 PatchScript: <<
+  #!/bin/sh -ev
 #  %{default_script}
   perl -pi -e 's/-L. -l(wesnoth-core)/lib\1.a/' src/Makefile.am
+  file=po/Makefile.in.in
+  mv $file $file.orig
+  sed '/^MSGMERGE_UPDATE/s|$| --backup=off|' $file.orig > $file
 <<
 CompileScript: <<
   #!/bin/sh -ev
