@@ -20,6 +20,8 @@ BuildDepends: <<
   glib2-dev,
   glitz,
   libpng3,
+  lua51-dev (>= 5.1),
+  lua51 (>= 5.1),
   freetype219,
   libiconv-dev,
   libgettext8-dev,
@@ -41,6 +43,7 @@ Depends: <<
   fribidi-shlibs,
   glib2-shlibs,
   libpng3-shlibs,
+  lua51-shlibs,
   freetype219-shlibs,
   libiconv,
   libgettext8-shlibs,
@@ -77,9 +80,14 @@ PatchScript: <<
   #!/bin/sh -ev
 #  %{default_script}
   perl -pi -e 's/-L. -l(wesnoth-core)/lib\1.a/' src/Makefile.am
+  # darwin10: msgmerge is screwy, disabling backup avoids permissions issues
   file=po/Makefile.in.in
   mv $file $file.orig
   sed '/^MSGMERGE_UPDATE/s|$| --backup=off|' $file.orig > $file
+  # x86_64: Carbon API not supported on 64b, conditionally mask out
+  file=src/clipboard.cpp
+  mv $file $file.orig
+  sed '/^#ifdef.*__APPLE__/s|.*|#if defined(__APPLE__) \&\& \!__LP64__|' $file.orig > $file
 <<
 CompileScript: <<
   #!/bin/sh -ev
@@ -123,6 +131,7 @@ DescPackaging: <<
   dmacks hacked around under-use of libtool in Makefile in order to
  assure that local convenince libs are used in preference to
   installed ones of the same name.
+ fangism@users.sourceforge.net is helping maintain.
 <<
 License: GPL
 Maintainer: Jesse Alama <alama@stanford.edu>

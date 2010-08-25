@@ -118,6 +118,9 @@ DescPackaging: <<
   dmacks hacked around under-use of libtool in Makefile in order to
  assure that local convenince libs are used in preference to
   installed ones of the same name.
+ From 1.9.0+, uses internal lua, and does not need to depend on fink's,
+  accoding to upstream.
+ fangism@users.sourceforge.net is helping maintain.
 <<
 License: GPL
 Maintainer: Jesse Alama <alama@stanford.edu>
