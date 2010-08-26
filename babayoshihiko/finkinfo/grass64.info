@@ -1,12 +1,11 @@
 Info2: <<
 Package: grass64%type_pkg[gui]
 Type: gui (-mac -x11)
-Distribution: (%type_raw[gui] = -x11) 10.4, (%type_raw[gui] = -x11) 10.5, (%type_raw[gui] = -x11) 10.6, (%type_raw[gui] = -aqua) 10.6
+Distribution: (%type_raw[gui] = -x11) 10.4, (%type_raw[gui] = -x11) 10.5, (%type_raw[gui] = -mac) 10.6
 Version: 6.4.0
-Revision: 6.2
-Provides: grass64
-Conflicts: grass64, grass64-aqua, grass64-pgsql-aqua, grass64-x11, grass64-pgsql-x11
-Replaces: grass64, grass64-aqua, grass64-pgsql-aqua, grass64-x11, grass64-pgsql-x11
+Revision: 5
+Conflicts: grass64, grass64-mac, grass64-x11
+Replaces: grass64, grass64-mac, grass64-x11
 
 Description: Powerful GIS software
 License: GPL
@@ -108,8 +107,8 @@ SplitOff: <<
   Package: %N-dev
   Description: GRASS Development Headers
   Depends: %N-shlibs (= %v-%r)
-  Conflicts: grass64-dev, grass64-aqua-dev, grass64-x11-dev
-  Replaces: grass64-dev, grass64-aqua-dev, grass64-x11-dev
+  Conflicts: grass64-dev, grass64-mac-dev, grass64-x11-dev
+  Replaces: grass64-dev, grass64-mac-dev, grass64-x11-dev
   BuildDependsOnly: true
   Files: Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_*.a
   DocFiles:
@@ -123,8 +122,8 @@ SplitOff: <<
 SplitOff2: <<
   Package: %N-shlibs
   Description: GRASS Shared Libraries
-  Conflicts: grass64-aqua-shlibs, grass64-x11-shlibs
-  Replaces: grass64-aqua-shlibs, grass64-x11-shlibs
+  Conflicts: grass64-shlibs, grass64-mac-shlibs, grass64-x11-shlibs
+  Replaces: grass64-shlibs, grass64-mac-shlibs, grass64-x11-shlibs
   Depends: <<
   	ncurses-shlibs,
 	fftw3-shlibs, 
@@ -241,16 +240,7 @@ SplitOff2: <<
 <<
 
 
-DescPort: <<
-Based on standard configure options. Non-standard configured variants are 
-also avaiable, e.g. grass64-pgsql for PostgreSQL support.
-
-Added -lcurses to LDFALGS.
-
-Uses MacOSX's TclTk because visualization/nviz uses OS's tcltk.
-
-Will start adding additional configure features back into the package down the road.
-<<
+DescPort:
 
 # End of Info2
 <<
