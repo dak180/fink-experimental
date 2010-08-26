@@ -77,6 +77,9 @@ PatchScript: <<
   #!/bin/sh -ev
 #  %{default_script}
   perl -pi -e 's/-L. -l(wesnoth-core)/lib\1.a/' src/Makefile.am
+  file=src/Makefile.am
+  mv $file $file.orig
+  sed 's/-lana/libana.a/g' $file.orig > $file
   # darwin10: msgmerge is screwy, disabling backup avoids permissions issues
   file=po/Makefile.in.in
   mv $file $file.orig
