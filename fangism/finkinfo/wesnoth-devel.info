@@ -74,8 +74,17 @@ ConfigureParams: <<
 # PatchFile: %n.patch
 # PatchFile-MD5: 12ba1e8b79608f4c05d49ae6da56d96b
 PatchScript: <<
+  #!/bin/sh -ev
 #  %{default_script}
   perl -pi -e 's/-L. -l(wesnoth-core)/lib\1.a/' src/Makefile.am
+  # darwin10: msgmerge is screwy, disabling backup avoids permissions issues
+  file=po/Makefile.in.in
+  mv $file $file.orig
+  sed '/^MSGMERGE_UPDATE/s|$| --backup=off|' $file.orig > $file
+  # x86_64: Carbon API not supported on 64b, conditionally mask out
+  file=src/clipboard.cpp
+  mv $file $file.orig
+  sed '/^#ifdef.*__APPLE__/s|.*|#if defined(__APPLE__) \&\& \!__LP64__|' $file.orig > $file
 <<
 CompileScript: <<
   #!/bin/sh -ev
