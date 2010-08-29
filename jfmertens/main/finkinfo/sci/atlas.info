@@ -1,5 +1,5 @@
 Package: atlas
-Version: 3.9.24
+Version: 3.9.25
 Revision: 1
 Description: Portable optimal linear algebra software
 DescDetail: <<
@@ -30,20 +30,40 @@ Order is important when linking! Use:
 -L%p/lib -llapack -lcblas -lf77blas -latlas
 <<
 Source: mirror:sourceforge:math-atlas/files/%n%v.tar.bz2
-Source-MD5: 5d3fb346105fe6ed7a9971eca0193b83
-# src2 still needed for the manpages
+Source-MD5: d3118bb4ce556d8903cdf7a1558c4e80
+# src2 still needed for the html documentation _ still html doc to find...
 Source2: http://www.netlib.org/lapack/lapack-3.1.1.tgz
 Source2-MD5: 00b21551a899bcfbaa7b8443e1faeef9
 # this is version 3.2, to be used for the build:
 Source3: http://www.netlib.org/lapack/lapack.tgz
-Source3-MD5: a3202a4f9e2f15ffd05d15dab4ac7857
+Source3-MD5: 10832891c9e8100f81108c1ec7da0da4
+# the rename to avoid easily conceivable name-clashes in %/src
+Source4: http://www.netlib.org/lapack/manpages.tgz
+Source4-MD5: 145007cab915504caec382289462a166
+Source4Rename: lapack_manpages.tgz
+
 SourceDirectory: ATLAS 
 License: BSD
 BuildDependsOnly: true
-BuildDepends: gcc45
+BuildDepends: gcc45-compiler
+
 # The whole previous patchscript is in the srcs for %v 3.9.4
 PatchScript: <<
 #!/bin/sh -ev
+## put different srcs in logical dirs, lapack-version independent
+cd ..
+if [ -e LAPACK ] ; then mv LAPACK LAPACK-strange; fi
+mv lapack-3.2.2 LAPACK
+# first need the tarball of lapack (and no % will give the path to the original;
+# not worth to check the user's fink.conf for a FetchAltDir entry etc)
+tar -czf lapack.tgz LAPACK
+mv lapack-3.2.0/manpages LAPACK
+rm -fR lapack-3.2.0
+mv lapack-3.1.1/html LAPACK
+rm -fR lapack-3.1.1
+cd -
+
+##
 #        -e '/f77blas\.dylib *:/,/lapack\.dylib *:/s, \$(LIBS),,' \
 sed -i.bak -e 's,libtool -dynamic,\$(LIBTOOL) -dynamic,' -e 's,_version %v,_version \$(VER),g' \
 	-e 's,-compatibility_version \$(VER) ,,' \
@@ -57,49 +77,51 @@ sed -i.bak "s,${t}ger2[(],${t}ger2${l}(," interfaces/blas/C/src/cblas_${t}ger2${
 done; done
 for t in c z ; do \
 sed -i.bak "/#endif/i \
-#define cblas_ger2c	cblas_${t}ger2c\
-#define	cblas_ger2u	cblas_${t}ger2u" include/atlas_cblas${t}alias.h
+#define cblas_ger2c    cblas_${t}ger2c\\
+#define cblas_ger2u    cblas_${t}ger2u" include/atlas_cblas${t}alias.h
 done
+
+# Typos
+sed -i'' -e 's,flag = ,flag=,' configure
+sed -i'' -e '/ATL_ARCH_UST2/s,||,\&\&,' include/atlas_threads.h
+# (else "fatal error: sys/processor.h: No such file or directory" in ATL_log2tlaunch etc)
+
 
 # next is to have ATL_AS_OSX_PPC defined when it should be
 sed -i.bak -e '1i #include "atlas_asm.h"' tune/blas/gemm/CASES/ATL_dmm4x4x2pf_av.c
-cd ..; 
-if [ -d lapack ] ; then mv lapack lapack-3.2; fi
-ln -s lapack-3.1.1 LAPACK
+cd ..;
 cd LAPACK
 sed -e 's,\.\./\.\./blas\$(PLAT)\.a,%b/../bld/lib/libf77blas.a %b/../bld/lib/libcblas.a %b/../bld/lib/libatlas.a,' \
     -e 's,lapack\$(PLAT)\.a,../bld/lib/liblapack.a,' \
-    -e 's|g77|gfortran|g' -e 's,^TIMER,\#TIMER,' -e '/INT_ETIME/s,^\# *,,' < INSTALL/make.inc.LINUX > make.inc
+    -e 's,^TIMER,\#TIMER,' -e '/INT_ETIME/s,^\# *,,' < make.inc.example > make.inc
 <<
-# -Si archdef 0 -Si latune 1 -Si omp 2 -Si antthr 2 -Si lapackref ? --shared --with-netlib-lapack-tarfile=<path to lapack tarfile>
-ConfigureParams: -Si archdef 0 -v 2 -Fa alg -fPIC -Si latune 1 -Ss flapack %b/../LAPACK/SRC
+# -Si omp 2 -Si antthr 2 -Si lapackref ? -Ss flapack %b/../LAPACK/SRC ?
+ConfigureParams: -v 2 -Si archdef 0 -Si latune 1 --shared --with-netlib-lapack-tarfile=../lapack.tgz
 CompileScript: <<
 #!/bin/sh -ev
- cflags="-b 32"
- iflags=''
+ confflags="-b 32"
  if [ "%m" = 'i386' ]
-#	then mflags="-mfpmath=sse -msse -msse2 -msse3 -m32 -arch i386"; iflags="-mfpmath=387"
-	then mflags="-mfpmath=sse -msse -msse2 -msse3 -m32"
+	then mflags="-m32 -fomit-frame-pointer -march=native -mtune=native -mfpmath=sse -O2"
 	else if  [ "%m" = 'x86_64' ]
-		then mflags="-m64" ; cflags="-b 64"
+		then mflags="-m64 -fomit-frame-pointer -march=native -mtune=native -mfpmath=sse -O2"; confflags="-b 64"
 		else  mflags='-maltivec -mabi=altivec'
 		if [ `machine|sed -e 's,ppc,,' -e 's,\([0-9]\).*,\1,'` != 9 ]
-			then cflags='-Si cputhrchk 0 -D c -DATL_AVgcc -b 32'
+			then confflags='-Si cputhrchk 0 -D c -DATL_AVgcc -b 32'
 		fi
 	     fi
  fi
- lflags="-fPIC -O3 -fomit-frame-pointer -fgcse-sm -fgcse-las -ftree-loop-linear $mflags"
- iflags="-fPIC -O3 -fomit-frame-pointer $iflags"
+ iflags="-fPIC"
+ lflags="$iflags"
  cd ../LAPACK
- sed -i.bak -e "s;\(-funroll-all-loops\) -O3;\1 $lflags;" make.inc
+ sed -i.bak -e "/^OPTS /s;=;= $lflags $mflags;" -e 's, -g$,,' make.inc
 # make lapacklib
  cd ..
- ln -s %p/bin/gcc-4 gcc
+ ln -s %p/lib/gcc4.5/bin/gcc-4 gcc
 # ln -s /usr/bin/gcc-4.2 gcc
- export PATH=`pwd`:$PATH
+ export PATH=`pwd`:%p/lib/gcc4.5/bin:$PATH
  mkdir -p bld
  cd bld
- ../ATLAS/configure %c -F ic "$iflags" -F if "$lflags" $cflags
+ ../ATLAS/configure %c -F alg "$mflags" $confflags
 # first fix wrong F77SYSLIB; else gets set to %p/lib/gcc4.3/bin/../lib/gcc/powerpc-apple-darwin8/4.3.3
 # instead of following "path" : %p/lib/gcc4.3/bin/../lib/gcc/powerpc-apple-darwin8/4.3.3/../../.. (= %p/lib/gcc4.3/lib)
  path=`gfortran -print-file-name=libgfortran.dylib|sed -e 's,/[^/]*$,,'`
@@ -147,7 +169,10 @@ InfoTest: <<
 TestSuiteSize: large
 TestScript: <<
 #!/bin/sh -ev
- cd ../LAPACK
+ set +e
+ cd ..
+ export PATH=`pwd`:$PATH
+ cd LAPACK
  make -k blas_testing || :
 # to get timing uncluttered by compilation times, we'll repeat the tests at the end of the log:
  rm BLAS/*.out
@@ -167,11 +192,11 @@ TestScript: <<
 InstallScript: <<
 #!/bin/sh -ev
  mkdir -p %i/share/doc/%n/LAPACK
- cp doc/* README %i/share/doc/%n
+ cp doc/* INSTALL.txt README %i/share/doc/%n
  head -n29 bin/atlas_tee.c > %i/share/doc/%n/LICENSE
- rm ../LAPACK; ln -fs lapack-3.1.1 ../LAPACK
  cp -pPR ../LAPACK/manpages/{blas/,}man %i/share
- cp -pPR ../LAPACK/{html,COPYING,README,INSTALL/lawn81.pdf} %i/share/doc/%n/LAPACK
+ cp -pPR ../LAPACK/{LICENSE,README,INSTALL/lawn81.tex} %i/share/doc/%n/LAPACK
+ cp -pPR ../LAPACK/html %i/share/doc/%n/LAPACK
  ln -s html/index.html %i/share/doc/%n/LAPACK
  cd ../bld
  make install DESTDIR=%i
