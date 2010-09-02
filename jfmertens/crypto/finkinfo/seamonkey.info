@@ -354,7 +354,7 @@ endif\
 	mozilla/modules/plugin/base/src/nsPluginsDirUnix.cpp
 
 ### setup common plugin-dir for all mozilla-derived pkgs (thanks HansPeter!):
- sed -ri -e 's,/usr/lib(64|)(/mozilla/plugins),%p/lib/mozilla,' mozilla/xpcom/io/nsAppFileLocationProvider.cpp
+ sed -ri -e 's,/usr/lib(64|)(/mozilla/plugins),%p/lib\1,' mozilla/xpcom/io/nsAppFileLocationProvider.cpp
 
 ## install: (libnullplugin seems to have disappeared here, in 2.1alpha2)
 ##  sed -ri'' -e 's,(libnullplugin).so,\1@DLL_SUFFIX@,' suite/installer/package-manifest.in
@@ -408,7 +408,7 @@ ConfigureParams: <<
  --enable-auto-deps --enable-md --disable-necko-wifi --enable-safe-browsing --enable-system-hunspell \
  --enable-help-viewer --enable-ipcd --enable-oji --enable-javaxpcom --enable-single-profile --disable-static-mail \
  --build=%m-apple-darwin`uname -r|cut -f1 -d.` --host=%m-apple-darwin`uname -r|cut -f1 -d.` \
- --enable-update-packaging --enable-update-channel=beta --enable-tests
+ --enable-update-packaging --enable-update-channel=beta \
 <<
 # mv --enable-tests to TestConfigureParams ASAP
 ###### Last line is for private use !
@@ -457,6 +457,7 @@ CompileScript: <<
  fi
 
  env ac_cv_func_res_ninit=yes ./configure $enable64 --x-includes=$Xdir/include --x-libraries=$Xdir/lib %c
+
  make -j1 -w all
 <<
 
@@ -464,7 +465,7 @@ CompileScript: <<
 
 InfoTest: <<
 TestSuiteSize: large
-#TestConfigureParams: --enable-tests
+TestConfigureParams: --enable-tests
 # there are 1 or 2 tests that seem to hang from time to time; in that case, a "kill -TERM pid", where <pid> is the last
 # process in the corresponding terminal window will allow things to continue ...
 TestScript: <<
