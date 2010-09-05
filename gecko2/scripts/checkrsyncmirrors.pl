@@ -13,12 +13,11 @@ my $command;
 my $command_result;
 my $ts;
 my @files = ('TIMESTAMP', 'LOCAL');
-#my @files = ('TIMESTAMP');
 my $file;
 my $mirrorname;
 my @mirrornameparts;
 
-open($mirror_FH, '<', "$basepath/lib/fink/mirror/rsync") || die "Could not open rsync mirrors file\n";
+open($mirror_FH, '<', "/sw/fink/mirror/rsync") || die "Could not open rsync mirrors file\n";
 while (<$mirror_FH>) {
 	if($_ =~ /(^...-..: |Primary: )(rsync:\/\/.*)/) {
 		$mirror = $2;
