@@ -4,11 +4,11 @@ Package: seamonkey
 # Version according to mozilla/config/milestone.txt ("mozilla-version"), # would be 1.9.3a5pre _ too low !
 # rather than suite/config/version.txt ("seamonkey-version", =%type_raw[ver]), to leave room for growth till 2.0
 # For releases: ver=%v = 'release version' ; i.e. from suite/config/version-*.txt
-Version: 2.0.5.9
-Revision: 2
+Version: 2.0.6.9
+Revision: 1
 Distribution: 10.5, 10.6
 ## parameters needed at several places :
-Type: sys_nspr (no), ver (2.1a2)
+Type: sys_nspr (no), ver (2.1a3)
 
 Depends: %N2-shlibs (= %v-%r), bzip2-shlibs
 BuildDepends: <<
@@ -47,11 +47,12 @@ BuildDepends: <<
 	pkgconfig (>= 0.23-2),
 	popt (>= 1.14-1),
 	sed,
-	sqlite3 (>= 3.6.21-1),
+	sqlite3 (>= 3.7.0-1),
 	sqlite3-dev (>= 3.6.21-1),
 	startup-notification-dev (>= 0.9-2),
 	x11-dev
 <<
+# Needs fink HEAD for the moment (because of TestConfigureParams).
 # openssl098 should be replaced by system-openssl, since used only "by accident", for innocuous things. But needs right flag-ordering then -> later...
 # Further, in my 32bit build here, headers from openssl098-dev are used, while none in 64bit.. check!
 # esound and libcanberra0 needed a bdeps because of patch below of PR_LoadLibrary calls; else just the -shlibs might suffice as deps.
@@ -76,12 +77,13 @@ BuildDepends: <<
 #libnotify-shlibs libogg-shlibs libpng14-shlibs libpng3-shlibs libtool2-shlibs libvorbis0-shlibs libxml2-shlibs openssl098-shlibs orbit2-shlibs 
 #pango1-xft2-ft219-shlibs pixman-shlibs popt-shlibs seamonkey seamonkey2-shlibs sqlite3-shlibs startup-notification-shlibs uim-gtk2 uim-shlibs
 
+# requires sqlite3 >= 3.7.0
 # requires  -DSQLITE_SECURE_DELETE=1 -DSQLITE_ENABLE_FTS3=1 -DSQLITE_ENABLE_UNLOCK_NOTIFY  to be added to SetCFLAGS in sqlite3.info
 # build uses yacc; mine is from fink's bison ..; hope system's is OK. Similarly for python, perl, most of coreutils, etc
 
 GCC: 4.0
 
-Source-MD5: 77f09afc021691893090a9e8eeed5e75
+Source-MD5: 42ea74033403d408b116d849f65b2797
 Source: mirror:custom:mozilla.org/%N/releases/%type_raw[ver]/source/%N-%type_raw[ver].source.tar.bz2
 SourceDirectory: comm-central
 CustomMirror: <<
@@ -103,11 +105,10 @@ PatchScript: <<
 # Try to keep next list +/- in order of the sed commands here, to make it easier to keep it up to date..
  patchlst=`echo \
 	mozilla/modules/libpref/src/nsPrefService.cpp \
-	mozilla/gfx/thebes/public/gfxQuartzSurface.h \
-	mozilla/gfx/thebes/src/gfxASurface.cpp \
+	mozilla/gfx/thebes/gfxQuartzSurface.h \
+	mozilla/gfx/thebes/gfxASurface.cpp \
 	mailnews/addrbook/build/Makefile.in \
 	mozilla/toolkit/library/Makefile.in \
-	mozilla/toolkit/crashreporter/google-breakpad/src/common/mac/macho_walker.cc \
 	suite/installer/Makefile.in \
 	mozilla/build/automation-build.mk \
 	{,mozilla/{,js/src/}}configure{.in,} \
@@ -128,18 +129,19 @@ PatchScript: <<
 	{,mozilla{,/js/src}/}configure{,.in} mozilla/security/coreconf/Darwin.mk \
 	directory/c-sdk/{configure{,.in},config/Rhapsody.mk} \
 	directory/c-sdk/ldap/libraries/liblber/lber-int.h \
+	mozilla/media/libvpx/vp8/common/threading.h \
+	mozilla/media/libsydneyaudio/src/sydney_audio_mac.c \
 	mozilla/xpcom/io/nsLocalFileUnix.cpp \
 	mozilla/nsprpub/pr/src/cplus/rcthread.h \
 	mozilla/netwerk/build/Makefile.in \
 	mozilla/extensions/auth/Makefile.in \
-	mozilla/gfx/thebes/src/Makefile.in \
+	mozilla/gfx/thebes/Makefile.in \
 	mozilla/Makefile.in \
 	{,mozilla/}configure{.in,} \
 	mozilla/js/src/xpconnect/shell/Makefile.in \
 	mozilla/xpcom/typelib/xpidl/Makefile.in \
 	mozilla/nsprpub/pr/src/Makefile.in \
 	mozilla/embedding/browser/gtk/tests/Makefile.in \
-	mozilla/gfx/src/psshared/nsCUPSShim.cpp \
 	mozilla/{toolkit/{xre/nsNativeAppSupportUnix,crashreporter/client/crashreporter_linux},modules/libpr0n/decoders/icon/gtk/nsIconChannel}.cpp \
 	mozilla/{widget/src/gtk2/nsBidiKeyboard,dom/plugins/PluginModuleChild}.cpp \
 	mozilla/widget/src/{gtk2/nsIdleServiceGTK,qt/nsIdleServiceQt}.cpp \
@@ -147,7 +149,6 @@ PatchScript: <<
 	mozilla/widget/src/{gtk2,qt}/nsSound.cpp \
 	mozilla/{extensions/pref/system-pref/src/gconf/nsSystemPrefService,toolkit/crashreporter/client/crashreporter_gtk_common}.cpp \
 	mozilla/layout/generic/test/test_backspace_delete.xul \
-	mozilla/gfx/thebes/src/GLContextProvider{GLX,OSMesa}.cpp \
 	mozilla/extensions/auth/nsAuthGSSAPI.cpp \
 	mozilla/accessible/src/atk/nsApplicationAccessibleWrap.cpp \
 	mozilla/accessible/src/atk/nsApplicationAccessibleWrap.cpp \
@@ -185,7 +186,7 @@ PatchScript: <<
  # And CGContext.h suffices
  sed -i'' -e \
  's,Carbon/Carbon.h,/System/Library/Frameworks/ApplicationServices.framework/Frameworks/CoreGraphics.framework/Headers/CGContext.h,' \
-	mozilla/gfx/thebes/public/gfxQuartzSurface.h
+	mozilla/gfx/thebes/gfxQuartzSurface.h
 # sed -i'' -e 's,Carbon\.h,Carbon/&,' mozilla/gfx/thebes/src/gfxQuartzFontCache.mm # (no longer exists apparently)
 
 ## Either of the 2 following attempts should be viable.
@@ -206,7 +207,7 @@ PatchScript: <<
 #	mozilla/gfx/thebes/src/gfxASurface.cpp
 
 #### OTHER ATTEMPT FOR CAIRO_QUARTZ : disable any quartz support altogether...
- sed -i'' -e 's,CAIRO_HAS_QUARTZ_SURFACE,&NO,' -e 's,XP_MACOSX,&NO,' mozilla/gfx/thebes/src/gfxASurface.cpp
+ sed -i'' -e 's,CAIRO_HAS_QUARTZ_SURFACE,&NO,' -e 's,XP_MACOSX,&NO,' mozilla/gfx/thebes/gfxASurface.cpp
 
  sed -i'' -e 's,Cocoa,AddressBook -framework Foundation,' mailnews/addrbook/build/Makefile.in
 
@@ -216,9 +217,9 @@ PatchScript: <<
  #  -->  since it is only for that, SWITCH to system-openssl (done) ! (next not needed when crashreporter is disabled (64bit))
  sed -i'' -e 's,EXTRA_DSO_LIBS),& -lcrypto,' -e '/AudioUnit/a\
 	-framework Foundation \\' mozilla/toolkit/library/Makefile.in
- sed -i'' -e '/CPU_TYPE_X86/a\
-#elif __x86_64__\
-	cpu_type = CPU_TYPE_X86;' mozilla/toolkit/crashreporter/google-breakpad/src/common/mac/macho_walker.cc
+# sed -i'' -e '/CPU_TYPE_X86/a\
+##elif __x86_64__\
+#	cpu_type = CPU_TYPE_X86;' mozilla/toolkit/crashreporter/google-breakpad/src/common/mac/macho_walker.cc
  # allow to do a "make install" on Darwin w/o app
  sed -i'' -e 's,Darwin,No&,' suite/installer/Makefile.in
  # and, for 'make check' :
@@ -272,13 +273,19 @@ endif\
 # sed -i'' -e 's,lxpcom,& -lxpcom_core,' mozilla/build/unix/mozilla-config.in  # (no longer exists apparently)
 ### The following is "for safety",  to avoid "implicit declaration" warnings :
  sed -ri'' -e 's,\(XP_OS2\) \&\& \!defined\(DARWIN\)$,\(XP_OS2\),' directory/c-sdk/ldap/libraries/liblber/lber-int.h
+ sed -ri'' -e '\Xmach/semaphoreXi \
+#include <mach/mach_init.h>' mozilla/media/libvpx/vp8/common/threading.h
 
 #### MISC
+### patch for 10.6 from https://bugzilla.mozilla.org/show_bug.cgi?id=492072 (thanks Diego Caravana)
+ sed -ri'' -e '/AudioUnit.h/i\
+#include <CoreServices/CoreServices.h>' mozilla/media/libsydneyaudio/src/sydney_audio_mac.c
 ### inversion of arguments in call to  quotactl (and there is no sys/sysmacros.h) :
-sed -i'' -e '/sysmacros.h/d' -e 's;\(QCMD(Q_GETQUOTA, USRQUOTA)\), \(deviceName.get()\);\2, \1;' mozilla/xpcom/io/nsLocalFileUnix.cpp
+ sed -i'' -e '/sysmacros.h/d' -e 's;\(QCMD(Q_GETQUOTA, USRQUOTA)\), \(deviceName.get()\);\2, \1;' \
+	mozilla/xpcom/io/nsLocalFileUnix.cpp
 ### attempt to fix problem with --enable-cplus under c++ > 4.0
 ## Else: "rcthread.h:190: error: ISO C++ forbids declaration of 'RCPrimordialThread' with no type"
-sed -i'' -e '/PR_IMPLEMENT(RCThread)/i \
+ sed -i'' -e '/PR_IMPLEMENT(RCThread)/i \
 class RCPrimordialThread;\
 ' mozilla/nsprpub/pr/src/cplus/rcthread.h
 ### libresolv
@@ -289,12 +296,12 @@ class RCPrimordialThread;\
  sed -ri'' -e 's,^MODULE[[:space:]],OS_LIBS += -lresolv\n&,' mozilla/netwerk/build/Makefile.in
  sed -ri'' -e '/MOZ_COMPONENT_LIBS/a \\t\t-lresolv \\' mozilla/extensions/auth/Makefile.in
 ### lXrender
- sed -ri'' -e '$a EXTRA_DSO_LDOPTS += -lXrender' mozilla/gfx/thebes/src/Makefile.in
+ sed -ri'' -e '$a EXTRA_DSO_LDOPTS += -lXrender' mozilla/gfx/thebes/Makefile.in
 ### allow enable-xul :
  sed -ri'' -e '/alldep all::/a \\tmkdir -p dist/bin/XUL' mozilla/Makefile.in
  sed -ri'' -e 's, [^ ]*/bin/XUL,,' {,mozilla/}configure{.in,}
 #  for XRE_GetFileFromPath and XRE_GetBinaryFromPath in xpcshell.cpp (why is libxul not in LIBXUL_LIBS ??) :
- sed -ri'' -e '/NSPR_LIBS/a \\t\t-lxul \\' mozilla/js/src/xpconnect/shell/Makefile.in
+ sed -ri'' -e '/NSPR_LIBS/s,$, -lxul,' mozilla/js/src/xpconnect/shell/Makefile.in
 ### Non-portable use of sed (not even usable with GNU sed)
  sed -i'' -e 's,sed -E,sed -r,' mozilla/xpcom/typelib/xpidl/Makefile.in
 ### link nspr with g++ when using --enable-cplus
@@ -308,6 +315,7 @@ EXTRA_LIBS		+= \\\
 		$(NULL)\
 endif\
 ' mozilla/embedding/browser/gtk/tests/Makefile.in
+
 ### Fixing SOME calls to PR_LoadLibrary or dlopen ... (using proper install_names..) _ just looked at those with a hard-coded string.
 ### Possibly this would make the use of -dead_strip_dylibs safe too ? (cf CompileScript)
 ### Would still need to check all binaries where PR_LoadLibrary or dlopen appears..
@@ -316,7 +324,7 @@ endif\
 ### Use of otool -D below is legal (except possibly for -lXext and -lOSMesa _ + others in $Xdir? _, but there anyway nothing is..),
 ### since names of deps must change if install_names do. And this avoids hard-coding too many things here.
  inst_nm () { otool -D $1 |fgrep -v : ; }
- sed -ri'' -e "s,libcups\.so\.2,`inst_nm /usr/lib/libcups.2.dylib`," mozilla/gfx/src/psshared/nsCUPSShim.cpp
+# sed -ri'' -e "s,libcups\.so\.2,`inst_nm /usr/lib/libcups.2.dylib`," mozilla/gfx/src/psshared/nsCUPSShim.cpp
  sed -ri'' -e "s,libgnomeui-2\.so\.0,`inst_nm %p/lib/libgnomeui-2.dylib`," \
 	-e "s,libgnome-2.so.0,`inst_nm %p/lib/libgnome-2.dylib`," \
 	-e "s,libgnomevfs-2\.so\.0,`inst_nm %p/lib/libgnomevfs-2.dylib`," \
@@ -332,8 +340,8 @@ endif\
  sed -ri'' -e "s,libgconf-2.so.4,`inst_nm %p/lib/libgconf-2.dylib`," -e "s,libgconf-2.so,`inst_nm %p/lib/libgconf-2.dylib`," \
 	mozilla/{extensions/pref/system-pref/src/gconf/nsSystemPrefService,toolkit/crashreporter/client/crashreporter_gtk_common}.cpp
  sed -ri'' -e "s,libpango-1.0.so.0,`inst_nm %p/lib/libpango-1.0.dylib`," mozilla/layout/generic/test/test_backspace_delete.xul
- sed -ri'' -e "s,libGL.so.1,`inst_nm $Xdir/lib/libGL.1.dylib`," mozilla/gfx/thebes/src/GLContextProviderGLX.cpp
- sed -ri'' -e "s,osmesalib[.]get[(][)],\"`inst_nm $Xdir/lib/libOSMesa.dylib`\"," mozilla/gfx/thebes/src/GLContextProviderOSMesa.cpp
+# sed -ri'' -e "s,libGL.so.1,`inst_nm $Xdir/lib/libGL.1.dylib`," mozilla/gfx/thebes/src/GLContextProviderGLX.cpp
+# sed -ri'' -e "s,osmesalib[.]get[(][)],\"`inst_nm $Xdir/lib/libOSMesa.dylib`\"," mozilla/gfx/thebes/src/GLContextProviderOSMesa.cpp
  sed -ri'' -e "s,libgssapi_krb5[.]so[.]2,`inst_nm /usr/lib/libgssapi_krb5.dylib`," mozilla/extensions/auth/nsAuthGSSAPI.cpp
  sed -ri'' -e "s,libatk-1[.]0[.]so[.]0,`inst_nm %p/lib/libatk-1.0.dylib`," \
 	-e 's,":/usr/lib,":%p/lib:/usr/lib,' mozilla/accessible/src/atk/nsApplicationAccessibleWrap.cpp
@@ -354,7 +362,7 @@ endif\
 	mozilla/modules/plugin/base/src/nsPluginsDirUnix.cpp
 
 ### setup common plugin-dir for all mozilla-derived pkgs (thanks HansPeter!):
- sed -ri -e 's,/usr/lib(64|)(/mozilla/plugins),%p/lib\1,' mozilla/xpcom/io/nsAppFileLocationProvider.cpp
+ sed -ri -e 's,/usr/lib(64|)(/mozilla/plugins),%p/lib\2,' mozilla/xpcom/io/nsAppFileLocationProvider.cpp
 
 ## install: (libnullplugin seems to have disappeared here, in 2.1alpha2)
 ##  sed -ri'' -e 's,(libnullplugin).so,\1@DLL_SUFFIX@,' suite/installer/package-manifest.in
@@ -393,7 +401,7 @@ endif\
 ## (and reluctant to impose 2 full builds on the user...)
 # Also "--enable-boehm" leads to trouble...; probably not important (for a 'production' pkg): according to
 # http://www.hpl.hp.com/personal/Hans_Boehm/gc/ , it is only used as a leak detector.
-# --enable-libxul leads to "/bld/seamonkey-1.9.1b3pre-1/mozilla/dist/bin/XUL: No such file or directory" in linking
+## --enable-libxul leads to "/bld/seamonkey-1.9.1b3pre-1/mozilla/dist/bin/XUL: No such file or directory" in linking
 #  mozilla/xpfe/components/autocomplete/src/nsAutoComplete.o
 ConfigureParams: <<
  --enable-macos-target=${MACOSX_DEPLOYMENT_TARGET} --enable-optimize=-Os --enable-mobile-optimize --disable-debug --enable-strip \
@@ -401,18 +409,19 @@ ConfigureParams: <<
  --with-qtdir=%p --enable-application=suite --enable-calendar --enable-default-toolkit=cairo-gtk2 --enable-xul --enable-cplus \
  --enable-places --enable-image-decoders=all --enable-image-encoders=all --enable-necko-protocols=all --enable-accessibility \
  --enable-ctl --enable-canvas --enable-update-packaging --enable-storage --enable-profilesharing --enable-startup-notification \
- --enable-xpctools --enable-url-classifier --enable-ipv6 --enable-ldap-experimental --with-sasl --enable-smil \
+ --enable-xpctools --enable-url-classifier --enable-ipv6 --with-sasl --enable-smil \
  --with-x --enable-xinerama --enable-xprint --enable-gio --enable-pango --enable-xft --enable-postscript \
  --enable-svg --enable-svg-renderer=cairo --enable-system-cairo --enable-system-lcms --enable-glitz --enable-system-sqlite \
  --with-system-mng --with-system-jpeg --with-system-zlib --with-system-bz2 (%type_raw[sys_nspr] = .) --with-system-nspr \
  --enable-auto-deps --enable-md --disable-necko-wifi --enable-safe-browsing --enable-system-hunspell \
- --enable-help-viewer --enable-ipcd --enable-oji --enable-javaxpcom --enable-single-profile --disable-static-mail \
+ --enable-help-viewer --enable-ipcd --enable-oji --disable-javaxpcom --enable-single-profile --disable-static-mail \
  --build=%m-apple-darwin`uname -r|cut -f1 -d.` --host=%m-apple-darwin`uname -r|cut -f1 -d.` \
- --enable-update-packaging --enable-update-channel=beta \
+ --enable-update-packaging --enable-update-channel=beta
 <<
-# mv --enable-tests to TestConfigureParams ASAP
 ###### Last line is for private use !
-###### (and \ at its end, with blak line after configure call, is to hack around a difficulty with TestConfigureParams)
+###### (and \ at its end, with blankline after configure call, is to hack around a difficulty with TestConfigureParams)
+## --disable-javaxpcom : broken again (nsJavaInterfaces.cpp); cf https://bugzilla.mozilla.org/show_bug.cgi?id=577426
+## rm --enable-ldap-experimental: cf https://bugzilla.mozilla.org/show_bug.cgi?id=593727
 ## disable-necko-wifi; else
 ## "nsWifiScannerMac.cpp:62: error: no 'nsresult nsWifiMonitor::DoScanWithCoreWLAN()' member function declared in class 'nsWifiMonitor'",
 ## and same with "nsWifiMonitor::DoScanOld()" at l. 137.
@@ -603,7 +612,7 @@ SplitOff: <<
 	libgnome2-shlibs, libgnomecanvas2-shlibs, libgnomeui2-shlibs (>= 2.24.2-2), libhunspell-shlibs (>= 1.2.8-1005),
 	libjpeg8-shlibs, libnotify-shlibs,  (%type_raw[sys_nspr] = .) nspr.0d-shlibs (>= 4.8.4-4),
 	openssl098-shlibs, orbit2-shlibs, pango1-xft2-ft219-shlibs, popt-shlibs,
-	sqlite3-shlibs(>= 3.6.16.1), startup-notification-shlibs (>= 0.9-2), x11-shlibs
+	sqlite3-shlibs(>= 3.7.0-1), startup-notification-shlibs (>= 0.9-2), x11-shlibs
   <<
   DocFiles: mozilla/LEGAL mozilla/LICENSE
   Description: Seamonkey - shared libraries
