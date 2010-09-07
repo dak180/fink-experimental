@@ -58,6 +58,7 @@ InfoTest: <<
   TestSuiteSize: small
 <<
 InstallScript: <<
+ #!/bin/sh -ev
  cd build && make -j1 install DESTDIR=%d
  pkgdatadir=%i/share/guile/2.0
  mkdir -p $pkgdatadir/scripts/binoverride
