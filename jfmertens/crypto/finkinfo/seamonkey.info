@@ -130,6 +130,7 @@ PatchScript: <<
 	directory/c-sdk/{configure{,.in},config/Rhapsody.mk} \
 	directory/c-sdk/ldap/libraries/liblber/lber-int.h \
 	mozilla/media/libvpx/vp8/common/threading.h \
+	mozilla/content/canvas/src/Makefile.in \
 	mozilla/media/libsydneyaudio/src/sydney_audio_mac.c \
 	mozilla/xpcom/io/nsLocalFileUnix.cpp \
 	mozilla/nsprpub/pr/src/cplus/rcthread.h \
@@ -187,7 +188,6 @@ PatchScript: <<
  sed -i'' -e \
  's,Carbon/Carbon.h,/System/Library/Frameworks/ApplicationServices.framework/Frameworks/CoreGraphics.framework/Headers/CGContext.h,' \
 	mozilla/gfx/thebes/gfxQuartzSurface.h
-# sed -i'' -e 's,Carbon\.h,Carbon/&,' mozilla/gfx/thebes/src/gfxQuartzFontCache.mm # (no longer exists apparently)
 
 ## Either of the 2 following attempts should be viable.
 #### FIRST ATTEMPT FOR CAIRO_QUARTZ (ends up with needing to add --enable-quartz-image  to cairo.info)
@@ -217,9 +217,6 @@ PatchScript: <<
  #  -->  since it is only for that, SWITCH to system-openssl (done) ! (next not needed when crashreporter is disabled (64bit))
  sed -i'' -e 's,EXTRA_DSO_LIBS),& -lcrypto,' -e '/AudioUnit/a\
 	-framework Foundation \\' mozilla/toolkit/library/Makefile.in
-# sed -i'' -e '/CPU_TYPE_X86/a\
-##elif __x86_64__\
-#	cpu_type = CPU_TYPE_X86;' mozilla/toolkit/crashreporter/google-breakpad/src/common/mac/macho_walker.cc
  # allow to do a "make install" on Darwin w/o app
  sed -i'' -e 's,Darwin,No&,' suite/installer/Makefile.in
  # and, for 'make check' :
@@ -268,15 +265,20 @@ endif\
  sed -i'' -e 's, -fpascal-strings,,' -e 's, -no-cpp-precomp,,' -e 's, -Wmost, -Wall,' -e 's, -Oz, -Os,' \
 	{,mozilla{,/js/src}/}configure{,.in} mozilla/security/coreconf/Darwin.mk \
 	directory/c-sdk/{configure{,.in},config/Rhapsody.mk}
-### The next appears (-ed??) needed eg when building yelp...
-### maybe also in mozilla/xulrunner/installer/libxul{-unstable,}.pc.in ?
-# sed -i'' -e 's,lxpcom,& -lxpcom_core,' mozilla/build/unix/mozilla-config.in  # (no longer exists apparently)
 ### The following is "for safety",  to avoid "implicit declaration" warnings :
  sed -ri'' -e 's,\(XP_OS2\) \&\& \!defined\(DARWIN\)$,\(XP_OS2\),' directory/c-sdk/ldap/libraries/liblber/lber-int.h
  sed -ri'' -e '\Xmach/semaphoreXi \
 #include <mach/mach_init.h>' mozilla/media/libvpx/vp8/common/threading.h
 
 #### MISC
+## get around a miscompilation with g++_4.2 (at least on 10.5.8 i386, test may have to be adjusted) :
+sed -i'' -e '$a\
+ifeq ($(HOST_OS_ARCH)_$(TARGET_CPU),Darwin_i386)\
+WebGLContextGL.o: WebGLContextGL.cpp $(GLOBAL_DEPS)\
+	$(REPORT_BUILD)\
+	@$(MAKE_DEPS_AUTO_CXX)\
+	$(ELOG) g++ $(OUTOPTION)$@ -c `sed -e "s, -Werror=return-type,,"<<<"$(COMPILE_CXXFLAGS)"` $(_VPATH_SRCS)\
+endif'		mozilla/content/canvas/src/Makefile.in
 ### patch for 10.6 from https://bugzilla.mozilla.org/show_bug.cgi?id=492072 (thanks Diego Caravana)
  sed -ri'' -e '/AudioUnit.h/i\
 #include <CoreServices/CoreServices.h>' mozilla/media/libsydneyaudio/src/sydney_audio_mac.c
@@ -300,7 +302,7 @@ class RCPrimordialThread;\
 ### allow enable-xul :
  sed -ri'' -e '/alldep all::/a \\tmkdir -p dist/bin/XUL' mozilla/Makefile.in
  sed -ri'' -e 's, [^ ]*/bin/XUL,,' {,mozilla/}configure{.in,}
-#  for XRE_GetFileFromPath and XRE_GetBinaryFromPath in xpcshell.cpp (why is libxul not in LIBXUL_LIBS ??) :
+# for XRE_GetFileFromPath and XRE_GetBinaryFromPath in xpcshell.cpp (why is libxul not in LIBXUL_LIBS ??) :
  sed -ri'' -e '/NSPR_LIBS/s,$, -lxul,' mozilla/js/src/xpconnect/shell/Makefile.in
 ### Non-portable use of sed (not even usable with GNU sed)
  sed -i'' -e 's,sed -E,sed -r,' mozilla/xpcom/typelib/xpidl/Makefile.in
@@ -316,6 +318,7 @@ EXTRA_LIBS		+= \\\
 endif\
 ' mozilla/embedding/browser/gtk/tests/Makefile.in
 
+
 ### Fixing SOME calls to PR_LoadLibrary or dlopen ... (using proper install_names..) _ just looked at those with a hard-coded string.
 ### Possibly this would make the use of -dead_strip_dylibs safe too ? (cf CompileScript)
 ### Would still need to check all binaries where PR_LoadLibrary or dlopen appears..
@@ -324,7 +327,6 @@ endif\
 ### Use of otool -D below is legal (except possibly for -lXext and -lOSMesa _ + others in $Xdir? _, but there anyway nothing is..),
 ### since names of deps must change if install_names do. And this avoids hard-coding too many things here.
  inst_nm () { otool -D $1 |fgrep -v : ; }
-# sed -ri'' -e "s,libcups\.so\.2,`inst_nm /usr/lib/libcups.2.dylib`," mozilla/gfx/src/psshared/nsCUPSShim.cpp
  sed -ri'' -e "s,libgnomeui-2\.so\.0,`inst_nm %p/lib/libgnomeui-2.dylib`," \
 	-e "s,libgnome-2.so.0,`inst_nm %p/lib/libgnome-2.dylib`," \
 	-e "s,libgnomevfs-2\.so\.0,`inst_nm %p/lib/libgnomevfs-2.dylib`," \
@@ -340,8 +342,6 @@ endif\
  sed -ri'' -e "s,libgconf-2.so.4,`inst_nm %p/lib/libgconf-2.dylib`," -e "s,libgconf-2.so,`inst_nm %p/lib/libgconf-2.dylib`," \
 	mozilla/{extensions/pref/system-pref/src/gconf/nsSystemPrefService,toolkit/crashreporter/client/crashreporter_gtk_common}.cpp
  sed -ri'' -e "s,libpango-1.0.so.0,`inst_nm %p/lib/libpango-1.0.dylib`," mozilla/layout/generic/test/test_backspace_delete.xul
-# sed -ri'' -e "s,libGL.so.1,`inst_nm $Xdir/lib/libGL.1.dylib`," mozilla/gfx/thebes/src/GLContextProviderGLX.cpp
-# sed -ri'' -e "s,osmesalib[.]get[(][)],\"`inst_nm $Xdir/lib/libOSMesa.dylib`\"," mozilla/gfx/thebes/src/GLContextProviderOSMesa.cpp
  sed -ri'' -e "s,libgssapi_krb5[.]so[.]2,`inst_nm /usr/lib/libgssapi_krb5.dylib`," mozilla/extensions/auth/nsAuthGSSAPI.cpp
  sed -ri'' -e "s,libatk-1[.]0[.]so[.]0,`inst_nm %p/lib/libatk-1.0.dylib`," \
 	-e 's,":/usr/lib,":%p/lib:/usr/lib,' mozilla/accessible/src/atk/nsApplicationAccessibleWrap.cpp
@@ -363,9 +363,6 @@ endif\
 
 ### setup common plugin-dir for all mozilla-derived pkgs (thanks HansPeter!):
  sed -ri -e 's,/usr/lib(64|)(/mozilla/plugins),%p/lib\2,' mozilla/xpcom/io/nsAppFileLocationProvider.cpp
-
-## install: (libnullplugin seems to have disappeared here, in 2.1alpha2)
-##  sed -ri'' -e 's,(libnullplugin).so,\1@DLL_SUFFIX@,' suite/installer/package-manifest.in
 
 ### For alpha or beta versions : need to create configure scripts
 ###  autoconf2.13 (!) needed, and fink has no corresponding automake, so autoreconf can't be used..
@@ -419,7 +416,6 @@ ConfigureParams: <<
  --enable-update-packaging --enable-update-channel=beta
 <<
 ###### Last line is for private use !
-###### (and \ at its end, with blankline after configure call, is to hack around a difficulty with TestConfigureParams)
 ## --disable-javaxpcom : broken again (nsJavaInterfaces.cpp); cf https://bugzilla.mozilla.org/show_bug.cgi?id=577426
 ## rm --enable-ldap-experimental: cf https://bugzilla.mozilla.org/show_bug.cgi?id=593727
 ## disable-necko-wifi; else
@@ -466,7 +462,6 @@ CompileScript: <<
  fi
 
  env ac_cv_func_res_ninit=yes ./configure $enable64 --x-includes=$Xdir/include --x-libraries=$Xdir/lib %c
-
  make -j1 -w all
 <<
 
@@ -475,8 +470,6 @@ CompileScript: <<
 InfoTest: <<
 TestSuiteSize: large
 TestConfigureParams: --enable-tests
-# there are 1 or 2 tests that seem to hang from time to time; in that case, a "kill -TERM pid", where <pid> is the last
-# process in the corresponding terminal window will allow things to continue ...
 TestScript: <<
 #!/bin/sh -ev
  set +e
@@ -634,10 +627,10 @@ SplitOff: <<
 # Here all shared libs are listed. One could probably consider those in plugins as meant to be internal
 # (or even all those not in %p/lib/%N-2/sdk/lib ?), and omit them.
   Shlibs: <<
+	%p/lib/%N-2/libangle.dylib 1.0.0 %n (>= 2.0.9-1)
 	%p/lib/%N-2/libfreebl3.dylib 1.0.0 %n (>= 1.0-1)
 	%p/lib/%N-2/libmozalloc.dylib 1.0.0 %n (>= 2.0.9-1)
 	%p/lib/%N-2/libgkgfx.dylib 1.0.0 %n (>= 1.0-1)
-	%p/lib/%N-2/libgfxutils.dylib 1.0.0 %n (>= 2.0.9-1)
 	%p/lib/%N-2/libgtkxtbin.dylib 1.0.0 %n (>= 1.0-1)
 	%p/lib/%N-2/libldap60.dylib 1.0.0 %n (>= 1.0-1)
 	%p/lib/%N-2/libldif60.dylib 1.0.0 %n (>= 1.0-1)
@@ -660,6 +653,7 @@ SplitOff: <<
 	%p/lib/%N-2/libxul.dylib 1.0.0 %n (>= 1.0-1)
 	%p/lib/%N-2/libycbcr.dylib 1.0.0 %n (>= 2.0.9-1)
   <<
+#	%p/lib/%N-2/libgfxutils.dylib 1.0.0 %n (>= 2.0.9-1)
 #	%p/lib/%N-2/libgfxpsshar.dylib 1.0.0 %n (>= 1.0-1)
 #	%p/lib/%N-2/libjsj.dylib 1.0.0 %n (>= 1.0-1)
 #	%p/lib/%N-2/plugins/libnptest.dylib 1.0.0 %n (>= 1.0-1)
