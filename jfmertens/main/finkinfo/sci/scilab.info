@@ -6,11 +6,12 @@ Revision: 1
 Maintainer: None <fink-devel@lists.sourceforge.net>
 Depends: readline5-shlibs, tcltk, (%type_raw[-atlas] != -atlas) xaw3d-shlibs, %N-shlibs (>= %v-%r)
 BuildDepends: <<
-	fink (>= 0.24.12), suitesparse,
+	fink (>= 0.24.12), suitesparse, swig,
 	gcc45, fftw3, hdf5-18, libxml2, pcre, libgettext8-dev, libiconv-dev, libncurses5, libsablot, ocaml, readline5, tcltk-dev, x11-dev,
 	(%type_pkg[-atlas]) atlas (>= 3.8.1-1),
 	libxml2,
-	(%type_raw[-atlas] != -atlas) xaw3d
+	(%type_raw[-atlas] != -atlas) xaw3d,
+	splint, saxon, antlr, commons-beanutils
 <<
 Conflicts: %{Ni}, %{Ni}-atlas
 Replaces:  %{Ni}, %{Ni}-atlas
@@ -21,21 +22,30 @@ PatchScript: <<
 #!/bin/sh -ev
 ###### CHECK : 's,-module,& -bundle_loader %p/lib/scilab-%v/bin/scilex,' : which is correct bundle_loader now ?
  sed -i.bak -e 's,--quiet,,' -e 's,^\t@,\t,'  Makemex.in
+### get rid of hard-coded %p in configure (stupid validator..)
+ pr=`sed -e 's, ,,'<<<"/s w/"`;  sed -i'' -e "s,$pr,%p/,g" configure
+### help get jar files found (configure knows CLASPATH, and doesn't use it):
+ sed -i'' -e 's,DEFAULT_JAR_DIR=",&%p/share/java/* ,' configure
+### Try enabling tcltk even on MACOSX (else, must use --without-tk)
+ sed -i'' -e 's,test "$MACOSX" = "1,&NO,' configure
 <<
 
 ConfigureParams: <<
  --with-fink-prefix=%p --with-gfortran --with-tcl-include=%p/include --with-tcl-library=%p/lib --with-ocaml --without-gui \
  --without-pvm --x-includes=/usr/X11R6/include --x-libraries=/usr/X11R6/lib --build=%m-apple-darwin`uname -r|cut -f1 -d.` \
- --host=%m-apple-darwin`uname -r|cut -f1 -d.` --with-tk-include=%p/include --with-tk-library=%p/lib \
+ --host=%m-apple-darwin`uname -r|cut -f1 -d.` --with-tk-include=%p/include --with-tk-library=%p/lib --with-install-help-xml \
  --with-hdf5-include=%p/lib/hdf5-18/include  --with-hdf5-library=%p/lib/hdf5-18/lib --with-libiconv-prefix=%p \
  --with-libintl-prefix=%p --with-fftw-include=%p/include --with-fftw-library=%p/lib --with-libxml2=%p --with-pcre=%p \
- --with-umfpack-library=%p/lib --with-umfpack-include=%p/include/suitesparse --without-tk --without-matio --disable-build-help
+ --with-umfpack-library=%p/lib --with-umfpack-include=%p/include/suitesparse --enable-build-swig --without-matio
 <<
+# --without-gui :  forced because jgraphx.jar is missing
 SetLIBRARY_PATH: %p/lib
 CompileScript: <<
  #!/bin/sh -ev
  export CPATH=%p/include
  export PKG_CONFIG_PATH=%p/lib/pango-ft219/lib/pkgconfig:%p/lib/freetype219/lib/pkgconfig:%p/lib/fontconfig2/lib/pkgconfig:$PKG_CONFIG_PATH
+## %N claims needs 1.6 _ at least from 5.3beta on _; but my 1.6 is only 32bit, so let us try 1.5...
+ export JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home
  c="%c"; if test %type_raw[-atlas] == "-atlas" ; then c="$c --with-blas-library=%p/lib --with-lapack-library=%p/lib"; fi
  ./configure $c
  sed -ri'' -e 's,-I%p/+include([^/]),\1,g' -e 's,-L%p/+lib([^/]),\1,g' config.status 

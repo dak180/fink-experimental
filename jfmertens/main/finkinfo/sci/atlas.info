@@ -69,42 +69,32 @@ sed -i.bak -e 's,libtool -dynamic,\$(LIBTOOL) -dynamic,' -e 's,_version %v,_vers
 	-e 's,-compatibility_version \$(VER) ,,' \
 	-e '/lapack\.dylib *:/,/clapack\.dylib *:/s,\$(LIBS),-lgcc_s.1 &,' makes/Make.lib
 sed -i.bak -e 's,LIBTOOL",LIBTOOL -single_module -dead_strip -x",' configure
-# wrong names: https://sourceforge.net/tracker/?func=detail&aid=2992053&group_id=23725&atid=379482
-sed -i.bak -e 's,ger\([cu]\)2,ger2\1,' interfaces/blas/F77/src/f77wrap/ATL_F77wrap_ger2{c,u}.c
-# and then: https://sourceforge.net/tracker/index.php?func=detail&aid=2992126&group_id=23725&atid=379482
-for t in c z; do for l in c u; do
-sed -i.bak "s,${t}ger2[(],${t}ger2${l}(," interfaces/blas/C/src/cblas_${t}ger2${l}.c
-done; done
-for t in c z ; do \
-sed -i.bak "/#endif/i \
-#define cblas_ger2c    cblas_${t}ger2c\\
-#define cblas_ger2u    cblas_${t}ger2u" include/atlas_cblas${t}alias.h
-done
 
 # Typos
 sed -i'' -e 's,flag = ,flag=,' configure
 sed -i'' -e '/ATL_ARCH_UST2/s,||,\&\&,' include/atlas_threads.h
 # (else "fatal error: sys/processor.h: No such file or directory" in ATL_log2tlaunch etc)
 
-
 # next is to have ATL_AS_OSX_PPC defined when it should be
 sed -i.bak -e '1i #include "atlas_asm.h"' tune/blas/gemm/CASES/ATL_dmm4x4x2pf_av.c
-cd ..;
+cd ..
 cd LAPACK
 sed -e 's,\.\./\.\./blas\$(PLAT)\.a,%b/../bld/lib/libf77blas.a %b/../bld/lib/libcblas.a %b/../bld/lib/libatlas.a,' \
     -e 's,lapack\$(PLAT)\.a,../bld/lib/liblapack.a,' \
     -e 's,^TIMER,\#TIMER,' -e '/INT_ETIME/s,^\# *,,' < make.inc.example > make.inc
 <<
+
 # -Si omp 2 -Si antthr 2 -Si lapackref ? -Ss flapack %b/../LAPACK/SRC ?
-ConfigureParams: -v 2 -Si archdef 0 -Si latune 1 --shared --with-netlib-lapack-tarfile=../lapack.tgz
+ConfigureParams: -v 2 -Si archdef 0 -Si latune 1 --with-netlib-lapack-tarfile=../lapack.tgz
 CompileScript: <<
 #!/bin/sh -ev
  confflags="-b 32"
+ mflags="-fomit-frame-pointer -fPIC -O2"
  if [ "%m" = 'i386' ]
-	then mflags="-m32 -fomit-frame-pointer -march=native -mtune=native -mfpmath=sse -O2"
+	then mflags="$mflags -m32 -march=native -mtune=native -mfpmath=sse"
 	else if  [ "%m" = 'x86_64' ]
-		then mflags="-m64 -fomit-frame-pointer -march=native -mtune=native -mfpmath=sse -O2"; confflags="-b 64"
-		else  mflags='-maltivec -mabi=altivec'
+		then mflags="$mflags -m64 -march=native -mtune=native -mfpmath=sse"; confflags="-b 64"
+		else  mflags="$mflags -maltivec -mabi=altivec"
 		if [ `machine|sed -e 's,ppc,,' -e 's,\([0-9]\).*,\1,'` != 9 ]
 			then confflags='-Si cputhrchk 0 -D c -DATL_AVgcc -b 32'
 		fi
@@ -113,11 +103,11 @@ CompileScript: <<
  iflags="-fPIC"
  lflags="$iflags"
  cd ../LAPACK
- sed -i.bak -e "/^OPTS /s;=;= $lflags $mflags;" -e 's, -g$,,' make.inc
+ sed -i.bak -e "/^OPTS /s;=;= $mflags;" -e 's, -g$,,' make.inc
 # make lapacklib
  cd ..
  ln -s %p/lib/gcc4.5/bin/gcc-4 gcc
-# ln -s /usr/bin/gcc-4.2 gcc
+# if test -f /usr/bin/gcc-4.2; then ln -s /usr/bin/gcc-4.2 gcc; fi
  export PATH=`pwd`:%p/lib/gcc4.5/bin:$PATH
  mkdir -p bld
  cd bld
