@@ -1,0 +1,156 @@
+Package: audacious2.4-plugins
+Version: 2.4.0
+Revision: 1
+Description: Plugins used by audacious2.4
+DescUsage: <<
+	These plugins must be installed for audacious2.4 to run properly.
+<<
+DescPackaging: <<
+	audacious2.4-plugins Depends/BuildDepends on
+	audacious2.4-shlibs/audacious2.4-dev but the audacious2.4
+	binary requires audacious2.4-plugins to run.
+	
+	The CoreAudio driver is really buggy, so use jack instead for output.
+<<
+Homepage: http://www.audacious-media-player.org/
+License: GPL3
+Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
+
+Source: http://distfiles.atheme.org/audacious-plugins-%v.tgz
+Source-MD5: fdf7d4bb660d95e90044556f12213f42
+
+PatchFile: %n.patch
+PatchFile-MD5: f74218a0a1fbdb5e8a11107778d383aa
+PatchScript: <<
+	%{default_script}
+	echo 'LIBS += -L%p/lib/ncurses' >>src/amidi-plug/backend-fluidsynth/Makefile
+	echo 'LIBS += -lmcs' >>src/CoreAudio/Makefile
+	perl -pi -e 's,#include <audacious/plugin.h>,#include <audacious/plugin.h>\n#include <libmcs/mcs.h>,' src/CoreAudio/coreaudio.h
+<<
+
+Depends: <<
+	atk1-shlibs,
+	audacious2.4-shlibs (>= %v-1),
+	cairo-shlibs,
+	dbus-shlibs,
+	fluidsynth-shlibs,
+	fontconfig2-shlibs,
+	freetype219-shlibs,
+	glib2-shlibs,
+	gtk+2-shlibs,
+	jack-shlibs,
+	lame-shlibs,
+	libcddb2-shlibs,
+	libcdio-common,
+	libcdio7-shlibs,
+	libcurl4-shlibs,
+	libfaad2-shlibs,
+	libflac8,
+	libgettext8-shlibs,
+	libiconv,
+	libmowgli-shlibs,
+	libmpcdec5-shlibs,
+	libnotify-shlibs,
+	libogg-shlibs,
+	libshout4-shlibs,
+	libsidplay-shlibs,
+	libsndfile1-shlibs,
+	libvorbis0-shlibs,
+	libxml2-shlibs,
+	neon27-shlibs,
+	pango1-xft2-ft219-shlibs,
+	taglib-shlibs,
+	wavpack1-shlibs,
+	x11-shlibs
+<<
+BuildDepends: <<
+	atk1,
+	audacious2.4-dev (>= %v-1),
+	cairo,
+	dbus-dev,
+	fink (>= 0.24.12),
+	fink-package-precedence,
+	fontconfig2-dev,
+	freetype219,
+	flag-sort,
+	fluidsynth-dev,
+	gettext-tools,
+	glib2-dev,
+	glitz,
+	gtk+2-dev,
+	jack-dev,
+	lame-dev,
+	libcddb-dev,
+	libcdio-dev,
+	libcurl4,
+	libfaad2-dev,
+	libflac8-dev,
+	libgettext8-dev,
+	libiconv-dev,
+	libmcs,
+	libmowgli,
+	libmpcdec5,
+	libnotify,
+	libogg,
+	libpng3,
+	libsamplerate0-dev,
+	libshout4,
+	libsidplay,
+	libsndfile1-dev,
+	libvorbis0,
+	libxml2,
+	neon27,
+	pango1-xft2-ft219-dev,
+	pcre,
+	pixman,
+	pkgconfig,
+	taglib,
+	wavpack1-dev,
+	x11-dev
+<<
+
+Conflicts: audacious2-plugins
+Replaces: audacious2-plugins
+
+#dockalbumart won't build.
+ConfigureParams: <<
+	--disable-dependency-tracking \
+	--libdir='${exec_prefix}/lib/audacious2.4' \
+	--enable-ipv6 \
+	--enable-chardet \
+	--disable-pulse \
+	--disable-roar \
+	--enable-coreaudio \
+	--disable-lirc \
+	--disable-adplug \
+	--disable-ffaudio \
+	--enable-jack \
+	--disable-oss \
+	--disable-alsa \
+	--disable-mms \
+	--disable-mtp_up \
+	--disable-bluetooth \
+	--disable-paranormal \
+	--disable-projectm \
+	--disable-projectm-1.0 \
+	--disable-bs2b \
+	--disable-dockalbumart
+<<
+
+SetCC: flag-sort gcc
+SetCXX: flag-sort g++
+
+SetCPPFLAGS: -I%p/lib/fontconfig2/include
+SetLDFLAGS: -L%p/lib/fontconfig2/lib
+
+CompileScript: <<
+	./configure %c
+	make LIB_LDFLAGS='-dynamiclib -install_name ${libdir}/${LIB:.dylib=.${LIB_MAJOR}.dylib} -current_version ${LIB_MAJOR}.${LIB_MINOR} -compatibility_version ${LIB_MAJOR}.0' PLUGIN_LDFLAGS='-bundle'
+	fink-package-precedence --no-headers .
+<<
+
+InstallScript: <<
+	make install DESTDIR=%d
+<<
+
+DocFiles: AUTHORS COPYING

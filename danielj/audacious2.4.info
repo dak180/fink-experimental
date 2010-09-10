@@ -1,0 +1,157 @@
+Package: audacious2.4
+Version: 2.4.0
+Revision: 1
+Description: Advanced audio player
+DescDetail: <<
+	Audacious is an advanced audio player. It is free, lightweight, based
+	on GTK2, runs on Linux and many other *nix platforms and is focused on
+	audio quality and supporting a wide range of audio codecs.
+	
+	Its advanced audio playback engine is considerably more powerful than
+	GStreamer. Audacious is a fork of Beep Media Player (BMP), which itself
+	forked from XMMS.
+<<
+DescUsage: <<
+	audacious2.4-plugins must be installed for audacious2 to run properly.
+	Unfortunately, this seems pretty crashy right now. Oh well.
+<<
+DescPackaging: <<
+	audacious2.4-plugins Depends/BuildDepends on
+	audacious2.4-shlibs/audacious2.4-dev but the audacious2.4
+	binary requires audacious2.4-plugins to run. So we
+	Recommend audacious2.4-plugins to avoid a circular dependency.
+<<
+Homepage: http://www.audacious-media-player.org/
+License: GPL3
+Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
+
+Source: http://distfiles.atheme.org/audacious-%v.tgz
+Source-MD5: 113d99a09d4faead7adc07a86eab5c80
+
+Depends: <<
+	%n-shlibs (= %v-%r),
+	atk1-shlibs,
+	cairo-shlibs,
+	dbus,
+	dbus-shlibs,
+	desktop-file-utils,
+	fontconfig2-shlibs,
+	freetype219-shlibs,
+	glib2-shlibs,
+	gtk+2-shlibs,
+	libguess-shlibs,
+	libgettext8-shlibs,
+	libmcs-shlibs,
+	libmowgli-shlibs,
+	pango1-xft2-ft219-shlibs,
+	pcre-shlibs,
+	x11-shlibs
+<<
+BuildDepends: <<
+	atk1,
+	cairo,
+	dbus-dev,
+	fink (>= 0.24.12),
+	fink-package-precedence,
+	flag-sort,
+	fontconfig2-dev,
+	freetype219,
+	gettext-tools,
+	glib2-dev,
+	glitz,
+	gtk+2-dev,
+	libguess,
+	libgettext8-dev,
+	libiconv-dev,
+	libmcs,
+	libmowgli,
+	libpng3,
+	libxml2,
+	pango1-xft2-ft219-dev,
+	pcre,
+	pixman,
+	pkgconfig,
+	x11-dev
+<<
+Recommends: audacious2.4-plugins
+
+Conflicts: audacious2
+Replaces: audacious2
+
+SetCC: flag-sort gcc
+SetCXX: flag-sort g++
+
+SetCPPFLAGS: -I%p/lib/fontconfig2/include
+SetLDFLAGS: -L%p/lib/fontconfig2/lib
+
+ConfigureParams: --disable-dependency-tracking --with-regexlib=pcre --libdir='${exec_prefix}/lib/%n'
+
+CompileScript: <<
+	./configure %c
+	make LIB_LDFLAGS='-dynamiclib -install_name ${libdir}/${LIB:.dylib=.${LIB_MAJOR}.dylib} -current_version ${LIB_MAJOR}.${LIB_MINOR} -compatibility_version ${LIB_MAJOR}.0' PLUGIN_LDFLAGS='-bundle'
+	fink-package-precedence --no-headers .
+<<
+
+InstallScript: <<
+	make install DESTDIR=%d
+	mkdir -p %i/lib/pkgconfig
+	ln -s %p/lib/%n/pkgconfig/audacious.pc %i/lib/pkgconfig
+	ln -s %p/lib/%n/pkgconfig/audclient.pc %i/lib/pkgconfig
+	ln -s %p/lib/%n/libaudclient.dylib %i/lib
+	ln -s %p/lib/%n/libaudcore.dylib %i/lib
+	ln -s %p/lib/%n/libaudgui.dylib %i/lib
+	ln -s %p/lib/%n/libaudtag.dylib %i/lib
+<<
+
+DocFiles: AUTHORS COPYING NEWS README doc/HACKING doc/NEW_FORMATS doc/TODO
+
+PostInstScript: <<
+	. %p/bin/init.sh
+	[ -x %p/bin/update-desktop-database ] && update-desktop-database -q %p/share/applications || :
+<<
+
+PostRmScript: <<
+	. %p/bin/init.sh
+	[ -x %p/bin/update-desktop-database ] && update-desktop-database -q %p/share/applications || :
+<<
+
+SplitOff: <<
+	Package: %N-shlibs
+	
+	Depends: <<
+		atk1-shlibs,
+		cairo-shlibs,
+		dbus-shlibs,
+		fontconfig2-shlibs,
+		freetype219-shlibs,
+		glib2-shlibs,
+		gtk+2-shlibs,
+		libgettext8-shlibs,
+		libmowgli-shlibs,
+		pango1-xft2-ft219-shlibs
+	<<
+	
+	Files: lib/%N/lib*.*.dylib
+	Shlibs: <<
+		%p/lib/%N/libaudclient.2.dylib 2.0.0 %n (>= 2.4-1)
+		%p/lib/%N/libaudcore.1.dylib 1.0.0 %n (>= 2.4-1)
+		%p/lib/%N/libaudgui.1.dylib 1.0.0 %n (>= 2.4-1)
+		%p/lib/%N/libaudtag.1.dylib 1.0.0 %n (>= 2.4-1)
+	<<
+	
+	DocFiles: AUTHORS COPYING NEWS README
+<<
+
+SplitOff2: <<
+	Package: %N-dev
+	
+	Depends: %N-shlibs (= %v-%r)
+	BuildDependsOnly: true
+	
+	Conflicts: audacious2-dev
+	Replaces: audacious2-dev
+
+	Files: include lib
+	
+	DocFiles: AUTHORS COPYING NEWS README
+<<
