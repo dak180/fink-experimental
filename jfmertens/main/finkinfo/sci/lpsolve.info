@@ -27,15 +27,16 @@ curr_v="%type_raw[maj].$cv"
 ## no strict-aliasing for the lib, since it gives a warning in lp_matrix.c 2357-2358)
   sed -i.bak -e "{
 	/fpic/d
-	s;\-shared.*;*.o -dynamiclib -Wl,-x -dead_strip -exported_symbols_list ../exp_sym -compatibility_version $comp_v -current_version $curr_v -o lib%N.%v.dylib -install_name %p/lib/lib%N.%type_raw[maj].dylib;
+	s;-shared.*;*.o -dynamiclib -Wl,-x -dead_strip -exported_symbols_list ../exp_sym -compatibility_version $comp_v -current_version $curr_v -o lib%N.%v.dylib -install_name %p/lib/lib%N.%type_raw[maj].dylib;
 	/^ar /c ar rc lib%N.%v.a *.o
 	s,%type_pkg[maj],.%v,
 	}" %N%type_pkg[maj]/ccc
 ## for executable, use -mdynamic-no-pic, and strip. Also, link with the library:
   sed -i.bak -e '{
 # use -Os here, since far from time-critical code.
-	s,\-O3,-Os -fstrict-aliasing -Wall,
+	s,-O3,-Os -fstrict-aliasing -Wall,
 	s;\$src.*;-mdynamic-no-pic -Wl,-x -dead_strip -exported_symbols_list ../symlst lp_solve.c ../%N%type_pkg[maj]/lib%N.dylib -o lp_solve;
+	s,-lm,,
 	}' lp_solve/ccc
 ## add return statement, to allow for sh -ev. Also, use %b instead of /tmp, to avoid collisions with parallel builds.
 ## and simplify things by not putting output in a "bin/$PLATFORM" subdir
@@ -84,12 +85,12 @@ CompileScript: <<
   export CPATH=%p/lib/flex/include:%p/include
   export LIBRARY_PATH=%p/lib/flex/lib:%p/lib
   # Run bison and flex
-  . lp_rlp.bat
+  . ./lp_rlp.bat
 
   # Build the library
   sed -r -e '/EXPORTS/d' -e 's,^ +,_,' < lp_solve.def > exp_sym
   cd %N%type_pkg[maj]
-  . ccc
+  . ./ccc
 
   # Symbolic links to library
   ln -s lib%N.%v.dylib lib%N.%type_raw[maj].dylib
@@ -98,7 +99,7 @@ CompileScript: <<
 
   # Build the lp_solve executable
   cd ../lp_solve
-  . ccc
+  . ./ccc
 <<
 
 InstallScript: <<
