@@ -1,0 +1,145 @@
+Package: snes9x-gtk
+Version: 1.52
+Revision: 1
+Description: Super Nintendo Emulator (gtk)
+# Homepage: http://www.snes9x.com/
+Homepage: http://snes9x.ipherswipsite.com/
+License: OSI-Approved
+Maintainer: David Fang <fangism@users.sourceforge.net>
+Source: http://files.ipherswipsite.com/snes9x/snes9x-%v-src.tar.bz2
+CustomMirror: <<
+	asi-JP: http://www.geocities.co.jp/SiliconValley-PaloAlto/2560/release/
+<<
+Source-MD5: 813bd3a0f99732ee0238a2c8ab417725
+Conflicts: snes9x
+Replaces: snes9x
+# many are inherited build depends from gtk+2 with pangocairo
+BuildDepends: <<
+  fink-package-precedence,
+  atk1,
+  cairo,
+  fontconfig2-dev,
+  gettext-bin,
+  glib2-dev,
+  gtk+2-dev,
+  intltool40,
+  libgettext8-dev,
+  libglade2,
+  libiconv-dev,
+  libpng3,
+  libxml2,
+  pango1-xft2-ft219-dev,
+  pkgconfig,
+  portaudio2,
+  sdl
+<<
+# maybe not necessary b/c static-only build
+Depends: <<
+  glib2-shlibs,
+  gtk+2-shlibs,
+  libgettext8-shlibs,
+  libpng3-shlibs,
+  libxml2-shlibs,
+  portaudio2-shlibs,
+  sdl-shlibs
+<<
+PatchScript: <<
+  #!/bin/sh -ev
+  pwd
+  sed=/usr/bin/sed
+  # function call should have been conditional (should patch upstream)
+  file=gtk/src/gtk_display.cpp
+  mv $file $file.orig
+  $sed -e '/S9xSetRenderPixelFormat/i \
+#ifdef GFX_MULTI_FORMAT' \
+	-e '/S9xSetRenderPixelFormat/a \
+#endif' \
+	$file.orig > $file
+  # don't clobber XV_CFLAGS and XV_LIBS, allow override to work
+  # file='gtk/configure.ac gtk/configure'
+  file='gtk/configure'
+  for f in $file
+  do
+    mv $f $f.orig
+    $sed '/^XV_.*=/s|^|# |' $f.orig > $f
+  done
+  chmod +x gtk/configure
+  # want the OpenGL.framework gl.h, not /usr/X11R6/include
+  file='gtk/src/gtk_s9xwindow.h gtk/src/gtk_display_driver_opengl.h'
+  for f in $file
+  do
+    mv $f $f.orig
+    sed '/include/s|GL/gl\.h|gl.h|' $f.orig > $f
+  done
+  # fix include ordering, to defer to those in gtk_s9xwindow.h
+  file=gtk/src/gtk_display_driver_opengl.cpp
+  mv $file $file.orig
+  sed -e '/GL\/glx\.h/,/GL\/glxext\.h/{H;d}' -e '/driver_opengl/G' \
+	$file.orig > $file
+  # configure clobbers LIBS, so we have to hack this ourselves
+  # need explicit -lX11 for XResetScreenSaver
+  file=gtk/Makefile.in
+  mv $file $file.orig
+  sed '/^LIBS =/a \
+LIBS += -L/usr/X11R6/lib -lX11' \
+	$file.orig > $file
+<<
+SetCPPFLAGS: -I/System/Library/Frameworks/OpenGL.framework/Headers
+SetLDFLAGS: -Wl,-framework,OpenGL -L%p/lib
+# -L/usr/X11R6/lib
+# SetLIBS: -lX11
+# LIBS gets clobbered/ignored by the configure script :(
+ConfigureParams: <<
+  --mandir=%p/share/man \
+  --infodir=%p/share/info \
+  --with-portaudio \
+  --with-netplay \
+  PKG_CONFIG_PATH="%p/lib/fontconfig2/lib/pkgconfig:$PKG_CONFIG_PATH" \
+  -C
+<<
+#  XV_CFLAGS=-I/usr/X11R6/include
+#  XV_LIBS=-L/usr/X11R6/lib
+CompileScript: <<
+  #!/bin/sh -ev
+  pushd gtk
+  ./configure %c
+  make
+  popd
+  fink-package-precedence --headers .
+  fink-package-precedence --libs .
+<<
+InstallScript: <<
+  #!/bin/sh -ev
+  cd gtk
+  make DESTDIR=%d install
+<<
+DocFiles: <<
+  docs/*
+  unix/docs/*
+<<
+DescPackaging: <<
+This is the GTK+ version of snes9x.
+For the Mac-native version, install snes9x.
+<<
+DescPort: <<
+Using standard configure/make build procedure.
+Not using liboss1, cannot find sys/soundcard.h.
+<<
+DescDetail: <<
+[from snes9x.com]
+
+Snes9x is a portable, freeware Super Nintendo Entertainment System (SNES) 
+emulator. It basically allows you to play most games designed for the SNES 
+and Super Famicom Nintendo game systems on your PC or Workstation; 
+which includes some real gems that were only ever released in Japan.
+
+Snes9x is the result of well over three years worth of part-time hacking, 
+coding, recoding, debugging, divorce, etc. 
+(just kidding about the divorce bit). 
+Snes9x is coded in C++, with three assembler CPU emulation cores on the 
+i386 Linux and Windows ports.
+
+Note: freeze points from version 1.51 and earlier are incompatible with 1.52.
+
+License: SNES9X License
+<<
