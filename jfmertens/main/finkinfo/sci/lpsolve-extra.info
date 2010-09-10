@@ -54,7 +54,7 @@ curr_v="%type_raw[maj].$cv"
 ## no strict-aliasing for the lib, since it gives a warning in lp_matrix.c 2357-2358)
   sed -i.bak -e "{
 	/fpic/d
-	s;\-shared.*;*.o -dynamiclib -Wl,-x -dead_strip -exported_symbols_list ../exp_sym -compatibility_version $comp_v -current_version $curr_v -o liblpsolve.%v.dylib -install_name %p/lib/liblpsolve.%type_raw[maj].dylib;
+	s;-shared.*;*.o -dynamiclib -Wl,-x -dead_strip -exported_symbols_list ../exp_sym -compatibility_version $comp_v -current_version $curr_v -o liblpsolve.%v.dylib -install_name %p/lib/liblpsolve.%type_raw[maj].dylib;
 	/^ar /c ar rc liblpsolve.%v.a *.o
 	s,bin/.PLATFORM/,,
 	s,%type_pkg[maj],.%v,
@@ -62,8 +62,9 @@ curr_v="%type_raw[maj].$cv"
 ## for executable, use -mdynamic-no-pic, and strip. Also, link with the library:
   sed -i.bak -e '{
 # use -Os here, since far from time-critical code.
-	s,\-O3,-Os -fstrict-aliasing -Wall,
+	s,-O3,-Os -fstrict-aliasing -Wall,
 	s;\$src.*;-mdynamic-no-pic -Wl,-x -dead_strip -exported_symbols_list ../symlst lp_solve.c ../lpsolve%type_pkg[maj]/liblpsolve.dylib -o lp_solve;
+	s,-lm,,
 	}' lp_solve/ccc
 ## add return statement, to allow for sh -ev. Also, use %b instead of /tmp, to avoid collisions with parallel builds
  sed -i'' -e '/printf/{s,main,int &,
@@ -147,9 +148,6 @@ curr_v="%type_raw[maj].$cv"
 #  perl -pi.bak -e 's, \$\{glpk\},,; s,I\$\{glpkdir\},I%p,; s,\-Wl,-L%p/lib -lglpk $&,' bfp/bfp_GLPK/ccc
   # for xli_MathProg, use the downloaded glpk-4.13 :
   perl -pi -e 's,=/glpk.*,=%b/../glpk-%type_raw[glpk],' {bfp/bfp_GLPK,xli/xli_MathProg}/ccc
-####
-  # prior non-static declaration in lp_lib.h:2134 :
-  perl -pi -e 's,static (MYBOOL is_chsign),\1,' xli/xli_DIMACS/lp_Dimacs.c
 <<
 CompileScript: <<
 #!/bin/sh -ev
@@ -157,14 +155,14 @@ CompileScript: <<
   export CPATH=%p/lib/flex/include:%p/include
   export LIBRARY_PATH=%p/lib/flex/lib:%p/lib
 # skip bfp_GLPK for the moment :
-  sed -i '1i exit 0' bfp/bfp_GLPK/ccc
+  sed -i '1i return 0' bfp/bfp_GLPK/ccc
 
   for d in xli/xli_CPLEX xli/xli_LINDO; do cd $d; . ./*.bat; cd -; done
   for d in bfp xli; do \
 	cd $d
 	D=`echo $d|tr "[:lower:]" "[:upper:]"`
 	sed -r -e '/EXPORTS/d' -e 's,^ +,_,' < lp_$D.def > exp_sym
-	for n in ${d}_*; do cd $n; sh -ev ccc; cd -; done
+	for n in ${d}_*; do cd $n; . ./ccc; cd -; done
 	cd ..
   done
 <<
