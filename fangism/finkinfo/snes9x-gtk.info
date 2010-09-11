@@ -22,22 +22,26 @@ BuildDepends: <<
   gettext-bin,
   glib2-dev,
   gtk+2-dev,
+  gtkglext1,
   intltool40,
   libgettext8-dev,
   libglade2,
   libiconv-dev,
+  liboss1,
   libpng3,
   libxml2,
   pango1-xft2-ft219-dev,
   pkgconfig,
   portaudio2,
+  sed,
   sdl
 <<
-# maybe not necessary b/c static-only build
 Depends: <<
   glib2-shlibs,
   gtk+2-shlibs,
+  gtkglext1-shlibs,
   libgettext8-shlibs,
+  liboss1-shlibs,
   libpng3-shlibs,
   libxml2-shlibs,
   portaudio2-shlibs,
@@ -45,8 +49,8 @@ Depends: <<
 <<
 PatchScript: <<
   #!/bin/sh -ev
-  pwd
-  sed=/usr/bin/sed
+  # need nicer sed for some fancier operations, hold/get sequence
+  sed=%p/bin/sed
   # function call should have been conditional (should patch upstream)
   file=gtk/src/gtk_display.cpp
   mv $file $file.orig
@@ -56,31 +60,41 @@ PatchScript: <<
 #endif' \
 	$file.orig > $file
   # don't clobber XV_CFLAGS and XV_LIBS, allow override to work
+  # same with XRANDR_CFLAGS and XRANDR_LIBS
+  # should fix in configure.ac, but don't want to bdep autoconf
   # file='gtk/configure.ac gtk/configure'
   file='gtk/configure'
   for f in $file
   do
     mv $f $f.orig
-    $sed '/^XV_.*=/s|^|# |' $f.orig > $f
+    $sed -e '/^XV_.*=/s|^|# |' -e '/^XRANDR_.*=/s|^|# |' \
+	-e 's|sys/soundcard\.h|liboss/soundcard.h|' $f.orig > $f
   done
   chmod +x gtk/configure
+  # OSS soundcard.h is packaged as %p/include/liboss/soundcard.h
+  file='gtk/src/gtk_sound_driver_oss.cpp unix/unix.cpp'
+  for f in $file
+  do
+	mv $f $f.orig
+	$sed -e '/#include/s|sys/soundcard\.h|liboss/soundcard.h|' $f.orig > $f
+  done
   # want the OpenGL.framework gl.h, not /usr/X11R6/include
   file='gtk/src/gtk_s9xwindow.h gtk/src/gtk_display_driver_opengl.h'
   for f in $file
   do
     mv $f $f.orig
-    sed '/include/s|GL/gl\.h|gl.h|' $f.orig > $f
+    $sed '/include/s|GL/gl\.h|gl.h|' $f.orig > $f
   done
   # fix include ordering, to defer to those in gtk_s9xwindow.h
   file=gtk/src/gtk_display_driver_opengl.cpp
   mv $file $file.orig
-  sed -e '/GL\/glx\.h/,/GL\/glxext\.h/{H;d}' -e '/driver_opengl/G' \
+  $sed -e '/GL\/glx\.h/,/GL\/glxext\.h/{H;d}' -e '/driver_opengl/G' \
 	$file.orig > $file
   # configure clobbers LIBS, so we have to hack this ourselves
   # need explicit -lX11 for XResetScreenSaver
   file=gtk/Makefile.in
   mv $file $file.orig
-  sed '/^LIBS =/a \
+  $sed '/^LIBS =/a \
 LIBS += -L/usr/X11R6/lib -lX11' \
 	$file.orig > $file
 <<
@@ -95,10 +109,12 @@ ConfigureParams: <<
   --with-portaudio \
   --with-netplay \
   PKG_CONFIG_PATH="%p/lib/fontconfig2/lib/pkgconfig:$PKG_CONFIG_PATH" \
+  XV_CFLAGS=-I/usr/X11R6/include \
+  XV_LIBS="-L/usr/X11R6/lib -lXv -lXext" \
+  XRANDR_CFLAGS=-I/usr/X11R6/include \
+  XRANDR_LIBS="-L/usr/X11R6/lib -lXrandr" \
   -C
 <<
-#  XV_CFLAGS=-I/usr/X11R6/include
-#  XV_LIBS=-L/usr/X11R6/lib
 CompileScript: <<
   #!/bin/sh -ev
   pushd gtk
@@ -123,7 +139,10 @@ For the Mac-native version, install snes9x.
 <<
 DescPort: <<
 Using standard configure/make build procedure.
-Not using liboss1, cannot find sys/soundcard.h.
+Pointing to OpenGL framework headers and libs.
+No pkg-config files for Xv or Xrandr, so overriding flags.
+liboss: soundcard.h does not compile, seems unusable, 
+so configure check fails.
 <<
 DescDetail: <<
 [from snes9x.com]
