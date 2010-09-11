@@ -98,7 +98,7 @@ PatchScript: <<
 LIBS += -L/usr/X11R6/lib -lX11' \
 	$file.orig > $file
 <<
-SetCPPFLAGS: -I/System/Library/Frameworks/OpenGL.framework/Headers
+SetCPPFLAGS: -I/System/Library/Frameworks/OpenGL.framework/Headers -DLIBOSS_INTERNAL
 SetLDFLAGS: -Wl,-framework,OpenGL -L%p/lib
 # -L/usr/X11R6/lib
 # SetLIBS: -lX11
@@ -141,7 +141,7 @@ DescPort: <<
 Using standard configure/make build procedure.
 Pointing to OpenGL framework headers and libs.
 No pkg-config files for Xv or Xrandr, so overriding flags.
-liboss: soundcard.h does not compile, seems unusable, 
+liboss: soundcard.h does not compile unless LIBOSS_INTERNAL is defined, hmmm.
 so configure check fails.
 <<
 DescDetail: <<
