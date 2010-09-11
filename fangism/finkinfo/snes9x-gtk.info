@@ -16,6 +16,7 @@ Replaces: snes9x
 # many are inherited build depends from gtk+2 with pangocairo
 BuildDepends: <<
   fink-package-precedence,
+  flag-sort,
   atk1,
   cairo,
   fontconfig2-dev,
@@ -51,6 +52,7 @@ PatchScript: <<
   #!/bin/sh -ev
   # need nicer sed for some fancier operations, hold/get sequence
   sed=%p/bin/sed
+  darwin_vers=`uname -r | cut -d. -f1`
   # function call should have been conditional (should patch upstream)
   file=gtk/src/gtk_display.cpp
   mv $file $file.orig
@@ -78,6 +80,8 @@ PatchScript: <<
 	mv $f $f.orig
 	$sed -e '/#include/s|sys/soundcard\.h|liboss/soundcard.h|' $f.orig > $f
   done
+  if false
+  then
   # want the OpenGL.framework gl.h, not /usr/X11R6/include
   file='gtk/src/gtk_s9xwindow.h gtk/src/gtk_display_driver_opengl.h'
   for f in $file
@@ -92,14 +96,24 @@ PatchScript: <<
 	$file.orig > $file
   # configure clobbers LIBS, so we have to hack this ourselves
   # need explicit -lX11 for XResetScreenSaver
+  # also, don't assume ELF library format, duh!
+  fi
   file=gtk/Makefile.in
   mv $file $file.orig
-  $sed '/^LIBS =/a \
+  $sed -e '/^LIBS =/a \
 LIBS += -L/usr/X11R6/lib -lX11' \
+	-e '/NASM/s|-f elf -DELF|-f macho -DMACHO|' \
 	$file.orig > $file
 <<
-SetCPPFLAGS: -I/System/Library/Frameworks/OpenGL.framework/Headers -DLIBOSS_INTERNAL
-SetLDFLAGS: -Wl,-framework,OpenGL -L%p/lib
+GCC: 4.0
+SetCXX: flag-sort g++
+SetCPPFLAGS: -DLIBOSS_INTERNAL
+# pointing to /usr/X11R6 screws up fontconfig2 link...
+SetLDFLAGS: -L%p/lib -L/usr/X11R6/lib
+# SetCPPFLAGS: -I/System/Library/Frameworks/OpenGL.framework/Headers -DLIBOSS_INTERNAL
+# SetLDFLAGS: -L/System/Library/Frameworks/OpenGL.framework/Libraries -L%p/lib
+# SetLDFLAGS: -Wl,-framework,OpenGL -L%p/lib
+# -framework doesn't work on darwin10?
 # -L/usr/X11R6/lib
 # SetLIBS: -lX11
 # LIBS gets clobbered/ignored by the configure script :(
