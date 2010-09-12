@@ -2,7 +2,7 @@ Info2: <<
 Package: lpsolve
 Description: Mixed Integer Linear Programming (ILP) solver
 Type: maj (5.5)
-Version: 5.5.2.0
+Version: 5.5.2.0 
 Revision: 1
 
 BuildDepends: sed | ssed, bison, flex-devel, fink (>= 0.24.12)
@@ -13,70 +13,16 @@ Source: mirror:sourceforge:%n/lp_solve_%v_source.tar.gz
 Source-MD5: 167c0fb4ab178e0b7ab50bf0a635a836
 SourceDirectory: lp_solve_%type_raw[maj]
 
+PatchFile: %{Ni}.patch
+PatchFile-MD5: f27f7a5dbd1d2411e2b83ac7db502bf9
 PatchScript: <<
 #!/bin/sh -ev
-# try for last digit of 'current version' the (hex) sum of the last 2 'digits' of %v (hopefully the next to last stays 0..)
-comp_v=`sed -e 's,\.[^.]*$,,' <<<'%v'`
-M=`sed -e 's,.*\.,,' <<<"$comp_v"`
-m=`sed -e 's,.*\.,,' <<<"%v"`
-cv=$(( 16*$M + $m ))
-curr_v="%type_raw[maj].$cv"
-
-## for stripping:
- echo '__mh_execute_header' > symlst
-## no strict-aliasing for the lib, since it gives a warning in lp_matrix.c 2357-2358)
-  sed -i.bak -e "{
-	/fpic/d
-	s;-shared.*;*.o -dynamiclib -Wl,-x -dead_strip -exported_symbols_list ../exp_sym -compatibility_version $comp_v -current_version $curr_v -o lib%N.%v.dylib -install_name %p/lib/lib%N.%type_raw[maj].dylib;
-	/^ar /c ar rc lib%N.%v.a *.o
-	s,%type_pkg[maj],.%v,
-	}" %N%type_pkg[maj]/ccc
-## for executable, use -mdynamic-no-pic, and strip. Also, link with the library:
-  sed -i.bak -e '{
-# use -Os here, since far from time-critical code.
-	s,-O3,-Os -fstrict-aliasing -Wall,
-	s;\$src.*;-mdynamic-no-pic -Wl,-x -dead_strip -exported_symbols_list ../symlst lp_solve.c ../%N%type_pkg[maj]/lib%N.dylib -o lp_solve;
-	s,-lm,,
-	}' lp_solve/ccc
-## add return statement, to allow for sh -ev. Also, use %b instead of /tmp, to avoid collisions with parallel builds.
-## and simplify things by not putting output in a "bin/$PLATFORM" subdir
- sed -i'' -e '/printf/{s,main,int &,
-	s,;,;return 0;,}
-	s,/tmp,%b,g
-	s,bin/.PLATFORM/,,
-	/bin\/.PLATFORM/d' `find . -name ccc`
-
-## Dynamic library filenames on darwin end with ".dylib", not ".so". Also, give full install_name for dlopen.
-  perl -pi.bak -e 's,lib%N%type_pkg[maj].so,%p/lib/lib%N.%type_raw[maj].dylib,' lp_explicit.h
-## hard-code the paths to the modules, for the user's convenience (preserving the possibility to specify
-## a full path, absolute or relative), to avoid using a DYLD(_FALLBACK)_LIBRARY_PATH...
-  perl -pi.bak -e "s:( +)  strcat\(((bfp|xli)name), \".so\"\);:$&\n\1char finklib[128]=\"%p/lib/\";
-\1if(strrchr(\2,'/') != NULL) finklib[0]='\0';
-\1strcat(finklib,\2);:;
-	s:(dlopen\().*name:\1finklib:" lp_lib.c
-# Use vecLib :
- sed -i.bak -e 's;myBLAS;/System/Library/Frameworks/Accelerate.framework/Frameworks/vecLib.framework/Versions/Current/libBLAS.dylib;' lp_lib.h
-# avoid implicit declaration of isspace
- sed -i.bak -e '1i #include <ctype.h>' lp_solve/lp_solve.c
-#
- sed -i.bak -e '/WIN32/,/endif/{
-	/WIN32/d
-	/endif/d
-	}' bfp/bfp_LUSOL/lp_LUSOL.h
- sed -i.bak -e '/3, "\.so"/,+1{
-	s,3,6,
-	s,so,dylib,
-	}' shared/{commonlib,myblas}.c
-## if one wanted to remove all srcs compiled here from lpsolve-extra, one would need to uncomment the next 2 lines:
-#  tr ' ' '\n'<<<"allocINT createLink firstActiveLink is_nativeBLAS load_BLAS nextActiveLink removeLink sortByINT\
-# daxpy dscal idamax init_BLAS unload_BLAS allocREAL timeNow freeLink allocCHAR"|sed -r -e 's,^,   ,' >> lp_solve.def
-# this would cost 596 bytes in the size of the lib, and for the so's:
-# GLPK, CPLEX, LINDO: +4, LUSOL -3860, etaPFI +120, DIMACS, MathProg: -
-# Thus: not worthwhile (at least not till default bfp and xli are taken out of the lib...) 
-## rm irrelevant files
-  rm -f xli/*/xli_* bfp/*/bfp_* */*/c*.bat */*.bat */.DS_Store
-## turn the .bat scripts into usable shell scripts
-  find . -name '*.bat' | xargs sed -ri -e 's,^del,rm,' -e 's,\r$,,' -e '/^rem /d'
+N=%N
+v=%v
+p=%p
+b=%b
+t=%type_raw[maj]
+. %{PatchFile}
 <<
 
 CompileScript: <<
