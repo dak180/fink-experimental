@@ -12,7 +12,7 @@ Depends: <<
 	(%type_raw[-ui] = .) atk1-shlibs,
 	(%type_raw[-ui] = .) cairo-shlibs,
 	(%type_raw[-ui] != -nox) fontconfig2-shlibs,
-	freetype219-shlibs,
+	freetype219-shlibs ( >= 2.3.7-4),
 	(%type_raw[-ui] != -nox) gd2-shlibs,
 	(%type_raw[-ui] = .) glib2-shlibs,
 	(%type_raw[-ui] = .) gtk+2-shlibs,
@@ -23,7 +23,7 @@ Depends: <<
 	libpng14-shlibs,
 	lua51-shlibs,
 	ncurses,
-	(%type_raw[-ui] = .) pango1-xft2-ft219-shlibs,
+	(%type_raw[-ui] = .) pango1-xft2-ft219-shlibs ( >=1.22.0-3 ),
 	pdflib6-shlibs,
 	(%type_raw[-ui] != -nox) plotutils,
 	(%type_raw[-ui] = .) wxgtk2.8-shlibs,
@@ -36,7 +36,7 @@ BuildDepends: <<
 	(%type_raw[-ui] = .) cairo,
 	fink (>= 0.24.12),
 	(%type_raw[-ui] != -nox) fontconfig2-dev,
-	freetype219,
+	freetype219 ( >= 2.3.7-4),
 	(%type_raw[-ui] != -nox) gd2,
 	(%type_raw[-ui] = -nox) gd2-nox,
 	(%type_raw[-ui] = .) glib2-dev,
@@ -48,7 +48,7 @@ BuildDepends: <<
 	libncurses5,
 	libpng14,
 	lua51-dev,
-	(%type_raw[-ui] = .) pango1-xft2-ft219-dev,
+	(%type_raw[-ui] = .) pango1-xft2-ft219-dev ( >=1.22.0-3 ),
 	pdflib6,
 	(%type_raw[-ui] != -nox) plotutils-dev,
 	(%type_raw[-ui] = .) wxgtk2.8,
@@ -77,12 +77,9 @@ CompileScript: <<
  #!/bin/sh -ev
  export CCACHE_DISABLE=1
  export CPATH=%p/include
- export PKG_CONFIG_PATH=%p/lib/fontconfig2/lib/pkgconfig:%p/lib/freetype219/lib/pkgconfig:$PKG_CONFIG_PATH
- if [ "%type_raw[-ui]" == "." ]
-	then export PKG_CONFIG_PATH=%p/lib/pango-ft219/lib/pkgconfig:$PKG_CONFIG_PATH
- fi
- export FREETYPE_CONFIG=%p/lib/freetype219/bin/freetype-config
- autoreconf; autoheader ; autoconf ; ./configure %c
+ export PKG_CONFIG_PATH=%p/lib/fontconfig2/lib/pkgconfig:$PKG_CONFIG_PATH
+ autoreconf; autoheader ; autoconf ; 
+ ./configure %c
  make
 <<
 InstallScript: <<
