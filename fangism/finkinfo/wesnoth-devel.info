@@ -71,18 +71,16 @@ ConfigureParams: <<
   PKG_CONFIG_PATH="%p/lib/pango-ft219/lib/pkgconfig:%p/lib/fontconfig2/lib/pkgconfig:%p/lib/freetype219/lib/pkgconfig:$PKG_CONFIG_PATH" \
   FREETYPE_CONFIG=%p/lib/freetype219/bin/freetype-config
 <<
-# PatchFile: %n.patch
-# PatchFile-MD5: 12ba1e8b79608f4c05d49ae6da56d96b
+PatchFile: %n.patch
+PatchFile-MD5: 86297e172816dded4b5454e12cff4377
+# PatchComments:
+# configure(.ac) is missing check for CPP before it is used
+# honor disable-sdltest when checking for SDL_image+PNG support
 PatchScript: <<
   #!/bin/sh -ev
-#  %{default_script}
+  %{default_script}
   # properly link against built libraries via direct reference
   perl -pi -e 's/-L. -l(wesnoth-core)/lib\1.a/' src/Makefile.am
-  # configure(.ac) is missing check for CPP before it is used
-  file=configure.ac
-  mv $file $file.orig
-  sed -e '/^AC_PROG_CXX/i \
-AC_PROG_CPP' $file.orig > $file
   # properly link against built libraries via direct reference
   file=src/Makefile.am
   mv $file $file.orig
