@@ -81,7 +81,7 @@ PatchScript: <<
   # configure(.ac) is missing check for CPP before it is used
   file=configure.ac
   mv $file $file.orig
-  sed -e '/AC_PROC_CXX/i \
+  sed -e '/^AC_PROG_CXX/i \
 AC_PROG_CPP' $file.orig > $file
   # properly link against built libraries via direct reference
   file=src/Makefile.am
