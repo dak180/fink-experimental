@@ -1,9 +1,9 @@
 Package: wesnoth-devel
-Version: 1.9.0
+Version: 1.9.1
 Revision: 1
 Description: Fantasy turn-based strategy game
 GCC: 4.0
-Source-MD5: c4e7ba80c6212cb58c3ff96d10f417ae
+Source-MD5: 5dc488f68362717f1b809d2212f9515f
 Source: mirror:sourceforge:wesnoth/wesnoth-%v.tar.bz2
 BuildDepends: <<
   autoconf (>= 2.60),
@@ -76,7 +76,14 @@ ConfigureParams: <<
 PatchScript: <<
   #!/bin/sh -ev
 #  %{default_script}
+  # properly link against built libraries via direct reference
   perl -pi -e 's/-L. -l(wesnoth-core)/lib\1.a/' src/Makefile.am
+  # configure(.ac) is missing check for CPP before it is used
+  file=configure.ac
+  mv $file $file.orig
+  sed -e '/AC_PROC_CXX/i \
+AC_PROG_CPP' $file.orig > $file
+  # properly link against built libraries via direct reference
   file=src/Makefile.am
   mv $file $file.orig
   sed 's/-lana/libana.a/g' $file.orig > $file
