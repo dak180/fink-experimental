@@ -9,7 +9,7 @@ Replaces: qgis-mac, qgis-mac-pgsql, qgis-mac-grass, qgis-mac-pgsql-grass
 
 
 Version: 1.5.0
-Revision: 1
+Revision: 1.1
 Description: User friendly Open Source GIS
 License: GPL
 Homepage: http://qgis.org
@@ -144,6 +144,15 @@ InstallScript: <<
 	pushd build
 	make install CMAKE_INSTALL_PREFIX=%i SIP_MAC_PATH=%p/bin
 	popd
+	
+	# Tell qgis to read environmental variables
+	pushd %i/Applications/qgis%v.app/Contents
+	perl -pi -e "s|<string>qgis</string>|<string>qgis.sh</string>|" Info.plist
+	echo '#!/bin/sh' >MacOS/qgis.sh
+	echo '. /sw/bin/init.sh && ./qgis' >>MacOS/qgis.sh
+	popd
+	
+	
 	pushd %i/Applications/qgis%v.app/Contents/MacOS/lib
         install_name_tool -id "%p/Applications/qgis%v.app/Contents/MacOS/lib/libqgis_core.%v.dylib" libqgis_core.%v.dylib
         install_name_tool -id "%p/Applications/qgis%v.app/Contents/MacOS/lib/libqgis_analysis.%v.dylib" libqgis_analysis.%v.dylib
