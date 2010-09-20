@@ -6,6 +6,7 @@ Architecture: powerpc, i386, x86_64
 Distribution: (%type_raw[grass] = .) 10.4, (%type_raw[grass] = .) 10.5, (%type_raw[grass] = -grass) 10.5, (%type_raw[grass] = .) 10.6, (%type_raw[grass] = -grass) 10.6
 Conflicts: qgis-mac, qgis-mac-pgsql, qgis-mac-grass, qgis-mac-pgsql-grass
 Replaces: qgis-mac, qgis-mac-pgsql, qgis-mac-grass, qgis-mac-pgsql-grass
+Suggests: r-base (>=2.8.0-1), rpy2-py26
 
 
 Version: 1.5.0
@@ -147,9 +148,9 @@ InstallScript: <<
 	
 	# Tell qgis to read environmental variables
 	pushd %i/Applications/qgis%v.app/Contents/MacOS
-	mv qgis %n
+	mv qgis qgis.exe
 	echo '#!/bin/sh' >qgis
-	echo '. %p/bin/init.sh && %p/Applications/qgis%v.app/Contents/MacOS/%n' >>qgis
+	echo '. %p/bin/init.sh && %p/Applications/qgis%v.app/Contents/MacOS/qgis.exe' >>qgis
 	chmod 555 qgis
 	popd
 	
@@ -233,10 +234,7 @@ SplitOff3: <<
   Description: QGIS with R
   Depends: %N (=%v-%r), r-base (>=2.8.0-1), numpy-py26, rpy2-py26
 # End of SplitOff3
-<<
-
-
-DescPort: <<
+<<DescPort: <<
 http://wiki.qgis.org/qgiswiki/BuildingFromSource
 
 Dependency:
