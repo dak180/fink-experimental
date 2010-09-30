@@ -116,16 +116,17 @@ diff -ruN mozilla-1.9.2-orig/config/autoconf.mk.in mozilla-1.9.2/config/autoconf
  LIBXUL_SDK      = @LIBXUL_SDK@
  
  MOZ_FS_LAYOUT = @MOZ_FS_LAYOUT@
-@@ -195,8 +196,16 @@
+@@ -195,8 +196,17 @@
  MOZ_FIX_LINK_PATHS=@MOZ_FIX_LINK_PATHS@
  
  XPCOM_FROZEN_LDOPTS=@XPCOM_FROZEN_LDOPTS@
 +XPCOM_DYLIB_FILES = \
 +	$(NSS_DYLIB_FILES) \
++	$(SQLITE_LIBS) \
 +	$(call EXPAND_DYLIB_NAME,xul) \
 +	$(call EXPAND_DYLIB_NAME,mozjs)
-+#	$(SQLITE_DYLIB_FILES)	# was this before using system-sqlite
-+XPCOM_FROZEN_LDOPTS += $(XPCOM_DYLIB_FILES) $(SQLITE_LIBS)
++# was $(SQLITE_DYLIB_FILES) before --enable-system-sqlite
++XPCOM_FROZEN_LDOPTS += $(XPCOM_DYLIB_FILES)
  XPCOM_LIBS=@XPCOM_LIBS@
 +XPCOM_LIBS += $(XPCOM_DYLIB_FILES)
  LIBXUL_LIBS=@LIBXUL_LIBS@
