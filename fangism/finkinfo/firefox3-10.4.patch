@@ -122,10 +122,10 @@ diff -ruN mozilla-1.9.2-orig/config/autoconf.mk.in mozilla-1.9.2/config/autoconf
  XPCOM_FROZEN_LDOPTS=@XPCOM_FROZEN_LDOPTS@
 +XPCOM_DYLIB_FILES = \
 +	$(NSS_DYLIB_FILES) \
-+	$(SQLITE_DYLIB_FILES) \
 +	$(call EXPAND_DYLIB_NAME,xul) \
 +	$(call EXPAND_DYLIB_NAME,mozjs)
-+XPCOM_FROZEN_LDOPTS += $(XPCOM_DYLIB_FILES)
++#	$(SQLITE_DYLIB_FILES)	# was this before using system-sqlite
++XPCOM_FROZEN_LDOPTS += $(XPCOM_DYLIB_FILES) $(SQLITE_LIBS)
  XPCOM_LIBS=@XPCOM_LIBS@
 +XPCOM_LIBS += $(XPCOM_DYLIB_FILES)
  LIBXUL_LIBS=@LIBXUL_LIBS@
