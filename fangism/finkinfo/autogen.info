@@ -2,13 +2,13 @@ Package: autogen
 Version: 5.10
 # Version: 5.10.2
 # Version: 5.11
-Revision: 2
+Revision: 3
 Source: http://www.csl.cornell.edu/~fang/sw/%n-%v.tar.gz
 # Source: mirror:gnu:%n/rel%v/%n-%v.tar.gz
 Source-MD5: c058ee521773700151543a2dac0f10a8
 # PatchFile: %n.patch
 # PatchFile-MD5: c562e12618399d3c486a1ea5db14211d
-BuildDepends: guile18-dev, libxml2, libiconv-dev, fink (>= 0.24.12-1)
+BuildDepends: guile18-dev, gmp, libxml2, libiconv-dev, fink (>= 0.24.12-1)
 Depends: guile18, %N-shlibs (= %v-%r)
 DocFiles: README ChangeLog AUTHORS COPYING INSTALL NEWS NOTES THANKS TODO VERSION
 InfoDocs: autogen.info
@@ -128,6 +128,7 @@ space, which breaks the recursive configure for sub-directories.
 DescPackaging: <<
   guile: bdep on guile18 which contains guile18-build
   switched over to guile18, was guile (1.4) before 5.10.
+  guile18 currently builds against gmp5, may eventually bump to gmp5.
   VPATH build fails b/c documentation generation fails to use top_srcdir.
   Previous versions by David Bacher <drbacher@alum.mit.edu>.
 <<
