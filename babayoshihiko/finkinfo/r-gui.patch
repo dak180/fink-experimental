@@ -1,0 +1,36 @@
+diff -ruN Mac-GUI-1.34-orig/Makefile Mac-GUI-1.34/Makefile
+--- Mac-GUI-1.34-orig/Makefile	2006-10-06 05:42:27.000000000 +0900
++++ Mac-GUI-1.34/Makefile	2010-10-07 11:30:38.000000000 +0900
+@@ -57,7 +57,7 @@
+     CFLAGS+=-msse3 -march=pentium-m -mtune=prescott -O3
+ endif
+ 
+-CPPFLAGS+=-I. -I/Library/Frameworks/R.framework/Headers -I/Library/Frameworks/R.framework/PrivateHeaders
++CPPFLAGS+=-I. -I@PREFIX@/Library/Frameworks/R.framework/Headers -I@PREFIX@/Library/Frameworks/R.framework/PrivateHeaders
+ OBJCFLAGS+=-fobjc-exceptions
+ LIBS+=-framework R -framework Cocoa -framework Security -framework ExceptionHandling -framework WebKit -framework AppKit
+ 
+diff -ruN Mac-GUI-1.34-orig/PrefPanes/QuartzPrefPane.m Mac-GUI-1.34/PrefPanes/QuartzPrefPane.m
+--- Mac-GUI-1.34-orig/PrefPanes/QuartzPrefPane.m	2010-04-28 00:41:24.000000000 +0900
++++ Mac-GUI-1.34/PrefPanes/QuartzPrefPane.m	2010-10-07 11:19:54.000000000 +0900
+@@ -30,7 +30,7 @@
+ #import "QuartzPrefPane.h"
+ #import "PreferenceKeys.h"
+ #import "Preferences.h"
+-#import "REngine.h"
++#import "../REngine/REngine.h"
+ #include <Rversion.h>
+ 
+ @interface QuartzPrefPane (Private)
+diff -ruN Mac-GUI-1.34-orig/RGUI.h Mac-GUI-1.34/RGUI.h
+--- Mac-GUI-1.34-orig/RGUI.h	2010-04-28 15:24:49.000000000 +0900
++++ Mac-GUI-1.34/RGUI.h	2010-10-07 11:02:51.000000000 +0900
+@@ -30,6 +30,8 @@
+  *
+  */
+ 
++#import <Foundation/NSString.h>
++
+ #ifndef __RGUI_H__
+ #define __RGUI_H__
+ 
