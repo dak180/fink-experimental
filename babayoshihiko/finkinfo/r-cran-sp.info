@@ -1,7 +1,7 @@
 Package: r-cran-sp
 Version: 0.9-70
-Revision: 0.1
-Description: Aiueo
+Revision: 1
+Description: GNU R classes and methods for spatial data
 Homepage: http://r-spatial.sourceforge.net/
 License: GPL
 Maintainer:  BABA Yoshihiko <babayoshihiko@mac.com>
@@ -22,5 +22,5 @@ InstallScript: <<
   install_name_tool -id %p/Library/Frameworks/R.framework/Resources/library/sp/libs/sp.dylib %i/Library/Frameworks/R.framework/Resources/library/sp/libs/sp.dylib
 <<
 Shlibs: <<
-  %p/Library/Frameworks/R.framework/Resources/library/sp/libs/sp.dylib 0.0.0 %n (>=0.9-70-0.1)
+  %p/Library/Frameworks/R.framework/Resources/library/sp/libs/sp.dylib 0.0.0 %n (>=0.9-70-1)
 <<
