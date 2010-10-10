@@ -31,7 +31,7 @@ SplitOff: <<
   DocFiles: ChangeLog NEWS README COPYING INSTALL
 <<
 DocFiles: ChangeLog NEWS README COPYING INSTALL
-InfoDocs: cln.info
+InfoDocs: ginac.info
 Description: C++ Library for Embedded Symbolic Computation
 DescDetail: <<
 GiNaC is a C++ library.  
