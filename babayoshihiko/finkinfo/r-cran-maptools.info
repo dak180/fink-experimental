@@ -1,6 +1,6 @@
 Package: r-cran-maptools
 Version: 0.7-38
-Revision: 1
+Revision: 2
 Description: GNU R Tools for reading and handling spatial objects
 Homepage: http://r-spatial.sourceforge.net/
 License: GPL
@@ -16,10 +16,9 @@ CompileScript: <<
 <<
 InstallScript: <<
   #!/bin/sh -ev
-  pwd
-  mkdir -p %i/Library/Frameworks/R.framework/Resources/library
-  cp -R %b/Rinst*/maptools %i/Library/Frameworks/R.framework/Resources/library
-  install_name_tool -id %p/Library/Frameworks/R.framework/Resources/library/maptools/libs/maptools.dylib %i/Library/Frameworks/R.framework/Resources/library/maptools/libs/maptools.dylib
+  mkdir -p %i/Library/Frameworks/R.framework/Resources/site-library
+  cp -R %b/Rinst*/maptools %i/Library/Frameworks/R.framework/Resources/site-library
+  install_name_tool -id %p/Library/Frameworks/R.framework/Resources/site-library/maptools/libs/maptools.dylib %i/Library/Frameworks/R.framework/Resources/site-library/maptools/libs/maptools.dylib
 <<
 Shlibs: <<
   %p/Library/Frameworks/R.framework/Resources/library/maptools/libs/maptools.dylib 0.0.0 %n (>=0.7-38-1)

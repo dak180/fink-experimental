@@ -37,6 +37,7 @@ InstallScript: <<
  if [[ $( sw_vers -productVersion ) > 10.5 ]];then
    perl -pi.bak -e 's|# export PATH|export PATH|' %i/Library/Frameworks/R.framework/Resources/bin/R
  fi
+ chmod 755 %i/Library/Frameworks/R.framework/library
  mkdir -p %i/bin
  ln -s %p/Library/Frameworks/R.framework/Resources/bin/R %i/bin/R
  mkdir -p %i/share/man/man1
@@ -72,8 +73,9 @@ InstallScript: <<
 <<
 RuntimeVars: <<
  R_HOME: %p/Library/Frameworks/R.framework/Resources
+ R_LIBS_USER: $HOME/Library/R 
 <<
-PreRmScript: rm -rf %p/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/library
+PreRmScript: rm -rf %p/Library/Frameworks/R.framework/Versions/%v/Resources/library
 Shlibs: <<
  %p/Library/Frameworks/R.framework/Versions/2.11/Resources/lib/libR.dylib 2.11.0 %n (>= 2.11.0-1)
  !%p/Library/Frameworks/R.framework/Versions/2.11/Resources/library/class/libs/class.dylib
