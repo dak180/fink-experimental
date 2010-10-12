@@ -8,6 +8,7 @@ Source: http://pingus.seul.org/files/%n-%v.tar.bz2
 BuildDepends: <<
   fink (>= 0.24.12),
   boost1.41.cmake,
+  libiconv-dev,
   libpng3,
   scons,
   sdl,
@@ -20,6 +21,7 @@ BuildDepends: <<
 # Replaces:
 Depends: <<
   boost1.41.cmake-shlibs,
+  libiconv,
   libpng3-shlibs,
   sdl-shlibs,
   sdl-image-shlibs,
@@ -52,12 +54,8 @@ CompileScript: <<
   # Insufficient py-fu: attempts to pass CPPPATH failed, hence the sed-patch.
   mf=`echo $MAKEFLAGS | sed 's/.*\(-j[ ]*[0-9]*\).*/\1/'`
   echo "using scons flags: $mf"
-  if test -x %p/bin/ccache
-    comp="CC='ccache gcc' CXX='ccache g++'"
-    echo using auto-detected ccache
-  fi
-  # c="$c $comp $mf"
-  scons configure $c $comp $mf
+  # c="$c $mf"
+  scons configure $c $mf
   scons $mf
   # no dependency tracking to check headers
   # fink-package-precedence --headers .
