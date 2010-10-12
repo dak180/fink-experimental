@@ -1,0 +1,109 @@
+Package: pingus
+Version: 0.7.3
+Revision: 1
+Description: Lemmings-like game with penguins
+GCC: 4.0
+Source-MD5: 7d1a0b0d658cc46dd09d6274f39acc7d
+Source: http://pingus.seul.org/files/%n-%v.tar.bz2
+BuildDepends: <<
+  fink (>= 0.24.12),
+  boost1.41.cmake,
+  libpng3,
+  scons,
+  sdl,
+  sdl-image,
+  sdl-mixer
+<<
+# fink-package-precedence,
+# libusb1[-shlibs] ?
+# Conflicts:
+# Replaces:
+Depends: <<
+  boost1.41.cmake-shlibs,
+  libpng3-shlibs,
+  sdl-shlibs,
+  sdl-image-shlibs,
+  sdl-mixer-shlibs
+<<
+DocFiles: <<
+  AUTHORS
+  COPYING
+  ChangeLog
+  INSTALL.unix
+  NEWS
+  README
+  TODO
+<<
+# PatchFile: %n.patch
+# PatchFile-MD5: 
+PatchScript: <<
+  #!/bin/sh -ev
+#  %{default_script}
+  sed=/usr/bin/sed
+  file=SConstruct
+  $sed -i.orig -e '/env.*CPPPATH/a\
+    '"\ \ \ \ env['CPPPATH'] += ['%p/include']" \
+	-e 's/boost_signals/boost_signals-mt/g' \
+	$file
+<<
+CompileScript: <<
+  #!/bin/sh -ev
+  c="LIBPATH=%p/lib with_linuxevdev=no"
+  # Insufficient py-fu: attempts to pass CPPPATH failed, hence the sed-patch.
+  mf=`echo $MAKEFLAGS | sed 's/.*\(-j[ ]*[0-9]*\).*/\1/'`
+  echo "using scons flags: $mf"
+  if test -x %p/bin/ccache
+    comp="CC='ccache gcc' CXX='ccache g++'"
+    echo using auto-detected ccache
+  fi
+  # c="$c $comp $mf"
+  scons configure $c $comp $mf
+  scons $mf
+  # no dependency tracking to check headers
+  # fink-package-precedence --headers .
+  # fink-package-precedence --libs .
+<<
+InstallScript: <<
+  #!/bin/sh -ev
+  ./install.sh %i
+<<
+DescDetail: <<
+[from http://pingus.seul.org/welcome.html]
+
+Pingus has started at the end of 1998 with the simple goal to create a 
+Free (as in freedom, not as in free beer) Lemmings(TM) clone. 
+The Free means you get the sources and are allowed and encouraged to change 
+and distribute them. You basically get everything that I used to create 
+this game. In the years it has grown than quite a bit over the original 
+goal and become something more than just a clone, we have original 
+artwork, a built-in level editor, new actions, multiplayer and a few 
+other features.
+
+If you don't know Lemmings(TM), here comes a short introduction. 
+It is a puzzle game developed in 1991 by DMA Design. 
+The player takes command in the game of a bunch of small animals and has 
+to guide them through levels. Since the animals walk on their own, 
+the player can only influence them by giving them commands, 
+like build a bridge, dig a hole or redirect all animals in the 
+other direction. The goal of each level is to reach the exit, 
+for this multiple combination of commands are necessary. 
+The game is presented in a 2D site view. For more information you might 
+want to visit one of the numerous visit Lemmings(TM) fanpages on the net.
+
+While Pingus is based on the idea of Lemmings(TM), it however doesn't try 
+to be an exact clone, it has included a few ideas of its own, 
+like the worldmap or secret levels, which might be familiar from games 
+the Super Mario World and other Nintendo games. It has also a few new 
+actions, like the jumper which weren't presented in the original game. 
+To get an impression of the look of the Pingus game you might want to 
+have a look at some screenshots. 
+<<
+DescPackaging: <<
+Choice of boost version was arbitrary.
+<<
+License: GPL
+Maintainer: David Fang <fangism@users.sourceforge.net>
+Homepage: http://pingus.seul.org/welcome.html
+DescUsage: <<
+To launch, just run 'pingus' from any command prompt.
+<<
