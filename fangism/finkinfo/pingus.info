@@ -64,6 +64,10 @@ CompileScript: <<
 InstallScript: <<
   #!/bin/sh -ev
   ./install.sh %i
+  mv %i/bin/pingus %i/bin/pingus-bare
+  echo "#!/bin/sh -v" > %i/bin/pingus
+  echo "exec pingus-bare --datadir %p/share/%n/data" >> %i/bin/pingus
+  chmod +x %i/bin/pingus
 <<
 DescDetail: <<
 [from http://pingus.seul.org/welcome.html]
@@ -98,6 +102,11 @@ have a look at some screenshots.
 <<
 DescPackaging: <<
 Choice of boost version was arbitrary.
+<<
+DescUsage: <<
+The wrapper script 'pingus' automatically passes --datadir for you, 
+so all you have to do is run 'pingus'.  
+See pingus -h for more options.  
 <<
 License: GPL
 Maintainer: David Fang <fangism@users.sourceforge.net>
