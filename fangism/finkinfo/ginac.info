@@ -19,7 +19,7 @@ Depends: <<
 <<
 BuildDependsOnly: True
 License: GPL
-ConfigureParams: --mandir='${prefix}/share/man' --infodir='${prefix}/share/info'
+ConfigureParams: --mandir='${prefix}/share/man' --infodir='${prefix}/share/info' --disable-static
 GCC: 4.0
 SplitOff: <<
   Package: %N-shlibs
