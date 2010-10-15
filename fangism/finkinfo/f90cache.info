@@ -1,0 +1,82 @@
+Package: f90cache
+Version: 0.93
+Revision: 1
+Maintainer: David Fang <fangism@users.sourceforge.net>
+Source: http://www.irisa.fr/sage/edouard/canot/%n/%n-%v.tar.bz2
+Source-MD5: a6238ac637588ae6e815bc4a9ce6a5cb
+PatchScript: <<
+	#!/bin/sh -ev
+	# patch Makefile to not depend on implicit rules
+	file=Makefile.in
+	mv $file $file.orig
+	echo ".SUFFIXES: .c .o" > $file
+	echo ".c.o:" >> $file
+	echo '	$(CC) $(CFLAGS) -o $@ -c $<' >> $file
+	cat $file.orig >> $file
+<<
+ConfigureParams: --mandir=%p/share/man --infodir=%p/share/info
+CompileScript: <<
+  #!/bin/sh -ev
+  mkdir build
+  cd build
+  ../configure %c -C
+  make
+<<
+InfoTest: <<
+	TestScript: <<
+	#!/bin/sh -ev
+	echo "Test suite?  What test suite?"
+	<<
+<<
+InstallScript: <<
+  #!/bin/sh -ev
+  cd build
+  make DESTDIR=%d install
+  # ln -s %p/bin/f90cache %i/bin/g95
+  # ln -s %p/bin/f90cache %i/bin/gfortran
+<<
+#PostInstScript: <<
+#echo "If you wish %n to be the default Fortran compiler"
+#echo "(to override and send ALL compilations through %n),"
+#echo " install the \"%n-default\" package."
+#<<
+#SplitOff: <<
+#	Package: %n-default
+#	Depends: %n
+#	Files: bin/g95 bin/gfortran
+#	Description: Fortran compiler cache - As default compiler
+#	DescDetail: <<
+#	  This package installs symlinks for %n to override your compiler.
+#	  ccache will affect ALL COMPILATIONS with this package installed.
+#	  If you have strange compilation problems, remove this package FIRST, 
+#	  before reporting any package or compile bugs.
+#	<<
+#	PostInstScript: <<
+#	f90cache -c > /dev/null
+#	echo "***************** WARNING ********************"
+#	echo "ALL g95 and gfortran compiles will now be sent through ccache!"
+#	echo "For the most part ccache is reliable, but"
+#	echo "it can occasionally cause strange compile problems!"
+#	echo "If you have a strange compile problem, remove this package"
+#	echo "and try again before reporting any bugs!"
+#	echo ""
+#	echo "Additionally, the default cache size is 1 Gig."
+#	echo "so you may want to run \"ccache -M 500M\" (for example)"
+#	echo "to limit the size of the cache."
+#	echo "***************** WARNING ********************"
+#	<<
+#<<
+DocFiles: README CHANGES TODO INSTALL
+Description: Fortran compiler cache
+DescDetail: <<
+%n acts as a caching pre-processor to Fortran compilers, using the -E
+compiler switch and a hash to detect when a compilation can be satisfied
+from cache. This often results in a 5 to 10 times speedup in common
+compilations.
+If you wish %n to be the default Fortran compiler (to override and send ALL 
+compilations through ccache), install the "%n-default" package.
+<<
+DescPort: <<
+<<
+Homepage: http://www.irisa.fr/sage/edouard/canot/f90cache/
+License: GPL
