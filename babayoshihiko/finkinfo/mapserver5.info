@@ -1,6 +1,6 @@
 Package: mapserver5
 Version: 5.6.5
-Revision: 1001.3
+Revision: 1001.4
 Distribution: 10.5, 10.6
 Architecture: i386
 Description: Spatial Web Development Environment
@@ -25,19 +25,22 @@ or
 You may, of course, add symlink to CGI-Executables after you edit httpd.conf
 to have Options: FollowSymLinks ExecCGI.
 
-To use php-mapscript5, you need to enable php-cgi as follows:
-  1. edit %p/etc/apache2/apache2.conf and add two lines as:
-    Include /sw/etc/apache2/mods-available/*.load
-    Include /sw/etc/apache2/mods-available/*.conf
+To use mapscript5 with php5-cgi, you need to enable php5-cgi as follows:
+  1. edit %p/etc/apache2/apache2.conf and change these lines:
+      Include /sw/etc/apache2/mods-enabled/*.load
+      Include /sw/etc/apache2/mods-enabled/*.conf
+    to:
+      Include /sw/etc/apache2/mods-available/*.load
+      Include /sw/etc/apache2/mods-available/*.conf
   2. edit  %p/etc/apache2/sites-enabled/000-default and edit (not add)
     AllowOverride All
   3. Now run httpd
-    $ sudo apache2ctl graceful
+      $ sudo apache2ctl graceful
     and check
-    http://localhost/mapscript/php-examples/phpinfo_mapscript.php
+      http://localhost/mapscript/php-examples/phpinfo_mapscript.php
 
 The documents are available at:
-http://mapserver.gis.umn.edu/doc.html
+http://mapserver.org/documentation.html
 <<
 
 # Dependencies.
@@ -106,10 +109,11 @@ ConfigureParams: --mandir=%i/share/man --with-gd=%p --with-pdf=%p --with-gdal=%p
 
 CompileScript: <<
   #!/bin/bash -ev
-  #printenv
-  echo $PATH
+  # Fix for PHP MapScript
+  perl -pi -e "s|-bundle -flat_namespace -undefined suppress|-bundle -undefined dynamic_lookup|" configure
+  
   OPT_FLAGS="-O3 -funroll-loops -fexpensive-optimizations -ffast-math"
-
+  
   CXXFLAGS="-I%p/include/gdal1 $OPT_FLAGS" CPPFLAGS="-I%p/include/gdal1 $OPT_FLAGS" CFLAGS="-I%p/include/gdal1 $OPT_FLAGS" ./configure %c
 
   CXXFLAGS="-I%p/include/gdal1 $OPT_FLAGS" CPPFLAGS="-I%p/include/gdal1" CFLAGS="-I%p/include/gdal1 $OPT_FLAGS" make 
@@ -118,11 +122,6 @@ CompileScript: <<
   echo "Action application/php5-script /cgi-bin/php5" >examples/.htaccess
   echo "AddHandler application/php5-script .php .phtml" >>examples/.htaccess
   popd
-  
-  # pushd mapscript/python
-  # perl -pi -e "s|install_dir =|install_dir = '%b/mapscript/python/install' #|" setup.py
-  # %p/bin/python2.6 setup.py build
-  # popd
 <<
 
 # Install Phase.
@@ -145,14 +144,12 @@ InstallScript: <<
   mkdir -p %i/lib/php5/20060613 %i/var/www/mapscript
   cp %b/mapscript/php3/php_mapscript.so %i/lib/php5/20060613/
   cp -R %b/mapscript/php3/examples %i/var/www/mapscript/php-examples
-    
-  echo "Installing Python MapScript"
 <<
 DocFiles: GD-COPYING HISTORY.TXT INSTALL README README.CONFIGURE
 
 
 SplitOff: <<
-  Package: php-mapscript5
+  Package: php5-mapscript5
   Description: QGIS Shared Libraries
   Depends: <<
 	apache2-common, mapserver5, php5-cgi
@@ -164,7 +161,6 @@ SplitOff: <<
   DocFiles: mapscript/php3/README
 #End of SplitOff
 <<
-
 
 DescPort: <<
 The binaries are now also installed in bin so that they can be used

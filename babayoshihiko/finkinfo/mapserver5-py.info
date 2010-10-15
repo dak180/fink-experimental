@@ -1,0 +1,41 @@
+Info2: <<
+
+Package: mapserver5-py%type_pkg[python]
+Type: python (2.5 2.6 2.7)
+Version: 5.6.5
+Revision: 1001.3
+Distribution: 10.5, 10.6
+Architecture: i386
+Description: Spatial Web Development Environment
+License: BSD
+Homepage: http://mapserver.org/
+Maintainer: Kurt Schwehr <goatbar@users.sourceforge.net>
+DescDetail:
+DescUsage:
+Depends: mapserver5, python%type_pkg[python]
+BuildDepends: fink (>=0.24.12)
+Source: http://download.osgeo.org/mapserver/mapserver-%v.tar.gz
+Source-MD5: 33abbf27fa8e3bf2c53257c2188a67b3
+
+SetCFLAGS: -O3 -funroll-loops -fexpensive-optimizations -ffast-math
+
+# Compile Phase.
+ConfigureParams: --mandir=%i/share/man --with-gd=%p --with-pdf=%p --with-gdal=%p/bin/gdal-config --with-ogr=%p/bin/gdal-config --with-png=%p --with-proj=%p --with-ming=%p --with-curl-config=%p/bin/curl-config --with-wfs --with-wcs --with-wmsclient --with-wfsclient --with-sos --with-geos=%p/opt/libgeos3.2.2/bin/geos-config --with-postgis=%p/bin/pg_config --with-php=%p/include/php5
+
+CompileScript: <<
+  #!/bin/bash -ev
+  OPT_FLAGS="-O3 -funroll-loops -fexpensive-optimizations -ffast-math"
+  CXXFLAGS="-I%p/include/gdal1 $OPT_FLAGS" CPPFLAGS="-I%p/include/gdal1 $OPT_FLAGS" CFLAGS="-I%p/include/gdal1 $OPT_FLAGS" ./configure %c
+  CXXFLAGS="-I%p/include/gdal1 $OPT_FLAGS" CPPFLAGS="-I%p/include/gdal1" CFLAGS="-I%p/include/gdal1 $OPT_FLAGS" make 
+  pushd mapscript/python
+  %p/bin/python%type_raw[python] setup.py build
+  popd
+<<
+
+InstallScript: <<
+  echo "Installing Python MapScript"
+  (cd %b/mapscript/python && %p/bin/python%type_raw[python] setup.py install --no-compile --prefix=%p --install-lib=%i/lib/python%type_raw[python]/site-packages)
+<<
+DocFiles: mapscript/python/README
+
+<<
