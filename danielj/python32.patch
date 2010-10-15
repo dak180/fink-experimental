@@ -1,17 +1,17 @@
-diff -ru Python-3.2a1.orig/Makefile.pre.in Python-3.2a1/Makefile.pre.in
---- Python-3.2a1.orig/Makefile.pre.in	2010-07-17 16:39:23.000000000 -0400
-+++ Python-3.2a1/Makefile.pre.in	2010-08-10 15:17:08.000000000 -0400
-@@ -453,8 +453,7 @@
+diff -ru Python-3.2a3.orig/Makefile.pre.in Python-3.2a3/Makefile.pre.in
+--- Python-3.2a3.orig/Makefile.pre.in	2010-10-10 05:37:12.000000000 -0400
++++ Python-3.2a3/Makefile.pre.in	2010-10-15 16:02:17.000000000 -0400
+@@ -454,8 +454,7 @@
  	fi
  
  libpython$(VERSION).dylib: $(LIBRARY_OBJS)
 -	 $(CC) -dynamiclib -Wl,-single_module $(PY_LDFLAGS) -undefined dynamic_lookup -Wl,-install_name,$(prefix)/lib/libpython$(VERSION).dylib -Wl,-compatibility_version,$(VERSION) -Wl,-current_version,$(VERSION) -o $@ $(LIBRARY_OBJS) $(SHLIBS) $(LIBC) $(LIBM) $(LDLAST); \
--		 
+-
 +	 $(CC) -dynamiclib -Wl,-single_module $(LDFLAGS) @LIBTOOL_CRUFT@ -o $@ $(LIBRARY_OBJS) $(SHLIBS) $(LIBC) $(LDLAST)
  
  libpython$(VERSION).sl: $(LIBRARY_OBJS)
- 	$(LDSHARED) $(PY_LDFLAGS) -o $@ $(LIBRARY_OBJS) $(MODLIBS) $(SHLIBS) $(LIBC) $(LIBM) $(LDLAST)
-@@ -808,7 +807,7 @@
+ 	$(LDSHARED) -o $@ $(LIBRARY_OBJS) $(MODLIBS) $(SHLIBS) $(LIBC) $(LIBM) $(LDLAST)
+@@ -819,7 +818,7 @@
  # Install the interpreter with $(VERSION) affixed
  # This goes into $(exec_prefix)
  altbininstall: $(BUILDPYTHON)
@@ -20,7 +20,7 @@ diff -ru Python-3.2a1.orig/Makefile.pre.in Python-3.2a1/Makefile.pre.in
  	do \
  		if test ! -d $(DESTDIR)$$i; then \
  			echo "Creating directory $$i"; \
-@@ -821,9 +820,9 @@
+@@ -832,9 +831,9 @@
  		if test -n "$(DLLLIBRARY)" ; then \
  			$(INSTALL_SHARED) $(DLLLIBRARY) $(DESTDIR)$(BINDIR); \
  		else \
@@ -32,7 +32,7 @@ diff -ru Python-3.2a1.orig/Makefile.pre.in Python-3.2a1/Makefile.pre.in
  			fi \
  		fi; \
  	else	true; \
-@@ -834,7 +833,7 @@
+@@ -845,7 +844,7 @@
  	then rm -f $(DESTDIR)$(BINDIR)/$(PYTHON)3$(EXE); \
  	else true; \
  	fi
@@ -41,9 +41,9 @@ diff -ru Python-3.2a1.orig/Makefile.pre.in Python-3.2a1/Makefile.pre.in
  	-rm -f $(DESTDIR)$(BINDIR)/python3-config
  	(cd $(DESTDIR)$(BINDIR); $(LN) -s python$(VERSION)-config python3-config)
  	-rm -f $(DESTDIR)$(LIBPC)/python3.pc
-diff -ru Python-3.2a1.orig/Misc/python-config.in Python-3.2a1/Misc/python-config.in
---- Python-3.2a1.orig/Misc/python-config.in	2010-04-06 17:30:42.000000000 -0400
-+++ Python-3.2a1/Misc/python-config.in	2010-08-10 15:32:45.000000000 -0400
+diff -ru Python-3.2a3.orig/Misc/python-config.in Python-3.2a3/Misc/python-config.in
+--- Python-3.2a3.orig/Misc/python-config.in	2010-09-12 16:58:19.000000000 -0400
++++ Python-3.2a3/Misc/python-config.in	2010-10-15 16:02:17.000000000 -0400
 @@ -46,11 +46,10 @@
      elif opt in ('--libs', '--ldflags'):
          libs = getvar('LIBS').split() + getvar('SYSLIBS').split()
@@ -59,9 +59,9 @@ diff -ru Python-3.2a1.orig/Misc/python-config.in Python-3.2a1/Misc/python-config
              libs.extend(getvar('LINKFORSHARED').split())
          print(' '.join(libs))
  
-diff -ru Python-3.2a1.orig/Misc/python.pc.in Python-3.2a1/Misc/python.pc.in
---- Python-3.2a1.orig/Misc/python.pc.in	2009-05-24 16:39:11.000000000 -0400
-+++ Python-3.2a1/Misc/python.pc.in	2010-08-10 15:11:27.000000000 -0400
+diff -ru Python-3.2a3.orig/Misc/python.pc.in Python-3.2a3/Misc/python.pc.in
+--- Python-3.2a3.orig/Misc/python.pc.in	2009-05-24 16:39:11.000000000 -0400
++++ Python-3.2a3/Misc/python.pc.in	2010-10-15 16:02:17.000000000 -0400
 @@ -1,6 +1,6 @@
  prefix=@prefix@
  exec_prefix=@exec_prefix@
@@ -70,10 +70,10 @@ diff -ru Python-3.2a1.orig/Misc/python.pc.in Python-3.2a1/Misc/python.pc.in
  includedir=@includedir@
  
  Name: Python
-diff -ru Python-3.2a1.orig/Modules/posixmodule.c Python-3.2a1/Modules/posixmodule.c
---- Python-3.2a1.orig/Modules/posixmodule.c	2010-07-23 09:53:51.000000000 -0400
-+++ Python-3.2a1/Modules/posixmodule.c	2010-08-10 15:34:27.000000000 -0400
-@@ -426,7 +426,7 @@
+diff -ru Python-3.2a3.orig/Modules/posixmodule.c Python-3.2a3/Modules/posixmodule.c
+--- Python-3.2a3.orig/Modules/posixmodule.c	2010-09-23 20:03:39.000000000 -0400
++++ Python-3.2a3/Modules/posixmodule.c	2010-10-15 16:02:17.000000000 -0400
+@@ -438,7 +438,7 @@
  #endif
  
  /* Return a dictionary corresponding to the POSIX environment table */
@@ -82,7 +82,7 @@ diff -ru Python-3.2a1.orig/Modules/posixmodule.c Python-3.2a1/Modules/posixmodul
  /* On Darwin/MacOSX a shared library or framework has no access to
  ** environ directly, we must obtain it with _NSGetEnviron().
  */
-@@ -453,7 +453,7 @@
+@@ -465,7 +465,7 @@
      d = PyDict_New();
      if (d == NULL)
          return NULL;
@@ -91,10 +91,10 @@ diff -ru Python-3.2a1.orig/Modules/posixmodule.c Python-3.2a1/Modules/posixmodul
      if (environ == NULL)
          environ = *_NSGetEnviron();
  #endif
-diff -ru Python-3.2a1.orig/configure Python-3.2a1/configure
---- Python-3.2a1.orig/configure	2010-07-19 03:31:40.000000000 -0400
-+++ Python-3.2a1/configure	2010-08-10 15:57:51.000000000 -0400
-@@ -4872,7 +4872,7 @@
+diff -ru Python-3.2a3.orig/configure Python-3.2a3/configure
+--- Python-3.2a3.orig/configure	2010-10-10 04:10:16.000000000 -0400
++++ Python-3.2a3/configure	2010-10-15 16:02:17.000000000 -0400
+@@ -4924,7 +4924,7 @@
  	  ;;
      Darwin*)
      	LDLIBRARY='libpython$(VERSION).dylib'
@@ -102,8 +102,8 @@ diff -ru Python-3.2a1.orig/configure Python-3.2a1/configure
 +	BLDLIBRARY="$LDLIBRARY"
  	RUNSHARED='DYLD_LIBRARY_PATH=`pwd`:${DYLD_LIBRARY_PATH}'
  	;;
- 
-@@ -7361,8 +7361,8 @@
+     AIX*)
+@@ -7424,8 +7424,8 @@
  	#ARCH_RUN_32BIT="true"
      fi
  
@@ -114,7 +114,7 @@ diff -ru Python-3.2a1.orig/configure Python-3.2a1/configure
      LIBTOOL_CRUFT=$LIBTOOL_CRUFT' -compatibility_version $(VERSION) -current_version $(VERSION)';;
  esac
  
-@@ -7508,15 +7508,6 @@
+@@ -7541,15 +7541,6 @@
  		# Use -undefined dynamic_lookup whenever possible (10.3 and later).
  		# This allows an extension to be used in any Python
  
@@ -130,7 +130,7 @@ diff -ru Python-3.2a1.orig/configure Python-3.2a1/configure
  			LDSHARED='$(CC) $(LDFLAGS) -bundle'
  			LDCXXSHARED='$(CXX) $(LDFLAGS) -bundle'
  			if test "$enable_framework" ; then
-@@ -7526,11 +7517,10 @@
+@@ -7559,11 +7550,10 @@
  				LDCXXSHARED="$LDCXXSHARED "'$(PYTHONFRAMEWORKPREFIX)/$(PYTHONFRAMEWORKDIR)/Versions/$(VERSION)/$(PYTHONFRAMEWORK)'
  			else
  				# No framework, use the Python app as bundle-loader
@@ -145,7 +145,7 @@ diff -ru Python-3.2a1.orig/configure Python-3.2a1/configure
  		;;
  	Linux*|GNU*|QNX*)
  		LDSHARED='$(CC) -shared'
-@@ -13375,7 +13365,7 @@
+@@ -13508,7 +13498,7 @@
  
  if test $ac_sys_system = Darwin
  then
@@ -154,10 +154,10 @@ diff -ru Python-3.2a1.orig/configure Python-3.2a1/configure
  fi
  
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for %zd printf() format support" >&5
-diff -ru Python-3.2a1.orig/setup.py Python-3.2a1/setup.py
---- Python-3.2a1.orig/setup.py	2010-07-23 15:25:47.000000000 -0400
-+++ Python-3.2a1/setup.py	2010-08-10 15:29:47.000000000 -0400
-@@ -240,13 +240,17 @@
+diff -ru Python-3.2a3.orig/setup.py Python-3.2a3/setup.py
+--- Python-3.2a3.orig/setup.py	2010-09-14 15:41:23.000000000 -0400
++++ Python-3.2a3/setup.py	2010-10-15 16:02:17.000000000 -0400
+@@ -260,13 +260,17 @@
                                                longest, g))
  
          if missing:
@@ -175,7 +175,7 @@ diff -ru Python-3.2a1.orig/setup.py Python-3.2a1/setup.py
  
          if self.failed:
              failed = self.failed[:]
-@@ -254,6 +258,7 @@
+@@ -274,6 +278,7 @@
              print("Failed to build these modules:")
              print_three_column(failed)
              print()
@@ -183,7 +183,7 @@ diff -ru Python-3.2a1.orig/setup.py Python-3.2a1/setup.py
  
      def build_extension(self, ext):
  
-@@ -342,9 +347,8 @@
+@@ -362,9 +367,8 @@
          return sys.platform
  
      def detect_modules(self):
@@ -195,7 +195,7 @@ diff -ru Python-3.2a1.orig/setup.py Python-3.2a1/setup.py
  
          # Add paths specified in the environment variables LDFLAGS and
          # CPPFLAGS for header and library files.
-@@ -616,10 +620,9 @@
+@@ -631,10 +635,9 @@
                                 depends = ['socketmodule.h']) )
          # Detect SSL support for the socket module (via _ssl)
          search_for_ssl_incs_in = [
@@ -208,7 +208,7 @@ diff -ru Python-3.2a1.orig/setup.py Python-3.2a1/setup.py
                               search_for_ssl_incs_in
                               )
          if ssl_incs is not None:
-@@ -627,9 +630,8 @@
+@@ -642,9 +645,8 @@
                                 ['/usr/kerberos/include'])
              if krb5_h:
                  ssl_incs += krb5_h
@@ -220,7 +220,7 @@ diff -ru Python-3.2a1.orig/setup.py Python-3.2a1/setup.py
                                       ] )
  
          if (ssl_incs is not None and
-@@ -649,7 +651,7 @@
+@@ -664,7 +666,7 @@
  
          # look for the openssl version header on the compiler search path.
          opensslv_h = find_file('openssl/opensslv.h', [],
@@ -229,7 +229,7 @@ diff -ru Python-3.2a1.orig/setup.py Python-3.2a1/setup.py
          if opensslv_h:
              name = os.path.join(opensslv_h[0], 'openssl/opensslv.h')
              if sys.platform == 'darwin' and is_macosx_sdk_path(name):
-@@ -900,12 +902,7 @@
+@@ -915,12 +917,7 @@
          # We hunt for #define SQLITE_VERSION "n.n.n"
          # We need to find >= sqlite version 3.0.8
          sqlite_incdir = sqlite_libdir = None
@@ -243,7 +243,7 @@ diff -ru Python-3.2a1.orig/setup.py Python-3.2a1/setup.py
                             ]
          MIN_SQLITE_VERSION_NUMBER = (3, 0, 8)
          MIN_SQLITE_VERSION = ".".join([str(x)
-@@ -917,7 +914,7 @@
+@@ -932,7 +929,7 @@
          if sys.platform == 'darwin':
              sysroot = macosx_sdk_root()
  
@@ -252,7 +252,7 @@ diff -ru Python-3.2a1.orig/setup.py Python-3.2a1/setup.py
              f = os.path.join(d, "sqlite3.h")
  
              if sys.platform == 'darwin' and is_macosx_sdk_path(d):
-@@ -949,11 +946,9 @@
+@@ -964,11 +961,9 @@
              sqlite_dirs_to_check = [
                  os.path.join(sqlite_incdir, '..', 'lib64'),
                  os.path.join(sqlite_incdir, '..', 'lib'),
@@ -265,7 +265,7 @@ diff -ru Python-3.2a1.orig/setup.py Python-3.2a1/setup.py
              if sqlite_libfile:
                  sqlite_libdir = [os.path.abspath(os.path.dirname(sqlite_libfile))]
  
-@@ -1108,6 +1103,7 @@
+@@ -1123,6 +1118,7 @@
                  panel_library = 'panelw'
              curses_libs = [curses_library]
              exts.append( Extension('_curses', ['_cursesmodule.c'],
@@ -273,7 +273,7 @@ diff -ru Python-3.2a1.orig/setup.py Python-3.2a1/setup.py
                                     libraries = curses_libs) )
          elif curses_library == 'curses' and platform != 'darwin':
                  # OSX has an old Berkeley curses, not good enough for
-@@ -1128,6 +1124,7 @@
+@@ -1143,6 +1139,7 @@
          if (module_enabled(exts, '_curses') and
              self.compiler.find_library_file(lib_dirs, panel_library)):
              exts.append( Extension('_curses_panel', ['_curses_panel.c'],
@@ -281,7 +281,7 @@ diff -ru Python-3.2a1.orig/setup.py Python-3.2a1/setup.py
                                     libraries = [panel_library] + curses_libs) )
          else:
              missing.append('_curses_panel')
-@@ -1442,16 +1439,12 @@
+@@ -1457,16 +1454,12 @@
          # AquaTk is a separate method. Only one Tkinter will be built on
          # Darwin - either AquaTk, if it is found, or X11 based Tk.
          platform = self.get_platform()

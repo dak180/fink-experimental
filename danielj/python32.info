@@ -1,7 +1,7 @@
 Info2: <<
 Package: python%type_pkg[python]
 Version: 3.2
-Revision: 0.a2.1
+Revision: 0.a3.1
 Type: python 3.2
 Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 Depends: <<
@@ -12,7 +12,7 @@ Depends: <<
 	libgettext8-shlibs,
 	libncursesw5-shlibs,
 	readline5-shlibs,
-	sqlite3-shlibs  (>= 3.2.8-1001),
+	sqlite3-shlibs  (>= 3.7.2-2),
 	tcltk (>= 8.4.1-1),
 	x11
 <<
@@ -27,20 +27,20 @@ BuildDepends: <<
 	libgettext8-dev,
 	libncursesw5,
 	readline5,
-	sqlite3-dev (>= 3.2.8-1001),
+	sqlite3-dev (>= 3.7.2-2),
 	system-openssl-dev,
 	tcltk-dev (>= 8.4.1-1),
 	x11-dev
 <<
 Provides: argparse-py%type_pkg[python]
 #Source: http://python.org/ftp/python/%v/Python-%v.tar.bz2
-Source: http://python.org/ftp/python/%v/Python-%{v}a2.tar.bz2
-Source-MD5: 5fc5546bea30d99e5cbd9095e92f49ab
+Source: http://python.org/ftp/python/%v/Python-%{v}a3.tar.bz2
+Source-MD5: 2c7f690e6de62691a0427328a9654290
 # No html docs yet.
 #Source2: http://www.python.org/ftp/python/doc/%v/python-%v-docs-html.tar.bz2
 #Source2-MD5: c9ccf8e9fc4d046c168af313706f159b
 PatchFile: %n.patch
-PatchFile-MD5: ed3ad9bf2e8524c7d0f2e54c660ffb53
+PatchFile-MD5: 0ec4b5242d4913b529fc38b13f559f31
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 SetLDFLAGS: -L%p/lib/system-openssl/lib
 ConfigureParams: --enable-shared
