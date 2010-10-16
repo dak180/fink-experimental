@@ -42,8 +42,8 @@ echo "(to override and send ALL compilations through ccache),"
 echo " install the \"%n-default\" package."
 <<
 SplitOff: <<
-	Package: %n-default
-	Depends: %n
+	Package: ccache-default
+	Depends: ccache
 	Files: <<
 		bin/cc
 		bin/c++*
@@ -61,8 +61,8 @@ SplitOff: <<
 	PostInstScript: <<
 	ccache -c > /dev/null
 	echo "***************** WARNING ********************"
-	echo "ALL gcc3.3 and gcc4.0 and gcc4.2 compiles will now be sent through %n!"
-	echo "For the most part %n is reliable, but"
+	echo "ALL gcc3.3 and gcc4.0 and gcc4.2 compiles will now be sent through ccache!"
+	echo "For the most part ccache is reliable, but"
 	echo "it can occasionally cause strange compile problems!"
 	echo "If you have a strange compile problem, remove this package"
 	echo "and try again before reporting any bugs!"
@@ -72,8 +72,8 @@ SplitOff: <<
 	echo "so you may want to run \"CCACHE_DIR=%p/var/ccache ccache -M 500M\" (for example)"
 	echo "to limit the size of the cache."
 	echo ""
-	echo "If you want --build-as-nobody to work with %n-default,"
-	echo "I suggest: sudo chown -R fink-bld %p/var/ccache
+	echo "If you want --build-as-nobody to work with ccache-default,"
+	echo "I suggest: sudo chown -R fink-bld %p/var/ccache"
 	echo "and never building as root (always --build-as-nobody)."
 	echo "***************** WARNING ********************"
 	<<
