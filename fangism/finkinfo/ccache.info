@@ -29,7 +29,7 @@ mkdir -p %i/share/man/man1
 make install prefix=%i mandir=%i/share/man
 echo creating ccache-default overrides...
 pushd /usr/bin
-for f in cc c++* gcc* g++* *-apple-darwin*-g*
+for f in cc c++ c++-* gcc* g++* *-apple-darwin*-g*
 do
   echo "linking %p/bin/$f to ccache to override /usr/bin/$f"
   ln -s %p/bin/ccache %i/bin/$f
