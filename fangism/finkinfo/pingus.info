@@ -111,6 +111,3 @@ See pingus -h for more options.
 License: GPL
 Maintainer: David Fang <fangism@users.sourceforge.net>
 Homepage: http://pingus.seul.org/welcome.html
-DescUsage: <<
-To launch, just run 'pingus' from any command prompt.
-<<
