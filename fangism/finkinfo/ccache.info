@@ -1,6 +1,6 @@
 Package: ccache 
 Version: 3.1
-Revision: 2
+Revision: 3
 Maintainer: David Fang <fangism@users.sourceforge.net>
 Source: http://samba.org/ftp/%n/%n-%v.tar.bz2
 Source-MD5: 7961852e1e36f11559039c32142f58df
@@ -16,6 +16,7 @@ CompileScript: <<
  make CFLAGS='-g -O2 -Wall -W -I. -prebind'
 <<
 InfoTest: <<
+	TestConflicts: ccache-default
 	TestScript: <<
 	#!/bin/sh -ev
 	make -k check || exit 2
@@ -29,6 +30,7 @@ mkdir -p %i/share/man/man1
 make install prefix=%i mandir=%i/share/man
 echo creating ccache-default overrides...
 pushd /usr/bin
+# llvm-* clang c89 c99
 for f in cc c++ c++-* gcc* g++* *-apple-darwin*-g*
 do
   echo "linking %p/bin/$f to ccache to override /usr/bin/$f"
@@ -43,7 +45,7 @@ echo " install the \"%n-default\" package."
 <<
 SplitOff: <<
 	Package: ccache-default
-	Depends: ccache
+	Depends: ccache (= %v-%r)
 	Files: <<
 		bin/cc
 		bin/c++*
@@ -102,8 +104,12 @@ Homepage: http://ccache.samba.org/
 License: GPL
 DescPackaging: <<
 Former maintainer: Ben Hines <bhines@alumni.ucsd.edu> 
+TestConflicts with own ccache-default because one test assumes 'gcc' to
+be uncached, thus we remove ccache-default temporarily during testing.
 TODO:
 * make work more robustly with --build-as-nobody
 * add sym-links for FSF versions of gcc4x, possibly creating more splitoffs
-* test against LLVM and add sym-links for them
+* test against LLVM, clang and add sym-links for them
+* test against mpic* (open MPI compilers, gcc-4.2+)
+* test against c89, c99*
 <<
