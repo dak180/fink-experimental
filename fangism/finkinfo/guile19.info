@@ -1,6 +1,6 @@
 Package: guile19
 # Package: guile20
-Version: 1.9.12
+Version: 1.9.13
 Revision: 1
 BuildDepends: <<
   readline5 (>= 5.0-1004),
@@ -23,7 +23,7 @@ Depends: <<
 GCC: 4.0
 # Source: mirror:gnu:guile/guile-%v.tar.gz
 Source: ftp://alpha.gnu.org/gnu/guile/guile-%v.tar.gz
-Source-MD5: cc54120234fb356e39e4b8cecf8859fe
+Source-MD5: ac10b460d006fd1b7a95286d14f6d4cf
 # Source-SHA1: b4abff121c6f16b28214fa0eecabc90ef1dd0ea5
 # PatchFile: %n.patch
 # PatchFile-MD5: 4876e126e4183f61fbf03905d2d39373
@@ -87,20 +87,12 @@ SplitOff: <<
 SplitOff2: <<
   Package: %N-libs
   Files: <<
-    lib/libguile-srfi-srfi-13-14-v-4.*
-    lib/libguile-srfi-srfi-4-v-4.*
-    lib/libguile-srfi-srfi-1-v-4.*
-    lib/libguile-srfi-srfi-60-v-3.*
     lib/libguilereadline-v-18.*
     share/guile/2.0/[A-Za-rt-z]*
     share/guile/2.0/scripts/[A-Zac-z]*
     share/guile/2.0/srfi
   <<
   Shlibs: <<
-    !%p/lib/libguile-srfi-srfi-1-v-4.4.dylib
-    !%p/lib/libguile-srfi-srfi-13-14-v-4.4.dylib
-    !%p/lib/libguile-srfi-srfi-4-v-4.4.dylib
-    !%p/lib/libguile-srfi-srfi-60-v-3.3.dylib
     !%p/lib/libguilereadline-v-18.18.dylib
   <<
   DocFiles: COPYING.LESSER
@@ -149,4 +141,7 @@ Make sure to declare the darwinish _environ symbol before using it.
 <<
 License: GPL
 Homepage: http://www.gnu.org/software/guile/guile.html
-Maintainer: Matthias Neeracher <neeracher@mac.com>
+Maintainer: David Fang <fangism@users.sourceforge.net>
+DescPackaging: <<
+Matthias Neeracher <neeracher@mac.com> maintains guile18 and guile16.
+<<
