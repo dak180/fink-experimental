@@ -9,6 +9,7 @@ Source: http://cran.r-project.org/src/contrib/sp_%v.tar.gz
 Source-MD5: 6c0591674c12248b1cf234649d64c515
 SourceDirectory: sp
 Depends: r-base
+BuildDepends: texlive-texmf 
 CompileScript: <<
   #!/bin/sh -ev
   export TMPDIR=%b
