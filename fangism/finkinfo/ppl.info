@@ -1,0 +1,87 @@
+Package: ppl
+Version: 0.10.2
+Revision: 3
+# Distribution: 10.5, 10.6
+BuildDependsOnly: True
+Depends: %N-shlibs (= %v-%r)
+BuildDepends: <<
+	fink (>= 0.28),
+	gmp (>= 4.2.4-1000),
+	m4,
+	system-java-dev
+<<
+# BuildDepends: gcc4.2
+GCC: 4.0
+# SetCC: gcc-4.2
+# SetCXX: g++-4.2
+Source: ftp://ftp.cs.unipr.it/pub/%n/releases/%v/%n-%v.tar.bz2
+Source-MD5: 5667111f53150618b0fa522ffc53fc3e
+ConfigureParams: --mandir=%p/share/man --disable-static
+PatchScript: <<
+	#!/bin/sh -ev
+	# g++-4.0.1 rejects template instantiating w/ anonymous enums -- fangism
+	file=src/meta_programming.hh
+	sed -i.orig -e '/struct Bool/,/^};/s|enum|enum value_type|' $file
+<<
+CompileScript: <<
+	#!/bin/bash -ev
+	if [ -e /usr/libexec/java_home ]; then
+		./configure %c --with-java=`/usr/libexec/java_home`
+	else
+		./configure %c
+	fi
+	make
+<<
+InstallScript: make install DESTDIR=%d
+SplitOff: <<
+  Package: %N-shlibs
+  Depends: <<
+	gmp-shlibs (>= 4.2.4-1000),
+	libgmpxx-shlibs (>= 4.2.4-1000)
+  <<
+  Files: <<
+    %p/lib/libppl.7*.dylib
+    %p/lib/libppl_c.2*.dylib
+    %p/lib/libpwl.4*.dylib
+    %p/lib/ppl
+  <<
+  Shlibs: <<
+    %p/lib/libppl.7.dylib 9.0.0 %n (>= 0.10-1)
+    %p/lib/libppl_c.2.dylib 4.0.0 %n (>= 0.10-1)
+    %p/lib/libpwl.4.dylib 5.0.0 %n (>= 0.10-1)
+    !%p/lib/ppl/libppl_java.jnilib
+  <<
+<<
+License: GPL
+Description: Parma Polyhedra Library
+DescDetail: <<
+The Parma Polyhedra Library (PPL) is a C++ library for the 
+manipulation of (not necessarily closed) convex polyhedra 
+and other numerical abstractions. The applications of convex 
+polyhedra include program analysis, optimized compilation, 
+integer and combinatorial optimization and statistical 
+data-editing. The Parma Polyhedra Library is user friendly 
+(you write `x + 2*y + 5*z <= 7' when you mean it), fully 
+dynamic (available virtual memory is the only limitation 
+to the dimension of anything), written in standard C++, 
+exception-safe, rather efficient and thoroughly documented.
+<<
+DescPackaging: <<
+Reminder to never move %p/lib/ppl from ppl-shlibs since it
+brings over private .la as well as private shared lib.
+
+Added CompileScript to deal with Apple's new java.
+
+Initial packaging by Jack Howarth <howarth@bromo.med.uc.edu>.
+
+Noticed configure check for glpk.h, but doesn't look like shlibs
+actually depend on glpk-shlibs.
+<<
+DescPort: <<
+Issues was raised about g++-4.0.1 compile failing:
+http://www.cs.unipr.it/pipermail/ppl-devel/2008-August/012001.html
+fangism patched up the offending lines of C++ in PatchScript for 10.4.
+<<
+Homepage: http://www.cs.unipr.it/ppl
+Maintainer: David Fang <fangism@users.sourceforge.net>
+
