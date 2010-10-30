@@ -1,7 +1,7 @@
 Package: guile19
 # Package: guile20
 Version: 1.9.13
-Revision: 1
+Revision: 2
 BuildDepends: <<
   readline5 (>= 5.0-1004),
   libffi,
@@ -9,7 +9,7 @@ BuildDepends: <<
   libtool2,
   libunistring0, 
   gc,
-  gmp,
+  gmp5,
   libiconv-dev,
   fink (>= 0.28)
 <<
@@ -17,8 +17,7 @@ Depends: <<
   %N-shlibs (= %v-%r),
   %N-libs (= %v-%r),
   libffi-shlibs,
-  libtool2-shlibs,
-  gmp-shlibs
+  libtool2-shlibs
 <<
 GCC: 4.0
 # Source: mirror:gnu:guile/guile-%v.tar.gz
@@ -71,6 +70,7 @@ SplitOff: <<
   Package: %N-shlibs
   Depends: <<
     gc-shlibs,
+    gmp5-shlibs,
     libncurses5-shlibs (>= 5.4-20041023-1006),
     libiconv,
     libunistring0-shlibs
@@ -91,6 +91,11 @@ SplitOff2: <<
     share/guile/2.0/[A-Za-rt-z]*
     share/guile/2.0/scripts/[A-Zac-z]*
     share/guile/2.0/srfi
+    share/guile/2.0/sxml
+    lib/guile/2.0/ccache/[A-Za-rt-z]*
+    lib/guile/2.0/ccache/scripts/[A-Zac-z]*
+    lib/guile/2.0/ccache/srfi
+    lib/guile/2.0/ccache/sxml
   <<
   Shlibs: <<
     !%p/lib/libguilereadline-v-18.18.dylib
@@ -101,6 +106,10 @@ SplitOff2: <<
     readline5-shlibs (>= 5.0-1004)
   <<
   Description: Scheme libraries and modules for guile19
+  DescPackaging: <<
+    Split-off everything except the system dir.
+    Now contains precompiled guile objects for all shipped libraries.
+  <<
 <<
 SplitOff3: <<
   Package: %N-dev
@@ -114,6 +123,7 @@ SplitOff3: <<
     lib/libguile-2.0.a
     lib/libguile-2.0.la
     lib/libguile-2.0.dylib
+    lib/pkgconfig
   <<
   DocFiles: COPYING.LESSER
   Description: Development package for guile19  
@@ -139,9 +149,24 @@ Made the main packages not conflict with guile-1.4, -1.6, -1.8.
 
 Make sure to declare the darwinish _environ symbol before using it.
 <<
+SplitOff5: <<
+  Package: %N-el
+  BuildDependsOnly: True
+  Replaces: guile18
+  Conflicts: guile18
+  Files: <<
+    share/emacs
+  <<
+  Description: emacs-lisp syntax support for guile/scheme
+  DescPackaging: <<
+    Conflict with guile18 until it splits off the same.
+    These files are built only when emacs is installed?
+  <<
+<<
+DescPackaging: <<
+Since 1.9.13-2, bumped gmp to gmp5.
+Matthias Neeracher <neeracher@mac.com> maintains guile18 and guile16.
+<<
 License: GPL
 Homepage: http://www.gnu.org/software/guile/guile.html
 Maintainer: David Fang <fangism@users.sourceforge.net>
-DescPackaging: <<
-Matthias Neeracher <neeracher@mac.com> maintains guile18 and guile16.
-<<
