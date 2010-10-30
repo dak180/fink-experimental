@@ -1,6 +1,6 @@
 Package: ppl
-Version: 0.10.2
-Revision: 3
+Version: 0.11
+Revision: 1
 # Distribution: 10.5, 10.6
 BuildDependsOnly: True
 Depends: %N-shlibs (= %v-%r)
@@ -15,24 +15,70 @@ GCC: 4.0
 # SetCC: gcc-4.2
 # SetCXX: g++-4.2
 Source: ftp://ftp.cs.unipr.it/pub/%n/releases/%v/%n-%v.tar.bz2
-Source-MD5: 5667111f53150618b0fa522ffc53fc3e
-ConfigureParams: --mandir=%p/share/man --disable-static
+Source-MD5: c414abd2ecaf1f1f48949c78d383ee1a
+ConfigureParams: <<
+	--mandir=%p/share/man \
+	--infodir=%p/share/info \
+	--disable-static \
+	--enable-pch \
+	CFLAGS="-g -O2 -fpch-preprocess" \
+	CXXFLAGS="-g -O2 -fpch-preprocess" \
+	--enable-check=thorough \
+	-C
+<<
 PatchScript: <<
 	#!/bin/sh -ev
 	# g++-4.0.1 rejects template instantiating w/ anonymous enums -- fangism
-	file=src/meta_programming.hh
-	sed -i.orig -e '/struct Bool/,/^};/s|enum|enum value_type|' $file
+	# this was fixed in ppl-0.11; the following patch doesn't do anything
+	# file=src/meta_programming.hh
+	# sed -i.orig -e '/struct Bool/,/^};/s|enum {|enum value_type {|' $file
 <<
 CompileScript: <<
-	#!/bin/bash -ev
+	#!/bin/sh -ev
+	mkdir build
+	cd build
 	if [ -e /usr/libexec/java_home ]; then
-		./configure %c --with-java=`/usr/libexec/java_home`
+		../configure %c --with-java=`/usr/libexec/java_home`
 	else
-		./configure %c
+		../configure %c
+	fi
+	# test for ccache-default
+	if test -x %p/bin/gcc
+	then
+		export CCACHE_SLOPPINESS=time_macros
 	fi
 	make
 <<
-InstallScript: make install DESTDIR=%d
+InfoTest: <<
+	TestScript: <<
+	#!/bin/sh -ev
+	cd build
+	if test -x %p/bin/gcc
+	then
+		export CCACHE_SLOPPINESS=time_macros
+	fi
+	# make -k check || exit 2
+	make check || exit 2
+	<<
+	TestDepends: glpk-dev
+	TestSuiteSize: large
+<<
+InstallScript: <<
+	#!/bin/sh -ev
+	cd build
+	make install DESTDIR=%d
+<<
+DocFiles: <<
+	BUGS
+	COPYING
+	CREDITS
+	ChangeLog*
+	INSTALL
+	NEWS
+	README*
+	STANDARDS
+	TODO
+<<
 SplitOff: <<
   Package: %N-shlibs
   Depends: <<
@@ -40,15 +86,15 @@ SplitOff: <<
 	libgmpxx-shlibs (>= 4.2.4-1000)
   <<
   Files: <<
-    %p/lib/libppl.7*.dylib
-    %p/lib/libppl_c.2*.dylib
-    %p/lib/libpwl.4*.dylib
+    %p/lib/libppl.9*.dylib
+    %p/lib/libppl_c.4*.dylib
+    %p/lib/libpwl.5*.dylib
     %p/lib/ppl
   <<
   Shlibs: <<
-    %p/lib/libppl.7.dylib 9.0.0 %n (>= 0.10-1)
-    %p/lib/libppl_c.2.dylib 4.0.0 %n (>= 0.10-1)
-    %p/lib/libpwl.4.dylib 5.0.0 %n (>= 0.10-1)
+    %p/lib/libppl.9.dylib 10.0.0 %n (>= 0.11-1)
+    %p/lib/libppl_c.4.dylib 5.0.0 %n (>= 0.11-1)
+    %p/lib/libpwl.5.dylib 6.0.0 %n (>= 0.11-1)
     !%p/lib/ppl/libppl_java.jnilib
   <<
 <<
@@ -74,8 +120,7 @@ Added CompileScript to deal with Apple's new java.
 
 Initial packaging by Jack Howarth <howarth@bromo.med.uc.edu>.
 
-Noticed configure check for glpk.h, but doesn't look like shlibs
-actually depend on glpk-shlibs.
+fangism turned on use of precompiled headers and ccache-default support.
 <<
 DescPort: <<
 Issues was raised about g++-4.0.1 compile failing:
