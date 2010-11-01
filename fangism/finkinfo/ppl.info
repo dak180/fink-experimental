@@ -21,8 +21,8 @@ ConfigureParams: <<
 	--infodir=%p/share/info \
 	--disable-static \
 	--enable-pch \
-	CFLAGS="-g -O2 -fpch-preprocess" \
-	CXXFLAGS="-g -O2 -fpch-preprocess" \
+	CFLAGS="-g -O2 -pipe -fpch-preprocess -fPIC" \
+	CXXFLAGS="-g -O2 -pipe -fpch-preprocess -fPIC" \
 	--enable-check=thorough \
 	-C
 <<
@@ -32,6 +32,10 @@ PatchScript: <<
 	# this was fixed in ppl-0.11; the following patch doesn't do anything
 	# file=src/meta_programming.hh
 	# sed -i.orig -e '/struct Bool/,/^};/s|enum {|enum value_type {|' $file
+	# To take advantage of precompiled headers, defined macros must match.
+	# patch could apply to src/Makefile.am too
+	file=src/Makefile.in
+	sed -i.orig -e '/CXXCOMPILE.*-xc++-header/s|-o|-DPIC &|' $file
 <<
 CompileScript: <<
 	#!/bin/sh -ev
@@ -55,6 +59,9 @@ InfoTest: <<
 	cd build
 	if test -x %p/bin/gcc
 	then
+		# just turn it off -- getting weird errors:
+		# /var/tmp/cc*.s can't write output file
+		export CCACHE_DISABLE=1
 		export CCACHE_SLOPPINESS=time_macros
 	fi
 	# make -k check || exit 2
@@ -121,11 +128,16 @@ Added CompileScript to deal with Apple's new java.
 Initial packaging by Jack Howarth <howarth@bromo.med.uc.edu>.
 
 fangism turned on use of precompiled headers and ccache-default support.
+Patch to add -DPIC allows defined macros to match to use .gch.
+
+Noticed checks and references to OCaml, which may need to be 
+added to BuildDepends or TestDepends.
 <<
 DescPort: <<
 Issues was raised about g++-4.0.1 compile failing:
 http://www.cs.unipr.it/pipermail/ppl-devel/2008-August/012001.html
 fangism patched up the offending lines of C++ in PatchScript for 10.4.
+Patch no longer needed for 0.11.
 <<
 Homepage: http://www.cs.unipr.it/ppl
 Maintainer: David Fang <fangism@users.sourceforge.net>
