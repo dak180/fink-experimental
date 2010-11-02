@@ -36,6 +36,9 @@ PatchScript: <<
 	# patch could apply to src/Makefile.am too
 	file=src/Makefile.in
 	sed -i.orig -e '/CXXCOMPILE.*-xc++-header/s|-o|-DPIC &|' $file
+	# files compiled here are VERY taxing on memory, so we serialize
+	file=tests/MIP_Problem/Makefile.in
+	echo ".NOTPARALLEL: check-am" >> $file
 <<
 CompileScript: <<
 	#!/bin/sh -ev
@@ -59,13 +62,11 @@ InfoTest: <<
 	cd build
 	if test -x %p/bin/gcc
 	then
-		# just turn it off -- getting weird errors:
-		# /var/tmp/cc*.s can't write output file
-		export CCACHE_DISABLE=1
+		# export CCACHE_DISABLE=1
 		export CCACHE_SLOPPINESS=time_macros
 	fi
-	# make -k check || exit 2
-	make check || exit 2
+	make -k check || exit 2
+	# make check || exit 2
 	<<
 	TestDepends: glpk-dev
 	TestSuiteSize: large
