@@ -25,6 +25,7 @@ ConfigureParams: <<
 	CXXFLAGS="-g -O2 -pipe -fpch-preprocess -fPIC" \
 	--enable-check=thorough \
 	-C
+# if you do not have the patience for the 'thorough' tests, --enable-check-quick
 <<
 PatchScript: <<
 	#!/bin/sh -ev
@@ -128,7 +129,8 @@ Added CompileScript to deal with Apple's new java.
 
 Initial packaging by Jack Howarth <howarth@bromo.med.uc.edu>.
 
-fangism turned on use of precompiled headers and ccache-default support.
+fangism turned on use of precompiled headers and exported a 
+few environment variables for ccache-default support.
 Patch to add -DPIC allows defined macros to match to use .gch.
 
 Noticed checks and references to OCaml, which may need to be 
@@ -138,7 +140,9 @@ DescPort: <<
 Issues was raised about g++-4.0.1 compile failing:
 http://www.cs.unipr.it/pipermail/ppl-devel/2008-August/012001.html
 fangism patched up the offending lines of C++ in PatchScript for 10.4.
-Patch no longer needed for 0.11.
+Said patch no longer needed for 0.11.
+The monstrously 'thorough' test suite for 0.11 was successfully run and 
+passed on powerpc-darwin8 -- fangism.  
 <<
 Homepage: http://www.cs.unipr.it/ppl
 Maintainer: David Fang <fangism@users.sourceforge.net>
