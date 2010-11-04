@@ -149,20 +149,20 @@ Made the main packages not conflict with guile-1.4, -1.6, -1.8.
 
 Make sure to declare the darwinish _environ symbol before using it.
 <<
-SplitOff5: <<
-  Package: %N-el
-  BuildDependsOnly: True
-  Replaces: guile18
-  Conflicts: guile18
-  Files: <<
-    share/emacs
-  <<
-  Description: emacs-lisp syntax support for guile/scheme
-  DescPackaging: <<
-    Conflict with guile18 until it splits off the same.
-    These files are built only when emacs is installed?
-  <<
-<<
+#SplitOff5: <<
+#  Package: %N-el
+#  BuildDependsOnly: True
+#  Replaces: guile18
+#  Conflicts: guile18
+#  Files: <<
+#    share/emacs
+#  <<
+#  Description: emacs-lisp syntax support for guile/scheme
+#  DescPackaging: <<
+#    Conflict with guile18 until it splits off the same.
+#    These files are built only when emacs is installed?
+#  <<
+#<<
 DescPackaging: <<
 Since 1.9.13-2, bumped gmp to gmp5.
 Matthias Neeracher <neeracher@mac.com> maintains guile18 and guile16.
