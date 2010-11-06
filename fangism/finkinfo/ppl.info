@@ -21,11 +21,13 @@ ConfigureParams: <<
 	--infodir=%p/share/info \
 	--disable-static \
 	--enable-pch \
+	--with-java="$JAVA_HOME" \
 	CFLAGS="-g -O2 -pipe -fpch-preprocess -fPIC" \
 	CXXFLAGS="-g -O2 -pipe -fpch-preprocess -fPIC" \
+	CPPFLAGS="-I$JAVA_INCLUDE" \
 	--enable-check=thorough \
 	-C
-# if you do not have the patience for the 'thorough' tests, --enable-check-quick
+# if you do not have the patience for the 'thorough' tests, --enable-check=quick
 <<
 PatchScript: <<
 	#!/bin/sh -ev
@@ -45,27 +47,28 @@ CompileScript: <<
 	#!/bin/sh -ev
 	mkdir build
 	cd build
-	if [ -e /usr/libexec/java_home ]; then
-		../configure %c --with-java=`/usr/libexec/java_home`
-	else
-		../configure %c
-	fi
-	# test for ccache-default
-	if test -x %p/bin/gcc
-	then
-		export CCACHE_SLOPPINESS=time_macros
-	fi
+	# old-location
+	# JAVA_HOME=`/usr/libexec/java_home`
+	JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Home
+	test -d $JAVA_HOME && test -x $JAVA_HOME || \
+	  { echo "$JAVA_HOME not found." ; exit 1 ;}
+	JAVA_INCLUDE=$JAVA_HOME/include
+	test -r $JAVA_INCLUDE/jni.h || JAVA_INCLUDE=$JAVA_HOME/Headers
+	test -r $JAVA_INCLUDE/jni.h || \
+	  { echo "Missing Java development package containing jni.h." ; \
+	  echo "Please download/install from Apple and try again." ; \
+	  echo "Thank you and have a nice day." ; exit 1 ;}
+	../configure %c
+	# for ccache-default
+	export CCACHE_SLOPPINESS=time_macros
 	make
 <<
 InfoTest: <<
 	TestScript: <<
 	#!/bin/sh -ev
 	cd build
-	if test -x %p/bin/gcc
-	then
-		# export CCACHE_DISABLE=1
-		export CCACHE_SLOPPINESS=time_macros
-	fi
+	# for ccache-default
+	export CCACHE_SLOPPINESS=time_macros
 	make -k check || exit 2
 	# make check || exit 2
 	<<
