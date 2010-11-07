@@ -42,6 +42,13 @@ PatchScript: <<
 	# files compiled here are VERY taxing on memory, so we serialize
 	file=tests/MIP_Problem/Makefile.in
 	echo ".NOTPARALLEL: check-am" >> $file
+	# use consistent architecture for testing, override default as needed
+	file=interfaces/Java/tests/Makefile.in
+	case "%m" in
+	powerpc ) ;;
+	i386 ) sed -i.orig '/\$(JAVA)/s|-classpath|-d32 &|' $file ;;
+	x64_64 ) ;;
+	esac
 <<
 CompileScript: <<
 	#!/bin/sh -ev
