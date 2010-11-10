@@ -11,8 +11,8 @@ BuildDepends: <<
 	m4,
 	system-java-dev
 <<
-Conflicts: ppl0.11
-Replaces: ppl0.11
+Conflicts: ppl9
+Replaces: ppl9
 # BuildDepends: gcc4.2
 GCC: 4.0
 # SetCC: gcc-4.2
@@ -38,6 +38,9 @@ PatchScript: <<
 	# this was fixed in ppl-0.11
 	file=src/meta_programming.hh
 	sed -i.orig -e '/struct Bool/,/^};/s|enum {|enum value_type {|' $file
+	# symbols in anonymous namespace given extern linkage
+	file=src/initializer.hh
+	sed -i.orig -e '/::Init.*initializer/s|^|static |' $file
 	# To take advantage of precompiled headers, defined macros must match.
 	# patch could apply to src/Makefile.am too
 	file=src/Makefile.in
