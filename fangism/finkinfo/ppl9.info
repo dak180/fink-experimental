@@ -50,6 +50,8 @@ PatchScript: <<
 	# move pkglibdir to a versioned dir to avoid shlib conflict
 	file=interfaces/Java/jni/Makefile.in
 	sed -i.orig -e '/^pkglibdir =/s|$|-0.11|' $file
+	file=interfaces/Java/Makefile.in
+	sed -i.orig -e '/^pkglibdir =/s|$|-0.11|' $file
 	# use consistent architecture for testing, override default as needed
 	file=interfaces/Java/tests/Makefile.in
 	case "%m" in
