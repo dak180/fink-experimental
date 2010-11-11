@@ -47,6 +47,9 @@ PatchScript: <<
 	# files compiled here are VERY taxing on memory, so we serialize
 	file=tests/MIP_Problem/Makefile.in
 	echo ".NOTPARALLEL: check-am" >> $file
+	# move pkglibdir to a versioned dir to avoid shlib conflict
+	file=interfaces/Java/jni/Makefile.in
+	sed -i.orig -e '/^pkglibdir =/s|$|-0.11|' $file
 	# use consistent architecture for testing, override default as needed
 	file=interfaces/Java/tests/Makefile.in
 	case "%m" in
@@ -92,13 +95,6 @@ InstallScript: <<
 	#!/bin/sh -ev
 	cd build
 	make install DESTDIR=%d
-	# need to version the ppl pkglib dir to avoid conflict
-	# hack .la to be consistent
-	pushd %i/lib
-	sed -i.orig -e '/^libdir=/s|ppl|&-0.11|' ppl/libppl_java.la
-	rm -f ppl/*.orig
-	mv ppl ppl-0.11
-	popd
 <<
 DocFiles: <<
 	BUGS
