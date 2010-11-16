@@ -1,6 +1,6 @@
 Package: ffmpeg
 Version: 0.6.1
-Revision: 3
+Revision: 2
 ###
 BuildDepends: <<
 	bzip2,
@@ -13,17 +13,18 @@ BuildDepends: <<
 	libfaad2-dev (>= 2.7-1014),
 	libogg,
 	libopencore-amr0,
-	libopenjpeg,
+	libopenjpeg (>=1.3-2),
 	libspeex1 (>= 1.2-0.0rc1.1),
-    libtheora0,
+	libtheora0,
 	libvorbis0,
 	libvpx (>= 0.9.0-20100604-1),
 	libx264-98-dev (>= 0.0.20100602-2),
+	make (>= 3.81-1),
 	pkgconfig,
-	make,
 	sdl,
 	x11-dev,
-	xvidcore
+	xvidcore,
+	(%m = x86_64) yasm
 <<
 Depends: <<
 	bzip2-shlibs,
@@ -38,12 +39,12 @@ Depends: <<
 	libfaad2-shlibs (>= 2.7-1014),
 	libogg-shlibs,
 	libopencore-amr0-shlibs,
-	libopenjpeg-shlibs,
+	libopenjpeg-shlibs (>=1.3-2),
 	libpostproc51-shlibs (= %v-%r),
 	libspeex1-shlibs (>= 1.2-0.0rc1.1),
 	libswscale0-shlibs (= %v-%r),
-    libtheoradec1-shlibs,
-    libtheoraenc1-shlibs,
+	libtheoradec1-shlibs,
+	libtheoraenc1-shlibs,
 	libvorbis0-shlibs,
 	libx264-98-shlibs (>= 0.0.20100602-2),
 	sdl-shlibs,
@@ -113,15 +114,14 @@ ConfigureParams: <<
 	--disable-mmx \
 	--disable-iwmmxt
 <<
+GCC: 4.0
 ###
 CompileScript: <<
   #!/bin/sh -ev
   mkdir build
   cd build
   ../configure %c
-  # make=/usr/bin/make
-  make=make
-  $make -w V=1
+  %p/bin/make -w V=1
   ### The following set of commands are to fix the compat_name of libpostproc and libswscale which
   ### were downgraded (from 51.1.0 to 51.0.0 for libpostproc; from 51.1.0 to 0.0.0 for libswscale)
   ### by upstream between the ffmpeg-0.4 and ffmpeg-0.5+ releases, but kept the install_name the same.
@@ -133,25 +133,24 @@ CompileScript: <<
   /usr/bin/perl -pi -e 's|compatibility_version,\$\(LIBMAJOR\)|compatibility_version,51.1.0|g' config.mak
   ### clean libpostproc
   cd libpostproc
-  $make clean
-  $make -w V=1
+  %p/bin/make clean
+  %p/bin/make -w V=1
   cd ..
   ### clean libswscale
   cd libswscale
-  $make clean
-  $make -w V=1
+  %p/bin/make clean
+  %p/bin/make -w V=1
   cd ..
   ### return config.mak to orig value so that libavfilter.1.dylib doesn't get rebuilt 
   ### with incorrect values during the install phase (it deps on libswscale)
   /usr/bin/perl -pi -e 's|compatibility_version,51.1.0|compatibility_version,\$\(LIBMAJOR\)|g' config.mak
-  $make -w V=1
+  %p/bin/make -w V=1
 
   %p/bin/fink-package-precedence --depfile-ext=.d .
 <<
 ###
 InstallScript: <<
-  make=make
-  cd build && $make -w install DESTDIR=%d V=1
+  cd build && %p/bin/make -w install DESTDIR=%d V=1
   install -d %i/etc
   install -m 664 doc/ffserver.conf %i/etc
 <<
@@ -527,10 +526,9 @@ DescDetail: <<
 <<
 DescPackaging: <<
 Upstream changed the paradigm on how compat_version is entered into the dylibs.  This caused a decrease in compat_version for most libraries when first implemented, but by 0.6.1, most of the libraries had increased libfooN, so the problem didn't matter for them.  However, libswscale.0.dylib and libpostproc.51.dylib still have this problem and so a workaround had to be created to increase their compat_version to match the current compat_version from Fink's ffmpeg-0.4.20071217.  That hack can be removed if/when libswscale.0.dylib and libpostproc.51.dylib actually increase their compat_version past the ffmpeg-0.4... value.
-bdep on fink's make b/c 10.4's make crashes on common.mak -- fangism.
 <<
 DescPort: <<
-watermark patch from http://refractalize.blogspot.com/2009/09/alpha-blended-watermarks-with-ffmpeg.html
+Use Fink's make since 10.4 has an older system make (3.80) that doesn't like common.mak.  Can remove that dep once 10.4 is deprecated.
 <<
 ###
 License: GPL
