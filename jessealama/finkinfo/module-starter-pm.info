@@ -32,7 +32,7 @@ including basic builder scripts, tests, documentation, and module
 code. This is done through just one method, create_distro.
 <<
 ###
-License: Artistic/GPL
+License: Artistic
 Maintainer: Jesse Alama <jesse.alama@gmail.com>
 Homepage: http://search.cpan.org/dist/Module-Starter
 <<
