@@ -79,7 +79,7 @@ PatchScript: <<
   sed -i.orig -e '/semaphore.h/i\
 #include <mach/task.h>' \
 	-e '/#include/s|semaphore\.h|mach/&|' \
-	-e 's|\<sem_t\>|semaphore_t|g' \
+	-e '/packet_count;/s|sem_t|semaphore_t|g' \
 	-e 's|struct timespec|mach_timespec_t|g' \
 	-e 's|sem_init(|semaphore_create(TASK_NULL, |g' \
 	-e '/sem_destroy/s|\&self|self|' \
