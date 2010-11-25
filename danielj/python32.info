@@ -1,7 +1,7 @@
 Info2: <<
 Package: python%type_pkg[python]
 Version: 3.2
-Revision: 0.a3.1
+Revision: 0.a4.1
 Type: python 3.2
 Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 Depends: <<
@@ -34,16 +34,17 @@ BuildDepends: <<
 <<
 Provides: argparse-py%type_pkg[python]
 #Source: http://python.org/ftp/python/%v/Python-%v.tar.bz2
-Source: http://python.org/ftp/python/%v/Python-%{v}a3.tar.bz2
-Source-MD5: 2c7f690e6de62691a0427328a9654290
+Source: http://python.org/ftp/python/%v/Python-%{v}a4.tar.bz2
+Source-MD5: 1f94db4c5e56454e3eec26eafae43e6e
 # No html docs yet.
 #Source2: http://www.python.org/ftp/python/doc/%v/python-%v-docs-html.tar.bz2
 #Source2-MD5: c9ccf8e9fc4d046c168af313706f159b
 PatchFile: %n.patch
-PatchFile-MD5: 0ec4b5242d4913b529fc38b13f559f31
+PatchFile-MD5: 4f5531d505734402c9e0a4baa93e98cd
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+
 SetLDFLAGS: -L%p/lib/system-openssl/lib
-ConfigureParams: --enable-shared
+ConfigureParams: --enable-shared --with-dbmliborder=gdbm
 CompileScript: <<
 #!/bin/sh -ex
 	if [ "%m" = "x86_64" ]; then
@@ -53,7 +54,9 @@ CompileScript: <<
 	fi
 	%{default_script}
 <<
-InfoTest: TestScript: ./runtests.sh || exit 2
+
+InfoTest: TestScript: make test EXTRATESTOPTS='-w -x test_distutils'
+
 InstallScript: <<
 #!/bin/sh -ex
 	make install DESTDIR=%d
@@ -86,8 +89,8 @@ InstallScript: <<
 SplitOff: <<
  Package: %N-shlibs
  Depends: libgettext8-shlibs
- Files: lib/python%type_raw[python]/config/libpython%type_raw[python].dylib
- Shlibs: %p/lib/python3.2/config/libpython3.2.dylib 3.2.0 %n (>= 3.2-0.a1.1)
+ Files: lib/python%type_raw[python]/config/libpython%type_raw[python]m.dylib
+ Shlibs: %p/lib/python3.2/config/libpython3.2m.dylib 3.2.0 %n (>= 3.2-0.a4.1)
  DocFiles: README LICENSE 
 <<
 SplitOff2: <<
