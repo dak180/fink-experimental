@@ -1,6 +1,6 @@
 Package: ffmpeg
 Version: 0.6.1
-Revision: 3
+Revision: 5
 ###
 BuildDepends: <<
 	bzip2,
@@ -9,6 +9,7 @@ BuildDepends: <<
 	fink-package-precedence,
 	freetype219,
 	gsm,
+	jack-dev,
 	lame-dev,
 	libfaad2-dev (>= 2.7-1014),
 	libogg,
@@ -24,12 +25,13 @@ BuildDepends: <<
 	sdl,
 	x11-dev,
 	xvidcore,
-	(%m = x86_64) yasm
+	yasm
 <<
 Depends: <<
 	bzip2-shlibs,
 	dirac-shlibs (>= 1.0.2-1),
 	freetype219-shlibs,
+	jack-shlibs,
 	lame-shlibs,
 	libavcodec52-shlibs (= %v-%r),
 	libavdevice52-shlibs (= %v-%r),
@@ -61,8 +63,8 @@ Source-MD5: 4f5d732d25eedfb072251b5314ba2093
 #PatchFile: %n.patch
 #PatchFile-MD5: 4f7322c02bb0e6dc319974313bd3612d
 PatchScript: <<
-	#!/bin/sh -ev
-	%{default_script}
+  #!/bin/sh -ev
+  %{default_script}
   ### Give dylibs a versioned install_name
   perl -pi -e 's;-install_name,\$\(SHLIBDIR\)/\$\(SLIBNAME\);-install_name,\$\(SHLIBDIR\)/\$\(SLIBNAME_WITH_MAJOR\);g' configure
 #  ### Fix for 10.5 ASM problem with ld: absolute addressing (perhaps -mdynamic-no-pic) used in _rgb24tobgr24_MMX from rgb2rgb.o not allowed in slidable image
@@ -76,7 +78,8 @@ PatchScript: <<
   ### look for gsm.h in upstream's (and Fink's) declared <gsm.h> rather than Debian's <gsm/gsm.h>
   perl -pi -e 's,gsm\/gsm.h,gsm.h,g' configure libavcodec/libgsm.c
   ### use API from <mach/semaphore.h> instead of <sys/semaphore.h> -- fangism
-  sed -i.orig -e '/semaphore.h/i\
+  ### this lets the jack indev build
+  sed -i.orig -e '/semaphore.h/i \
 #include <mach/task.h>' \
 	-e '/#include/s|semaphore\.h|mach/&|' \
 	-e '/packet_count;/s|sem_t|semaphore_t|g' \
@@ -99,10 +102,9 @@ SetLDFLAGS: -L%p/lib/libspeex1/lib -L/usr/X11R6/lib -lX11 -lXext
 ###
 ConfigureParams: <<
 	(%m = powerpc) --enable-powerpc-perf \
-	(%m = i386) --disable-altivec \
-	(%m = x86_64) --disable-altivec \
+	(%m = powerpc) --disable-altivec \
 	(%m = x86_64) --arch=x86_64 \
-	(%m = i386) --arch=x86_32 \
+	(%m = i386) --arch=x86 \
 	--mandir=%p/share/man \
 	--enable-shared \
 	--enable-gpl \
@@ -112,6 +114,7 @@ ConfigureParams: <<
 	--enable-avfilter \
 	--enable-pthreads \
 	--enable-x11grab \
+	--enable-indev=jack \
 	--enable-bzlib \
 	--enable-libopencore-amrnb \
 	--enable-libopencore-amrwb \
@@ -126,49 +129,55 @@ ConfigureParams: <<
 	--enable-libvpx \
 	--enable-libx264 \
 	--enable-libxvid \
-	--enable-zlib \
-	--disable-mmx \
-	--disable-iwmmxt
+	--enable-zlib
 <<
 GCC: 4.0
 ###
 CompileScript: <<
   #!/bin/sh -ev
-  ### Patch libswscale to have a temporary compat_version/install name of 1 to make 10.4 happy
+  ### Patch libswscale to have a temporary compat_version/install_name of 1 to make 10.4 happy
   ### This will get returned to the final value later in the build
   /usr/bin/perl -pi -e 's,LIBSWSCALE_VERSION_MAJOR 0,LIBSWSCALE_VERSION_MAJOR 1,g' libswscale/swscale.h
   mkdir build
   cd build
-  ../configure %c
-  %p/bin/make -w V=1
+    ../configure %c
+    %p/bin/make -w V=1
   ### The following set of commands are to fix the compat_name of libpostproc and libswscale which
   ### were downgraded (from 51.1.0 to 51.0.0 for libpostproc; from 51.1.0 to 0.0.0 for libswscale)
   ### by upstream between the ffmpeg-0.4 and ffmpeg-0.5+ releases, but kept the install_name the same.
   ### Because only those two libraries are now messed up, we're first building all the ffmpeg libraries as normal,
   ### then rebuilding libpostproc and libswscale using a patched makefile that hardcodes 51.1.0 for compat_version.
-  ### This patch can be removed once upstream increases libpostproc and libswscale to compat_version to 51.1.0 or higher.
+  ### This patch can be removed once upstream either increases libpostproc and libswscale to compat_version to 51.1.0 
+  ### or higher, or bumps their install_name.
+  ### config.mak is used by ALL of ffmpeg's libraries, so we can't just do this part at the beginning of the build process
+  ### without affecting ALL the libraries. 
   #
   ### Patch config.mak to apply newer compat_version
-  /usr/bin/perl -pi -e 's|compatibility_version,\$\(LIBMAJOR\)|compatibility_version,51.1.0|g' config.mak
-  ### clean libpostproc
-  cd libpostproc
-  %p/bin/make clean
-  %p/bin/make -w V=1
-  cd ..
-  ### clean libswscale
-  # return swscale_LIBMAJOR to 0
-  /usr/bin/perl -pi -e 's,LIBSWSCALE_VERSION_MAJOR 0,LIBSWSCALE_VERSION_MAJOR 1,g' ../libswscale/swscale.h
-  /usr/bin/perl -pi -e 's,libswscale_VERSION=1\.11\.0,libswscale_VERSION=0\.11\.0,g; s,libswscale_VERSION_MAJOR=1,libswscale_VERSION_MAJOR=0,g' config.mak
-  cd libswscale
-  %p/bin/make clean
-  %p/bin/make -w V=1
-  cd ..
-  ### return config.mak to orig value so that libavfilter.1.dylib doesn't get rebuilt 
-  ### with incorrect values during the install phase (it deps on libswscale)
-  /usr/bin/perl -pi -e 's|compatibility_version,51.1.0|compatibility_version,\$\(LIBMAJOR\)|g' config.mak
-  %p/bin/make -w V=1
-
-  %p/bin/fink-package-precedence --depfile-ext=.d .
+    /usr/bin/perl -pi -e 's|compatibility_version,\$\(LIBMAJOR\)|compatibility_version,51.1.0|g' config.mak
+  ### clean and redo libpostproc
+    cd libpostproc
+      %p/bin/make clean
+      %p/bin/make -w V=1
+      cd ..
+  ### clean and redo libswscale
+  # return swscale_LIBMAJOR to 0 so that install_name is not changed from official version
+    /usr/bin/perl -pi -e 's,LIBSWSCALE_VERSION_MAJOR 0,LIBSWSCALE_VERSION_MAJOR 1,g' ../libswscale/swscale.h
+    /usr/bin/perl -pi -e 's,libswscale_VERSION=1\.11\.0,libswscale_VERSION=0\.11\.0,g; s,libswscale_VERSION_MAJOR=1,libswscale_VERSION_MAJOR=0,g' config.mak
+    cd libswscale
+      %p/bin/make clean
+      %p/bin/make -w V=1
+      cd ..
+  ### return config.mak to orig value and remake so that libavfilter.1.dylib doesn't get rebuilt 
+  ### with an incorrect compat_value during the install phase (it deps on libswscale which was just modified)
+    /usr/bin/perl -pi -e 's|compatibility_version,51.1.0|compatibility_version,\$\(LIBMAJOR\)|g' config.mak
+    %p/bin/make -w V=1
+  
+  ### go back to %b so that f-p-p knows to ignore ffmpeg's own files
+    cd ..
+  %p/bin/fink-package-precedence --depfile-ext='\.d' .
+<<
+InfoTest: <<
+  TestScript: cd build ; DYLD_LIBRARY_PATH=libavdevice:libavfilter:libavformat:libavcodec:libpostproc:libswscale:libavutil %p/bin/make -k V=2 check || exit 2
 <<
 ###
 InstallScript: <<
@@ -182,6 +191,7 @@ SplitOff: <<
   Depends: <<
     bzip2-shlibs,
     dirac-shlibs (>= 1.0.2-1),
+    jack-shlibs,
     lame-shlibs,
     libavutil50-shlibs (= %v-%r),
     libfaad2-shlibs (>= 2.7-1014),
@@ -223,6 +233,7 @@ SplitOff3: <<
   Depends: <<
     bzip2-shlibs,
     dirac-shlibs (>= 1.0.2-1),
+    jack-shlibs,
     lame-shlibs,
     libavcodec52-shlibs (= %v-%r),
     libavutil50-shlibs  (= %v-%r),
@@ -265,6 +276,7 @@ SplitOff5: <<
   Depends: <<
     bzip2-shlibs,
     dirac-shlibs (>= 1.0.2-1),
+    jack-shlibs,
     lame-shlibs,
     libfaad2-shlibs (>= 2.7-1014),
     libogg-shlibs,
@@ -306,6 +318,7 @@ SplitOff7: <<
   Depends: <<
     bzip2-shlibs,
     dirac-shlibs (>= 1.0.2-1),
+    jack-shlibs,
     lame-shlibs,
     libavutil50-shlibs (= %v-%r),
     libfaad2-shlibs (>= 2.7-1014),
@@ -348,6 +361,7 @@ SplitOff9: <<
   Depends: <<
     bzip2-shlibs,
     dirac-shlibs (>= 1.0.2-1),
+    jack-shlibs,
     lame-shlibs,
     libavutil50-shlibs (= %v-%r),
     libfaad2-shlibs (>= 2.7-1014),
@@ -391,6 +405,7 @@ SplitOff11: <<
   Depends: <<
     bzip2-shlibs,
     dirac-shlibs (>= 1.0.2-1),
+    jack-shlibs,
     lame-shlibs,
     libavcodec52-shlibs (= %v-%r),
     libavformat52-shlibs (= %v-%r),
@@ -436,6 +451,7 @@ SplitOff13: <<
   Depends: <<
     bzip2-shlibs,
     dirac-shlibs (>= 1.0.2-1),
+    jack-shlibs,
     lame-shlibs,
     libavcodec52-shlibs (= %v-%r),
     libavutil50-shlibs (= %v-%r),
@@ -481,6 +497,7 @@ SplitOff15: <<
     %N,
     daemonic,
     dirac-shlibs (>= 1.0.2-1),
+    jack-shlibs,
     lame-shlibs,
     libavcodec52-shlibs (= %v-%r),
     libavformat52-shlibs (= %v-%r),
@@ -547,10 +564,12 @@ DescDetail: <<
   sudo daemonic enable ffserver
 <<
 DescPackaging: <<
-Upstream changed the paradigm on how compat_version is entered into the dylibs.  This caused a decrease in compat_version for most libraries when first implemented, but by 0.6.1, most of the libraries had increased libfooN, so the problem didn't matter for them.  However, libswscale.0.dylib and libpostproc.51.dylib still have this problem and so a workaround had to be created to increase their compat_version to match the current compat_version from Fink's ffmpeg-0.4.20071217.  That hack can be removed if/when libswscale.0.dylib and libpostproc.51.dylib actually increase their compat_version past the ffmpeg-0.4... value.
+Upstream changed the paradigm on how compat_version is entered into the dylibs.  This caused a decrease in compat_version for most libraries when first implemented, but by 0.6.1, most of the libraries had increased libfooN, so the problem didn't matter for them.  However, libswscale.0.dylib and libpostproc.51.dylib still have this problem and so a workaround had to be created to increase their compat_version to match the current compat_version from Fink's ffmpeg-0.4.20071217.  That hack can be removed if/when libswscale.0.dylib and libpostproc.51.dylib either actually increase their compat_version past the ffmpeg-0.4... value or increment their install_name.
 <<
 DescPort: <<
 Use Fink's make since 10.4 has an older system make (3.80) that doesn't like common.mak.  Can remove that dep once 10.4 is deprecated.
+
+Altivec disabled on PPC because it leads to functional failing.  It still tries to run (and fails) an altivec test, but there's currently no simple way of disabling just the altivec tests. 
 <<
 ###
 License: GPL
