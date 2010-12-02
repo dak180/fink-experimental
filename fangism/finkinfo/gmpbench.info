@@ -1,0 +1,44 @@
+Info2: <<
+Package: gmpbench-%type_pkg[var]%type_pkg[-64bit]
+Type: var (gmp gmp5), -64bit (boolean)
+Version: 0.2
+Revision: 1
+GCC: 4.0
+Architecture: ( %type_raw[-64bit] = -64bit ) powerpc, ( %type_raw[-64bit] = -64bit ) i386
+Source: ftp://ftp.gmplib.org/pub/misc/gmpbench-%v.tar.bz2
+Source-MD5: 5437655d34cc81663d080c3bbbb22139
+Source2: http://gmplib.org/gexpr.c
+Source2-MD5: f28a3c5e6f812b26c122e3e71f5d24be
+# SourceDirectory: gmpbench-%v
+# Depends:
+BuildDepends: <<
+	fink (>= 0.26.0),
+	%type_pkg[var]%type_pkg[-64bit]
+<<
+# ConfigureParams:
+SetCFLAGS: -I%p/include
+SetLIBS: -L%p/%lib -lgmp
+CompileScript: <<
+  #!/bin/sh -ev
+  # don't need to futz with gcc version, because built lib is being benchmarked
+  cp ../gexpr.c .
+  gcc -o gexpr gexpr.c
+  export PATH=.:$PATH
+  sh -e ./runbench 2>&1 | tee runbench.log
+<<
+DocFiles: COPYING README version runbench.log RES-*
+BuildDependsOnly: True
+License: GPL
+Description: GNU multiple precision benchmark
+DescDetail: <<
+ gmpbench a set of benchmarks for GNU GMP.
+<<
+DescPackaging: <<
+  The package only contains benchmark results in DocFiles.  
+<<
+DescPort: <<
+  No effort.
+<<
+Maintainer: David Fang <fangism@users.sourceforge.net>
+Homepage: http://gmplib.org/gmpbench.html
+<<
