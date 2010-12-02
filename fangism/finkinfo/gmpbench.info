@@ -26,6 +26,7 @@ CompileScript: <<
   export PATH=.:$PATH
   sh -e ./runbench 2>&1 | tee runbench.log
 <<
+InstallScript: echo "No real files to install."
 DocFiles: COPYING README version runbench.log RES-*
 BuildDependsOnly: True
 License: GPL
