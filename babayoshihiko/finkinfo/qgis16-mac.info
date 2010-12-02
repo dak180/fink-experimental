@@ -9,7 +9,7 @@ Replaces: qgis16-mac, qgis16-mac-grass
 
 
 Version: 1.6.0
-Revision: 0.4
+Revision: 0.5
 Description: User friendly Open Source GIS
 License: GPL
 Homepage: http://qgis.org
@@ -86,12 +86,11 @@ CompileScript: <<
   export PYTHONPATH=%p/lib/qt4-mac/lib/python$PY_VER/site-packages:$PYTHONPATH
   export PATH=%p/lib/qt4-mac/lib/python$PY_VER/bin:$PATH
   
-  QGIS_APP_NAME=QGIS-%v
+  
   QGIS_OPTIONS="-DCMAKE_PREFIX_PATH=%p
                 -DEXECUTABLE_OUTPUT_PATH=%b/build/src/mac/Contents/MacOS
                 -DCMAKE_INSTALL_PREFIX=%b/Applications
                 -DCMAKE_BUILD_TYPE=Release
-                -DQGIS_APP_NAME=$QGIS_APP_NAME
                 -DGDAL_INCLUDE_DIR=%p/include/gdal1
                 -DGEOS_CONFIG=%p/opt/libgeos3.2.2/bin/geos-config
                 -DQT_BINARY_DIR=%p/lib/qt4-mac/bin
@@ -110,11 +109,9 @@ CompileScript: <<
                 -DSQLITE3_LIBRARY=
                 -DQWT_LIBRARY=%p/lib/qt4-mac/lib/libqwt.5.2.0.dylib
                 -DQWT_INCLUDE_DIR=%p/lib/qt4-mac/include/qwt/"
-  QGIS_DIR=Applications/$QGIS_APP_NAME.app/Contents
+  QGIS_DIR=Applications/QGIS.app/Contents
   
   mkdir build
-  mkdir -p %b/$QGIS_DIR/MacOS
-  
   pushd build
   case %n in
     qgis16-mac)
@@ -128,11 +125,15 @@ CompileScript: <<
                 -DGRASS_PREFIX=%p/Applications/GRASS-6.4.app/Contents/MacOS \
                 ..
       ;;
-  esac  
-  make VERBOSE=1
+  esac
+    
+  make VERBOSE=0
   make install CMAKE_INSTALL_PREFIX=%b SIP_MAC_PATH=%p/bin
   popd
-    
+  
+  # Add version to .app
+  # mv Applications/QGIS.app Applications/QGIS-%v.app
+  
   # Fix install names
   pushd %b/$QGIS_DIR/MacOS/lib
   install_name_tool -id "%p/$QGIS_DIR/MacOS/lib/libqgis_core.%v.dylib"     libqgis_core.%v.dylib
