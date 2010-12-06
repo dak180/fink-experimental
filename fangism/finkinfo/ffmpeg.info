@@ -8,6 +8,7 @@ BuildDepends: <<
 	fink (>= 0.28),
 	fink-package-precedence,
 	freetype219,
+	(%m = i386) gcc4.0,
 	gsm,
 	jack-dev,
 	lame-dev,
@@ -101,10 +102,10 @@ SetCFLAGS: -I/usr/X11R6/include -MD
 SetLDFLAGS: -L%p/lib/libspeex1/lib -L/usr/X11R6/lib -lX11 -lXext
 ###
 ConfigureParams: <<
-	(%m = powerpc) --enable-powerpc-perf \
-	(%m = powerpc) --disable-altivec \
+	(%m = powerpc) --enable-altivec \
 	(%m = x86_64) --arch=x86_64 \
 	(%m = i386) --arch=x86 \
+	(%m = i386) --cc=/usr/bin/gcc-4.0 \
 	--mandir=%p/share/man \
 	--enable-shared \
 	--enable-gpl \
@@ -570,6 +571,8 @@ DescPort: <<
 Use Fink's make since 10.4 has an older system make (3.80) that doesn't like common.mak.  Can remove that dep once 10.4 is deprecated.
 
 Altivec disabled on PPC because it leads to functional failing.  It still tries to run (and fails) an altivec test, but there's currently no simple way of disabling just the altivec tests. 
+
+Removed --enable-powerpc-perf, was causing numerous altivec crashes.  --fangism
 <<
 ###
 License: GPL
