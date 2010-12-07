@@ -71,7 +71,7 @@ diff -ru Python-3.2b1.orig/Misc/python.pc.in Python-3.2b1/Misc/python.pc.in
  prefix=@prefix@
  exec_prefix=@exec_prefix@
 -libdir=@libdir@
-+libdir=@libdir@/python@VERSION@/config
++libdir=@libdir@/python@VERSION@/config-@VERSION@@ABIFLAGS@
  includedir=@includedir@
  
  Name: Python
@@ -127,7 +127,7 @@ diff -ru Python-3.2b1.orig/configure Python-3.2b1/configure
 -    LIBTOOL_CRUFT=$LIBTOOL_CRUFT" -lSystem -lSystemStubs -arch_only ${MACOSX_DEFAULT_ARCH}"
 -    LIBTOOL_CRUFT=$LIBTOOL_CRUFT' -install_name $(PYTHONFRAMEWORKINSTALLDIR)/Versions/$(VERSION)/$(PYTHONFRAMEWORK)'
 +    LIBTOOL_CRUFT=$LIBTOOL_CRUFT" -lSystem -lSystemStubs"
-+    LIBTOOL_CRUFT=$LIBTOOL_CRUFT' -install_name $(BINLIBDEST)/config/$(INSTSONAME)'
++    LIBTOOL_CRUFT=$LIBTOOL_CRUFT' -install_name $(BINLIBDEST)/config-$(LDVERSION)/$(INSTSONAME)'
      LIBTOOL_CRUFT=$LIBTOOL_CRUFT' -compatibility_version $(VERSION) -current_version $(VERSION)';;
  esac
  
@@ -155,8 +155,8 @@ diff -ru Python-3.2b1.orig/configure Python-3.2b1/configure
 -				LDSHARED="$LDSHARED "'-bundle_loader $(BINDIR)/python$(VERSION)$(EXE)'
 -				LDCXXSHARED="$LDCXXSHARED "'-bundle_loader $(BINDIR)/python$(VERSION)$(EXE)'
 +				BLDSHARED="$LDSHARED "'$(BLDLIBRARY)'
-+				LDSHARED="$LDSHARED "'-L$(BINLIBDEST)/config -lpython$(LDVERSION)'
-+				LDCXXSHARED="$LDCXXSHARED "'-L$(BINLIBDEST)/config -lpython$(LDVERSION)'
++				LDSHARED="$LDSHARED "'-L$(BINLIBDEST)/config-$(LDVERSION) -lpython$(LDVERSION)'
++				LDCXXSHARED="$LDCXXSHARED "'-L$(BINLIBDEST)/config-$(LDVERSION) -lpython$(LDVERSION)'
  			fi
 -		fi
  		;;

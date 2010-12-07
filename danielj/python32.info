@@ -40,7 +40,7 @@ Source-MD5: 3ad06a5b080d7b32958b4af2e44b64d3
 #Source2: http://www.python.org/ftp/python/doc/%v/python-%v-docs-html.tar.bz2
 #Source2-MD5: c9ccf8e9fc4d046c168af313706f159b
 PatchFile: %n.patch
-PatchFile-MD5: edc1984311565891014a9b73c00d250d
+PatchFile-MD5: 6cf1689e62af8e22760895a97d1a4636
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 
 SetLDFLAGS: -L%p/lib/system-openssl/lib
@@ -62,7 +62,7 @@ InstallScript: <<
 	make install DESTDIR=%d
 
 	# don't propagate our hackery
-	perl -pi -e 's|-L%p/lib/system-openssl/lib||' %i/lib/python%type_raw[python]/config/Makefile
+	perl -pi -e 's|-L%p/lib/system-openssl/lib||' %i/lib/python%type_raw[python]/config-%type_raw[python]m/Makefile
 
 	# fix all main things to be python-versioned filenames with
 	# unversioned symlinks to them
@@ -89,8 +89,8 @@ InstallScript: <<
 SplitOff: <<
  Package: %N-shlibs
  Depends: libgettext8-shlibs
- Files: lib/python%type_raw[python]/config/libpython%type_raw[python]m.dylib
- Shlibs: %p/lib/python3.2/config/libpython3.2m.dylib 3.2.0 %n (>= 3.2-0.a4.1)
+ Files: lib/python%type_raw[python]/config-%type_raw[python]m/libpython%type_raw[python]m.dylib
+ Shlibs: %p/lib/python3.2/config-%type_raw[python]m/libpython3.2m.dylib 3.2.0 %n (>= 3.2-0.a4.1)
  DocFiles: README LICENSE 
 <<
 SplitOff2: <<
@@ -129,7 +129,7 @@ DescPackaging: <<
 	Patch a lot of things to impliment shared-lib support for
 	non-Framework build on Darwin.
 
-	Static libpython is installed in lib/pythonX.X/config/ but
+	Static libpython is installed in lib/pythonX.X/config-%type_raw[python]m/ but
 	shared goes in %p/lib by default. Fink's packaging has always
 	placed manually-built shared lib in config/ along side static,
 	This gives consistency regardless of -search_paths_first.
