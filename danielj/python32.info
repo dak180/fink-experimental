@@ -1,7 +1,7 @@
 Info2: <<
 Package: python%type_pkg[python]
 Version: 3.2
-Revision: 0.b1.1
+Revision: 0.b1.3
 Type: python 3.2
 Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 Depends: <<
@@ -40,7 +40,7 @@ Source-MD5: 3ad06a5b080d7b32958b4af2e44b64d3
 #Source2: http://www.python.org/ftp/python/doc/%v/python-%v-docs-html.tar.bz2
 #Source2-MD5: c9ccf8e9fc4d046c168af313706f159b
 PatchFile: %n.patch
-PatchFile-MD5: 6cf1689e62af8e22760895a97d1a4636
+PatchFile-MD5: 5872a89516233049c8f9a3db60f28fcf
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 
 SetLDFLAGS: -L%p/lib/system-openssl/lib
@@ -62,7 +62,7 @@ InstallScript: <<
 	make install DESTDIR=%d
 
 	# don't propagate our hackery
-	perl -pi -e 's|-L%p/lib/system-openssl/lib||' %i/lib/python%type_raw[python]/config-%type_raw[python]m/Makefile
+	perl -pi -e 's|-L%p/lib/system-openssl/lib||; s|-lintl ||' %i/lib/python%type_raw[python]/config-%type_raw[python]m/Makefile
 
 	# fix all main things to be python-versioned filenames with
 	# unversioned symlinks to them
