@@ -15,14 +15,25 @@ BuildConflicts: coreutils-default
 Conflicts: tetex-base (<= 1.0-6)
 # Source: http://www.mathematik.uni-kl.de/~obachman/Texi2html/Distrib/%n-%v.tar.gz
 Source: http://download.savannah.gnu.org/releases/%n/%n-%v.tar.bz2
+PatchScript: <<
+  #!/bin/sh -ev
+  chmod +x *sh
+  # patch sed -i calls with file suffix to not depend on GNU sed
+  for f in manage_i18n.pl.in test/many_input_files/tex_l2h.sh test/run_test.sh test/run_test_all.sh
+  do
+	sed -i.orig -e 's|sed -i|&.orig|g' $f
+  done
+<<
 ConfigureParams: --mandir=%p/share/man --infodir=%p/share/info
 CompileScript: <<
  #!/bin/sh -ev
- chmod +x *sh
  PERL=/usr/bin/perl ./configure %c
  echo '#define DEFAULT_INFOPATH "%p/share/info:%p/info:/usr/local/share/info:/usr/local/lib/info:/usr/local/info:/usr/share/info:."' >>config.h
- make check
  make
+<<
+InfoTest: <<
+  TestScript: make -k check || exit 2
+  TestSuiteSize: medium
 <<
 InstallScript: <<
  #!/bin/sh -ev
