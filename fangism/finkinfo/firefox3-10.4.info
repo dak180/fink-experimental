@@ -1,6 +1,6 @@
 Info3: <<
 Package: firefox3
-Version: 3.6.12
+Version: 3.6.13
 Revision: 1
 Architecture: i386, powerpc
 Distribution: 10.4
@@ -53,8 +53,8 @@ BuildDepends: <<
 <<
 Source: http://releases.mozilla.org/pub/mozilla.org/firefox/releases/%v/source/firefox-%v.source.tar.bz2
 SourceDirectory: mozilla-1.9.2
-Source-MD5: 80f4d83f23a7c45fc3f1904964ea2a5a
-PatchFile: %n.patch
+Source-MD5: d7c90aed8209beefa74badf02e8eeae1
+PatchFile: %n-10.4.patch
 PatchFile-MD5: 7b4ee3e55fdee2caa3fb8b965ef1ed5e
 PatchScript: <<
   ### apply the patch
@@ -118,11 +118,13 @@ SplitOff: <<
   <<
   Conflicts: <<
     firefox (>= 3.1-6),
-    firefox2
+    firefox2,
+    firefox4
   <<
   Replaces: <<
     firefox (>= 3.1-6),
-    firefox2
+    firefox2,
+    firefox4
   <<
   Description: Lightweight browser from mozilla.org (main user files)
   DocFiles: LEGAL LICENSE README.txt
