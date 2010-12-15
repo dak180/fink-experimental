@@ -1,0 +1,219 @@
++++ mozilla-central/.mozconfig	2009-04-27 16:56:30.000000000 -0400
+@@ -0,0 +1,50 @@
++# sh
++# Build configuration script
++#
++# See https://developer.mozilla.org/en/Configuring_Build_Options for build options.
++#
++
++. $topsrcdir/browser/config/mozconfig
++
++# Options for client.mk.
++# environment variables to set
++
++mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-@FINK_ARCH_TARGET@-apple-darwin`uname -r`
++mk_add_options AUTOCONF=autoconf
++CC="gcc-4.0"
++CXX="g++-4.0"
++ac_add_options --target=@FINK_ARCH_TARGET@-apple-darwin`uname -r`
++ac_add_options --with-macos-sdk=/Developer/SDKs/MacOSX10.4u.sdk
++HOST_CC="gcc-4.0"
++HOST_CXX="g++-4.0"
++RANLIB=/usr/bin/ranlib
++AR=/usr/bin/ar
++AS=$CC
++LD=/usr/bin/ld
++STRIP="strip -x -S"
++CROSS_COMPILE=1
++
++# Options for 'configure' (same as command-line options).
++ac_add_options --prefix=@FINKPREFIX@
++#ac_add_options --enable-official-branding
++ac_add_options --enable-default-toolkit=cairo-gtk2
++ac_add_options --x-libraries=/usr/X11R6/lib
++ac_add_options --x-includes=/usr/X11R6/include
++ac_add_options --disable-gnomevfs
++ac_add_options --disable-gnomeui
++ac_add_options --enable-dbus
++ac_add_options --enable-extensions=default,-gnomevfs
++
++#ac_add_options --disable-dependency-tracking
++ac_add_options --disable-crashreporter
++ac_add_options --disable-ipc
++ac_add_options --disable-necko-wifi
++
++ac_add_options --disable-debug
++ac_add_options --disable-tests
++ac_add_options --enable-strip
++ac_add_options --enable-macos-target=10.4
++#ac_add_options --with-default-mozilla-five-home=@FINKPREFIX@/lib/firefox4
++ac_add_options --with-system-jpeg=@FINKPREFIX@
++ac_add_options --disable-system-cairo
++ac_add_options --disable-system-sqlite
++
++# from tenfourfox patchset [export/3]:
++ac_add_options --disable-static
++ac_add_options --disable-libxul
++ac_add_options --enable-chrome-format=jar
++ac_add_options --enable-optimizations
++ac_add_options --disable-cpp-exceptions
++ac_add_options --enable-printing
++ac_add_options --enable-prebinding
+diff -ruN mozilla-central-orig/browser/locales/generic/profile/bookmarks.html.in mozilla-central/browser/locales/generic/profile/bookmarks.html.in
+--- mozilla-central-orig/browser/locales/generic/profile/bookmarks.html.in	2009-04-23 21:46:37.000000000 -0400
++++ mozilla-central/browser/locales/generic/profile/bookmarks.html.in	2009-04-27 16:56:30.000000000 -0400
+@@ -15,6 +15,7 @@
+     <DL><p>
+         <DT><A HREF="http://www.mozilla.com/@AB_CD@/firefox/central/" ID="rdf:#$GvPhC3">@getting_started@</A>
+         <DT><A HREF="http://fxfeeds.mozilla.com/@AB_CD@/firefox/livebookmarks/" FEEDURL="http://fxfeeds.mozilla.com/@AB_CD@/firefox/headlines.xml" ID="rdf:#$HvPhC3">@latest_headlines@</A>
++        <DT><A HREF="http://www.finkproject.org/" ICON_URI="http://www.finkproject.org/favicon.ico" ICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA+0lEQVQ4jWNgGDLg/6sTqv9OVe75uzv43J+TpUv/MzAwEqfxfEfU3y3O///u9P//d5v7/7/HCir/vz8n//9ir9+fffF+eDX/O5yxCqLR4///28u0GRgYGP6uN/sPN/zNBWlMG9+e4Pt7tq0bbutO//9/t3v9///qFQ9e2/7uCZ3/b3fwvX9HMg//PZpz7e9O//9/9ye8+Lc34ubf7V7/f1+e4Irdj3dWVf//f5UNzn91VeLvzoD/f0+U1OK1EadLtrr8/3+uoYcszf+PZHX/OxB/jizNDAwMDP92BX0hW/P/o1k7ydbMwMDA8P98D/ZQJkrz+6sJFNk+oAAAPwyICxl3w8YAAAAASUVORK5CYII=">Fink - Home</A>
+     </DL><p>
+     <HR>
+     <DT><H3 ID="rdf:#$ZvPhC3">@firefox_heading@</H3>
+diff -ruN mozilla-central-orig/config/autoconf.mk.in mozilla-central/config/autoconf.mk.in
+--- mozilla-central-orig/config/autoconf.mk.in	2009-04-23 21:46:37.000000000 -0400
++++ mozilla-central/config/autoconf.mk.in	2009-04-27 16:56:30.000000000 -0400
+@@ -58,14 +58,14 @@
+ prefix		= @prefix@
+ exec_prefix	= @exec_prefix@
+ bindir		= @bindir@
+-includedir	= @includedir@/$(MOZ_APP_NAME)-$(MOZ_APP_VERSION)
++includedir	= @includedir@/$(MOZ_APP_NAME)4
+ libdir		= @libdir@
+ datadir		= @datadir@
+ mandir		= @mandir@
+-idldir		= $(datadir)/idl/$(MOZ_APP_NAME)-$(MOZ_APP_VERSION)
++idldir		= $(datadir)/idl/$(MOZ_APP_NAME)4
+ 
+-installdir	= $(libdir)/$(MOZ_APP_NAME)-$(MOZ_APP_VERSION)
+-sdkdir		= $(libdir)/$(MOZ_APP_NAME)-devel-$(MOZ_APP_VERSION)
++installdir	= $(libdir)/$(MOZ_APP_NAME)4
++sdkdir		= $(libdir)/$(MOZ_APP_NAME)4-devel
+ 
+ DIST		= $(DEPTH)/dist
+ LIBXUL_SDK      = @LIBXUL_SDK@
+diff -ruN mozilla-central-orig/configure mozilla-central/configure
+--- mozilla-central-orig/configure.in	2009-04-23 21:51:07.000000000 -0400
++++ mozilla-central/configure.in	2009-04-27 16:56:30.000000000 -0400
+@@ -203,6 +203,10 @@
+     fi
+     if test -z "$MIDL"; then MIDL=midl; fi
+     ;;
++*-darwin8*)
++    if test -z "$CC"; then CC=gcc-4.0; fi
++    if test -z "$CXX"; then CXX=g++-4.0; fi
++    ;;
+ *-darwin*)
+     if test -z "$CC"; then CC=gcc-4.2; fi
+     if test -z "$CXX"; then CXX=g++-4.2; fi
+@@ -1890,7 +1893,7 @@
+     ;;
+ 
+ *-darwin*)
+-    HOST_CFLAGS="$HOST_CFLAGS -DXP_UNIX -DXP_MACOSX -DNO_X11"
++    HOST_CFLAGS="$HOST_CFLAGS -DXP_UNIX"
+     HOST_NSPR_MDCPUCFG='\"md/_darwin.cfg\"'
+     HOST_OPTIMIZE_FLAGS="${HOST_OPTIMIZE_FLAGS=-O3}"
+     MOZ_FIX_LINK_PATHS='-Wl,-executable_path,$(LIBXUL_DIST)/bin'
+@@ -2050,10 +2053,10 @@
+     MKCSHLIB='$(CC) $(CFLAGS) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -o $@'
+     MOZ_OPTIMIZE_FLAGS="-O3"
+     _PEDANTIC=
+-    CFLAGS="$CFLAGS -fpascal-strings -fno-common"
+-    CXXFLAGS="$CXXFLAGS -fpascal-strings -fno-common"
++    CFLAGS="$CFLAGS -fno-common"
++    CXXFLAGS="$CXXFLAGS -fno-common"
+     DLL_SUFFIX=".dylib"
+-    DSO_LDOPTS=''
++    DSO_LDOPTS='-framework CoreFoundation'
+     STRIP="$STRIP -x -S"
+     _PLATFORM_DEFAULT_TOOLKIT='cairo-cocoa'
+     MOZ_ENABLE_POSTSCRIPT=
+diff -ruN mozilla-central-orig/fink/applications/firefox.desktop mozilla-central/fink/applications/firefox.desktop
+--- mozilla-central-orig/fink/applications/firefox.desktop	1969-12-31 19:00:00.000000000 -0500
++++ mozilla-central/fink/applications/firefox.desktop	2009-04-27 16:56:30.000000000 -0400
+@@ -0,0 +1,10 @@
++[Desktop Entry]
++Encoding=UTF-8
++Name=Firefox Web Browser
++Comment=Browse the World Wide Web
++Exec=firefox
++Icon=firefox.png
++Terminal=false
++Type=Application
++Categories=Application;Network
++StartupNotify=true
+diff -ruN mozilla-central-orig/fink/fink.js mozilla-central/fink/fink.js
+--- mozilla-central-orig/fink/fink.js	1969-12-31 19:00:00.000000000 -0500
++++ mozilla-central/fink/fink.js	2009-04-27 16:56:30.000000000 -0400
+@@ -0,0 +1 @@
++pref("general.useragent.extra.vendorComment", "Fink Community Edition");
+diff -ruN mozilla-central-orig/netwerk/wifi/nsWifiMonitor.h mozilla-central/netwerk/wifi/nsWifiMonitor.h
+--- mozilla-central-orig/netwerk/wifi/nsWifiMonitor.h	2009-10-16 11:14:14.000000000 -0400
++++ mozilla-central/netwerk/wifi/nsWifiMonitor.h	2009-10-28 09:30:59.000000000 -0400
+@@ -83,17 +83,17 @@ class nsWifiMonitor : nsIRunnable, nsIWi
+ 
+   nsWifiMonitor();
+ 
+  private:
+   ~nsWifiMonitor();
+ 
+   nsresult DoScan();
+ 
+-#if defined(XP_MACOSX)
++#if defined(XP_UNIX)
+   nsresult DoScanWithCoreWLAN();
+   nsresult DoScanOld();
+ #endif
+ 
+   PRBool mKeepGoing;
+   nsCOMPtr<nsIThread> mThread;
+ 
+   nsTArray<nsWifiListener> mListeners;
+diff -ruN mozilla-central-orig/xpcom/io/nsAppFileLocationProvider.cpp mozilla-central/xpcom/io/nsAppFileLocationProvider.cpp
+--- mozilla-central-orig/xpcom/io/nsAppFileLocationProvider.cpp
++++ mozilla-central/xpcom/io/nsAppFileLocationProvider.cpp
+@@ -235,19 +235,19 @@ nsAppFileLocationProvider::GetFile(const
+         rv = GetProductDirectory(getter_AddRefs(localFile));
+         if (NS_SUCCEEDED(rv))
+             rv = localFile->AppendRelativeNativePath(PLUGINS_DIR_NAME);
+     }
+ #ifdef XP_UNIX
+     else if (nsCRT::strcmp(prop, NS_SYSTEM_PLUGINS_DIR) == 0) {
+         static const char *const sysLPlgDir = 
+ #if defined(HAVE_USR_LIB64_DIR) && defined(__LP64__)
+-          "/usr/lib64/mozilla/plugins";
++          "@FINKPREFIX@/lib64/mozilla/plugins";
+ #else
+-          "/usr/lib/mozilla/plugins";
++          "@FINKPREFIX@/lib/mozilla/plugins";
+ #endif
+         rv = NS_NewNativeLocalFile(nsDependentCString(sysLPlgDir),
+                                    PR_FALSE, getter_AddRefs(localFile));
+     }
+ #endif
+ #endif
+     else if (nsCRT::strcmp(prop, NS_APP_SEARCH_DIR) == 0)
+     {
+diff -ruN mozilla-central-orig/xpcom/base/nsStackWalk.cpp mozilla-central/xpcom/base/nsStackWalk.cpp
+--- mozilla-central-orig/xpcom/base/nsStackWalk.cpp	2009-04-23 21:47:11.000000000 -0400
++++ mozilla-central/xpcom/base/nsStackWalk.cpp	2009-04-27 16:56:31.000000000 -0400
+@@ -1132,17 +1132,17 @@ NS_FormatCodeAddressDetails(void *aPC, c
+ // On glibc 2.1, the Dl_info api defined in <dlfcn.h> is only exposed
+ // if __USE_GNU is defined.  I suppose its some kind of standards
+ // adherence thing.
+ //
+ #if (__GLIBC_MINOR__ >= 1) && !defined(__USE_GNU)
+ #define __USE_GNU
+ #endif
+ 
+-#if defined(HAVE_LIBDL) || defined(XP_MACOSX)
++#if defined(HAVE_LIBDL) || defined(XP_UNIX)
+ #include <dlfcn.h>
+ #endif
+ 
+ 
+ 
+ // This thing is exported by libstdc++
+ // Yes, this is a gcc only hack
+ #if defined(MOZ_DEMANGLE_SYMBOLS)
