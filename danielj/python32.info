@@ -1,7 +1,7 @@
 Info2: <<
 Package: python%type_pkg[python]
 Version: 3.2
-Revision: 0.b1.3
+Revision: 0.b2.1
 Type: python 3.2
 Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 Depends: <<
@@ -34,17 +34,17 @@ BuildDepends: <<
 <<
 Provides: argparse-py%type_pkg[python]
 #Source: http://python.org/ftp/python/%v/Python-%v.tar.bz2
-Source: http://python.org/ftp/python/%v/Python-%{v}b1.tar.bz2
-Source-MD5: 3ad06a5b080d7b32958b4af2e44b64d3
+Source: http://python.org/ftp/python/%v/Python-%{v}b2.tar.bz2
+Source-MD5: 45ab5ff5edfb73ec277b1c763f3d5a42
 # No html docs yet.
 #Source2: http://www.python.org/ftp/python/doc/%v/python-%v-docs-html.tar.bz2
 #Source2-MD5: c9ccf8e9fc4d046c168af313706f159b
 PatchFile: %n.patch
-PatchFile-MD5: 5872a89516233049c8f9a3db60f28fcf
+PatchFile-MD5: 17559b853154f1bacd9a6d2e509ad22f
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 
 SetLDFLAGS: -L%p/lib/system-openssl/lib
-ConfigureParams: --enable-shared --with-dbmliborder=gdbm
+ConfigureParams: --enable-shared --with-dbmliborder=gdbm --enable-loadable-sqlite-extensions
 CompileScript: <<
 #!/bin/sh -ex
 	if [ "%m" = "x86_64" ]; then
