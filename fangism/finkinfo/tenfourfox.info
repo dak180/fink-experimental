@@ -1,7 +1,7 @@
 Info3: <<
 Package: tenfourfox
 Version: 4.0
-Revision: 0.b7.1
+Revision: 0.b8.1
 Distribution: 10.4
 Description: Port of Firefox 4 to 10.4 and powerpc
 License: OSI-Approved
@@ -51,11 +51,11 @@ BuildDepends: <<
 	xft2-dev,
 	yasm
 <<
-Source: http://releases.mozilla.org/pub/mozilla.org/firefox/releases/%vb7/source/firefox-%vb7.source.tar.bz2
+Source: http://releases.mozilla.org/pub/mozilla.org/firefox/releases/%vb8/source/firefox-%vb8.source.tar.bz2
 SourceDirectory: mozilla-central
-Source-MD5: d2ab9b7eefcbbaedf45189b8662b3e3c
-Source2: http://tenfourfox.googlecode.com/files/TenFourFox-changesets-20101111.zip
-Source2-MD5: 02c6d6f6ad8a42b83a305fa683735b31
+Source-MD5: 665ffbf8571e713d5da8f98e3d971e9d
+Source2: http://tenfourfox.googlecode.com/files/TenFourFox-changesets-20101215.zip
+Source2-MD5: 862b09c04f7e7e56c251a058d72f60d5
 PatchFile: %n.patch
 PatchFile-MD5: 7088fcf41da61dedc3bd849fd31703a1
 PatchScript: <<
