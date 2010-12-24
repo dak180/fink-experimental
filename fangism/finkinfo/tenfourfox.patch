@@ -207,8 +207,8 @@ diff -ruN mozilla-central-orig/xpcom/base/nsStackWalk.cpp mozilla-central/xpcom/
  #define __USE_GNU
  #endif
  
--#if defined(HAVE_LIBDL) || defined(XP_MACOSX)
-+#if defined(HAVE_LIBDL) || defined(XP_UNIX)
+-#if defined(HAVE_DLOPEN) || defined(XP_MACOSX)
++#if defined(HAVE_DLOPEN) || defined(XP_UNIX)
  #include <dlfcn.h>
  #endif
  

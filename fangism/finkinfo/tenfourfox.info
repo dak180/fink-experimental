@@ -20,6 +20,8 @@ Depends: <<
 	x11
 <<
 BuildConflicts: <<
+	autoconf,
+	autoconf2.6,
 	automake1.11,
 	freetype,
 	freetype-hinting,
@@ -57,11 +59,13 @@ Source-MD5: 665ffbf8571e713d5da8f98e3d971e9d
 Source2: http://tenfourfox.googlecode.com/files/TenFourFox-changesets-20101215.zip
 Source2-MD5: 862b09c04f7e7e56c251a058d72f60d5
 PatchFile: %n.patch
-PatchFile-MD5: 7088fcf41da61dedc3bd849fd31703a1
+PatchFile-MD5: bbd498830c43c18a42e6d40c237712ab
 PatchScript: <<
   #!/bin/sh -ev
-  patch -p1 < ../exports/1
-  patch -p1 < ../exports/2
+  # apply patchset from TenFourFox:
+  for f in ../exports/*
+  do patch -p1 < $f
+  done
   ### apply the patch
   /usr/bin/sed -e 's|@FINKPREFIX@|%p|g' -e 's|@FINK_ARCH_TARGET@|%m|g' <%{PatchFile} | /usr/bin/patch -p1
   ### hardcode paths inside dylibs so that programs linking to them can see them
