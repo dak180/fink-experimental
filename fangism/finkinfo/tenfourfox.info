@@ -34,6 +34,7 @@ BuildDepends: <<
 	cairo (>= 1.6-1),
 	dbus-dev,
 	fink (>= 0.28-1),
+	flag-sort,
 	fontconfig2-dev (>= 2.4.1-1),
 	freetype219 (>= 2.3.7-7),
 #	gcc4.2 (>= 4.2.1-5574),
@@ -59,7 +60,7 @@ Source-MD5: 665ffbf8571e713d5da8f98e3d971e9d
 Source2: http://tenfourfox.googlecode.com/files/TenFourFox-changesets-20101215.zip
 Source2-MD5: 862b09c04f7e7e56c251a058d72f60d5
 PatchFile: %n.patch
-PatchFile-MD5: bbd498830c43c18a42e6d40c237712ab
+PatchFile-MD5: f0ed9589e69a250a26db9b413abfcca0
 PatchScript: <<
   #!/bin/sh -ev
   # apply patchset from TenFourFox:

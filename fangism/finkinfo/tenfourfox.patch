@@ -13,12 +13,12 @@
 +
 +mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-@FINK_ARCH_TARGET@-apple-darwin`uname -r`
 +mk_add_options AUTOCONF=autoconf
-+CC="gcc-4.0"
-+CXX="g++-4.0"
++CC="flag-sort gcc-4.0"
++CXX="flag-sort g++-4.0"
 +ac_add_options --target=@FINK_ARCH_TARGET@-apple-darwin`uname -r`
 +ac_add_options --with-macos-sdk=/Developer/SDKs/MacOSX10.4u.sdk
-+HOST_CC="gcc-4.0"
-+HOST_CXX="g++-4.0"
++HOST_CC="flag-sort gcc-4.0"
++HOST_CXX="flag-sort g++-4.0"
 +RANLIB=/usr/bin/ranlib
 +AR=/usr/bin/ar
 +AS=$CC
