@@ -45,6 +45,7 @@ BuildDepends: <<
 	libidl2 (>= 0.8.9-1),
 	libjpeg8,
 	libnotify (>= 0.4-1),
+	make,
 	pango1-xft2-ft219-dev (>= 1.20.0-3),
 	pixman (>= 0.10.0-1),
 	pkgconfig (>= 0.21-1),
@@ -82,7 +83,9 @@ SetCPPFLAGS: -I%p/lib/fontconfig2/include -I%p/include -I/usr/X11R6/include
 GCC: 4.0
 CompileScript: <<
 #!/bin/sh -ev
-/usr/bin/make -w -f client.mk build
+# make=/usr/bin/make
+make=%p/bin/make
+$make -w -f client.mk build
 #%p/bin/fink-package-precedence --depfile-ext=.pp .
 #--depfile-ext=.pp .
 # --no-headers .
@@ -90,7 +93,9 @@ CompileScript: <<
 InstallScript: <<
 #!/bin/sh -ev
 
-/usr/bin/make -j1 -w -f client.mk install DESTDIR=%d
+# make=/usr/bin/make
+make=%p/bin/make
+$make -j1 -w -f client.mk install DESTDIR=%d
 
 # Install NSS headers.
 /bin/cp -R -L obj-%m-apple-darwin`uname -r`/dist/public/nss %i/include/%n/nss
