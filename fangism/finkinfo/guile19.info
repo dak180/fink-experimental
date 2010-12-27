@@ -1,7 +1,7 @@
 Package: guile19
 # Package: guile20
-Version: 1.9.13
-Revision: 2
+Version: 1.9.14
+Revision: 1
 BuildDepends: <<
   readline5 (>= 5.0-1004),
   libffi,
@@ -22,13 +22,19 @@ Depends: <<
 GCC: 4.0
 # Source: mirror:gnu:guile/guile-%v.tar.gz
 Source: ftp://alpha.gnu.org/gnu/guile/guile-%v.tar.gz
-Source-MD5: ac10b460d006fd1b7a95286d14f6d4cf
+Source-MD5: 40667f40527ff0ecadb23f33e9562d2c
 # Source-SHA1: b4abff121c6f16b28214fa0eecabc90ef1dd0ea5
 # PatchFile: %n.patch
 # PatchFile-MD5: 4876e126e4183f61fbf03905d2d39373
 PatchScript: <<
+#!/bin/sh -ev
 # patch -p1 < %{PatchFile}
 perl -i -pe 's|(lt_dlinit\s*\(\s*\))|\1; lt_dladdsearchdir("\%p/lib")|' libguile/dynl.c
+# When LIBICONV_PLUG is not defined (normal) iconv, iconv_open, iconv_close
+# are all #defined to libiconv* in <iconv.h>, but this #undef messes it up.
+for f in lib/iconv*.c
+do sed -i.orig '/^#undef/d' $f
+done
 <<
 ConfigureParams: <<
 	--infodir=%p/share/info \
