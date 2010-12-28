@@ -2,7 +2,8 @@ Info3: <<
 Package: tenfourfox
 Version: 4.0
 Revision: 0.b8.1
-Distribution: 10.4
+Distribution: 10.4, 10.5
+Architecture: powerpc
 Description: Port of Firefox 4 to 10.4 and powerpc
 License: OSI-Approved
 Maintainer: David Fang <fangism@users.sourceforge.net>
@@ -49,6 +50,7 @@ BuildDepends: <<
 	pango1-xft2-ft219-dev (>= 1.20.0-3),
 	pixman (>= 0.10.0-1),
 	pkgconfig (>= 0.21-1),
+	python27,
 	system-sdk-10.4,
 #	system-sdk-10.5,
 	x11-dev,
@@ -172,6 +174,7 @@ SplitOff3: <<
 	libjpeg8-shlibs,
 	libnotify-shlibs (>= 0.4-1),
 	pango1-xft2-ft219-shlibs (>= 1.20.0-3),
+	python27-shlibs,
 	x11-shlibs
   <<
   Description: Lightweight browser from mozilla.org (shared libraries)
