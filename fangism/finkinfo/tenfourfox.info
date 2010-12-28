@@ -63,7 +63,7 @@ Source-MD5: 665ffbf8571e713d5da8f98e3d971e9d
 Source2: http://tenfourfox.googlecode.com/files/TenFourFox-changesets-20101215.zip
 Source2-MD5: 862b09c04f7e7e56c251a058d72f60d5
 PatchFile: %n.patch
-PatchFile-MD5: 9e5e99f1e4e876b44ef68fd440c01ad9
+PatchFile-MD5: fdce76682e333a7cfdb7775c45c11a3c
 PatchScript: <<
   #!/bin/sh -ev
   # apply patchset from TenFourFox:
