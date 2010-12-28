@@ -106,7 +106,18 @@ diff -ruN mozilla-central-orig/configure mozilla-central/configure
  *-darwin*)
      if test -z "$CC"; then CC=gcc-4.2; fi
      if test -z "$CXX"; then CXX=g++-4.2; fi
-@@ -1890,7 +1893,7 @@
+@@ -1564,8 +1568,8 @@
+ if test "$GNU_CC"; then
+     # FIXME: Let us build with strict aliasing. bug 414641.
+     CFLAGS="$CFLAGS -fno-strict-aliasing"
+-    MKSHLIB='$(CXX) $(CXXFLAGS) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -Wl,-h,$@ -o $@'
+-    MKCSHLIB='$(CC) $(CFLAGS) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -Wl,-h,$@ -o $@'
++    MKSHLIB='$(CXX) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -Wl,-h,$@ -o $@'
++    MKCSHLIB='$(CC) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -Wl,-h,$@ -o $@'
+     DSO_LDOPTS='-shared'
+     if test "$GCC_USE_GNU_LD"; then
+         # Don't allow undefined symbols in libraries
+@@ -1883,7 +1887,7 @@
      ;;
  
  *-darwin*)
@@ -114,10 +125,21 @@ diff -ruN mozilla-central-orig/configure mozilla-central/configure
 +    HOST_CFLAGS="$HOST_CFLAGS -DXP_UNIX"
      HOST_NSPR_MDCPUCFG='\"md/_darwin.cfg\"'
      HOST_OPTIMIZE_FLAGS="${HOST_OPTIMIZE_FLAGS=-O3}"
-     MOZ_FIX_LINK_PATHS='-Wl,-executable_path,$(LIBXUL_DIST)/bin'
-@@ -2050,10 +2053,10 @@
-     MKCSHLIB='$(CC) $(CFLAGS) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -o $@'
-     MOZ_OPTIMIZE_FLAGS="-O3"
+     ;;
+@@ -2033,8 +2037,8 @@
+     ;;
+ 
+ *-darwin*) 
+-    MKSHLIB='$(CXX) $(CXXFLAGS) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -o $@'
+-    MKCSHLIB='$(CC) $(CFLAGS) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -o $@'
++    MKSHLIB='$(CXX) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -o $@'
++    MKCSHLIB='$(CC) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -o $@'
+     # If we're building with --enable-profiling, we need a frame pointer.
+     if test -z "$MOZ_PROFILING"; then
+         MOZ_OPTIMIZE_FLAGS="-O3 -fomit-frame-pointer"
+@@ -2042,10 +2046,10 @@
+         MOZ_OPTIMIZE_FLAGS="-O3 -fno-omit-frame-pointer"
+     fi
      _PEDANTIC=
 -    CFLAGS="$CFLAGS -fpascal-strings -fno-common"
 -    CXXFLAGS="$CXXFLAGS -fpascal-strings -fno-common"
@@ -128,7 +150,7 @@ diff -ruN mozilla-central-orig/configure mozilla-central/configure
 +    DSO_LDOPTS='-framework CoreFoundation'
      STRIP="$STRIP -x -S"
      _PLATFORM_DEFAULT_TOOLKIT='cairo-cocoa'
-     MOZ_ENABLE_POSTSCRIPT=
+     TARGET_NSPR_MDCPUCFG='\"md/_darwin.cfg\"'
 diff -ruN mozilla-central-orig/fink/applications/firefox.desktop mozilla-central/fink/applications/firefox.desktop
 --- mozilla-central-orig/fink/applications/firefox.desktop	1969-12-31 19:00:00.000000000 -0500
 +++ mozilla-central/fink/applications/firefox.desktop	2009-04-27 16:56:30.000000000 -0400
@@ -217,3 +239,27 @@ diff -ruN mozilla-central-orig/xpcom/base/nsStackWalk.cpp mozilla-central/xpcom/
  // This thing is exported by libstdc++
  // Yes, this is a gcc only hack
  #if defined(MOZ_DEMANGLE_SYMBOLS)
+diff -ruN mozilla-central-orig/config/rules.mk mozilla-central/config/rules.mk
+--- mozilla-central-orig/config/rules.mk     2010-03-22 12:47:26.000000000 -0700
++++ mozilla-central/config/rules.mk       2010-03-22 12:47:35.000000000 -0700
+@@ -121,6 +121,11 @@
+ EXPAND_MOZLIBNAME = $(addprefix -l,$(1))
+ endif          
+ 
++# patch for darwin8:
++# EXPAND_DYLIB_NAME - $(call EXPAND_DYLIB_NAME,foo)
++# expands to -dylib_file $(installdir)/libfoo.dylib:$(DISTLIB)/libfoo.dylib
++EXPAND_DYLIB_NAME = -dylib_file $(installdir)/$(DLL_PREFIX)$(1)$(DLL_SUFFIX):$(DISTLIB)/$(DLL_PREFIX)$(1)$(DLL_SUFFIX)
++
+ ifdef MOZ_FAKELIBS
+ # If a lib.fake is present, replace it with @lib.fake, otherwise just pass
+ # the library name through unchanged.
+@@ -990,7 +995,7 @@
+ endif
+ else # !WINNT || GNU_CC
+ ifeq ($(CPP_PROG_LINK),1)
+-	$(CCC) -o $@ $(CXXFLAGS) $(WRAP_MALLOC_CFLAGS) $(PROGOBJS) $(RESFILE) $(WIN32_EXE_LDFLAGS) $(LDFLAGS) $(LIBS_DIR) $(call EXPAND_FAKELIBS,$(LIBS) $(OS_LIBS) $(EXTRA_LIBS)) $(BIN_FLAGS) $(call EXPAND_FAKELIBS,$(WRAP_MALLOC_LIB)) $(EXE_DEF_FILE)
++	$(CCC) -o $@ $(WRAP_MALLOC_CFLAGS) $(PROGOBJS) $(RESFILE) $(WIN32_EXE_LDFLAGS) $(LDFLAGS) $(LIBS_DIR) $(call EXPAND_FAKELIBS,$(LIBS) $(OS_LIBS) $(EXTRA_LIBS)) $(BIN_FLAGS) $(call EXPAND_FAKELIBS,$(WRAP_MALLOC_LIB)) $(EXE_DEF_FILE)
+ else # ! CPP_PROG_LINK
+        $(CC) -o $@ $(CFLAGS) $(PROGOBJS) $(RESFILE) $(WIN32_EXE_LDFLAGS) $(SOLARIS_JEMALLOC_LDFLAGS) $(LDFLAGS) $(LIBS_DIR) $(LIBS) $(OS_LIBS) $(EXTRA_LIBS) $(BIN_FLAGS) $(EXE_DEF_FILE)
+ endif # CPP_PROG_LINK
