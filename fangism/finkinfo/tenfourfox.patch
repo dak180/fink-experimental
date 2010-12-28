@@ -307,15 +307,6 @@ diff -ruN mozilla-central-orig/config/rules.mk mozilla-central/config/rules.mk
  
  # Add dummy depend target for tinderboxes
  depend::
-@@ -1943,7 +1948,7 @@
- JAR_MANIFEST := $(srcdir)/jar.mn
- 
- chrome::
--	$(MAKE) realchrome
-+	+$(MAKE) realchrome
- 	$(LOOP_OVER_PARALLEL_DIRS)
- 	$(LOOP_OVER_DIRS)
- 	$(LOOP_OVER_TOOL_DIRS)
 @@ -990,7 +995,7 @@
  endif
  else # !WINNT || GNU_CC
@@ -325,3 +316,12 @@ diff -ruN mozilla-central-orig/config/rules.mk mozilla-central/config/rules.mk
  else # ! CPP_PROG_LINK
         $(CC) -o $@ $(CFLAGS) $(PROGOBJS) $(RESFILE) $(WIN32_EXE_LDFLAGS) $(SOLARIS_JEMALLOC_LDFLAGS) $(LDFLAGS) $(LIBS_DIR) $(LIBS) $(OS_LIBS) $(EXTRA_LIBS) $(BIN_FLAGS) $(EXE_DEF_FILE)
  endif # CPP_PROG_LINK
+@@ -1943,7 +1948,7 @@
+ JAR_MANIFEST := $(srcdir)/jar.mn
+ 
+ chrome::
+-	$(MAKE) realchrome
++	+$(MAKE) realchrome
+ 	$(LOOP_OVER_PARALLEL_DIRS)
+ 	$(LOOP_OVER_DIRS)
+ 	$(LOOP_OVER_TOOL_DIRS)
