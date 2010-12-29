@@ -29,7 +29,7 @@
 +# Options for 'configure' (same as command-line options).
 +ac_add_options --prefix=@FINKPREFIX@
 +#ac_add_options --enable-official-branding
-+ac_add_options --enable-default-toolkit=cairo-gtk2
++#ac_add_options --enable-default-toolkit=cairo-gtk2
 +ac_add_options --x-libraries=/usr/X11R6/lib
 +ac_add_options --x-includes=/usr/X11R6/include
 +ac_add_options --disable-gnomevfs
@@ -325,3 +325,115 @@ diff -ruN mozilla-central-orig/config/rules.mk mozilla-central/config/rules.mk
  	$(LOOP_OVER_PARALLEL_DIRS)
  	$(LOOP_OVER_DIRS)
  	$(LOOP_OVER_TOOL_DIRS)
+--- mozilla-central-orig/client.mk	2010-12-14 17:02:33.000000000 -0800
++++ mozilla-central/client.mk	2010-12-28 16:37:53.000000000 -0800
+@@ -207,11 +207,11 @@
+ endif
+ 
+ profiledbuild::
+-	$(MAKE) -f $(TOPSRCDIR)/client.mk build MOZ_PROFILE_GENERATE=1
+-	$(MAKE) -C $(PGO_OBJDIR) package
++	+$(MAKE) -f $(TOPSRCDIR)/client.mk build MOZ_PROFILE_GENERATE=1
++	+$(MAKE) -C $(PGO_OBJDIR) package
+ 	OBJDIR=${PGO_OBJDIR} $(PROFILE_GEN_SCRIPT)
+-	$(MAKE) -f $(TOPSRCDIR)/client.mk maybe_clobber_profiledbuild
+-	$(MAKE) -f $(TOPSRCDIR)/client.mk build MOZ_PROFILE_USE=1
++	+$(MAKE) -f $(TOPSRCDIR)/client.mk maybe_clobber_profiledbuild
++	+$(MAKE) -f $(TOPSRCDIR)/client.mk build MOZ_PROFILE_USE=1
+ 
+ #####################################################
+ # Build date unification
+@@ -234,14 +234,14 @@
+ # (when MOZ_CURRENT_PROJECT is set.)
+ ifndef MOZ_BUILD_PROJECTS
+ # Building a single project, OBJDIR is usable.
+-	set -e; \
++	+set -e; \
+ 	for mkfile in $(MOZ_PREFLIGHT_ALL); do \
+ 	  $(MAKE) -f $(TOPSRCDIR)/$$mkfile preflight_all TOPSRCDIR=$(TOPSRCDIR) OBJDIR=$(OBJDIR) MOZ_OBJDIR=$(MOZ_OBJDIR); \
+ 	done
+ else
+ # OBJDIR refers to the project-specific OBJDIR, which is not available at
+ # this point when building multiple projects.  Only MOZ_OBJDIR is available.
+-	set -e; \
++	+set -e; \
+ 	for mkfile in $(MOZ_PREFLIGHT_ALL); do \
+ 	  $(MAKE) -f $(TOPSRCDIR)/$$mkfile preflight_all TOPSRCDIR=$(TOPSRCDIR) MOZ_OBJDIR=$(MOZ_OBJDIR) MOZ_BUILD_PROJECTS="$(MOZ_BUILD_PROJECTS)"; \
+ 	done
+@@ -253,7 +253,7 @@
+ 
+ ifeq (,$(MOZ_CURRENT_PROJECT)$(if $(MOZ_BUILD_PROJECTS),,1))
+ configure depend build install export libs clean realclean distclean alldep preflight postflight maybe_clobber_profiledbuild upload sdk::
+-	set -e; \
++	+set -e; \
+ 	for app in $(MOZ_BUILD_PROJECTS); do \
+ 	  $(MAKE) -f $(TOPSRCDIR)/client.mk $@ MOZ_CURRENT_PROJECT=$$app; \
+ 	done
+@@ -312,7 +312,7 @@
+ 	@touch $(OBJDIR)/Makefile
+ 
+ $(OBJDIR)/Makefile $(OBJDIR)/config.status: $(CONFIG_STATUS_DEPS)
+-	@$(MAKE) -f $(TOPSRCDIR)/client.mk configure
++	+@$(MAKE) -f $(TOPSRCDIR)/client.mk configure
+ 
+ ifneq (,$(CONFIG_STATUS))
+ $(OBJDIR)/config/autoconf.mk: $(TOPSRCDIR)/config/autoconf.mk.in
+@@ -325,14 +325,14 @@
+ # Depend
+ 
+ depend:: $(OBJDIR)/Makefile $(OBJDIR)/config.status
+-	$(MOZ_MAKE) export && $(MOZ_MAKE) depend
++	+$(MOZ_MAKE) export && $(MOZ_MAKE) depend
+ 
+ ####################################
+ # Preflight
+ 
+ build alldep preflight::
+ ifdef MOZ_PREFLIGHT
+-	set -e; \
++	+set -e; \
+ 	for mkfile in $(MOZ_PREFLIGHT); do \
+ 	  $(MAKE) -f $(TOPSRCDIR)/$$mkfile preflight TOPSRCDIR=$(TOPSRCDIR) OBJDIR=$(OBJDIR) MOZ_OBJDIR=$(MOZ_OBJDIR); \
+ 	done
+@@ -342,21 +342,21 @@
+ # Build it
+ 
+ build::  $(OBJDIR)/Makefile $(OBJDIR)/config.status
+-	$(MOZ_MAKE)
++	+$(MOZ_MAKE)
+ 
+ ####################################
+ # Other targets
+ 
+ # Pass these target onto the real build system
+ install export libs clean realclean distclean alldep maybe_clobber_profiledbuild upload sdk:: $(OBJDIR)/Makefile $(OBJDIR)/config.status
+-	$(MOZ_MAKE) $@
++	+$(MOZ_MAKE) $@
+ 
+ ####################################
+ # Postflight
+ 
+ build alldep postflight::
+ ifdef MOZ_POSTFLIGHT
+-	set -e; \
++	+set -e; \
+ 	for mkfile in $(MOZ_POSTFLIGHT); do \
+ 	  $(MAKE) -f $(TOPSRCDIR)/$$mkfile postflight TOPSRCDIR=$(TOPSRCDIR) OBJDIR=$(OBJDIR) MOZ_OBJDIR=$(MOZ_OBJDIR); \
+ 	done
+@@ -373,14 +373,14 @@
+ # (when MOZ_CURRENT_PROJECT is set.)
+ ifndef MOZ_BUILD_PROJECTS
+ # Building a single project, OBJDIR is usable.
+-	set -e; \
++	+set -e; \
+ 	for mkfile in $(MOZ_POSTFLIGHT_ALL); do \
+ 	  $(MAKE) -f $(TOPSRCDIR)/$$mkfile postflight_all TOPSRCDIR=$(TOPSRCDIR) OBJDIR=$(OBJDIR) MOZ_OBJDIR=$(MOZ_OBJDIR); \
+ 	done
+ else
+ # OBJDIR refers to the project-specific OBJDIR, which is not available at
+ # this point when building multiple projects.  Only MOZ_OBJDIR is available.
+-	set -e; \
++	+set -e; \
+ 	for mkfile in $(MOZ_POSTFLIGHT_ALL); do \
+ 	  $(MAKE) -f $(TOPSRCDIR)/$$mkfile postflight_all TOPSRCDIR=$(TOPSRCDIR) MOZ_OBJDIR=$(MOZ_OBJDIR) MOZ_BUILD_PROJECTS="$(MOZ_BUILD_PROJECTS)"; \
+ 	done

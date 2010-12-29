@@ -11,7 +11,7 @@ Depends: <<
 	%N-shlibs (= %v-%r),
 	atk1-shlibs (>= 1.20.0-1),
 	bzip2-shlibs,
-	cairo-shlibs (>= 1.6-1),
+#	cairo-shlibs (>= 1.6-1),
 	fontconfig2-shlibs (>= 2.4.1-1),
 	freetype219-shlibs (>= 2.3.7-7),
 	glib2-shlibs (>= 2.14.0-1),
@@ -32,7 +32,7 @@ BuildDepends: <<
 	atk1 (>= 1.20.0-1),
 	autoconf2.13,
 	bzip2-dev,
-	cairo (>= 1.6-1),
+#	cairo (>= 1.6-1),
 	dbus-dev,
 	fink (>= 0.28-1),
 	flag-sort,
@@ -63,7 +63,7 @@ Source-MD5: 665ffbf8571e713d5da8f98e3d971e9d
 Source2: http://tenfourfox.googlecode.com/files/TenFourFox-changesets-20101215.zip
 Source2-MD5: 862b09c04f7e7e56c251a058d72f60d5
 PatchFile: %n.patch
-PatchFile-MD5: e3d89f490f4874209fe46cb54fd79591
+PatchFile-MD5: 813843cf0ba6b9ee2f9efe4c15d95302
 PatchScript: <<
   #!/bin/sh -ev
   # apply patchset from TenFourFox:
@@ -163,7 +163,7 @@ SplitOff3: <<
   Package: %N-shlibs
   Depends: <<
 	atk1-shlibs (>= 1.20.0-1),
-	cairo-shlibs (>= 1.6-1),
+#	cairo-shlibs (>= 1.6-1),
 	dbus-glib1.2-shlibs,
 	dbus1.3-shlibs,
 	fontconfig2-shlibs (>= 2.4.1-1),
