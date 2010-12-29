@@ -63,7 +63,7 @@ Source-MD5: 665ffbf8571e713d5da8f98e3d971e9d
 Source2: http://tenfourfox.googlecode.com/files/TenFourFox-changesets-20101215.zip
 Source2-MD5: 862b09c04f7e7e56c251a058d72f60d5
 PatchFile: %n.patch
-PatchFile-MD5: 813843cf0ba6b9ee2f9efe4c15d95302
+PatchFile-MD5: 60fd736423955bf0c7117faa330b44c0
 PatchScript: <<
   #!/bin/sh -ev
   # apply patchset from TenFourFox:
@@ -73,7 +73,7 @@ PatchScript: <<
   ### apply the patch
   /usr/bin/sed -e 's|@FINKPREFIX@|%p|g' -e 's|@FINK_ARCH_TARGET@|%m|g' <%{PatchFile} | /usr/bin/patch -p1
   ### hardcode paths inside dylibs so that programs linking to them can see them
-  /usr/bin/perl -pi -e 's,\@executable_path,%p/lib/%n,g' `/usr/bin/grep -lr @executable_path .`
+  #/usr/bin/perl -pi -e 's,\@executable_path,%p/lib/%n,g' `/usr/bin/grep -lr @executable_path .`
   ### fix bad stripping on 10.5 from jfm with seamonkey.  No damage to 10.4?
   #/usr/bin/perl -pi -e 's,argument missing, -exported_symbols_list,' configure{,.in}
   # configure inputs were patched, hence regeneration

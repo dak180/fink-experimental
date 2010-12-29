@@ -137,14 +137,13 @@ diff -ruN mozilla-central-orig/configure mozilla-central/configure
      # If we're building with --enable-profiling, we need a frame pointer.
      if test -z "$MOZ_PROFILING"; then
          MOZ_OPTIMIZE_FLAGS="-O3 -fomit-frame-pointer"
-@@ -2042,10 +2046,10 @@
+@@ -2042,10 +2046,11 @@
          MOZ_OPTIMIZE_FLAGS="-O3 -fno-omit-frame-pointer"
      fi
      _PEDANTIC=
--    CFLAGS="$CFLAGS -fpascal-strings -fno-common"
--    CXXFLAGS="$CXXFLAGS -fpascal-strings -fno-common"
-+    CFLAGS="$CFLAGS -fno-common"
-+    CXXFLAGS="$CXXFLAGS -fno-common"
++# keep pascal strings for cocoa build
+     CFLAGS="$CFLAGS -fpascal-strings -fno-common"
+     CXXFLAGS="$CXXFLAGS -fpascal-strings -fno-common"
      DLL_SUFFIX=".dylib"
 -    DSO_LDOPTS=''
 +    DSO_LDOPTS='-framework CoreFoundation'
