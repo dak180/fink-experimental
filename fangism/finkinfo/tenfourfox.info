@@ -94,9 +94,11 @@ $make -w -f client.mk build
 <<
 InstallScript: <<
 #!/bin/sh -ev
-
+echo Deferring installation to AppBundles script.
 # make=/usr/bin/make
 make=%p/bin/make
+if false
+$make -j1 -w -f client.mk package
 $make -j1 -w -f client.mk install DESTDIR=%d
 
 # Install NSS headers.
@@ -115,50 +117,52 @@ $make -j1 -w -f client.mk install DESTDIR=%d
 
 # remove the %N-devel directory because it's not needed in FF
 /bin/rm -r %i/lib/%n-devel
+fi
 <<
+AppBundles: obj-%m-apple-darwin`uname -r`/dist/TenFourFox.app
 DocFiles: LEGAL LICENSE README.txt
 #Shlibs: <<
 #	!%p/lib/%N/plugins/libnullplugin.dylib
 #	!%p/lib/%N/plugins/libunixprintplugin.dylib
 #<<
-SplitOff: <<
-  Package: firefox
-  Depends: <<
-    %N (= %v-%r),
-    %N-shlibs (= %v-%r)
-  <<
-  Conflicts: <<
-    firefox (>= 3.1-6),
-    firefox2,
-    firefox3
-  <<
-  Replaces: <<
-    firefox (>= 3.1-6),
-    firefox2,
-    firefox3
-  <<
-  Description: Lightweight browser from mozilla.org (main user files)
-  DocFiles: LEGAL LICENSE README.txt
-  Files: <<
-    bin/firefox
-    share/applications/firefox.desktop
-    share/pixmaps/firefox.png
-  <<
-<<
-SplitOff2: <<
-  Package: %N-dev
-  Depends: <<
-	%N (= %v-%r),
-	%N-shlibs (= %v-%r)
-  <<
-  BuildDependsOnly: true
-  Description: Lightweight browser from mozilla.org (development files)
-  DocFiles: LEGAL LICENSE README.txt
-  Files: <<
-	include
-	share/idl
-  <<
-<<
+#SplitOff: <<
+#  Package: firefox
+#  Depends: <<
+#    %N (= %v-%r),
+#    %N-shlibs (= %v-%r)
+#  <<
+#  Conflicts: <<
+#    firefox (>= 3.1-6),
+#    firefox2,
+#    firefox3
+#  <<
+#  Replaces: <<
+#    firefox (>= 3.1-6),
+#    firefox2,
+#    firefox3
+#  <<
+#  Description: Lightweight browser from mozilla.org (main user files)
+#  DocFiles: LEGAL LICENSE README.txt
+#  Files: <<
+#    bin/firefox
+#    share/applications/firefox.desktop
+#    share/pixmaps/firefox.png
+#  <<
+#<<
+#SplitOff2: <<
+#  Package: %N-dev
+#  Depends: <<
+#	%N (= %v-%r),
+#	%N-shlibs (= %v-%r)
+#  <<
+#  BuildDependsOnly: true
+#  Description: Lightweight browser from mozilla.org (development files)
+#  DocFiles: LEGAL LICENSE README.txt
+#  Files: <<
+#	include
+#	share/idl
+#  <<
+#<<
 SplitOff3: <<
   Package: %N-shlibs
   Depends: <<
