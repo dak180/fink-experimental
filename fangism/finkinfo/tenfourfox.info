@@ -87,6 +87,10 @@ CompileScript: <<
 #!/bin/sh -ev
 # make=/usr/bin/make
 make=%p/bin/make
+{ echo "#!/bin/sh -ev" ; \
+echo "open -a TenFourFox.app \"$@\"" ;} > tenfourfox
+chmod +x tenfourfox
+
 $make -w -f client.mk build
 #%p/bin/fink-package-precedence --depfile-ext=.pp .
 #--depfile-ext=.pp .
@@ -119,9 +123,15 @@ $make -j1 -w -f client.mk install DESTDIR=%d
 
 # remove the %N-devel directory because it's not needed in FF
 /bin/rm -r %i/lib/%n-devel
+else
+# fake AppBundle installation because built app dir contains symlinks
+mkdir -p %i/bin
+mkdir -p %i/Applications
+cp tenfourfox %i/bin
+cp -p -R -L UninstalledAppDir/TenFourFox.app %i/Applications
 fi
 <<
-AppBundles: UninstalledAppDir/TenFourFox.app
+# AppBundles: UninstalledAppDir/TenFourFox.app
 DocFiles: LEGAL LICENSE README.txt
 #Shlibs: <<
 #	!%p/lib/%N/plugins/libnullplugin.dylib
@@ -210,12 +220,28 @@ DocFiles: LEGAL LICENSE README.txt
 #    %p/lib/%N/libxul.dylib 1.0.0 %n (>= 3.1-1)
 #  <<
 #<<
-Homepage: http://www.mozilla.org/products/firefox/
+Shlibs: <<
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libfreebl3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libmozalloc.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libmozsqlite3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libnspr4.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libnss3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libnssckbi.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libnssdbm3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libnssutil3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libplc4.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libplds4.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libsmime3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libsoftokn3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libssl3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libxpcom.dylib
+<<
+Homepage: http://www.floodgap.com:80/software/tenfourfox/
 DescDetail: <<
-Firefox is a free, open-source web browser for Windows, Linux and 
-Mac OS X and is based on the Mozilla codebase. It is small, fast and easy 
-to use, and offers many advantages over Internet Explorer, such as the 
-ability to block pop-up windows.
+"Mozilla left you.  Apple left you.  But we didn't."
+TenFourFox is a port of Firefox 4 for PowerPC Macs.
+A separate port is necessary because upstream no longer supports
+10.4, nor PowerPC.
 <<
 DescUsage: <<
 %p/bin/firefox
