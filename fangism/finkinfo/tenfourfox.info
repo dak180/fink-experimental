@@ -8,7 +8,7 @@ Description: Port of Firefox 4 to 10.4 and powerpc
 License: OSI-Approved
 Maintainer: David Fang <fangism@users.sourceforge.net>
 Depends: <<
-	%N-shlibs (= %v-%r),
+#	%N-shlibs (= %v-%r),
 	atk1-shlibs (>= 1.20.0-1),
 	bzip2-shlibs,
 #	cairo-shlibs (>= 1.6-1),
@@ -95,9 +95,11 @@ $make -w -f client.mk build
 InstallScript: <<
 #!/bin/sh -ev
 echo Deferring installation to AppBundles script.
+ln -s obj-%m-apple-darwin`uname -r`/dist UninstalledAppDir
 # make=/usr/bin/make
 make=%p/bin/make
 if false
+then
 $make -j1 -w -f client.mk package
 $make -j1 -w -f client.mk install DESTDIR=%d
 
@@ -119,7 +121,7 @@ $make -j1 -w -f client.mk install DESTDIR=%d
 /bin/rm -r %i/lib/%n-devel
 fi
 <<
-AppBundles: obj-%m-apple-darwin`uname -r`/dist/TenFourFox.app
+AppBundles: UninstalledAppDir/TenFourFox.app
 DocFiles: LEGAL LICENSE README.txt
 #Shlibs: <<
 #	!%p/lib/%N/plugins/libnullplugin.dylib
@@ -163,62 +165,51 @@ DocFiles: LEGAL LICENSE README.txt
 #	share/idl
 #  <<
 #<<
-SplitOff3: <<
-  Package: %N-shlibs
-  Depends: <<
-	atk1-shlibs (>= 1.20.0-1),
-#	cairo-shlibs (>= 1.6-1),
-	dbus-glib1.2-shlibs,
-	dbus1.3-shlibs,
-	fontconfig2-shlibs (>= 2.4.1-1),
-	freetype219-shlibs (>= 2.3.7-7),
-	glib2-shlibs (>= 2.14.0-1),
-	gtk+2-shlibs (>= 2.12.0-1),
-	libgettext8-shlibs,
-	libjpeg8-shlibs,
-	libnotify-shlibs (>= 0.4-1),
-	pango1-xft2-ft219-shlibs (>= 1.20.0-3),
-	python27-shlibs,
-	x11-shlibs
-  <<
-  Description: Lightweight browser from mozilla.org (shared libraries)
-  DocFiles: LEGAL LICENSE README.txt
-  Files: <<
-	lib/%N/lib*.dylib
-	lib/%N/chrome
-	lib/%N/components
-	lib/%N/greprefs.js
-	lib/%N/res
-  <<
-  Shlibs: <<
-    %p/lib/%N/libfreebl3.dylib 1.0.0 %n (>= 1.5.0.10-1001)
-    %p/lib/%N/libmozalloc.dylib 1.0.0 %n (>= 4.0-0.b1.1)
-    %p/lib/%N/libmozsqlite3.dylib 1.0.0 %n (>= 4.0-0.b1.1)
-    %p/lib/%N/libnspr4.dylib 1.0.0 %n (>= 0.10.1-4)
-    %p/lib/%N/libnss3.dylib 1.0.0 %n (>= 0.10.1-4)
-    (%m = x86_64) %p/lib/firefox4/libnssckbi.dylib 1.0.0 %n (>= 4.0-0.b1.1)
-    %p/lib/%N/libnssdbm3.dylib 1.0.0 %n (>= 3.1-2)
-    %p/lib/%N/libnssutil3.dylib 1.0.0 %n (>= 3.1-2)
-    %p/lib/%N/libplc4.dylib 1.0.0 %n (>= 0.10.1-4)
-    %p/lib/%N/libplds4.dylib 1.0.0 %n (>= 0.10.1-4)
-    %p/lib/%N/libsmime3.dylib 1.0.0 %n (>= 0.10.1-4)
-    %p/lib/%N/libsoftokn3.dylib 1.0.0 %n (>= 0.10.1-4)
-    %p/lib/%N/libssl3.dylib 1.0.0 %n (>= 0.10.1-4)
-    %p/lib/%N/libxpcom.dylib 1.0.0 %n (>= 0.10.1-4)
-    %p/lib/%N/libxul.dylib 1.0.0 %n (>= 3.1-1)
-  <<
-#    %p/lib/%N/libgfxpsshar.dylib 1.0.0 %n (>= 1.5-1)
-#    %p/lib/%N/libgkgfx.dylib 1.0.0 %n (>= 0.10.1-4)
-#    %p/lib/%N/libgtkembedmoz.dylib 1.0.0 %n (>= 0.10.1-4)
-#    %p/lib/%N/libgtkxtbin.dylib 1.0.0 %n (>= 0.10.1-4)
-#    %p/lib/%N/libjsj.dylib 1.0.0 %n (>= 0.10.1-4)
-# add to get libmozjs back: --enable-shared-js
-#    %p/lib/%N/libmozjs.dylib 1.0.0 %n (>= 0.10.1-4)
-#    %p/lib/%N/libmozz.dylib 1.0.0 %n (>= 1.5-4)
-#    %p/lib/%N/libxpcom_compat.dylib 1.0.0 %n (>= 0.10.1-4)
-#    %p/lib/%N/libxpcom_core.dylib 1.0.0 %n (>= 1.1-8)
-#    %p/lib/%N/libxpistub.dylib 1.0.0 %n (>= 0.10.1-4)
-<<
+#SplitOff3: <<
+#  Package: %N-shlibs
+#  Depends: <<
+#	atk1-shlibs (>= 1.20.0-1),
+##	cairo-shlibs (>= 1.6-1),
+#	dbus-glib1.2-shlibs,
+#	dbus1.3-shlibs,
+#	fontconfig2-shlibs (>= 2.4.1-1),
+#	freetype219-shlibs (>= 2.3.7-7),
+#	glib2-shlibs (>= 2.14.0-1),
+#	gtk+2-shlibs (>= 2.12.0-1),
+#	libgettext8-shlibs,
+#	libjpeg8-shlibs,
+#	libnotify-shlibs (>= 0.4-1),
+#	pango1-xft2-ft219-shlibs (>= 1.20.0-3),
+#	python27-shlibs,
+#	x11-shlibs
+#  <<
+#  Description: Lightweight browser from mozilla.org (shared libraries)
+#  DocFiles: LEGAL LICENSE README.txt
+#  Files: <<
+#	lib/%N/lib*.dylib
+#	lib/%N/chrome
+#	lib/%N/components
+#	lib/%N/greprefs.js
+#	lib/%N/res
+#  <<
+#  Shlibs: <<
+#    %p/lib/%N/libfreebl3.dylib 1.0.0 %n (>= 1.5.0.10-1001)
+#    %p/lib/%N/libmozalloc.dylib 1.0.0 %n (>= 4.0-0.b1.1)
+#    %p/lib/%N/libmozsqlite3.dylib 1.0.0 %n (>= 4.0-0.b1.1)
+#    %p/lib/%N/libnspr4.dylib 1.0.0 %n (>= 0.10.1-4)
+#    %p/lib/%N/libnss3.dylib 1.0.0 %n (>= 0.10.1-4)
+#    (%m = x86_64) %p/lib/firefox4/libnssckbi.dylib 1.0.0 %n (>= 4.0-0.b1.1)
+#    %p/lib/%N/libnssdbm3.dylib 1.0.0 %n (>= 3.1-2)
+#    %p/lib/%N/libnssutil3.dylib 1.0.0 %n (>= 3.1-2)
+#    %p/lib/%N/libplc4.dylib 1.0.0 %n (>= 0.10.1-4)
+#    %p/lib/%N/libplds4.dylib 1.0.0 %n (>= 0.10.1-4)
+#    %p/lib/%N/libsmime3.dylib 1.0.0 %n (>= 0.10.1-4)
+#    %p/lib/%N/libsoftokn3.dylib 1.0.0 %n (>= 0.10.1-4)
+#    %p/lib/%N/libssl3.dylib 1.0.0 %n (>= 0.10.1-4)
+#    %p/lib/%N/libxpcom.dylib 1.0.0 %n (>= 0.10.1-4)
+#    %p/lib/%N/libxul.dylib 1.0.0 %n (>= 3.1-1)
+#  <<
+#<<
 Homepage: http://www.mozilla.org/products/firefox/
 DescDetail: <<
 Firefox is a free, open-source web browser for Windows, Linux and 
