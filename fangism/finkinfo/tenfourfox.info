@@ -77,8 +77,9 @@ PatchScript: <<
   ### hardcode paths inside dylibs so that programs linking to them can see them
   #/usr/bin/perl -pi -e 's,\@executable_path,%p/lib/%n,g' `/usr/bin/grep -lr @executable_path .`
   # hard-code the @executable_path for the AppBundle (non-relocatable) to
-  # satisfy the validator
-  /usr/bin/perl -pi -e 's,\@executable_path,%p/Applications/TenFourFox.app/Contents/MacOS,g' `/usr/bin/grep -lr @executable_path .`
+  # satisfy the validator... but this link fails, so we have to hack at
+  # install-time (pre-package) and post-install.
+  # /usr/bin/perl -pi -e 's,\@executable_path,%p/Applications/TenFourFox.app/Contents/MacOS,g' `/usr/bin/grep -lr @executable_path .`
   ### fix bad stripping on 10.5 from jfm with seamonkey.  No damage to 10.4?
   #/usr/bin/perl -pi -e 's,argument missing, -exported_symbols_list,' configure{,.in}
   # configure inputs were patched, hence regeneration
@@ -116,7 +117,7 @@ ln -s $objdir/dist UninstalledAppDir
 make=%p/bin/make
 if false
 then
-$make -j1 -w -f client.mk package
+$make -w -f client.mk package
 $make -j1 -w -f client.mk install DESTDIR=%d
 
 # Install NSS headers.
@@ -141,12 +142,27 @@ mkdir -p %i/bin
 mkdir -p %i/Applications
 cp tenfourfox %i/bin
 cp -p -R -L UninstalledAppDir/TenFourFox.app %i/Applications
+# now hack the install_names of private shlibs to appease validator
+# and then change them back during post-install.
+pkg_path=Applications/TenFourFox.app/Contents/MacOS
+pushd %i/$pkg_path
+for f in *.dylib
+do install_name_tool -id $pkg_path/$f $f
+done
+popd
 fi
+<<
+PostInstScript: <<
+# restore original install_names of shlibs
+pkg_path=Applications/TenFourFox.app/Contents/MacOS
+pushd %p/$pkg_path
+for f in *.dylib
+do install_name_tool -id @executable_path/$f $f
+done
+popd
 <<
 # AppBundles: UninstalledAppDir/TenFourFox.app
 DocFiles: LEGAL LICENSE README.txt
-# TODO: PostInstScript to fix the install_names to be @executable_path
-#	to make AppBundle relocatable.
 #Shlibs: <<
 #	!%p/lib/%N/plugins/libnullplugin.dylib
 #	!%p/lib/%N/plugins/libunixprintplugin.dylib
