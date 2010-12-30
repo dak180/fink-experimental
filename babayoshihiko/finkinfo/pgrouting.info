@@ -1,0 +1,49 @@
+Info4: <<
+Package: pgrouting%type_pkg[postgresql]
+Version: 1.05
+Revision: 0.1
+Description: Geospatial routing functionality for PostGIS
+Type: postgresql (8.4)
+License: BSD
+Maintainer: Benjamin Reed <postgis@fink.racoonfink.com>
+
+Depends: <<
+        boost1.41.cmake-shlibs | boost1.35.nopython-shlibs | boost1.35.systempython-shlibs | boost1.35.python26-shlibs,
+	postgresql%type_pkg[postgresql]-shlibs,
+	proj-shlibs
+<<
+BuildDepends: <<
+	fink (>= 0.29.7-1),
+        boost1.41.cmake | boost1.35.nopython-shlibs | boost1.35.systempython | boost1.35.python26,
+	postgresql%type_pkg[postgresql]-dev,
+	postgresql-java (>= %type_raw[postgresql]-1),
+	proj,
+	system-java (>= 1.5-1)
+<<
+GCC: 4.0
+
+Source: http://download.osgeo.org/pgrouting/source/pgrouting-%v.tar.gz
+Source-MD5: bd7c106e3db3c38f7081f1ee9b0e12ae
+
+SetLDFLAGS:
+
+CompileScript: <<
+#!/bin/sh -ev
+  pwd
+  CMAKE_OPTIONS="-DCMAKE_PREFIX_PATH=%p
+                 -DCMAKE_BUILD_TYPE=Release
+		 -DCMAKE_INSTALL_PREFIX=%p
+		 -DBoost_INCLUDE_DIR=%p/include
+                 -DPOSTGRESQL_PREFIX=%p
+		 -DPOSTGRESQL_INCLUDE_DIR=%p/opt/postgresql-%type_raw[postgresql]/include/server
+		 -DPOSTGRESQL_LIBRARIES=%p/opt/postgresql-%type_raw[postgresql]/lib
+                 -DPOSTGRES_CONFIG=%p/bin/pg_config"
+  cmake $CMAKE_OPTIONS .
+  make VERBOSE=1
+<<
+InstallScript: <<
+  make install
+<<
+
+
+<<
