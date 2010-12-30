@@ -14,9 +14,9 @@ Depends: <<
 #	cairo-shlibs (>= 1.6-1),
 	fontconfig2-shlibs (>= 2.4.1-1),
 	freetype219-shlibs (>= 2.3.7-7),
-#	glib2-shlibs (>= 2.14.0-1),
+	glib2-shlibs (>= 2.14.0-1),
 #	gtk+2-shlibs (>= 2.12.0-1),
-#	libgettext8-shlibs,
+	libgettext8-shlibs,
 #	pango1-xft2-ft219-shlibs (>= 1.20.0-3)
 #	x11
 <<
@@ -43,7 +43,7 @@ BuildDepends: <<
 	glib2-dev (>= 2.14.0-1),
 #	glitz,
 #	gtk+2-dev (>= 2.12.0-1),
-#	libgettext8-dev,
+	libgettext8-dev,
 	libidl2 (>= 0.8.9-1),
 	libjpeg8,
 #	libnotify (>= 0.4-1),
