@@ -147,7 +147,7 @@ cp -p -R -L UninstalledAppDir/TenFourFox.app %i/Applications
 pkg_path=Applications/TenFourFox.app/Contents/MacOS
 pushd %i/$pkg_path
 for f in *.dylib
-do install_name_tool -id $pkg_path/$f $f
+do install_name_tool -id %p/$pkg_path/$f $f
 done
 popd
 fi
