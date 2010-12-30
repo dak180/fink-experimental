@@ -76,6 +76,9 @@ PatchScript: <<
   /usr/bin/sed -e 's|@FINKPREFIX@|%p|g' -e 's|@FINK_ARCH_TARGET@|%m|g' <%{PatchFile} | /usr/bin/patch -p1
   ### hardcode paths inside dylibs so that programs linking to them can see them
   #/usr/bin/perl -pi -e 's,\@executable_path,%p/lib/%n,g' `/usr/bin/grep -lr @executable_path .`
+  # hard-code the @executable_path for the AppBundle (non-relocatable) to
+  # satisfy the validator
+  /usr/bin/perl -pi -e 's,\@executable_path,%p/Applications/TenFourFox.app/Contents/MacOS,g' `/usr/bin/grep -lr @executable_path .`
   ### fix bad stripping on 10.5 from jfm with seamonkey.  No damage to 10.4?
   #/usr/bin/perl -pi -e 's,argument missing, -exported_symbols_list,' configure{,.in}
   # configure inputs were patched, hence regeneration
@@ -142,6 +145,8 @@ fi
 <<
 # AppBundles: UninstalledAppDir/TenFourFox.app
 DocFiles: LEGAL LICENSE README.txt
+# TODO: PostInstScript to fix the install_names to be @executable_path
+#	to make AppBundle relocatable.
 #Shlibs: <<
 #	!%p/lib/%N/plugins/libnullplugin.dylib
 #	!%p/lib/%N/plugins/libunixprintplugin.dylib
@@ -230,20 +235,20 @@ DocFiles: LEGAL LICENSE README.txt
 #  <<
 #<<
 Shlibs: <<
-	!@executable_path/libfreebl3.dylib
-	!@executable_path/libmozalloc.dylib
-	!@executable_path/libmozsqlite3.dylib
-	!@executable_path/libnspr4.dylib
-	!@executable_path/libnss3.dylib
-	!@executable_path/libnssckbi.dylib
-	!@executable_path/libnssdbm3.dylib
-	!@executable_path/libnssutil3.dylib
-	!@executable_path/libplc4.dylib
-	!@executable_path/libplds4.dylib
-	!@executable_path/libsmime3.dylib
-	!@executable_path/libsoftokn3.dylib
-	!@executable_path/libssl3.dylib
-	!@executable_path/libxpcom.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libfreebl3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libmozalloc.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libmozsqlite3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libnspr4.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libnss3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libnssckbi.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libnssdbm3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libnssutil3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libplc4.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libplds4.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libsmime3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libsoftokn3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libssl3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libxpcom.dylib
 <<
 Homepage: http://www.floodgap.com:80/software/tenfourfox/
 DescDetail: <<
