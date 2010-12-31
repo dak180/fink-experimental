@@ -9,8 +9,8 @@ License: OSI-Approved
 Maintainer: David Fang <fangism@users.sourceforge.net>
 Depends: <<
 #	bzip2-shlibs,
-	fontconfig2-shlibs (>= 2.4.1-1),
-	freetype219-shlibs (>= 2.3.7-7),
+#	fontconfig2-shlibs (>= 2.4.1-1),
+#	freetype219-shlibs (>= 2.3.7-7),
 	glib2-shlibs (>= 2.14.0-1),
 	libgettext8-shlibs
 <<
@@ -20,6 +20,8 @@ BuildConflicts: <<
 	automake1.11,
 	freetype,
 	freetype-hinting,
+	freetype2-dev,
+	freetype219,
 	nspr
 <<
 BuildDepends: <<
@@ -29,8 +31,8 @@ BuildDepends: <<
 	fink (>= 0.28-1),
 	fink-package-precedence,
 	flag-sort,
-	fontconfig2-dev (>= 2.4.1-1),
-	freetype219 (>= 2.3.7-7),
+#	fontconfig2-dev (>= 2.4.1-1),
+#	freetype219 (>= 2.3.7-7),
 #	gcc4.2 (>= 4.2.1-5574),
 	glib2-dev (>= 2.14.0-1),
 	libgettext8-dev,
@@ -48,7 +50,7 @@ Source-MD5: 665ffbf8571e713d5da8f98e3d971e9d
 Source2: http://tenfourfox.googlecode.com/files/TenFourFox-changesets-20101215.zip
 Source2-MD5: 862b09c04f7e7e56c251a058d72f60d5
 PatchFile: %n.patch
-PatchFile-MD5: 8454cd92a1984d8320d74b8bbe93d596
+PatchFile-MD5: 24af149f2d53a09980267129de08942c
 PatchScript: <<
   #!/bin/sh -ev
   # apply patchset from TenFourFox:
@@ -62,8 +64,8 @@ PatchScript: <<
   # configure inputs were patched, hence regeneration
   autoconf
 <<
-SetLDFLAGS: -L%p/lib/system-openssl/lib -L%p/lib/fontconfig2/lib -lfontconfig
-SetCPPFLAGS: -I%p/lib/system-openssl/include -I%p/lib/fontconfig2/include -I%p/include -I/usr/X11R6/include
+SetLDFLAGS: -L%p/lib/system-openssl/lib
+SetCPPFLAGS: -I%p/lib/system-openssl/include -I%p/include -I/usr/X11R6/include
 GCC: 4.0
 CompileScript: <<
 #!/bin/sh -ev
@@ -147,9 +149,24 @@ http://code.google.com/p/tenfourfox/wiki/HowToBuild
 
 Uses default toolkit cairo-cocoa, instead of gtk+2.
 Uses Mozilla's own mozcairo instead of fink's cairo.
+
 SplitOffs have been punted until there is actual interest.
+
 Uses system-openssl instead of fink's openssl.  
+
 Python is only needed at build-time.
+
+Doesn't seem to use fontconfig anywhere.
+
+Mozilla ships its own freetype module, even though configure detects
+/usr/X11R6/bin/freetype-config, doesn't seem to use it anywhere:
+config.status shows @FT2_CONFIG@, @FT2_CFLAGS@, @FT2_LIBS@ pointing
+to system's freetype, @FT2_LIBS@ is referenced in gfx/thebes/Makefile
+and toolkit/library/Makefile, yet it *never* appears in the build log.
+otool -L doesn't find any linking to ANY freetype/fontconfig, 
+not even system's.
+I suspect only the gtk+2 toolkit uses it.
+I've added it to BuildConflicts to be safe.
 <<
 DescPort: <<
 Needs autoconf2.13 to regenerate configure after patch from tenfourfox.
