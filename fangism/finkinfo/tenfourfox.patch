@@ -117,15 +117,6 @@ diff -ruN mozilla-central-orig/configure mozilla-central/configure
      DSO_LDOPTS='-shared'
      if test "$GCC_USE_GNU_LD"; then
          # Don't allow undefined symbols in libraries
-@@ -1883,7 +1887,7 @@
-     ;;
- 
- *-darwin*)
--    HOST_CFLAGS="$HOST_CFLAGS -DXP_UNIX -DXP_MACOSX -DNO_X11"
-+    HOST_CFLAGS="$HOST_CFLAGS -DXP_UNIX"
-     HOST_NSPR_MDCPUCFG='\"md/_darwin.cfg\"'
-     HOST_OPTIMIZE_FLAGS="${HOST_OPTIMIZE_FLAGS=-O3}"
-     ;;
 @@ -2033,8 +2037,8 @@
      ;;
  
@@ -169,28 +160,6 @@ diff -ruN mozilla-central-orig/fink/fink.js mozilla-central/fink/fink.js
 +++ mozilla-central/fink/fink.js	2009-04-27 16:56:30.000000000 -0400
 @@ -0,0 +1 @@
 +pref("general.useragent.extra.vendorComment", "Fink Community Edition");
-diff -ruN mozilla-central-orig/netwerk/wifi/nsWifiMonitor.h mozilla-central/netwerk/wifi/nsWifiMonitor.h
---- mozilla-central-orig/netwerk/wifi/nsWifiMonitor.h	2009-10-16 11:14:14.000000000 -0400
-+++ mozilla-central/netwerk/wifi/nsWifiMonitor.h	2009-10-28 09:30:59.000000000 -0400
-@@ -83,17 +83,17 @@ class nsWifiMonitor : nsIRunnable, nsIWi
- 
-   nsWifiMonitor();
- 
-  private:
-   ~nsWifiMonitor();
- 
-   nsresult DoScan();
- 
--#if defined(XP_MACOSX)
-+#if defined(XP_UNIX)
-   nsresult DoScanWithCoreWLAN();
-   nsresult DoScanOld();
- #endif
- 
-   PRBool mKeepGoing;
-   nsCOMPtr<nsIThread> mThread;
- 
-   nsTArray<nsWifiListener> mListeners;
 diff -ruN mozilla-central-orig/xpcom/io/nsAppFileLocationProvider.cpp mozilla-central/xpcom/io/nsAppFileLocationProvider.cpp
 --- mozilla-central-orig/xpcom/io/nsAppFileLocationProvider.cpp
 +++ mozilla-central/xpcom/io/nsAppFileLocationProvider.cpp
@@ -216,28 +185,6 @@ diff -ruN mozilla-central-orig/xpcom/io/nsAppFileLocationProvider.cpp mozilla-ce
  #endif
      else if (nsCRT::strcmp(prop, NS_APP_SEARCH_DIR) == 0)
      {
-diff -ruN mozilla-central-orig/xpcom/base/nsStackWalk.cpp mozilla-central/xpcom/base/nsStackWalk.cpp
---- mozilla-central-orig/xpcom/base/nsStackWalk.cpp	2009-04-23 21:47:11.000000000 -0400
-+++ mozilla-central/xpcom/base/nsStackWalk.cpp	2009-04-27 16:56:31.000000000 -0400
-@@ -1132,17 +1132,17 @@ NS_FormatCodeAddressDetails(void *aPC, c
- // On glibc 2.1, the Dl_info api defined in <dlfcn.h> is only exposed
- // if __USE_GNU is defined.  I suppose its some kind of standards
- // adherence thing.
- //
- #if (__GLIBC_MINOR__ >= 1) && !defined(__USE_GNU)
- #define __USE_GNU
- #endif
- 
--#if defined(HAVE_DLOPEN) || defined(XP_MACOSX)
-+#if defined(HAVE_DLOPEN) || defined(XP_UNIX)
- #include <dlfcn.h>
- #endif
- 
- 
- 
- // This thing is exported by libstdc++
- // Yes, this is a gcc only hack
- #if defined(MOZ_DEMANGLE_SYMBOLS)
 diff -ruN mozilla-central-orig/config/rules.mk mozilla-central/config/rules.mk
 --- mozilla-central-orig/config/rules.mk     2010-03-22 12:47:26.000000000 -0700
 +++ mozilla-central/config/rules.mk       2010-03-22 12:47:35.000000000 -0700
@@ -245,7 +192,7 @@ diff -ruN mozilla-central-orig/config/rules.mk mozilla-central/config/rules.mk
  EXPAND_MOZLIBNAME = $(addprefix -l,$(1))
  endif          
  
-+# patch for darwin8:
++# patch for darwin8 (needed for gtk+2 build):
 +# EXPAND_DYLIB_NAME - $(call EXPAND_DYLIB_NAME,foo)
 +# expands to -dylib_file $(installdir)/libfoo.dylib:$(DISTLIB)/libfoo.dylib
 +EXPAND_DYLIB_NAME = -dylib_file $(installdir)/$(DLL_PREFIX)$(1)$(DLL_SUFFIX):$(DISTLIB)/$(DLL_PREFIX)$(1)$(DLL_SUFFIX)

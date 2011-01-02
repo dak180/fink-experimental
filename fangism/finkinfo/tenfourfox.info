@@ -50,7 +50,7 @@ Source-MD5: 665ffbf8571e713d5da8f98e3d971e9d
 Source2: http://tenfourfox.googlecode.com/files/TenFourFox-changesets-20101215.zip
 Source2-MD5: 862b09c04f7e7e56c251a058d72f60d5
 PatchFile: %n.patch
-PatchFile-MD5: 24af149f2d53a09980267129de08942c
+PatchFile-MD5: 54a6d68b8289a0224d76d9e8f42335d7
 PatchScript: <<
   #!/bin/sh -ev
   # apply patchset from TenFourFox:
@@ -171,6 +171,10 @@ I've added it to BuildConflicts to be safe.
 DescPort: <<
 Needs autoconf2.13 to regenerate configure after patch from tenfourfox.
 BuildConflicts with automake1.11 to temporarily remove to allow autoconf2.13.
+
+Bunch of patches to rules.mk and client.mk are for enabling
+parallel builds to share the same jobserver as the master/parent
+make, so recursive instances of make benefit from -jN MAKEFLAGS.  
 
 Using system-provided libraries:
 --------------------------------
