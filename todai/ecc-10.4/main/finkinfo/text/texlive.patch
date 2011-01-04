@@ -131,25 +131,17 @@ diff -Naur texlive-20080816-source.orig/texk/kpathsea/texmf.cnf texlive-20080816
 +
 +% for ptex filter
 +PTEX_IN_FILTER = @PREFIX@/bin/nkf -w
-diff -Naur texlive-20080816-source.orig/texk/tetex/fmtutil.cnf texlive-20080816-source/texk/tetex/fmtutil.cnf
---- texlive-20080816-source.orig/texk/tetex/fmtutil.cnf	2008-07-08 00:39:23.000000000 +0900
-+++ texlive-20080816-source/texk/tetex/fmtutil.cnf	2009-05-11 18:39:42.000000000 +0900
-@@ -129,3 +129,7 @@
- # from xmltex:
- xmltex pdftex language.dat *xmltex.ini
- pdfxmltex pdftex language.dat *pdfxmltex.ini
-+#
-+# Japanese pTeX:
-+#! ptex		ptex	-		--kanji=default ptex.ini
-+#! platex		ptex	language.dat	--kanji=default platex.ini
---- texlive-20100720-source.orig/texk/kpathsea/Makefile.in	2010-05-17 16:59:20.000000000 +0900
-+++ texlive-20100720-source/texk/kpathsea/Makefile.in	2011-01-03 23:29:16.000000000 +0900
-@@ -438,7 +438,7 @@
- kpseaccess_SOURCES = access.c
- kpsereadlink_SOURCES = readlink.c
- kpsewhich_LDADD = libkpathsea.la
--web2cdir = ${prefix}/texmf/web2c
-+web2cdir = ${datadir}/texmf/web2c
- dist_web2c_SCRIPTS = mktexdir mktexnam mktexupd
- dist_web2c_DATA = mktex.opt mktexdir.opt mktexnam.opt
- dist_noinst_SCRIPTS = mktexlsr mktexmf mktexpk mktextfm
+diff -Naur texlive-20100720-source.orig/texk/xdvik/Makefile.in texlive-20100720-source/texk/xdvik/Makefile.in
+--- texlive-20100720-source.old/texk/xdvik/Makefile.in	2010-02-22 21:09:38.000000000 +0900
++++ texlive-20100720-source/texk/xdvik/Makefile.in	2011-01-04 11:14:18.000000000 +0900
+@@ -1696,8 +1696,8 @@
+ install-data-hook:
+ 	@if grep "original xdvi.cfg --" "$(DESTDIR)$(xdvidir)/xdvi.cfg" >/dev/null 2>&1 \
+ 	    || test ! -r "$(DESTDIR)$(xdvidir)/xdvi.cfg"; then \
+-	  echo " $(INSTALL_DATA) '$(srcdir)/texmf/xdvi.cfg' '$(DESTDIR)$(xdvidir)/xdvi.cfg'"; \
+-	  $(INSTALL_DATA) "$(srcdir)/texmf/xdvi.cfg" "$(DESTDIR)$(xdvidir)/xdvi.cfg"; \
++	  echo " $(INSTALL_DATA) '$(srcdir)/$(dist_noinst_DATA)' '$(DESTDIR)$(xdvidir)/xdvi.cfg'"; \
++	  $(INSTALL_DATA) "$(srcdir)/$(dist_noinst_DATA)" "$(DESTDIR)$(xdvidir)/xdvi.cfg"; \
+ 	else :; fi
+ 
+ uninstall-hook:
