@@ -1,6 +1,6 @@
 Package: libkpathsea6
 Version: 6.0.0
-Revision: 0test1
+Revision: 0test2
 Description: Path search library for TeX
 BuildDepends: texlive-texmf | tetex-texmf, fink (>= 0.24.12), xz
 BuildDependsOnly: true
@@ -24,7 +24,7 @@ PatchScript: <<
 <<
 NoSetLDFLAGS: true
 ConfigureParams: <<
- --disable-native-texlive-build \
+ --disable-native-texlive-build --disable-omfonts \
  --disable-texi2html --disable-texinfo --enable-shared \
  --datadir='${prefix}/share' --infodir='${prefix}/share/info' \
  --mandir='${prefix}/share/man' --disable-multiplatform \
@@ -40,7 +40,7 @@ CompileScript: <<
  cd texlive/texk/kpathsea; make
 <<
 InstallScript: <<
- cd texlive/texk/kpathsea; make install DESTDIR=%d
+ cd texlive/texk/kpathsea; make install-strip DESTDIR=%d
 <<
 DocFiles: texlive/texk/kpathsea/README
 SplitOff: <<
