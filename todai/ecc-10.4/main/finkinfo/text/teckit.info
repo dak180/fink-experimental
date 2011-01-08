@@ -1,6 +1,6 @@
 Package: teckit
 Version: 2.5.1
-Revision: 0
+Revision: 0test1
 Description: Text Encoding Conversion toolkit
 License: Restrictive/Distributable
 Maintainer: Todai Fink Team <fink@sodan.ecc.u-tokyo.ac.jp>
@@ -16,8 +16,10 @@ PatchScript: <<
 InstallScript: <<
  make install DESTDIR=%d
 
- mkdir -p   %i/share/doc/%N
- mv license %i/share/doc/%N
+ mkdir -p   %i/share/doc/%N-shlibs
+ mv license %i/share/doc/%N-shlibs
+ mkdir -p                                  %i/share/doc/%n
+ ln -s      %p/share/doc/%N-shlibs/license %i/share/doc/%n/
 <<
 DocFiles: AUTHORS COPYING ChangeLog INSTALL NEWS README
 Homepage: http://psitau.kitunebi.com/utf.html
@@ -25,16 +27,12 @@ SplitOff: <<
  Package: %N-shlibs
  Description: Shared libraries of TECkit
  Depends: expat1-shlibs
- Files: lib/libTECkit.*.dylib lib/libTECkit_Compiler.*.dylib
+ Files: lib/libTECkit.*.dylib lib/libTECkit_Compiler.*.dylib share/doc/%n
  Shlibs: <<
   %p/lib/libTECkit.0.dylib          1.0.0 %n (>= 2.5.1-0)
   %p/lib/libTECkit_Compiler.0.dylib 1.0.0 %n (>= 2.5.1-0)
  <<
  DocFiles: AUTHORS COPYING ChangeLog INSTALL NEWS README
- InstallScript: <<
-  mkdir -p                      %i/share/doc/%n
-  ln -s %p/share/doc/%N/license %i/share/doc/%n/
- <<
 <<
 SplitOff2: <<
  Package: %N-dev
@@ -44,7 +42,7 @@ SplitOff2: <<
  Files: include lib/libTECkit.{a,la,dylib} lib/libTECkit_Compiler.{a,la,dylib}
  DocFiles: AUTHORS COPYING ChangeLog INSTALL NEWS README
  InstallScript: <<
-  mkdir -p                      %i/share/doc/%n
-  ln -s %p/share/doc/%N/license %i/share/doc/%n/
+  mkdir -p                             %i/share/doc/%n
+  ln -s %p/share/doc/%N-shlibs/license %i/share/doc/%n/
  <<
 <<
