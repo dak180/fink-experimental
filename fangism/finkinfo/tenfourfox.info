@@ -112,6 +112,13 @@ for f in *.dylib
 do install_name_tool -id @executable_path/$f $f
 done
 popd
+mkdir -p /Applications/Fink
+pushd /Applications/Fink
+ln -s %p/Applications/TenFourFox.app .
+popd
+<<
+PreRmScript: <<
+rm -f /Applications/Fink/TenFourFox.app
 <<
 DocFiles: LEGAL LICENSE README.txt toolkit/content/license.html
 # shlibs are all private for now, until there is actual interest in them
