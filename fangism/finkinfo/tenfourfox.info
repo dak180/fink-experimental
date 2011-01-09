@@ -18,6 +18,8 @@ BuildConflicts: <<
 	autoconf,
 	autoconf2.6,
 	automake1.11,
+	automake1.10,
+	automake1.9,
 	freetype,
 	freetype-hinting,
 	freetype2-dev,
