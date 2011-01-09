@@ -73,7 +73,7 @@ CompileScript: <<
 make=%p/bin/make
 # provide an executable script to launch .app
 { echo "#!/bin/sh -ev" ; \
-echo "open -a TenFourFox.app \"$@\"" ;} > tenfourfox
+echo "open -a %p/Applications/TenFourFox.app \"$@\"" ;} > tenfourfox
 chmod +x tenfourfox
 
 export PKG_CONFIG_PATH=%p/lib/system-openssl/lib/pkgconfig:$PKG_CONFIG_PATH
