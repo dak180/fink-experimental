@@ -1,6 +1,6 @@
 Package: libkpathsea6
 Version: 6.0.0
-Revision: 0test2
+Revision: 0test3
 Description: Path search library for TeX
 BuildDepends: texlive-texmf | tetex-texmf, fink (>= 0.24.12), xz
 BuildDependsOnly: true
@@ -29,10 +29,7 @@ ConfigureParams: <<
  --datadir='${prefix}/share' --infodir='${prefix}/share/info' \
  --mandir='${prefix}/share/man' --disable-multiplatform \
  --disable-psutils --disable-dialog --disable-tex4htk --disable-t1utils \
- --disable-detex --disable-dvipdfmx --disable-lcdf-typetools \
- --disable-xindy --disable-xdv2pdf --disable-xetex --disable-xdvipdfmx \
- --disable-lacheck --disable-ttf2pk \
- --disable-xdvik --disable-pdfopen --disable-luatex \
+ --disable-xindy --disable-lcdf-typetools --disable-lacheck --disable-ps2eps \
  --without-x 
 <<
 CompileScript: <<
@@ -41,6 +38,7 @@ CompileScript: <<
 <<
 InstallScript: <<
  cd texlive/texk/kpathsea; make install-strip DESTDIR=%d
+ rm -Rf %i/bin %i/share/info %i/share/man %i/share/texmf
 <<
 DocFiles: texlive/texk/kpathsea/README
 SplitOff: <<
@@ -49,17 +47,6 @@ SplitOff: <<
  Files: lib/libkpathsea.*.dylib
  Shlibs: %p/lib/libkpathsea.6.dylib 7.0.0 %n (>= 6.0.0-0)
  DocFiles: texlive/texk/kpathsea/README
-<<
-SplitOff2: <<
- Package: kpathsea
- Depends: %N-shlibs (= %v-%r)
- Conflicts: libkpathsea4, texlive-base (<= 0.20080816-3)
- Replaces:  libkpathsea4, texlive-base (<= 0.20080816-3)
- Description: Programs of path search library for TeX
- Files: bin share/info share/man share/texmf
- InfoDocs: kpathsea.info
- DocFiles: texlive/texk/kpathsea/README
- ConfFiles: %p/share/texmf/web2c/texmf.cnf
 <<
 License: LGPL
 Maintainer: Todai Fink Team <fink@sodan.ecc.u-tokyo.ac.jp>

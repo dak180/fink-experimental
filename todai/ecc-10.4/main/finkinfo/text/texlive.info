@@ -2,7 +2,7 @@ Info2: <<
 Package: texlive%type_pkg[-nox]
 Type: -nox (boolean)
 Version: 0.20100722
-Revision: 0test6
+Revision: 0test7
 GCC: 4.0
 Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
@@ -149,7 +149,10 @@ CompileScript: <<
  export PATH=%p/lib/xmkmf/bin:%p/lib/freetype219/bin:$PATH 
  export IMAKEINCLUDE=-I%p/lib/X11/config
  mkdir texlive/Work
- cd texlive/Work && ../configure %c && make
+ pushd texlive/Work && ../configure %c && make
+ popd
+ # make kpathsea
+ pushd texlive/texk/kpathsea && ./configure %c && make
 <<
 InstallScript: <<
 #!/bin/bash -ev
@@ -157,28 +160,32 @@ InstallScript: <<
  export IMAKEINCLUDE=-I%p/lib/X11/config
  pushd texlive/Work && make install-strip DESTDIR=%d run_texlinks=/usr/bin/true
  popd
+ # install kpathsea
+ pushd texlive/texk/kpathsea && make install-strip DESTDIR=%d
+ rm -Rf %i/lib %i/include
+ popd
  install -m 755 jbibtex %i/bin
- mktexlsr %i/share/texmf
+ %i/bin/mktexlsr %i/share/texmf
 
 echo "Setting up symlinks ..."
  export DYLD_LIBRARY_PATH="%b/texk/kpathsea/SHARED" PATH=%i/bin:$PATH TEXMFMAIN=%p/share/texmf-dist ; texlinks --cnffile %i/share/texmf/web2c/fmtutil.cnf --verbose %i/bin
 
 echo "Creating a local texmf tree, and symlinking it into place ..."
  mkdir -p %i/etc/texmf.local
- mktexlsr %i/etc/texmf.local
+ %i/bin/mktexlsr %i/etc/texmf.local
  mkdir -p %i/share
  ln -s %p/etc/texmf.local %i/share/texmf-local
 
 echo "Creating a VARTEXMF tree, including a fonts directory ..."
  mkdir -p %i/var/lib/texmf/fonts
- mktexlsr %i/var/lib/texmf
+ %i/bin/mktexlsr %i/var/lib/texmf
 
 echo "Creating a TEXMFCONFIG tree ..."
  mkdir -p %i/etc/texmf-config
- mktexlsr %i/etc/texmf-config
+ %i/bin/mktexlsr %i/etc/texmf-config
 
 echo "Removing files that are supplied in the texlive-texmf package ..."
- mv -f  %i/share/texmf-dist/scripts/luaotfload %i/share/texmf/scripts
+#mv -f  %i/share/texmf-dist/scripts/luaotfload %i/share/texmf/scripts
  mv -f  %i/share/texmf-dist texmf-dist.conflict
 
 if [ "%type_raw[-nox]" == "." ]; then
@@ -205,8 +212,8 @@ SplitOff: <<
  Depends: <<
   t1lib5-nox-shlibs, libpng3-shlibs (>= 1:1.2.8-1), 
   libncurses5-shlibs (>= 5.4-20041023-1006), ncurses (>= 5.4-20041023-1006),
-  fink (>= 0.12.0-1), kpathsea (>= 6.0.0-0), texlive-texmf, ptexenc1-shlibs,
-  zziplib13-shlibs, teckit-shlibs, nkf,
+  fink (>= 0.12.0-1), libkpathsea6-shlibs (>= 6.0.0-0), texlive-texmf,
+  ptexenc1-shlibs, zziplib13-shlibs, teckit-shlibs, nkf,
   freetype219-shlibs (>= 2.2.1-4),
   (%type_raw[-nox] = .) applesystemfonts,
   (%type_raw[-nox] = .) appleotffonts,
@@ -231,8 +238,9 @@ SplitOff: <<
  <<
  Provides: context, dvipdfm, epstopdf, pdftex, tetex-macosx, tetex-base, tetex3-base, texlive-base, detex, xetex, ptex3-base, dvipdfmx, pdfjam, jadetex
  Files: bin etc share/info share/man share/texmf share/texmf-local var
- InfoDocs: web2c.info dvips.info dvipng.info
+ InfoDocs: web2c.info dvips.info dvipng.info kpathsea.info
  DocFiles: texlive/README
+ ConfFiles: %p/share/texmf/web2c/texmf.cnf
  PreInstScript: <<
   echo "Removing any leftover files from obsolete teTeX installations ..."
   rm -f %p/etc/texmf.local/web2c/*
