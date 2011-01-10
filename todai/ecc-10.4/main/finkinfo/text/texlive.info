@@ -2,7 +2,7 @@ Info2: <<
 Package: texlive%type_pkg[-nox]
 Type: -nox (boolean)
 Version: 0.20100722
-Revision: 0test3
+Revision: 0test4
 GCC: 4.0
 Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
@@ -35,9 +35,13 @@ Source-MD5: 2a2201b84fdbf210032e1df70bc59157
 Source2: http://tutimura.ath.cx/~nob/tex/ptexlive/ptexlive-20100711.tar.gz
 Source2-MD5: 2dbd0ab5290bf6dfb0b2b04a813df89f
 Tar2FilesRename: ptexlive-20100711:ptexlive
+Source3: http://w32tex.org/generic/dvipsk-TL2010-fix.diff
+Source3-MD5: 66dae19f4780e9b2f818493601c40f0e
+Source4: http://fink.sodan.ecc.u-tokyo.ac.jp/pkgdists/xdvik-20090903-texlive2009_2010.patch.gz
+Source4-MD5: 066d5d3e4e6bc6143d69db712db8c4d0
 NoSourceDirectory: true
 PatchFile: texlive.patch
-PatchFile-MD5: c39b30df7e88923edc8d1805fb2fc8fa
+PatchFile-MD5: d0b32e9138f600ffd73df17c54c13d44
 PatchScript: <<
  xz -dc texlive-20100720-source.tar.xz | tar xf -
  mv     texlive-20100720-source texlive
@@ -49,6 +53,9 @@ PatchScript: <<
                 -e 's|/texmf-dist/|/share/texmf-dist/|' ${file} ; done
  sed -i.bak -e 's|\(texconfdir = \)${prefix}|\1${datadir}|' \
    texlive/texk/tetex/Makefile.in
+ # taking back...
+ sed -i.bak2 's|/share/texmf/xdvi.cfg|/texmf/xdvi.cfg|' \
+  texlive/texk/xdvik/Makefile.in
 
  # Fix cm-super bug on dvipdfm.map
 #patch -d texlive -p1 < ptexlive/archive/updmap-cmsuper.patch
@@ -59,12 +66,35 @@ PatchScript: <<
  # for pTeX (Japanese font setting)
  patch -d texlive -p1 < ptexlive/archive/updmap-live2009-4b.diff
 
+ # fix dvipsk
+ patch -d texlive/texk/dvipsk -p1 < dvipsk-TL2010-fix.diff
+
+ # Install pxdvik
+ sed -i.bak -e 's|tex4htk|pxdvik|g' texlive/configure
+ sed -i.bak -e 's|tex4htk|pxdvik|g' texlive/texk/configure
+
+ xz -dc ptexlive/archive/xdvik-20090903-texlive2009.diff.xz \
+     > xdvik-20090903-texlive2009.diff
+ gzip -dc xdvik-20090903-texlive2009_2010.patch.gz | patch -p0
+ xz -c xdvik-20090903-texlive2009.diff \
+     >  ptexlive/archive/xdvik-20090903-texlive2009.diff.xz
+
+ echo "TEXLIVE_VERSION=2009" >> ptexlive.cfg
+ echo "TEXMF=./texmf"        >> ptexlive.cfg
+ echo "SRC=`pwd`/texlive"    >> ptexlive.cfg
+ head -n 290  ptexlive/common.sh > common.sh
+ cp common.sh ptexlive/
+ echo '#!/bin/bash'         >> ptex-app.sh
+ echo '. ./common.sh'       >> ptex-app.sh
+ sed -n '118,178p' ptexlive/2extract-src.sh | \
+  sed -e 's|2.3.9|2.3.11|g' >> ptex-app.sh
+ chmod +x                      ptex-app.sh
+ mv ptex-app.sh       ptexlive/ptex-app.sh
+ cd ptexlive &&              ./ptex-app.sh
+
  # add kanji cmaps
  mkdir -p                                texmf/web2c
  cp %p/share/texmf-dist/web2c/updmap.cfg texmf/web2c
- head -n 290 ptexlive/common.sh > common.sh
- echo "TEXLIVE_VERSION=2009" >> ptexlive.cfg
- echo "TEXMF=./texmf"        >> ptexlive.cfg
  echo '#!/bin/bash'                           >> ptex-cmap.sh
  echo '. ./common.sh'                         >> ptex-cmap.sh
  echo 'MAP=$TEXMF/fonts/map/dvipdfm/ptexlive' >> ptex-cmap.sh
@@ -101,6 +131,7 @@ ConfigureParams: <<
  (%type_raw[-nox] = .) --with-x
  (%type_raw[-nox] = -nox) --without-x 
  (%type_raw[-nox] = -nox) --disable-xdvik
+ (%type_raw[-nox] = -nox) --disable-pxdvik
  (%type_raw[-nox] = -nox) --disable-pdfopen
 <<
 CompileScript: <<
