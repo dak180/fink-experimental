@@ -2,7 +2,7 @@ Info2: <<
 Package: texlive%type_pkg[-nox]
 Type: -nox (boolean)
 Version: 0.20100722
-Revision: 0test4
+Revision: 0test5
 GCC: 4.0
 Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
@@ -92,6 +92,12 @@ PatchScript: <<
  mv ptex-app.sh       ptexlive/ptex-app.sh
  cd ptexlive &&              ./ptex-app.sh
 
+ # use Hiragino for pxdvi
+ perl -pi -e "s/(Ryumin-Light\t\t)ipam.ttf/\1HiraMinPro-W3.otf/"    \
+                                     texlive/texk/pxdvik/texmf/pxdvi.cfg
+ perl -pi -e "s/(GothicBBB-Medium\t)ipag.ttf/\1HiraKakuPro-W3.otf/" \
+                                     texlive/texk/pxdvik/texmf/pxdvi.cfg
+
  # add kanji cmaps
  mkdir -p                                texmf/web2c
  cp %p/share/texmf-dist/web2c/updmap.cfg texmf/web2c
@@ -103,6 +109,10 @@ PatchScript: <<
                                                ./ptex-cmap.sh
 
  echo "f  kanjix.map" >> texlive/texk/dvipdfmx/data/dvipdfmx.cfg
+
+ # wrapper for jbibtex
+ echo '#!/bin/sh'    >> jbibtex
+ echo 'pbibtex "$@"' >> jbibtex
 <<
 SetCPPFLAGS:-I%p/lib/freetype219/include/freetype2 -I%p/lib/freetype219/include -I%p/lib/fontconfig2/include
 SetLDFLAGS: -L%p/lib/freetype219/lib -L%p/lib/fontconfig2/lib
@@ -147,6 +157,7 @@ InstallScript: <<
  export IMAKEINCLUDE=-I%p/lib/X11/config
  pushd texlive/Work && make install-strip DESTDIR=%d run_texlinks=/usr/bin/true
  popd
+ install -m 755 jbibtex %i/bin
  mktexlsr %i/share/texmf
 
 echo "Setting up symlinks ..."
@@ -197,6 +208,8 @@ SplitOff: <<
   fink (>= 0.12.0-1), kpathsea (>= 6.0.0-0), texlive-texmf, ptexenc1-shlibs,
   zziplib13-shlibs, teckit-shlibs, nkf,
   freetype219-shlibs (>= 2.2.1-4),
+  (%type_raw[-nox] = .) applesystemfonts,
+  (%type_raw[-nox] = .) appleotffonts,
   (%type_raw[-nox] = -nox) ghostscript-nox, 
   (%type_raw[-nox] = .) ghostscript, 
   (%type_raw[-nox] = .) gd2-shlibs (>= 2.0.35-2), 
