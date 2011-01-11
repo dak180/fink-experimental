@@ -19,7 +19,7 @@ BuildDepends: <<
  (%type_raw[-nox] = .) xmkmf (>= 1.0.2-3),
  (%type_raw[-nox] = .) openmotif3
 <<
-BuildConflicts: libicu36-dev, ccache-default
+BuildConflicts: libicu36-dev, libicu32-dev, ccache-default
 Conflicts: <<
  system-tetex, tetex, tetex-nox, ptex (<= 3.1.10-1), ptex-nox (<= 3.1.10-1),
  texlive, texlive-nox
