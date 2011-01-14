@@ -255,7 +255,8 @@ SplitOff: <<
   rm -Rf %p/etc/texmf-var
   rm -Rf %p/var/lib/texmf
   if [ -f %p/etc/texmf-config/web2c/fmtutil.cnf ]; then
-    mv -f %p/etc/texmf-config/web2c/fmtutil.cnf{,.finksave.`date +%Y%m%d%H%M`}
+    time_date="`date +%%Y%%m%%d%%H%%M`"
+    mv -f %p/etc/texmf-config/web2c/fmtutil.cnf{,.finksave.${time_date}}
   fi
  <<
  PostInstScript: <<
