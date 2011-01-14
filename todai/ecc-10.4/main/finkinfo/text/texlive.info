@@ -58,6 +58,10 @@ PatchScript: <<
  sed -i.bak2 's|/share/texmf/xdvi.cfg|/texmf/xdvi.cfg|' \
    texlive/texk/xdvik/Makefile.in
 
+ # Force configure to believe that Carbon API is unavailable. (from MacPorts)
+ perl -pi -e 's|(kpse_cv_have_Carbon=)yes|\1no|' texlive/texk/web2c/configure
+ perl -pi -e 's|(kpse_cv_have_Carbon=)yes|\1no|' texlive/texk/xdv2pdf/configure
+
  # Fix cm-super bug on dvipdfm.map
 #patch -d texlive -p1 < ptexlive/archive/updmap-cmsuper.patch
 
@@ -120,6 +124,7 @@ SetLDFLAGS: -L%p/lib/freetype219/lib -L%p/lib/fontconfig2/lib
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 ConfigureParams: <<
+ --with-tex-banner="TeX Live 2010/Fink" \
  --disable-native-texlive-build --disable-omfonts \
  --disable-texi2html --disable-texinfo --enable-shared \
  --datadir='${prefix}/share' --infodir='${prefix}/share/info' \
