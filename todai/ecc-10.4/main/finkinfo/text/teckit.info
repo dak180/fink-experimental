@@ -1,6 +1,6 @@
 Package: teckit
 Version: 2.5.1
-Revision: 0test1
+Revision: 0test2
 Description: Text Encoding Conversion toolkit
 License: Restrictive/Distributable
 Maintainer: Todai Fink Team <fink@sodan.ecc.u-tokyo.ac.jp>
@@ -22,7 +22,7 @@ InstallScript: <<
  ln -s      %p/share/doc/%N-shlibs/license %i/share/doc/%n/
 <<
 DocFiles: AUTHORS COPYING ChangeLog INSTALL NEWS README
-Homepage: http://psitau.kitunebi.com/utf.html
+Homepage: http://scripts.sil.org/TECkitIntro
 SplitOff: <<
  Package: %N-shlibs
  Description: Shared libraries of TECkit
