@@ -1,6 +1,6 @@
 Package: utf-fontfiles
 Version: 1.9.6
-Revision: 0
+Revision: 0test1
 Depends: texlive-base (>= 0.20100722-0)
 Source: http://fink.sodan.ecc.u-tokyo.ac.jp/pkgdists/utfsrc-%v.zip
 Source-MD5: 866c8ba5f41868ae11abe95a6e4d62c1
@@ -55,8 +55,7 @@ then
 fi
 if [ -x %p/bin/updmap-sys ]
 then
-  # if updmap.cfg is not changed, updmap-sys returns 1. :-<
-  updmap-sys --nomkmap --enable KanjiMap utf-@kanjiEmbed@.map || /usr/bin/true
+  updmap-sys --nomkmap --nohash --enable KanjiMap utf-@kanjiEmbed@.map
   updmap-sys
 fi
 <<
@@ -65,8 +64,7 @@ if [ "$1" != "upgrade" ]; then
 
 if [ -x %p/bin/updmap-sys ]
 then
-  # if updmap.cfg is not changed, updmap-sys returns 1. :-<
-  updmap-sys --nomkmap --disable utf-@kanjiEmbed@.map || /usr/bin/true
+  updmap-sys --nomkmap --nohash --disable utf-@kanjiEmbed@.map
   updmap-sys
 fi
 if [ -x %p/bin/mktexlsr ]

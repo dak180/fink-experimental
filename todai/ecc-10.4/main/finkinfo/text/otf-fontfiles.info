@@ -1,6 +1,6 @@
 Package: otf-fontfiles
 Version: 1.5.6.1
-Revision: 0
+Revision: 0test1
 Depends: texlive-base (>= 0.20100722-0)
 BuildDepends: fink (>= 0.24.12)
 Recommends: okumura-clsfiles, dvipdfmx
@@ -75,9 +75,8 @@ then
 fi
 if [ -x %p/bin/updmap-sys ]
 then
-  # if updmap.cfg is not changed, updmap-sys returns 1. :-<
-  updmap-sys --nomkmap --enable KanjiMap otf-@kanjiEmbed@.map || /usr/bin/true
-  updmap-sys --nomkmap --enable KanjiMap otf-cktx.map         || /usr/bin/true 
+  updmap-sys --nomkmap --nohash --enable KanjiMap otf-@kanjiEmbed@.map
+  updmap-sys --nomkmap --nohash --enable KanjiMap otf-cktx.map
   updmap-sys
 fi
 <<
@@ -89,9 +88,8 @@ if [ "$1" != "upgrade" ]; then
 
 if [ -x %p/bin/updmap-sys ]
 then
-  # if updmap.cfg is not changed, updmap-sys returns 1. :-<
-  updmap-sys --nomkmap --disable otf-@kanjiEmbed@.map || /usr/bin/true
-  updmap-sys --nomkmap --disable otf-cktx.map         || /usr/bin/true 
+  updmap-sys --nomkmap --nohash --disable otf-@kanjiEmbed@.map
+  updmap-sys --nomkmap --nohash --disable otf-cktx.map
   updmap-sys
 fi
 if [ -x %p/bin/mktexlsr ]
