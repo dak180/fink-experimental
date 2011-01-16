@@ -21,10 +21,11 @@ PatchScript: <<
 #perl -pi -e 's,need_relink=yes,need_relink=no,g' texlive/texk/ltmain.sh
 <<
 ConfigureParams: <<
+ --with-banner-add="/Fink" \
  --disable-native-texlive-build --disable-omfonts \
  --disable-texi2html --disable-texinfo --enable-shared \
  --datadir='${prefix}/share' --infodir='${prefix}/share/info' \
- --mandir='${prefix}/share/man' --disable-multiplatform \
+ --mandir='${prefix}/share/man' --disable-multiplatform --with-system-ncurses \
  --disable-psutils --disable-dialog --disable-tex4htk --disable-t1utils \
  --disable-detex --disable-dvipdfmx --disable-lcdf-typetools \
  --disable-xindy --disable-xdv2pdf --disable-xetex --disable-xdvipdfmx \

@@ -36,10 +36,6 @@ PatchScript: <<
  gzip -dc \
   eptex-110102-texlive2010-mk.diff.gz | patch -d texlive-20100720-source -p1
 <<
-SetCPPFLAGS:-I%p/lib/freetype219/include/freetype2 -I%p/lib/freetype219/include -I%p/lib/fontconfig2/include
-SetLDFLAGS: -L%p/lib/freetype219/lib -L%p/lib/fontconfig2/lib
-NoSetMAKEFLAGS: true
-SetMAKEFLAGS: -j1
 ConfigureParams: <<
  --with-banner-add="/Fink" \
  --disable-native-texlive-build --disable-omfonts \
@@ -56,7 +52,7 @@ ConfigureParams: <<
  --disable-xindy --disable-lcdf-typetools --disable-lacheck --disable-ps2eps \
  --with-system-freetype2 --with-freetype2-libdir=%p/lib/freetype219/lib \
  --with-freetype2-include=%p/lib/freetype219/include \
- --without-x
+ --without-x 
 <<
 CompileScript: <<
 #!/bin/bash -ev

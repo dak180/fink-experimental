@@ -24,10 +24,11 @@ PatchScript: <<
 <<
 NoSetLDFLAGS: true
 ConfigureParams: <<
+ --with-banner-add="/Fink" \
  --disable-native-texlive-build --disable-omfonts \
  --disable-texi2html --disable-texinfo --enable-shared \
  --datadir='${prefix}/share' --infodir='${prefix}/share/info' \
- --mandir='${prefix}/share/man' --disable-multiplatform \
+ --mandir='${prefix}/share/man' --disable-multiplatform --with-system-ncurses \
  --disable-psutils --disable-dialog --disable-tex4htk --disable-t1utils \
  --disable-xindy --disable-lcdf-typetools --disable-lacheck --disable-ps2eps \
  --without-x 
