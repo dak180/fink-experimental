@@ -243,7 +243,8 @@ SplitOff: <<
  <<
  Replaces: <<
   texlive-base (>= 0), texlive-nox-base,
-  tetex-base (>= 0), tetex-nox-base, ptex-base (<= 3.1.11-1), ptex-nox-base (<= 3.1.11-1),
+  tetex-base (>= 0), tetex-nox-base,
+  ptex-base (<= 3.1.11-1), ptex-nox-base (<= 3.1.11-1), ptex-texmf (<= 2.5-1),
   context, dvipdfm, epstopdf, pdftex, tetex-macosx, tetex (<= 2.0-3),
   (%type_raw[-nox] = .) xdvi (<=  22.70-1), 
   detex, xetex, dvipdfmx, pdfjam, jadetex
