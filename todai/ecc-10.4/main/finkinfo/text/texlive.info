@@ -2,12 +2,12 @@ Info2: <<
 Package: texlive%type_pkg[-nox]
 Type: -nox (boolean)
 Version: 0.20100722
-Revision: 0test12
+Revision: 0test13
 GCC: 4.0
 Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
 BuildDepends: <<
- libkpathsea6 (>= 6.0.0-0), t1lib5-nox, libpng14, libncurses5 (>= 5.4-20041023-1006), fink (>= 0.24.12),
+ libkpathsea6, t1lib5-nox, libpng14, libncurses5 (>= 5.4-20041023-1006), fink (>= 0.24.12),
  libjpeg8, libiconv-dev, ptexenc1, zziplib13-dev, teckit-dev, libpaper1-dev,
  xz, freetype219 (>= 2.2.1-4),
  (%type_raw[-nox] = .)  gd2 (>= 2.0.35-2), 
@@ -42,7 +42,7 @@ Source4: http://fink.sodan.ecc.u-tokyo.ac.jp/pkgdists/xdvik-20090903-texlive2009
 Source4-MD5: 066d5d3e4e6bc6143d69db712db8c4d0
 NoSourceDirectory: true
 PatchFile: texlive.patch
-PatchFile-MD5: d0b32e9138f600ffd73df17c54c13d44
+PatchFile-MD5: f15be6c5b92b825e6946360b4e873ae6
 PatchScript: <<
 #!/bin/bash -ev
  xz -dc texlive-20100720-source.tar.xz | tar xf -
@@ -223,7 +223,7 @@ SplitOff: <<
  Depends: <<
   t1lib5-nox-shlibs, libpng14-shlibs,
   libncurses5-shlibs (>= 5.4-20041023-1006), ncurses (>= 5.4-20041023-1006),
-  fink (>= 0.12.0-1), libkpathsea6-shlibs (>= 6.0.0-0), texlive-texmf (>= %v),
+  fink (>= 0.12.0-1), libkpathsea6-shlibs, texlive-texmf,
   ptexenc1-shlibs, zziplib13-shlibs, teckit-shlibs, nkf, libpaper1-shlibs,
   freetype219-shlibs (>= 2.2.1-4),
   (%type_raw[-nox] = .) applesystemfonts,
