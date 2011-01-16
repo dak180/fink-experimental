@@ -1,6 +1,6 @@
 Package: ptexenc1
-Version: 1.1.0
-Revision: 0test1
+Version: 1.1.1
+Revision: 0
 Description: Kanji code convert library for pTeX
 BuildDepends: texlive-texmf, fink (>= 0.24.12), libiconv-dev, libkpathsea6 (>= 6.0.0-0), xz
 BuildDependsOnly: true
@@ -51,7 +51,7 @@ SplitOff: <<
  Description: Shared libraries of Kanji code convert library for pTeX
  Depends: libkpathsea6-shlibs (>= 6.0.0-0), libiconv
  Files: lib/libptexenc.*.dylib
- Shlibs: %p/lib/libptexenc.1.dylib 3.0.0 %n (>= 1.1.0-0)
+ Shlibs: %p/lib/libptexenc.1.dylib 3.0.0 %n (>= 1.1.0-1)
  DocFiles: texlive/texk/ptexenc/{COPYRIGHT,ChangeLog,README}
 <<
 License: BSD
