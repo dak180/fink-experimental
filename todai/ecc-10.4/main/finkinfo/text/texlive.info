@@ -2,7 +2,7 @@ Info2: <<
 Package: texlive%type_pkg[-nox]
 Type: -nox (boolean)
 Version: 0.20100722
-Revision: 0test14
+Revision: 0test15
 GCC: 4.0
 Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
@@ -279,7 +279,23 @@ if [ -e %p/bin/xdvik ] ; then
   update-alternatives --install %p/bin/xdvi xdvi %p/bin/xdvik 30 --slave %p/share/man/man1/xdvi.1 xdvi.1 %p/share/man/man1/xdvik.1
 fi
   mktexlsr %p/share/texmf{,-dist} %p/etc/texmf-config %p/etc/texmf.local 
-  updmap-sys --nohash --nomkmap --syncwithtrees
+
+  # update from texlive-texmf-0.20080822-1.
+  updmap-sys --nomkmap --enable MixedMap cm-super-t1.map       || true
+  updmap-sys --nomkmap --enable MixedMap cm-super-t2a.map      || true
+  updmap-sys --nomkmap --enable MixedMap cm-super-t2b.map      || true
+  updmap-sys --nomkmap --enable MixedMap cm-super-t2c.map      || true
+  updmap-sys --nomkmap --enable MixedMap cm-super-ts1.map      || true
+  updmap-sys --nomkmap --enable MixedMap cm-super-x2.map       || true
+if [ -f %p/etc/texmf-config/web2c/updmap.cfg ]; then
+ if [ ! "`grep 'kanjiEmbed ' %p/etc/texmf-config/web2c/updmap.cfg`" ]; then
+  updmap-sys --nomkmap --setoption kanjiEmbed noEmbed          || true
+ fi
+fi
+  updmap-sys --nomkmap --enable KanjiMap ptex-@kanjiEmbed@.map || true
+  updmap-sys --nomkmap --enable KanjiMap morisawa.map          || true
+  updmap-sys --nomkmap --nohash --syncwithtrees
+  
   PATH=%p/bin:${PATH} texconfig-sys init
 
   echo "Adjusting permissions ..."
