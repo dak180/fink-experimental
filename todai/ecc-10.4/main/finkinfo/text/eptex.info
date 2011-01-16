@@ -1,9 +1,9 @@
 Package: eptex
 Version: 0.110102
-Revision: 0test1
+Revision: 0test2
 Description: Extension of e-TeX with pTeX features
 BuildDepends: libkpathsea6, ptexenc1, xz
-Depends: texlive-base, libkpathsea6-shlibs, ptexenc1-shlibs
+Depends: texlive-base (>= 0.20100722-0), libkpathsea6-shlibs, ptexenc1-shlibs
 CustomMirror: <<
 Tokyo:    http://iij.dl.sourceforge.jp/
 Keihanna: http://keihanna.dl.sourceforge.jp/
