@@ -104,6 +104,29 @@ diff -Naur texlive-20080816-source.orig/texk/kpathsea/texmf.cnf texlive-20080816
  
  % On some systems, there will be a system tree which contains all the font
  % files that may be created as well as the formats.  For example
+@@ -233,13 +233,21 @@
+ TEXINPUTS.lamed         = .;$TEXMF/tex/{lamed,lambda,latex,generic,}//
+ TEXINPUTS.omega         = .;$TEXMF/tex/{plain,generic,}//
+ 
+-% pTeX
++% pTeX family
+ TEXINPUTS.ptex          = .;$TEXMF/tex/{ptex,ptexgeneric,plain,generic,}//
+ TEXINPUTS.platex        = .;$TEXMF/tex/{platex,ptexgeneric,latex,generic,}//
++TEXINPUTS.eptex          = .;$TEXMF/tex/{ptex,ptexgeneric,plain,generic,}//
++TEXINPUTS.eplatex        = .;$TEXMF/tex/{platex,ptexgeneric,latex,generic,}//
++TEXINPUTS.uptex          = .;$TEXMF/tex/{ptex,ptexgeneric,plain,generic,}//
++TEXINPUTS.uplatex        = .;$TEXMF/tex/{platex,ptexgeneric,latex,generic,}//
++TEXINPUTS.euptex          = .;$TEXMF/tex/{ptex,ptexgeneric,plain,generic,}//
++TEXINPUTS.euplatex        = .;$TEXMF/tex/{platex,ptexgeneric,latex,generic,}//
+ 
+ % pBibTeX bibliographies and style files
+ BIBINPUTS.pbibtex       = .;$TEXMF/{pbibtex,bibtex}/bib//
+ BSTINPUTS.pbibtex       = .;$TEXMF/{pbibtex,bibtex}/bst//
++BIBINPUTS.upbibtex       = .;$TEXMF/{pbibtex,bibtex}/bib//
++BSTINPUTS.upbibtex       = .;$TEXMF/{pbibtex,bibtex}/bst//
+ 
+ % ConTeXt.
+ TEXINPUTS.context       = .;$TEXMF/tex/{context,plain,generic,}//
 @@ -390,8 +390,8 @@
  % For xdvi to find mime.types and .mailcap, if they do not exist in
  % ~.  These are single directories, not paths.
@@ -131,3 +154,19 @@ diff -Naur texlive-20080816-source.orig/texk/kpathsea/texmf.cnf texlive-20080816
 +
 +% for ptex filter
 +PTEX_IN_FILTER = @PREFIX@/bin/nkf -w
+diff -Naur texlive-20100720-source.orig/texk/tetex/fmtutil.cnf texlive-20100720-source/texk/tetex/fmtutil.cnf
+--- texlive-20100720-source.orig/texk/tetex/fmtutil.cnf	2011-01-15 20:50:23.000000000 +0900
++++ texlive-20100720-source/texk/tetex/fmtutil.cnf	2011-01-16 10:52:00.000000000 +0900
+@@ -110,6 +110,12 @@
+ # from ptex:
+ ptex ptex - ptex.ini
+ platex ptex language.ptx platex.ini
++#! eptex eptex - -etex eptex.src
++#! eplatex eptex language.ptx -etex platex.ini
++#! uptex uptex - uptex.ini
++#! uplatex uptex language.ptx uplatex.ini
++#! euptex euptex - -etex euptex.src
++#! euplatex euptex language.ptx -etex uplatex.ini
+ #
+ # from t2:
+ #! cyramstex pdftex language.dat -translate-file=cp227.tcx *cyramstx.ini
