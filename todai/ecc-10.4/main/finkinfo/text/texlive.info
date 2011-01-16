@@ -281,19 +281,19 @@ fi
   mktexlsr %p/share/texmf{,-dist} %p/etc/texmf-config %p/etc/texmf.local 
 
   # update from texlive-texmf-0.20080822-1.
-  updmap-sys --nomkmap --enable MixedMap cm-super-t1.map       || true
-  updmap-sys --nomkmap --enable MixedMap cm-super-t2a.map      || true
-  updmap-sys --nomkmap --enable MixedMap cm-super-t2b.map      || true
-  updmap-sys --nomkmap --enable MixedMap cm-super-t2c.map      || true
-  updmap-sys --nomkmap --enable MixedMap cm-super-ts1.map      || true
-  updmap-sys --nomkmap --enable MixedMap cm-super-x2.map       || true
+  updmap-sys --nomkmap --nohash --enable MixedMap cm-super-t1.map
+  updmap-sys --nomkmap --nohash --enable MixedMap cm-super-t2a.map
+  updmap-sys --nomkmap --nohash --enable MixedMap cm-super-t2b.map
+  updmap-sys --nomkmap --nohash --enable MixedMap cm-super-t2c.map
+  updmap-sys --nomkmap --nohash --enable MixedMap cm-super-ts1.map
+  updmap-sys --nomkmap --nohash --enable MixedMap cm-super-x2.map
 if [ -f %p/etc/texmf-config/web2c/updmap.cfg ]; then
  if [ ! "`grep 'kanjiEmbed ' %p/etc/texmf-config/web2c/updmap.cfg`" ]; then
-  updmap-sys --nomkmap --setoption kanjiEmbed noEmbed          || true
+  updmap-sys --nomkmap --nohash --setoption kanjiEmbed noEmbed
  fi
 fi
-  updmap-sys --nomkmap --enable KanjiMap ptex-@kanjiEmbed@.map || true
-  updmap-sys --nomkmap --enable KanjiMap morisawa.map          || true
+  updmap-sys --nomkmap --nohash --enable KanjiMap ptex-@kanjiEmbed@.map
+  updmap-sys --nomkmap --nohash --enable KanjiMap morisawa.map
   updmap-sys --nomkmap --nohash --syncwithtrees
   
   PATH=%p/bin:${PATH} texconfig-sys init
