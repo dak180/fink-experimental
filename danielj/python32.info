@@ -1,7 +1,7 @@
 Info2: <<
 Package: python%type_pkg[python]
 Version: 3.2
-Revision: 0.rc1.2
+Revision: 0.rc1.3
 Type: python 3.2
 Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 Depends: <<
@@ -40,7 +40,7 @@ Source-MD5: 057cb4b2ba64e166cb0a3342bec9125e
 #Source2: http://www.python.org/ftp/python/doc/%v/python-%v-docs-html.tar.bz2
 #Source2-MD5: c9ccf8e9fc4d046c168af313706f159b
 PatchFile: %n.patch
-PatchFile-MD5: aa3d624dd8c68d838476b8c34b672926
+PatchFile-MD5: c828e34e46b9f301b1c63dfd31abafc5
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 
 UseMaxBuildJobs: true
@@ -56,7 +56,19 @@ CompileScript: <<
 	%{default_script}
 <<
 
-InfoTest: TestScript: make test EXTRATESTOPTS='-w -x test_distutils'
+InfoTest: <<
+	TestScript: <<
+		#!/bin/bash -ev
+		if [ `uname -m` = 'x86_64' ]; then
+			# Test assumes that little endian machines always return a
+			# 'i386' machine type but on a 64 bit kernel they always return
+			# 'x86_64' instead.
+			perl -pi -e 's/i386/x86_64/' Lib/test/test_platform.py
+		fi
+		
+		make test EXTRATESTOPTS='-w -x test_distutils'
+	<<
+<<
 
 InstallScript: <<
 #!/bin/sh -ex
