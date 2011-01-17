@@ -1,7 +1,7 @@
 Info2: <<
 Package: python%type_pkg[python]
 Version: 3.2
-Revision: 0.b2.1
+Revision: 0.rc1.1
 Type: python 3.2
 Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 Depends: <<
@@ -32,10 +32,10 @@ BuildDepends: <<
 	tcltk-dev (>= 8.4.1-1),
 	x11-dev
 <<
-Provides: argparse-py%type_pkg[python]
+Provides: argparse-py%type_pkg[python], futures-py%type_pkg[python]
 #Source: http://python.org/ftp/python/%v/Python-%v.tar.bz2
-Source: http://python.org/ftp/python/%v/Python-%{v}b2.tar.bz2
-Source-MD5: 45ab5ff5edfb73ec277b1c763f3d5a42
+Source: http://python.org/ftp/python/%v/Python-%{v}rc1.tar.bz2
+Source-MD5: 057cb4b2ba64e166cb0a3342bec9125e
 # No html docs yet.
 #Source2: http://www.python.org/ftp/python/doc/%v/python-%v-docs-html.tar.bz2
 #Source2-MD5: c9ccf8e9fc4d046c168af313706f159b
@@ -43,6 +43,7 @@ PatchFile: %n.patch
 PatchFile-MD5: 17559b853154f1bacd9a6d2e509ad22f
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 
+UseMaxBuildJobs: true
 SetLDFLAGS: -L%p/lib/system-openssl/lib
 ConfigureParams: --enable-shared --with-dbmliborder=gdbm --enable-loadable-sqlite-extensions
 CompileScript: <<
