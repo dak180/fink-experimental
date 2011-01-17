@@ -1,7 +1,7 @@
 Info2: <<
 Package: python%type_pkg[python]
 Version: 3.2
-Revision: 0.rc1.1
+Revision: 0.rc1.2
 Type: python 3.2
 Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 Depends: <<
@@ -40,7 +40,7 @@ Source-MD5: 057cb4b2ba64e166cb0a3342bec9125e
 #Source2: http://www.python.org/ftp/python/doc/%v/python-%v-docs-html.tar.bz2
 #Source2-MD5: c9ccf8e9fc4d046c168af313706f159b
 PatchFile: %n.patch
-PatchFile-MD5: 17559b853154f1bacd9a6d2e509ad22f
+PatchFile-MD5: aa3d624dd8c68d838476b8c34b672926
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 
 UseMaxBuildJobs: true
