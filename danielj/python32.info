@@ -72,6 +72,8 @@ InfoTest: <<
 
 InstallScript: <<
 #!/bin/sh -ex
+	# This directory doesn't get created for some reason.
+	mkdir -p %i/lib/pkgconfig
 	make install DESTDIR=%d
 
 	# don't propagate our hackery
@@ -93,8 +95,6 @@ InstallScript: <<
 	# install some docs and other useful tidbits
 	rm -rf Misc/RPM
 	/bin/cp -R Misc Tools %i/lib/python%type_raw[python]
-	mkdir -p %i/share/doc/%n
-	/bin/cp -R Demo Doc %i/share/doc/%n
 #	No html docs yet.
 #	mkdir -p %i/share/doc/%n/html
 #	/bin/cp -R ../python-%v-docs-html/ %i/share/doc/%n/html
