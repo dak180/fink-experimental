@@ -1,6 +1,6 @@
 Package: pingus
 Version: 0.7.3
-Revision: 1
+Revision: 2
 Description: Lemmings-like game with penguins
 GCC: 4.0
 Source-MD5: 7d1a0b0d658cc46dd09d6274f39acc7d
@@ -9,7 +9,7 @@ BuildDepends: <<
   fink (>= 0.24.12),
   boost1.41.cmake,
   libiconv-dev,
-  libpng3,
+  libpng14,
   scons,
   sdl,
   sdl-image,
@@ -22,7 +22,7 @@ BuildDepends: <<
 Depends: <<
   boost1.41.cmake-shlibs,
   libiconv,
-  libpng3-shlibs,
+  libpng14-shlibs,
   sdl-shlibs,
   sdl-image-shlibs,
   sdl-mixer-shlibs
