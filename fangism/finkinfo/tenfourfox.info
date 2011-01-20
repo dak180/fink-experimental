@@ -1,7 +1,7 @@
 Info3: <<
 Package: tenfourfox
 Version: 4.0
-Revision: 0.b8.1
+Revision: 0.b9.1
 Distribution: 10.4, 10.5
 Architecture: powerpc
 Description: Port of Firefox 4 to 10.4 and PowerPC
@@ -15,11 +15,11 @@ Depends: <<
 	libgettext8-shlibs
 <<
 BuildConflicts: <<
-	autoconf,
-	autoconf2.6,
 	automake1.11,
 	automake1.10,
 	automake1.9,
+	autoconf,
+	autoconf2.6,
 	freetype,
 	freetype-hinting,
 	freetype2-dev,
@@ -46,20 +46,39 @@ BuildDepends: <<
 	system-openssl-dev,
 	system-sdk-10.4
 <<
-Source: http://releases.mozilla.org/pub/mozilla.org/firefox/releases/%vb8/source/firefox-%vb8.source.tar.bz2
+Source: http://releases.mozilla.org/pub/mozilla.org/firefox/releases/%vb9/source/firefox-%vb9.source.tar.bz2
 SourceDirectory: mozilla-central
-Source-MD5: 665ffbf8571e713d5da8f98e3d971e9d
-Source2: http://tenfourfox.googlecode.com/files/TenFourFox-changesets-20101215.zip
-Source2-MD5: 862b09c04f7e7e56c251a058d72f60d5
+Source-MD5: be58ef0be58cfa3d1efda63bec41fc25
+Source2: http://tenfourfox.googlecode.com/files/TenFourFox-changesets-20110112.zip
+Source2-MD5: 2b8b804d0e1f89636366d06cc56e28a8
+Source3: http://www.floodgap.com/software/tenfourfox/sluggo.jpg
+Source3-MD5: 28afcd09e0bd90e4d33b49ef197982a6
 PatchFile: %n.patch
-PatchFile-MD5: 54a6d68b8289a0224d76d9e8f42335d7
+PatchFile-MD5: c4cb0f03f70def07a50c9b989d83f739
 PatchScript: <<
   #!/bin/sh -ev
+  # patch the patchset from TenFourFox (should not have to do this!)
+  pushd ../exports
+  sed -i.orig -e '/676,18/,/magnetic/d' \
+	-e '/2310,17/,/setDrawsContentsIntoWindowFrame/d' 60325
+  rm -f *.orig
+  popd
   # apply patchset from TenFourFox:
   for f in ../exports/*
-  do patch -p1 < $f
+  do
+    echo "Patching in changeset $f ..."
+    patch -p1 < $f || { echo "... patch $f failed." ; patch_err=1 ;}
   done
+  test -z "$patch_err" || { echo "Patch error above.  Aborting." ; exit 1;}
+  # manually extract a jpg from patch (binary) (won't work: git is base-85)
+# { echo "begin 644 toolkit/content/sluggo.jpg" ; \
+#	sed -n -e '/^diff.*sluggo\.jpg/,/^$/p' ../exports/60336 | \
+#		sed -e '1,5d' -e '$d' ; \
+#		echo "\`" ; echo "end" ;} | uudecode
+#  test -r toolkit/content/sluggo.jpg
+  cp ../sluggo.jpg toolkit/content/sluggo.jpg
   ### apply the patch
+  echo "Applying patch %{PatchFile} ..."
   /usr/bin/sed -e 's|@FINKPREFIX@|%p|g' -e 's|@FINK_ARCH_TARGET@|%m|g' <%{PatchFile} | /usr/bin/patch -p1
   # leave @executable_path alone and take care of adjusting install_names
   # between build and install, below.
@@ -140,7 +159,7 @@ Shlibs: <<
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libssl3.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libxpcom.dylib
 <<
-Homepage: http://www.floodgap.com:80/software/tenfourfox/
+Homepage: http://www.tenfourfox.com/
 DescDetail: <<
 "Mozilla left you.  Apple left you.  But we didn't."
 TenFourFox is a port of Firefox 4 for PowerPC Macs.
@@ -179,7 +198,8 @@ I've added it to BuildConflicts to be safe.
 <<
 DescPort: <<
 Needs autoconf2.13 to regenerate configure after patch from tenfourfox.
-BuildConflicts with automake1.11 to temporarily remove to allow autoconf2.13.
+BuildConflicts with automake1.* to temporarily remove to allow autoconf2.13.
+(This wouldn't be an issue if build-conflicts removed recursively.)
 
 Bunch of patches to rules.mk and client.mk are for enabling
 parallel builds to share the same jobserver as the master/parent
