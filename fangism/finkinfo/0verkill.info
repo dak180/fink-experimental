@@ -5,6 +5,15 @@ Source: http://artax.karlin.mff.cuni.cz/~brain/%n/release/%n-%v.tgz
 Source-MD5: 814097fc21a82723a40ec8ae5dd792a7
 Depends: x11-shlibs
 BuildDepends: x11-dev
+PatchScript: <<
+  #!/bin/sh -ev
+  sed -i.orig -e '/DATA_PATH/s|data|%p/share/%n/&|' cfg.h
+  # fix permissions
+  chmod +rx data
+  chmod -R +r data
+  chmod +rx grx
+  chmod -R +r grx
+<<
 ConfigureParams: --with-x
 CompileScript: ./configure %c && make
 InstallScript: <<
@@ -16,6 +25,10 @@ InstallScript: <<
   for b in avi bot editor server test_server x0verkill xavi xeditor
   do cp $b %i/bin/0verkill-$b
   done
+  # copy over data files
+  mkdir -p %i/share/%n
+  cp -R data %i/share/%n
+  cp -R grx %i/share/%n
 <<
 DocFiles: doc/*
 Homepage: http://artax.karlin.mff.cuni.cz/~brain/0verkill/
