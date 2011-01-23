@@ -106,7 +106,7 @@ ConfigureParams: <<
  --x-includes=/usr/X11R6/include --x-libraries=/usr/X11R6/lib \
  --disable-cairo --disable-gtk --with-jpeg2k --disable-compile-inits \
  --enable-fontconfig --with-drivers=ALL --without-ijs --with-jbig2dec \
- --with-libpaper --with-jasper \
+ --with-libpaper --with-jasper --with-system-libtiff \
  --with-fontpath="`xfontpath basedir`":"`cups-config --datadir`/fonts:/usr/X11R6/lib/X11/fonts:/usr/X11/lib/X11/fonts"
 <<
 CompileScript: <<
