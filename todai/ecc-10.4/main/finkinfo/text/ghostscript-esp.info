@@ -125,13 +125,10 @@ InstallScript: <<
  install -m 755 -d                 %i/share/doc
  ln -s %p/share/ghostscript/%v/doc %i/share/doc/html
 
- for font in HiraKakuPro-W{3,6} HiraMaruPro-W4 HiraMinPro-W{3,6}
+ for font in HiraKakuPro{,N}-W{3,6} HiraMaruPro{,N}-W4 HiraMinPro{,N}-W{3,6} HiraKakuStd{,N}-W8
  do
-  ln -s $OTFPATH/${font}.otf          $CIDPATH/${font}
-  ln -s $OTFPATH/${font/Pro/ProN}.otf $CIDPATH/${font/Pro/ProN}
+   ln -s $OTFPATH/${font}.otf $CIDPATH/${font}
  done
-  ln -s $OTFPATH/HiraKakuStd-W8.otf   $CIDPATH/HiraKakuStd-W8
-  ln -s $OTFPATH/HiraKakuStdN-W8.otf  $CIDPATH/HiraKakuStdN-W8
 
  install -m 755 -d             %i/share/ghostscript/%v/examples/cjk
  install -m 644 examples/cjk/* %i/share/ghostscript/%v/examples/cjk
