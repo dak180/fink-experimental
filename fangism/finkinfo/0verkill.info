@@ -14,15 +14,25 @@ PatchScript: <<
   chmod +rx grx
   chmod -R +r grx
 <<
-ConfigureParams: --with-x
+ConfigureParams: --with-x CFLAGS="-g -O2"
 CompileScript: ./configure %c && make
 InstallScript: <<
   #!/bin/sh -ev
   # make install DESTDIR=%d
   mkdir -p %i/bin
-  cp {x,}0verkill %i/bin
+  cp 0verkill %i/bin/0verkill-bin
+  cp x0verkill %i/bin/x0verkill-bin
+  cp server %i/bin/0verkill-server-bin
+  cp bot %i/bin/0verkill-bot-bin
+  # executables need help finding data files, so we cd ...
+  for p in 0verkill x0verkill 0verkill-server 0verkill-bot
+  do
+    { echo "#!/bin/sh" ; \
+	echo "cd %p/share/0verkill && exec %p/bin/$p-bin \"$@\"" ;} > %i/bin/$p
+    chmod +x %i/bin/$p
+  done
   # rename helper executables
-  for b in avi bot editor server test_server x0verkill xavi xeditor
+  for b in avi bot editor test_server xavi xeditor
   do cp $b %i/bin/0verkill-$b
   done
   # copy over data files
@@ -62,8 +72,12 @@ Utility binaries have been renamed to start with '0verkill'.
 DescUsage: <<
 [from INSTALL and README.html]
 0verkill-server [-p port] to start server
-0verkill [-s XxY] to join game
+0verkill [-s XxY] to join game from terminal
 x0verkill [-d DISPLAY] [-f font] for X11 client
+  where DISPLAY can be (e.g.) :0
+0verkill-bot to start an enemy bot in the server
 
 In-game: 'H' for help.
+To play on a local machine, connect to the server in-game by hitting
+'s' and then typing in 'localhost'.
 <<
