@@ -1,7 +1,7 @@
 Info3: <<
 Package: tenfourfox
 Version: 4.0
-Revision: 0.b9.1
+Revision: 0.b11.1
 Distribution: 10.4, 10.5
 Architecture: powerpc
 Description: Port of Firefox 4 to 10.4 and PowerPC
@@ -26,6 +26,7 @@ BuildConflicts: <<
 	freetype219,
 	nspr
 <<
+# bdep:git is temporary until patch supports git binary diffs (base-85)
 BuildDepends: <<
 	autoconf2.13,
 	bzip2-dev,
@@ -37,6 +38,7 @@ BuildDepends: <<
 #	freetype219 (>= 2.3.7-7),
 #	gcc4.2 (>= 4.2.1-5574),
 	glib2-dev (>= 2.14.0-1),
+	git,
 	libgettext8-dev,
 	libidl2 (>= 0.8.9-1),
 	libjpeg8,
@@ -46,37 +48,26 @@ BuildDepends: <<
 	system-openssl-dev,
 	system-sdk-10.4
 <<
-Source: http://releases.mozilla.org/pub/mozilla.org/firefox/releases/%vb9/source/firefox-%vb9.source.tar.bz2
+Source: http://releases.mozilla.org/pub/mozilla.org/firefox/releases/%vb11/source/firefox-%vb11.source.tar.bz2
 SourceDirectory: mozilla-central
-Source-MD5: be58ef0be58cfa3d1efda63bec41fc25
-Source2: http://tenfourfox.googlecode.com/files/TenFourFox-changesets-20110112.zip
-Source2-MD5: 2b8b804d0e1f89636366d06cc56e28a8
-Source3: http://www.floodgap.com/software/tenfourfox/sluggo.jpg
-Source3-MD5: 28afcd09e0bd90e4d33b49ef197982a6
+Source-MD5: a52b8f4bb98f158ef0639db59dd39bce
+Source2: http://tenfourfox.googlecode.com/files/TenFourFox-changesets-20110202.zip
+Source2-MD5: c3b0c5dd6263cd275c2cc71176e42e12
+# Source3: http://www.floodgap.com/software/tenfourfox/sluggo.jpg
+# Source3-MD5: 28afcd09e0bd90e4d33b49ef197982a6
 PatchFile: %n.patch
-PatchFile-MD5: c4cb0f03f70def07a50c9b989d83f739
+PatchFile-MD5: 54a6d68b8289a0224d76d9e8f42335d7
 PatchScript: <<
   #!/bin/sh -ev
-  # patch the patchset from TenFourFox (should not have to do this!)
-  pushd ../exports
-  sed -i.orig -e '/676,18/,/magnetic/d' \
-	-e '/2310,17/,/setDrawsContentsIntoWindowFrame/d' 60325
-  rm -f *.orig
-  popd
   # apply patchset from TenFourFox:
   for f in ../exports/*
   do
     echo "Patching in changeset $f ..."
-    patch -p1 < $f || { echo "... patch $f failed." ; patch_err=1 ;}
+#    patch -p1 < $f || { echo "... patch $f failed." ; patch_err=1 ;}
+#    hg import --no-commit -p1 $f || { echo "... patch $f failed." ; patch_err=1 ;}
+    git apply -p1 $f || { echo "... patch $f failed." ; patch_err=1 ;}
   done
   test -z "$patch_err" || { echo "Patch error above.  Aborting." ; exit 1;}
-  # manually extract a jpg from patch (binary) (won't work: git is base-85)
-# { echo "begin 644 toolkit/content/sluggo.jpg" ; \
-#	sed -n -e '/^diff.*sluggo\.jpg/,/^$/p' ../exports/60336 | \
-#		sed -e '1,5d' -e '$d' ; \
-#		echo "\`" ; echo "end" ;} | uudecode
-#  test -r toolkit/content/sluggo.jpg
-  cp ../sluggo.jpg toolkit/content/sluggo.jpg
   ### apply the patch
   echo "Applying patch %{PatchFile} ..."
   /usr/bin/sed -e 's|@FINKPREFIX@|%p|g' -e 's|@FINK_ARCH_TARGET@|%m|g' <%{PatchFile} | /usr/bin/patch -p1

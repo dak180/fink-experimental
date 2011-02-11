@@ -386,36 +386,3 @@ diff -ruN mozilla-central-orig/config/rules.mk mozilla-central/config/rules.mk
  	for mkfile in $(MOZ_POSTFLIGHT_ALL); do \
  	  $(MAKE) -f $(TOPSRCDIR)/$$mkfile postflight_all TOPSRCDIR=$(TOPSRCDIR) MOZ_OBJDIR=$(MOZ_OBJDIR) MOZ_BUILD_PROJECTS="$(MOZ_BUILD_PROJECTS)"; \
  	done
---- mozilla-central-orig/configure.in	2011-01-15 23:59:01.000000000 -0800
-+++ mozilla-central/configure.in	2011-01-15 23:59:19.000000000 -0800
-@@ -679,12 +679,12 @@
-             AC_MSG_ERROR([This version ($CC_VERSION) of the MSVC compiler is unsupported. See https://developer.mozilla.org/en/Windows_Build_Prerequisites.])
-         fi
- 
-         _MOZ_RTTI_FLAGS_ON='-GR'
-         _MOZ_RTTI_FLAGS_OFF='-GR-'
--        _MOZ_EXCEPTIONS_FLAGS_ON='-EHsc'
--        _MOZ_EXCEPTIONS_FLAGS_OFF=''
-+        #_MOZ_EXCEPTIONS_FLAGS_ON='-EHsc'
-+        #_MOZ_EXCEPTIONS_FLAGS_OFF=''
- 
-         if test -n "$WIN32_REDIST_DIR"; then
-             WIN32_REDIST_DIR=`cd "$WIN32_REDIST_DIR" && pwd`
-         fi
- 
---- mozilla-central-orig/widget/src/cocoa/nsCocoaWindow.mm.orig	2011-01-10 19:27:46.000000000 -0800
-+++ mozilla-central/widget/src/cocoa/nsCocoaWindow.mm	2011-01-16 00:23:11.000000000 -0800
-@@ -2335,11 +2341,13 @@
-   if (mInUnifiedToolbarReset) {
-     mInUnifiedToolbarReset = NO;
-     if (mUnifiedToolbarHeight == aOldHeight)
-       return;
- 
-+#ifdef NS_LEOPARD_AND_LATER
-     [self setContentBorderThickness:mUnifiedToolbarHeight forEdge:NSMaxYEdge];
-+#endif
- 
-     // Since this function is only called inside painting, the repaint needs to
-     // be synchronous.
-     [self setTitlebarNeedsDisplayInRect:[self titlebarRect] sync:YES];
-   }
