@@ -1,6 +1,6 @@
 Package: guile19
 # Package: guile20
-Version: 1.9.14
+Version: 1.9.15
 Revision: 1
 BuildDepends: <<
   readline5 (>= 5.0-1004),
@@ -19,11 +19,15 @@ Depends: <<
   libffi-shlibs,
   libtool2-shlibs
 <<
+# prevent from building against old installed library
+BuildConflicts: <<
+  guile19-dev
+<<
 GCC: 4.0
 # Source: mirror:gnu:guile/guile-%v.tar.gz
 Source: ftp://alpha.gnu.org/gnu/guile/guile-%v.tar.gz
-Source-MD5: 40667f40527ff0ecadb23f33e9562d2c
-# Source-SHA1: b4abff121c6f16b28214fa0eecabc90ef1dd0ea5
+Source-MD5: e42ace49a05dcaccb24a264a16646194
+# Source-SHA1: 0b1cdd5f0506dcda3ed85324b2a0ff510920ee76
 # PatchFile: %n.patch
 # PatchFile-MD5: 4876e126e4183f61fbf03905d2d39373
 PatchScript: <<
@@ -36,6 +40,7 @@ for f in lib/iconv*.c
 do sed -i.orig '/^#undef/d' $f
 done
 <<
+# gl_cv_func_svid_putenv=yes
 ConfigureParams: <<
 	--infodir=%p/share/info \
 	--program-transform-name="s|guile|guile-2.0|g" \
@@ -45,6 +50,7 @@ ConfigureParams: <<
 NoSetCPPFLAGS: true
 NoSetLDFLAGS: true
 SetCPPFLAGS: -Dmacosx
+SetCFLAGS: -g -O0
 CompileScript: <<
   #! /bin/sh -ex
   mkdir build
