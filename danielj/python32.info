@@ -1,7 +1,7 @@
 Info2: <<
 Package: python%type_pkg[python]
 Version: 3.2
-Revision: 0.rc1.3
+Revision: 0.rc3.1
 Type: python 3.2
 Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 Depends: <<
@@ -34,8 +34,8 @@ BuildDepends: <<
 <<
 Provides: argparse-py%type_pkg[python], futures-py%type_pkg[python]
 #Source: http://python.org/ftp/python/%v/Python-%v.tar.bz2
-Source: http://python.org/ftp/python/%v/Python-%{v}rc1.tar.bz2
-Source-MD5: 057cb4b2ba64e166cb0a3342bec9125e
+Source: http://python.org/ftp/python/%v/Python-%{v}rc3.tar.bz2
+Source-MD5: 25379af4bb6b0001e175d9d9b2ba4f63
 # No html docs yet.
 #Source2: http://www.python.org/ftp/python/doc/%v/python-%v-docs-html.tar.bz2
 #Source2-MD5: c9ccf8e9fc4d046c168af313706f159b
