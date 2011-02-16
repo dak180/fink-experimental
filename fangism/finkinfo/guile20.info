@@ -91,7 +91,7 @@ SplitOff: <<
   <<
   DocFiles: COPYING.LESSER
   Shlibs: <<
-  %p/lib/libguile-2.0.18.dylib 19.0.0 %n (>= 1.9.9-1)
+  %p/lib/libguile-2.0.22.dylib 23.0.0 %n (>= 2.0.0-1)
   <<
   Description: Shared libraries for guile20
 <<
