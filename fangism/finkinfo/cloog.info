@@ -8,7 +8,7 @@ Source: ftp://gcc.gnu.org/pub/gcc/infrastructure/%N-ppl-%v.tar.gz
 Source-MD5: 806e001d1b1a6b130069ff6274900af5
 SourceDirectory: %n-ppl-%v
 # Distribution: 10.5, 10.6
-ConfigureParams: --prefix=%p --mandir=%p/share/man --infodir=%p/share/info --with-ppl=%p --disable-static
+ConfigureParams: --prefix=%p --mandir=%p/share/man --infodir=%p/share/info --with-ppl=%p
 InstallScript: <<
  make install DESTDIR=%d 
 <<
