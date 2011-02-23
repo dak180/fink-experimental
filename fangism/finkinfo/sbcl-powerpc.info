@@ -4,7 +4,7 @@ Version: 1.0.45
 Revision: 1
 License: BSD
 Description: ANSI Common Lisp implementation
-Maintainer: Leigh Smith <leigh@leighsmith.com>
+Maintainer: David Fang <fangism@users.sourceforge.net>
 
 # NOTE: The version of the bootstrap binary does not automatically
 # change when the version field is updated.  CompileScript and Source2
@@ -61,4 +61,5 @@ extensions, such as a foreign function interface, and support for Unix
 
 DescPort: <<
 Uses a pre-compiled SBCL binary for bootstrapping.
+Former maintainer: Leigh Smith <leigh@leighsmith.com>
 <<
