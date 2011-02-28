@@ -1,7 +1,6 @@
 Package: ppl9
-Version: 0.11.1
+Version: 0.11.2
 Revision: 1
-# Distribution: 10.5, 10.6
 BuildDependsOnly: True
 Depends: %N-shlibs (= %v-%r)
 BuildDepends: <<
@@ -12,18 +11,9 @@ BuildDepends: <<
 <<
 Conflicts: ppl
 Replaces: ppl
-# BuildDepends: gcc4.2
 GCC: 4.0
-# SetCC: gcc-4.2
-# SetCXX: g++-4.2
 Source: ftp://ftp.cs.unipr.it/pub/ppl/releases/%v/ppl-%v.tar.bz2
-Source-MD5: d5762202fae794a5210dce518fc13b89
-Source2: ftp://ftp.cs.unipr.it/pub/ppl/releases/%v/ppl-user-java-interface-%v-html.tar.gz 
-Source2-MD5: 4366c4b5dc142421fb787d6754cff7d7
-Source3: ftp://ftp.cs.unipr.it/pub/ppl/releases/%v/ppl-user-java-interface-%v.pdf
-Source3-MD5: 7b07ce0791a80dfbd3a27c7ee5217fec
-Source4: ftp://ftp.cs.unipr.it/pub/ppl/releases/%v/ppl-user-java-interface-%v.ps.gz
-Source4-MD5: 81388e7bb5de411f045f739cef5cf786
+Source-MD5: c24429e6c3bc97d45976a63f40f489a1
 ConfigureParams: <<
 	--mandir=%p/share/man \
 	--infodir=%p/share/info \
@@ -65,9 +55,6 @@ PatchScript: <<
 	i386 ) sed -i.orig '/\$(JAVA)/s|-classpath|-d32 &|' $file ;;
 	x64_64 ) ;;
 	esac
-	tar -zcvf ./doc/ppl-user-java-interface-0.11.1-html.tar.gz ../ppl-user-java-interface-0.11.1-html
-	mv ../ppl-user-java-interface-0.11.1.pdf ./doc
-	mv ../ppl-user-java-interface-0.11.1.ps.gz ./doc
 <<
 CompileScript: <<
 	#!/bin/sh -ev
@@ -97,8 +84,9 @@ CompileScript: <<
 	../configure %c
 	# for ccache-default
 	export CCACHE_SLOPPINESS=time_macros
-	num_cpu=$(echo `sysctl -n hw.ncpu`)
-	make -j $num_cpu
+	# num_cpu=$(echo `sysctl -n hw.ncpu`)
+	# make -j $num_cpu
+	make
 <<
 InfoTest: <<
 	TestScript: <<
