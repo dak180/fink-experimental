@@ -54,8 +54,14 @@ CompileScript: <<
   #! /bin/sh -ex
   mkdir build
   cd build
+  # darwin8 missing some essential POSIX thread features, so disabled
   kernel=`uname -r | cut -d. -f1`
   test $kernel -gt 8 || threads="--without-threads"
+  if test "$kernel" = 9 ; then
+    export CC=gcc-4.2
+    export CXX=g++-4.2
+    test -x `which gcc-4.2` || { echo "gcc-4.2 required, but missing!"; exit 1; }
+  fi
   ../configure %c
   make
   fink-package-precedence --headers .
