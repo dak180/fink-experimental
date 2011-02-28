@@ -1,6 +1,6 @@
 Package: guile20
 Version: 2.0.0
-Revision: 1
+Revision: 2
 BuildDepends: <<
   readline5 (>= 5.0-1004),
   libffi,
@@ -10,6 +10,7 @@ BuildDepends: <<
   gc,
   gmp5,
   libiconv-dev,
+  fink-package-precedence,
   fink (>= 0.28)
 <<
 Depends: <<
@@ -19,9 +20,7 @@ Depends: <<
   libtool2-shlibs
 <<
 # prevent from building against old installed library
-BuildConflicts: <<
-  guile20-dev
-<<
+# BuildConflicts: guile20-dev
 GCC: 4.0
 Source: mirror:gnu:guile/guile-%v.tar.gz
 Source-MD5: 4f91ca29077aca32e1e28f70220dfd9b
@@ -37,6 +36,8 @@ perl -i -pe 's|(lt_dlinit\s*\(\s*\))|\1; lt_dladdsearchdir("\%p/lib")|' libguile
 for f in lib/iconv*.c
 do sed -i.orig '/^#undef/d' $f
 done
+# fix enum decl for ANSI strict C
+sed -i.orig '/SCM_ARRAY_ELEMENT_TYPE_LAST/s|,$||' libguile/array-handle.h
 <<
 # gl_cv_func_svid_putenv=yes
 ConfigureParams: <<
@@ -57,6 +58,8 @@ CompileScript: <<
   test $kernel -gt 8 || threads="--without-threads"
   ../configure %c
   make
+  fink-package-precedence --headers .
+  fink-package-precedence --libs .
 <<
 InfoTest: <<
   TestScript: <<
@@ -138,6 +141,10 @@ SplitOff3: <<
   <<
   DocFiles: COPYING.LESSER
   Description: Development package for guile20
+  DescPackaging: <<
+	The only file that conflicts is %p/share/aclocal/guile.m4.
+	All other files are versioned or in versioned subdirs.
+  <<
 <<
 SplitOff4: <<
  Package: %N-doc
@@ -145,7 +152,7 @@ SplitOff4: <<
  Replaces: guile16-doc, guile16 (<= 1.6.7-1011), guile18-doc, guile18
  DocFiles: COPYING.LESSER
  Files: share/info
- InfoDocs: guile.info guile-tut.info goops.info r5rs.info
+ InfoDocs: guile.info r5rs.info
  Description: Texinfo files for guile20
 <<
 DocFiles: README COPYING.LESSER AUTHORS HACKING NEWS THANKS
