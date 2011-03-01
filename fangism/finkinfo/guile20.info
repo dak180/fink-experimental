@@ -49,7 +49,7 @@ ConfigureParams: <<
 NoSetCPPFLAGS: true
 NoSetLDFLAGS: true
 SetCPPFLAGS: -Dmacosx
-SetCFLAGS: -g -O0
+# SetCFLAGS: -g -O2
 CompileScript: <<
   #! /bin/sh -ex
   mkdir build
