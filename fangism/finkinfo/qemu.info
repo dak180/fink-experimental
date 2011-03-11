@@ -1,24 +1,29 @@
 Package: qemu
 Version: 0.14.0
 Revision: 1
-Depends: sdl-shlibs
-BuildDepends: sdl
+# Depends: sdl-shlibs
+# BuildDepends: sdl
 Source: http://download.savannah.gnu.org/releases/%n/%n-%v.tar.gz
 Source-MD5: f9d145d5c09de9f0984ffe9bd1229970
-# UpdateConfigGuess: true
 # PatchScript: sed -e 's|@PREFIX@|%p|g' < %a/%n.patch | patch -p1
+#	--enable-sdl ?
+ConfigureParams: <<
+	--enable-cocoa \
+	--disable-darwin-user \
+	--disable-bsd-user
+<<
 CompileScript: <<
 	#!/bin/sh -ev
 	mkdir build
 	cd build
-	../configure
+	../configure %c
 	# possibly post-configure patching
 	make
 <<
 InstallScript: <<
 	#!/bin/sh -ev
 	cd build
-	make install prefix=%i/usr \
+	make install prefix=%i \
 	bindir=%i/bin \
 	datadir=%i/share/qemu \
 	sharedir=%i/share/qemu \
@@ -38,7 +43,7 @@ rebooting the PC or to debug system code.
 - User mode emulation (Linux host only). In this mode, QEMU can launch Linux
 processes compiled for one CPU on another CPU. It can be used to launch
 the Wine Windows API emulator or to ease cross-compilation and
-cross-debugging.
+cross-debugging.  TODO(?): darwin-host, bsd-host?
 As QEMU requires no host kernel patches to run, it is very safe and easy to
 use.
 Former maintainer (10.3): Christian Schroeder <shredda@gmx.de>, qemu 0.6
