@@ -52,7 +52,6 @@ BuildDepends: <<
 	pkgconfig (>= 0.21-1),
 	python26,
 	silc-toolkit,
-	startup-notification-dev,
 #	sqlite3-dev,
 #	system-openssl-dev,
 #	tcltk-dev,
@@ -64,8 +63,7 @@ Depends: <<
 	aspell-shlibs (>= 0.60.4-1001),
 	gconf2,
 	gstreamer-0.10-shlibs (>= 0.10.17-1),
-	gtkspell2-shlibs (>= 2.0.11-1004),
-	startup-notification-shlibs
+	gtkspell2-shlibs (>= 2.0.11-1004)
 <<
 BuildConflicts: <<
 	tcltk-dev
