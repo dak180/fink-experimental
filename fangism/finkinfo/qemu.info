@@ -7,16 +7,25 @@ Source: http://download.savannah.gnu.org/releases/%n/%n-%v.tar.gz
 Source-MD5: f9d145d5c09de9f0984ffe9bd1229970
 # UpdateConfigGuess: true
 # PatchScript: sed -e 's|@PREFIX@|%p|g' < %a/%n.patch | patch -p1
-InstallScript: <<
-make install prefix=%i/usr \
-bindir=%i/bin \
-datadir=%i/share/qemu \
-sharedir=%i/share/qemu \
-mandir=%i/share/man \
-docdir=%i/share/doc/qemu
+CompileScript: <<
+	#!/bin/sh -ev
+	mkdir build
+	cd build
+	../configure
+	# possibly post-configure patching
+	make
 <<
-DocFiles: README* COPYING* TODO VERSION
-#
+InstallScript: <<
+	#!/bin/sh -ev
+	cd build
+	make install prefix=%i/usr \
+	bindir=%i/bin \
+	datadir=%i/share/qemu \
+	sharedir=%i/share/qemu \
+	mandir=%i/share/man \
+	docdir=%i/share/doc/qemu
+<<
+DocFiles: README* COPYING* TODO VERSION HACKING LICENSE MAINTAINERS
 Description: Fast CPU Emulator
 DescDetail: <<
 QEMU is a FAST! processor emulator using dynamic translation to achieve good
@@ -32,7 +41,7 @@ the Wine Windows API emulator or to ease cross-compilation and
 cross-debugging.
 As QEMU requires no host kernel patches to run, it is very safe and easy to
 use.
-Former maintainer (10.3): Christian Schroeder <shredda@gmx.de>
+Former maintainer (10.3): Christian Schroeder <shredda@gmx.de>, qemu 0.6
 <<
 License: GPL/LGPL
 Maintainer: David Fang <fangism@users.sourceforge.net>
