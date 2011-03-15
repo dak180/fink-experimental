@@ -74,6 +74,8 @@ PatchScript: <<
   # configure inputs were patched, hence regeneration
   autoconf
 <<
+# even on 10.5
+SetMACOSX_DEPLOYMENT_TARGET: 10.4
 SetLDFLAGS: -L%p/lib/system-openssl/lib
 SetCPPFLAGS: -I%p/lib/system-openssl/include -I%p/include -I/usr/X11R6/include
 GCC: 4.0
