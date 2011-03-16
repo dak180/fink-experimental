@@ -39,24 +39,30 @@ SourceDirectory: ATLAS
 License: BSD
 # since we're experimenting with building a dylib :
 BuildDependsOnly: true
-BuildDepends: gcc44
+BuildDepends: gcc44-compiler
 PatchScript: <<
 #!/bin/sh -ev
 sed -i.bak -e '/PowerBook/,/RackMac/s,"c,"k,g' CONFIG/src/backend/archinfo_freebsd.c
-cd ..; ln -s lapack-3.3.0 LAPACK
+cd ..
+ln -s lapack-3.3.0 LAPACK
 cd LAPACK
 sed -e 's,\.\./\.\./blas\$(PLAT)\.a,%b/../bld/lib/libf77blas.a %b/../bld/lib/libcblas.a %b/../bld/lib/libatlas.a,' \
-    -e 's|g77|gfortran|g' -e 's,^TIMER,\#TIMER,' -e '/INT_ETIME/s,^\# *,,' < INSTALL/make.inc.LINUX > make.inc
+    -e 's|g77|gfortran-fsf-4.4|g' -e 's,^TIMER,\#TIMER,' -e '/INT_ETIME/s,^\# *,,' < make.inc.example > make.inc
+<<
+ConfigureParams: <<
+--cc=gcc-fsf-4.4 --shared \
+-v 2 --with-netlib-lapack=%b/../LAPACK/lapack_LINUX.a \
+-b $arch -F ic "$iflags" -F if "$iflags" $cflags 
 <<
 CompileScript: <<
 #!/bin/sh -ev
  cflags=''
  if [ %m = 'i386' ]
-	then mflags="-mfpmath=sse -msse -msse2 -msse3 -m32"; iflags="-mfpmath=387"
-	else mflags=''; iflags=''
-		if [ `machine|sed -e 's,ppc,,' -e 's,\([0-9]\).*,\1,'` != 9 ]
-			then cflags='-Si cputhrchk 0 -D c -DATL_AVgcc'
-		fi
+   then mflags="-mfpmath=sse -msse -msse2 -msse3 -m32"; iflags="-mfpmath=387"
+ else mflags=''; iflags=''
+   if [ `machine|sed -e 's,ppc,,' -e 's,\([0-9]\).*,\1,'` != 9 ]
+     then cflags='-Si cputhrchk 0 -D c -DATL_AVgcc'
+   fi
  fi
  lflags="-fPIC -O3 -fomit-frame-pointer -fgcse-sm -fgcse-las -ftree-loop-linear $mflags"
  iflags="-fPIC -O3 -fomit-frame-pointer $iflags"
@@ -64,18 +70,24 @@ CompileScript: <<
  sed -i.bak -e "s;\(-funroll-all-loops\) -O3;\1 $lflags;" make.inc
  make lapacklib
 # atlas 'forgets' scabs1 (not dcabs1 !), so we get it here..
+if false ; then
  cd BLAS/SRC; make scabs1.o; cd -
  mkdir -p ../bld/lib
  ar cr ../bld/lib/libf77blas.a BLAS/SRC/scabs1.o; ar cr ../bld/lib/libptf77blas.a BLAS/SRC/scabs1.o
+fi
  cd ..
- ln -s %p/bin/gcc-4 gcc
- export PATH=`pwd`:$PATH
+ # ln -s %p/bin/gcc-fsf-4.4 gcc
+ # export PATH=`pwd`:$PATH
+ mkdir -p bld/lib
  cd bld
  if [ %m = 'x86_64' ] 
- then ../ATLAS/configure -v 2 --prefix=%p --with-netlib-lapack=%b/../LAPACK/lapack_LINUX.a -b 64 -F ic "$iflags" -F if "$iflags" $cflags 
- else ../ATLAS/configure -v 2 --prefix=%p --with-netlib-lapack=%b/../LAPACK/lapack_LINUX.a -b 32 -F ic "$iflags" -F if "$iflags" $cflags
+ then arch=64
+ else arch=32
  fi
+ ../ATLAS/configure %c
  make
+ exit
+ # skip the rest for now
  cd lib
  # Apparently on some machines (=monoprocesors ?) the threaded libs are not made;
  # we first make atlas 'look the same' to all other pkgs, independently of the machine
