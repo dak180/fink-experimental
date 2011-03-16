@@ -44,16 +44,19 @@ PatchScript: <<
 #!/bin/sh -ev
 sed -i.bak -e '/PowerBook/,/RackMac/s,"c,"k,g' CONFIG/src/backend/archinfo_freebsd.c
 cd ..
+chmod +rx lapack-3.3.0
 ln -s lapack-3.3.0 LAPACK
+ln -s %b/../../../lapack-3.3.0.tgz .
 cd LAPACK
 sed -e 's,\.\./\.\./blas\$(PLAT)\.a,%b/../bld/lib/libf77blas.a %b/../bld/lib/libcblas.a %b/../bld/lib/libatlas.a,' \
     -e 's|g77|gfortran-fsf-4.4|g' -e 's,^TIMER,\#TIMER,' -e '/INT_ETIME/s,^\# *,,' < make.inc.example > make.inc
 <<
 ConfigureParams: <<
---cc=gcc-fsf-4.4 --shared \
--v 2 --with-netlib-lapack=%b/../LAPACK/lapack_LINUX.a \
+--cc=gcc-fsf-4.4 --shared -v 2 \
+--with-netlib-lapack-tarfile=lapack-3.3.0.tgz \
 -b $arch -F ic "$iflags" -F if "$iflags" $cflags 
 <<
+# --with-netlib-lapack=%b/../LAPACK/lapack_LINUX.a
 CompileScript: <<
 #!/bin/sh -ev
  cflags=''
@@ -66,11 +69,12 @@ CompileScript: <<
  fi
  lflags="-fPIC -O3 -fomit-frame-pointer -fgcse-sm -fgcse-las -ftree-loop-linear $mflags"
  iflags="-fPIC -O3 -fomit-frame-pointer $iflags"
+ # let ATLAS build LAPACK this time...
+if false ; then
  cd ../LAPACK
  sed -i.bak -e "s;\(-funroll-all-loops\) -O3;\1 $lflags;" make.inc
  make lapacklib
 # atlas 'forgets' scabs1 (not dcabs1 !), so we get it here..
-if false ; then
  cd BLAS/SRC; make scabs1.o; cd -
  mkdir -p ../bld/lib
  ar cr ../bld/lib/libf77blas.a BLAS/SRC/scabs1.o; ar cr ../bld/lib/libptf77blas.a BLAS/SRC/scabs1.o
