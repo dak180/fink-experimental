@@ -1,13 +1,13 @@
 Package: ppl
 Epoch: 1
 Version: 0.10.2
-Revision: 6
+Revision: 7
 # Distribution: 10.5, 10.6
 BuildDependsOnly: True
 Depends: %N-shlibs (= %e:%v-%r)
 BuildDepends: <<
 	fink (>= 0.28),
-	gmp5,
+	gmp (>= 4.2.4-1000),
 	m4,
 	system-java-dev
 <<
@@ -57,8 +57,8 @@ PatchScript: <<
 	esac
 	# gmp5 uses GMP_LIMB_BITS instead of __GMP_BITS_PER_MP_LIMB
 	# don't bother with m4/ac_check_gmp.m4, where it originates
-	file=configure
-	sed -i.orig 's|__GMP_BITS_PER_MP_LIMB|GMP_LIMB_BITS|g' $file
+#	file=configure
+#	sed -i.orig 's|__GMP_BITS_PER_MP_LIMB|GMP_LIMB_BITS|g' $file
 	# ppl_lpsol links to glpk, whose input behavior changed with v4.29
 	file=demos/ppl_lpsol/examples/ex1.mps
 	sed -i.orig '/^BOUNDS/a\
@@ -85,7 +85,7 @@ CompileScript: <<
 	  { echo "Missing Java development package containing jni.h." ; \
 	  echo "Please download/install from Apple and try again." ; \
 	  echo "Thank you and have a nice day." ; exit 1 ;}
-	# gcc-4.0.1 FAILS on darwin9, and gmp5 also built against system-gcc-4.2
+	# gcc-4.0.1 FAILS on darwin9, and gmp* also built against system-gcc-4.2
 	darwin_vers=`uname -r | cut -d. -f1`
 	if test "$darwin_vers" = 9 ; then
 	  export CC=gcc-4.2
@@ -133,8 +133,8 @@ DocFiles: <<
 SplitOff: <<
   Package: %N-shlibs
   Depends: <<
-	gmp5-shlibs,
-	libgmpxx5-shlibs
+	gmp-shlibs (>= 4.2.4-1000),
+	libgmpxx-shlibs (>= 4.2.4-1000)
   <<
   Files: <<
     %p/lib/libppl.7*.dylib
@@ -191,8 +191,7 @@ added to BuildDepends or TestDepends.
 
 Epoch was added to ppl-0.10.2 after an accident (fangism).
 
-For versions 0.10.2-4 and earlier, gmp (4.3.x) was used.
-Since 0.10.2-5, build against gmp5.
+Also known to work with gmp5 (tests pass).
 <<
 DescPort: <<
 Issues was raised about g++-4.0.1 compile failing:
