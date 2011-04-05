@@ -1,7 +1,7 @@
 Package: ppl
 Epoch: 1
 Version: 0.10.2
-Revision: 7
+Revision: 8
 # Distribution: 10.5, 10.6
 BuildDependsOnly: True
 Depends: %N-shlibs (= %e:%v-%r)
@@ -32,6 +32,8 @@ ConfigureParams: <<
 	-C
 # if you do not have the patience for the 'thorough' tests, --enable-check=quick
 <<
+PatchFile: %n.patch
+PatchFile-MD5: 0e7b2d6ce288621bd0a73f62afb8587e
 PatchScript: <<
 	#!/bin/sh -ev
 	# g++-4.0.1 rejects template instantiating w/ anonymous enums -- fangism
@@ -60,14 +62,8 @@ PatchScript: <<
 #	file=configure
 #	sed -i.orig 's|__GMP_BITS_PER_MP_LIMB|GMP_LIMB_BITS|g' $file
 	# ppl_lpsol links to glpk, whose input behavior changed with v4.29
-	file=demos/ppl_lpsol/examples/ex1.mps
-	sed -i.orig '/^BOUNDS/a\
- PL FOO       x1\
- PL FOO       x2' $file
-	file=demos/ppl_lpsol/examples/unboundedmin.mps
-	sed -i.orig '/^BOUNDS/a\
- PL FOO       x1\
- PL FOO       x2' $file
+	# failed attempt to use inline sed b/c differences between GNU/BSD sed
+	patch -p1 < %{PatchFile}
 <<
 CompileScript: <<
 	#!/bin/sh -ev
