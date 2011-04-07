@@ -1,0 +1,73 @@
+Package: libnettle4-shlibs
+Version: 2.1
+Revision: 0.9
+
+Description: Crypto library
+DescDetail: <<
+  Nettle is a cryptographic library that is designed to fit easily in
+  more or less any context: In crypto toolkits for object-oriented 
+  languages (C++, Python, Pike, ...), in applications like LSH or GNUPG,
+  or even in kernel space.
+<<
+
+Source: http://www.lysator.liu.se/~nisse/archive/nettle-%v.tar.gz
+Source-MD5: 2bfaf16234a5d8deb96cd23f53a682bb
+PatchFile: %n.patch 
+PatchFile-MD5: cd460f666903a6de472f3463e8d79953
+
+BuildDepends: gmp5, fink (>= 0.24.12)
+
+PatchScript: <<
+  patch -p0 < %{PatchFile}
+  /usr/bin/sed -i'' -e 's|@FINKPREFIX@|%p|' Makefile.in
+<<
+
+# TODO: assembler doesn't seem to work for shared libs. 
+ConfigureParams: <<
+ --disable-assembler --infodir=%p/share/info --enable-shared --enable-dependency-tracking
+<<
+InstallScript: <<
+	make install DESTDIR=%d
+<<
+Shlibs: <<
+  %p/lib/libnettle.4.dylib 0.0.0 %n (>= 2.1.0-1)
+  %p/lib/libhogweed.2.dylib 0.0.0 %n (>= 2.1.0-1)
+<<
+
+SplitOff: <<
+    Package: nettle-bin
+    Description: Binaries for the Nettle crypto library
+	Depends: %N (>= %v-%r), gmp5-shlibs
+    Files: <<
+		bin
+    <<
+	DocFiles: AUTHORS COPYING ChangeLog README NEWS
+<<
+
+Splitoff2: <<
+  Package: libnettle4-dev
+  Depends: %N (= %v-%r)
+  BuildDependsOnly: true
+  Conflicts: nettle 
+  Replaces: nettle 
+  Files: <<
+    include
+    lib/libnettle.dylib
+    lib/libnettle.a
+    lib/libhogweed.dylib
+    lib/libhogweed.a
+  <<
+  	DocFiles: AUTHORS COPYING ChangeLog README NEWS
+<<
+
+DescPackaging: <<
+	Shared libraries are now supported, but on first pass the
+	assembler does not seem to work with dylibs.
+<<
+
+DocFiles: AUTHORS COPYING ChangeLog README NEWS
+InfoDocs: nettle.info
+
+License: GPL/LGPL
+Homepage: http://www.lysator.liu.se/~nisse/nettle/
+Maintainer: Bertrand LUPART <bertrand@caudium.net>
