@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.15.5.6
-Revision: 7
+Revision: 9
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12), libgettext8-dev, gettext-tools
 Conflicts: dpkg-bootstrap
@@ -14,7 +14,7 @@ SourceDirectory: dpkg-%v
 Source-MD5: 4dcb0de9af234d16a62272bcc61b8873
 
 PatchFile: %n.patch
-PatchFile-MD5: db6c29ce31722c5e8e56e10f91620bec
+PatchFile-MD5: b0dfb31a0a73e6e63bf64474e25732c7
 PatchScript: <<
  cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p0
 

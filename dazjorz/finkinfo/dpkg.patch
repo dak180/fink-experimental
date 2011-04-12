@@ -514,7 +514,7 @@ diff -Nurd dpkg-1.15.5.6/fink/md5sum dpkg-1.15.5.6-patched/fink/md5sum
 +    return "";
 +  }
 +
-+  $sum = `$md5_bin -q $file`;
++  $sum = `$md5_bin -q "$file"`;
 +  1 while(chomp $sum);
 +  return $sum;
 +}
