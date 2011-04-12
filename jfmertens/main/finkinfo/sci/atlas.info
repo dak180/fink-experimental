@@ -1,5 +1,5 @@
 Package: atlas
-Version: 3.9.25
+Version: 3.9.32
 Revision: 1
 Description: Portable optimal linear algebra software
 DescDetail: <<
@@ -30,13 +30,13 @@ Order is important when linking! Use:
 -L%p/lib -llapack -lcblas -lf77blas -latlas
 <<
 Source: mirror:sourceforge:math-atlas/files/%n%v.tar.bz2
-Source-MD5: d3118bb4ce556d8903cdf7a1558c4e80
+Source-MD5: 54417c95f88e4f2368ab8bd90de3b8d4
 # src2 still needed for the html documentation _ still html doc to find...
 Source2: http://www.netlib.org/lapack/lapack-3.1.1.tgz
 Source2-MD5: 00b21551a899bcfbaa7b8443e1faeef9
-# this is version 3.2, to be used for the build:
+# this is version 3.3.0, to be used for the build:
 Source3: http://www.netlib.org/lapack/lapack.tgz
-Source3-MD5: 10832891c9e8100f81108c1ec7da0da4
+Source3-MD5: 84213fca70936cc5f1b59a7b1bf71697
 # the rename to avoid easily conceivable name-clashes in %/src
 Source4: http://www.netlib.org/lapack/manpages.tgz
 Source4-MD5: 145007cab915504caec382289462a166
@@ -53,7 +53,7 @@ PatchScript: <<
 ## put different srcs in logical dirs, lapack-version independent
 cd ..
 if [ -e LAPACK ] ; then mv LAPACK LAPACK-strange; fi
-mv lapack-3.2.2 LAPACK
+mv lapack-3.3.0 LAPACK
 # first need the tarball of lapack (and no % will give the path to the original;
 # not worth to check the user's fink.conf for a FetchAltDir entry etc)
 tar -czf lapack.tgz LAPACK
@@ -70,13 +70,6 @@ sed -i.bak -e 's,libtool -dynamic,\$(LIBTOOL) -dynamic,' -e 's,_version %v,_vers
 	-e '/lapack\.dylib *:/,/clapack\.dylib *:/s,\$(LIBS),-lgcc_s.1 &,' makes/Make.lib
 sed -i.bak -e 's,LIBTOOL",LIBTOOL -single_module -dead_strip -x",' configure
 
-# Typos
-sed -i'' -e 's,flag = ,flag=,' configure
-sed -i'' -e '/ATL_ARCH_UST2/s,||,\&\&,' include/atlas_threads.h
-# (else "fatal error: sys/processor.h: No such file or directory" in ATL_log2tlaunch etc)
-
-# next is to have ATL_AS_OSX_PPC defined when it should be
-sed -i.bak -e '1i #include "atlas_asm.h"' tune/blas/gemm/CASES/ATL_dmm4x4x2pf_av.c
 cd ..
 cd LAPACK
 sed -e 's,\.\./\.\./blas\$(PLAT)\.a,%b/../bld/lib/libf77blas.a %b/../bld/lib/libcblas.a %b/../bld/lib/libatlas.a,' \
