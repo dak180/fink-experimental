@@ -1121,3 +1121,14 @@ diff -Nurd apt-0.7.25.3/patch_flush apt-0.7.25.3-patched/patch_flush
 +done
 +
 +exit 0
+--- apt-0.7.25.3/buildlib/configure.mak	2010-02-01 20:44:40.000000000 +0100
++++ apt-0.7.25.3-patched/buildlib/configure.mak	2011-04-12 21:20:07.000000000 +0200
+@@ -28,7 +28,7 @@
+ 	aclocal -I buildlib
+ 	
+ $(BUILDDIR)/config.status: configure
+-	/usr/bin/test -e $(BUILDDIR) || mkdir $(BUILDDIR)	
++	/bin/test -e $(BUILDDIR) || mkdir $(BUILDDIR)	
+ 	(HERE=`pwd`; cd $(BUILDDIR) && $$HERE/configure)
+ 	
+ $(addprefix $(BUILDDIR)/,$(CONVERTED)):

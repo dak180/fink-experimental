@@ -1,14 +1,14 @@
 Package: apt
 Version: 0.7.25.3
-Revision: 3
+Revision: 7
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12), libtool2, docbook-xsl
-Depends: %N-shlibs (= %v-%r), dpkg (>= 1.15.5.6-1)
-Source: http://ftp.debian.org/debian/pool/main/a/apt/apt_%v.tar.gz
+Depends: %N-inst4-shlibs (= %v-%r), %N-pkg1-shlibs (= %v-%r), dpkg (>= 1.15.5.6-9)
+Source: http://snapshot.debian.org/archive/debian/20100202T220747Z/pool/main/a/apt/apt_%v.tar.gz
 Source-MD5: ee59a90b91764aefeb5eb0f29d5cab96
 SourceDirectory: %n-%v
 PatchFile: %n.patch
-PatchFile-MD5: 8eab70b75b0c261ca06f7ac6206ea3bc
+PatchFile-MD5: bd04af100dd15f2ab15ac4f687e34d52
 PatchScript: <<
  sed -e 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
  sh patch_flush
@@ -24,6 +24,7 @@ CompileScript: <<
  rm buildlib/config.guess buildlib/config.sub
  ln -s %p/share/libtool/config/config.sub buildlib/config.sub
  ln -s %p/share/libtool/config/config.guess buildlib/config.guess
+ cp Makefile buildlib/makefile.in
  autoconf
  ./configure %c
  #make -f makefile.wrap NOISY=1
@@ -83,23 +84,37 @@ InstallScript: <<
  mkdir -p %i/var/log/apt
 <<
 SplitOff: <<
-  Package: %N-shlibs
-  Depends: dpkg (>= 1.15.5.6-1), fink (>= 0.24.12)
+  Package: %N-inst4-shlibs
+  Depends: dpkg (>= 1.15.5.6-9), fink (>= 0.24.12)
+  Conflicts: %N-shlibs (>= 0.7.25.3-0), %N7-shlibs
   Files: <<
-    lib/libapt-inst.1.1.dylib lib/libapt-inst.1.1.0.dylib
-    lib/libapt-pkg.4.8.dylib  lib/libapt-pkg.4.8.0.dylib
+    lib/libapt-inst.1.1.0.dylib lib/libapt-inst.1.1.dylib
   <<
   Shlibs: <<
     %p/lib/libapt-inst.1.1.dylib 1.1.0 %n (>= 0.7.25.3-1)
-    %p/lib/libapt-pkg.4.8.dylib 4.8.0 %n (>= 0.7.25.3-1)
   <<
   DocFiles: COPYING* AUTHORS README.*
 <<
 SplitOff2: <<
+  Package: %N-pkg1-shlibs
+  Depends: dpkg (>= 1.15.5.6-9), fink (>= 0.24.12)
+  Conflicts: %N-shlibs (>= 0.7.25.3-0), %N7-shlibs
+  Files: <<
+    lib/libapt-pkg.4.8.0.dylib lib/libapt-pkg.4.8.dylib
+  <<
+  Shlibs: <<
+    %p/lib/libapt-pkg.4.8.dylib 4.8.0 %n (>= 0.7.25.3-1)
+  <<
+  DocFiles: COPYING* AUTHORS README.*
+<<
+SplitOff3: <<
   Package: %N-dev
-  Depends: %N-shlibs (= %v-%r)
+  Depends: %N-inst4-shlibs (= %v-%r), %N-pkg1-shlibs (= %v-%r)
   BuildDependsOnly: true
-  Files: lib/libapt-inst.dylib lib/libapt-pkg.dylib include
+  Files: <<
+    lib/libapt-inst.dylib     lib/libapt-pkg.dylib
+    include
+  <<
   DocFiles: COPYING* AUTHORS README.*
 <<
 DocFiles: COPYING* AUTHORS README.*
@@ -186,6 +201,11 @@ Previous versions by Christoph Pfisterer. Version 0.7.25.3 by Sjors Gielen.
 
   Sjors - Fix docs, since docbook.xsl is in another location on Mac. Also depend
   on docbook-xsl to create the documentation.
+
+  Sjors - The standard build process creates a 'makefile' next to 'Makefile',
+  but on case insensitive Macs the normal Makefile is overwritten, causing an
+  infinite loop when used. Therefore, makefile.in is replaced with the normal
+  Makefile, causing new and old Makefile to be the same, fixing the build.
 <<
 License: GPL
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
