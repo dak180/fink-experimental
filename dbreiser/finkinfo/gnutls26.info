@@ -1,13 +1,12 @@
 Package: gnutls26
-Version: 2.12.1
+Version: 2.12.2
 Revision: 0.9
 Source: mirror:custom:gnutls-%v.tar.bz2
 CustomMirror: <<
   nam-US: ftp://ftp.gnutls.org/pub/gnutls/
 <<
-Source-MD5: 214296bafcdb411adf94e05162332297
-PatchFile-MD5: 4c41890d0e7b4f3f5021d1d78a7e17df
-Patchfile: %n.patch 
+Source-MD5: ca6903d99b2aca2a6a326bc8df805b61
+PatchScript: perl -pi -e 's|#include <gcrypt.h>||g' src/certtool.c src/certtool-common.c src/p11tool.c 
 GCC: 4.0
 Depends: %N-shlibs (= %v-%r)
 Replaces: gnutls-dev, gnutls, gnutls12, gnutls14
