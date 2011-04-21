@@ -9,9 +9,21 @@ Replaces: magic, magic71, magic72, magic73, magic75, magic80
 License: BSD
 Homepage: http://www.opencircuitdesign.com/magic/
 Description: Very capable VLSI layout CAD tool
-BuildDepends: readline5, x11-dev, tcltk-dev, blt-dev (>= 2.4z-15), libjpeg, fink (>= 0.28)
-# bdep on fink required b/c of private Shlibs
-Depends: x11-shlibs, tcltk-shlibs, blt
+BuildDepends: <<
+	glib2-dev,
+	readline5,
+	x11-dev,
+	tcltk-dev,
+	blt-dev (>= 2.4z-15),
+	libjpeg,
+	fink (>= 0.28)
+<<
+Depends: <<
+	glib2-shlibs,
+	x11-shlibs,
+	tcltk-shlibs,
+	blt
+<<
 DocFiles: INSTALL README README.Tcl TODO VERSION
 DescDetail: <<
 Magic is a venerable VLSI layout tool, written in the 1980's at Berkeley
@@ -42,6 +54,8 @@ Documentation directories were relocated from defaults.
 PatchFile: %n.patch
 PatchFile-MD5: ad442f8b034e69dd7a86d6fe78e0e1f5
 ConfigureParams: --prefix=%p --with-tcl=%p/lib --with-tk=%p/lib --with-tclincls=%p/include --with-tkincls=%p/include --with-tcllibs=%p/lib --with-tklibs=%p/lib --mandir=%p/share/man --with-opengl=/usr/X11R6/include
+SetCPPFLAGS: -I%p/include/glib-2.0
+SetLDFLAGS: -L%p/lib
 CompileScript: <<
 #!/bin/sh -ev
 ./configure %c
@@ -69,6 +83,7 @@ mv %i/lib/magic/doc/*.ps %i/share/doc/%n/ps/
 mv %i/lib/magic/doc/html %i/share/doc/%n/
 mv %i/lib/magic/tutorial %i/share/doc/%n/
 rm -rf %i/doc
+test -f %i/lib/magic/tcl/tclmagic.dylib
 <<
 # the following shlibs are private, for now
 Shlibs: <<

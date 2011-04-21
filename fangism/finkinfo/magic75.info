@@ -1,17 +1,27 @@
 Package: magic75
-Version: 7.5.127
+Version: 7.5.213
 Revision: 1
 Maintainer: David Fang <fangism@users.sourceforge.net>
 Source: http://www.opencircuitdesign.com/magic/archive/magic-%v.tgz
-Source-MD5: 196e533a04fe3c70f190c1738dd84f61
+Source-MD5: 2a69c1a0344e33759fe502cdfb814282
 Conflicts: magic, magic71, magic72, magic73, magic74, magic80
 Replaces: magic, magic71, magic72, magic73, magic74, magic80
 License: BSD
 Homepage: http://www.opencircuitdesign.com/magic/
 Description: Very capable VLSI layout CAD tool
-BuildDepends: readline5, x11-dev, tcltk-dev, blt-dev, fink (>= 0.28)
+BuildDepends: <<
+	readline5,
+	x11-dev,
+	tcltk-dev,
+	blt-dev,
+	fink (>= 0.28)
+<<
 # bdep on fink required b/c of private Shlibs
-Depends: x11-shlibs, tcltk-shlibs, blt
+Depends: <<
+	x11-shlibs,
+	tcltk-shlibs,
+	blt
+<<
 DocFiles: INSTALL README README.Tcl TODO VERSION
 DescDetail: <<
 Magic is a venerable VLSI layout tool, written in the 1980's at Berkeley
@@ -40,6 +50,8 @@ This packaging is identical to magic74's.
 PatchFile: %n.patch
 PatchFile-MD5: fc616c3e09e3e09cb7fdce2209e892f2
 ConfigureParams: --prefix=%p --with-tcl=%p/lib --with-tk=%p/lib --with-tclincls=%p/include --with-tkincls=%p/include --with-tcllibs=%p/lib --with-tklibs=%p/lib --mandir=%p/share/man --with-opengl=/usr/X11R6/include
+SetCPPFLAGS: -I%p/include/glib-2.0
+SetLDFLAGS: -L%p/lib
 CompileScript: <<
 #!/bin/sh -ev
 ./configure %c
@@ -67,6 +79,7 @@ mv %i/lib/magic/doc/*.ps %i/share/doc/%n/ps/
 mv %i/lib/magic/doc/html %i/share/doc/%n/
 mv %i/lib/magic/tutorial %i/share/doc/%n/
 rm -rf %i/doc
+test -f %i/lib/magic/tcl/tclmagic.dylib
 <<
 # the following shlibs are private, for now
 Shlibs: <<
