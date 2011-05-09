@@ -25,6 +25,8 @@ GCC: 4.0
 Maintainer: Rene Kuettner <rene@bitkanal.net>
 
 BuildDepends: <<
+  autoconf,
+  automake1.10,
   qt3 (>= 3.3-1),
   (%type_raw[-nox] = .) kdelibs3-unified-dev (>= 3.5-1),
   (%type_raw[-nox] = .) kdepim3-dev (>= 3.5-1),
@@ -62,7 +64,7 @@ Depends: <<
   qt3-shlibs
 <<
 
-BuildConflicts: autoconf, autoconf2.6, autoconf2.13, automaken
+#BuildConflicts: autoconf, autoconf2.6, autoconf2.13, automaken
 Conflicts: taskjuggler, taskjuggler-nox
 Replaces: taskjuggler, taskjuggler-nox
 Provides: taskjuggler-nox
