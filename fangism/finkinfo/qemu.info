@@ -1,10 +1,10 @@
 Package: qemu
-Version: 0.14.0
+Version: 0.14.1
 Revision: 1
 # Depends: sdl-shlibs
 # BuildDepends: sdl
 Source: http://download.savannah.gnu.org/releases/%n/%n-%v.tar.gz
-Source-MD5: f9d145d5c09de9f0984ffe9bd1229970
+Source-MD5: b6c713a8db638e173af53a62d5178640
 # PatchScript: sed -e 's|@PREFIX@|%p|g' < %a/%n.patch | patch -p1
 #	--enable-sdl ?
 ConfigureParams: <<
