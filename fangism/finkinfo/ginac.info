@@ -3,7 +3,6 @@ Version: 1.5.8
 Revision: 1
 Maintainer: David Fang <fangism@users.sourceforge.net>
 Source: http://www.ginac.de/%n-%v.tar.bz2
-# Source: ftp://ftpthep.physik.uni-mainz.de/pub/GiNaC/%n-%v.tar.bz2
 Source-MD5: 8693b3c9c3467694032ce9c8b3063d4c
 BuildDepends: <<
 	bison,
