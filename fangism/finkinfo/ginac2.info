@@ -17,6 +17,7 @@ Depends: <<
 	readline5-shlibs
 <<
 Conflicts: ginac
+Replaces: ginac
 BuildDependsOnly: True
 License: GPL
 ConfigureParams: --mandir='${prefix}/share/man' --infodir='${prefix}/share/info' --disable-static

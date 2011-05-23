@@ -1,6 +1,6 @@
 Package: ginac
 Version: 1.5.8
-Revision: 1
+Revision: 2
 Maintainer: David Fang <fangism@users.sourceforge.net>
 Source: http://www.ginac.de/%n-%v.tar.bz2
 Source-MD5: 8693b3c9c3467694032ce9c8b3063d4c
@@ -17,6 +17,7 @@ Depends: <<
 	readline5-shlibs
 <<
 Conflicts: ginac2
+Replaces: ginac2
 BuildDependsOnly: True
 License: GPL
 ConfigureParams: --mandir='${prefix}/share/man' --infodir='${prefix}/share/info' --disable-static
