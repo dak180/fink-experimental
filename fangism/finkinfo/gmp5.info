@@ -32,8 +32,8 @@ ConfigureParams: <<
 PatchScript: <<
   #!/bin/sh -ev
   %{default_script}
-  # patch config.guess for configure
-  sed -i.orig -e 's|corei[a-z]*|corei|g' ./config.guess
+  # patch config.guess for configure (no longer needed)
+  # sed -i.orig -e 's|corei[a-z]*|corei|g' ./config.guess
 <<
 CompileScript: <<
 #! /bin/sh -ev
@@ -52,7 +52,8 @@ CompileScript: <<
    test -x `which gcc-4.2` || { echo "gcc-4.2 required, but missing!"; exit 1; }
  fi
  # force i386 to bump to i686 to avoid symbol dep on __sync_fetch_and_add_4
- # hb=`../config.guess`
+ hb=`../config.guess`
+ echo "config.guess: $hb"
  # case $hb in
  #   i386-*-*) hb=`echo $hb | sed 's|i386|i686|'`
  #	host_build_override="--host=$hb --build=$hb" ;;
