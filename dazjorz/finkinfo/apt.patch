@@ -1,6 +1,6 @@
-diff -Nurd apt-0.7.25.3/apt-inst/contrib/extracttar.cc apt-0.7.25.3-patched/apt-inst/contrib/extracttar.cc
---- apt-0.7.25.3/apt-inst/contrib/extracttar.cc	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/apt-inst/contrib/extracttar.cc	2010-05-14 17:31:52.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/apt-inst/contrib/extracttar.cc apt-0.7.25.3/apt-inst/contrib/extracttar.cc
+--- apt-0.7.25.3-orig/apt-inst/contrib/extracttar.cc	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/apt-inst/contrib/extracttar.cc	2011-05-04 16:24:56.000000000 +0200
 @@ -148,6 +148,18 @@
     return true;
  }
@@ -31,9 +31,9 @@ diff -Nurd apt-0.7.25.3/apt-inst/contrib/extracttar.cc apt-0.7.25.3-patched/apt-
  	  StrToNum(Tar->Size,Itm.Size,sizeof(Tar->Size),8) == false ||
  	  StrToNum(Tar->MTime,Itm.MTime,sizeof(Tar->MTime),8) == false ||
  	  StrToNum(Tar->Major,Itm.Major,sizeof(Tar->Major),8) == false ||
-diff -Nurd apt-0.7.25.3/apt-inst/deb/dpkgdb.cc apt-0.7.25.3-patched/apt-inst/deb/dpkgdb.cc
---- apt-0.7.25.3/apt-inst/deb/dpkgdb.cc	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/apt-inst/deb/dpkgdb.cc	2010-05-14 17:34:27.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/apt-inst/deb/dpkgdb.cc apt-0.7.25.3/apt-inst/deb/dpkgdb.cc
+--- apt-0.7.25.3-orig/apt-inst/deb/dpkgdb.cc	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/apt-inst/deb/dpkgdb.cc	2011-05-04 16:24:56.000000000 +0200
 @@ -24,6 +24,7 @@
  #include <errno.h>
  #include <sys/stat.h>
@@ -42,9 +42,9 @@ diff -Nurd apt-0.7.25.3/apt-inst/deb/dpkgdb.cc apt-0.7.25.3-patched/apt-inst/deb
  #include <fcntl.h>
  #include <unistd.h>
  #include <ctype.h>
-diff -Nurd apt-0.7.25.3/apt-pkg/aptconfiguration.cc apt-0.7.25.3-patched/apt-pkg/aptconfiguration.cc
---- apt-0.7.25.3/apt-pkg/aptconfiguration.cc	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/apt-pkg/aptconfiguration.cc	2010-05-14 20:18:10.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/apt-pkg/aptconfiguration.cc apt-0.7.25.3/apt-pkg/aptconfiguration.cc
+--- apt-0.7.25.3-orig/apt-pkg/aptconfiguration.cc	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/apt-pkg/aptconfiguration.cc	2011-05-04 16:24:56.000000000 +0200
 @@ -36,8 +36,8 @@
  	_config->CndSet("Acquire::CompressionTypes::gz","gzip");
  
@@ -56,9 +56,9 @@ diff -Nurd apt-0.7.25.3/apt-pkg/aptconfiguration.cc apt-0.7.25.3-patched/apt-pkg
  
  	// accept non-list order as override setting for config settings on commandline
  	std::string const overrideOrder = _config->Find("Acquire::CompressionTypes::Order","");
-diff -Nurd apt-0.7.25.3/apt-pkg/contrib/fink.cc apt-0.7.25.3-patched/apt-pkg/contrib/fink.cc
---- apt-0.7.25.3/apt-pkg/contrib/fink.cc	1970-01-01 01:00:00.000000000 +0100
-+++ apt-0.7.25.3-patched/apt-pkg/contrib/fink.cc	2010-05-14 17:28:56.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/apt-pkg/contrib/fink.cc apt-0.7.25.3/apt-pkg/contrib/fink.cc
+--- apt-0.7.25.3-orig/apt-pkg/contrib/fink.cc	1970-01-01 01:00:00.000000000 +0100
++++ apt-0.7.25.3/apt-pkg/contrib/fink.cc	2011-05-04 16:24:56.000000000 +0200
 @@ -0,0 +1,84 @@
 +/* FINK LOCAL begin */
 +#include <sys/utsname.h>
@@ -144,9 +144,9 @@ diff -Nurd apt-0.7.25.3/apt-pkg/contrib/fink.cc apt-0.7.25.3-patched/apt-pkg/con
 +}
 +
 +/* FINK LOCAL end */
-diff -Nurd apt-0.7.25.3/apt-pkg/contrib/macros.h apt-0.7.25.3-patched/apt-pkg/contrib/macros.h
---- apt-0.7.25.3/apt-pkg/contrib/macros.h	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/apt-pkg/contrib/macros.h	2010-05-14 15:58:54.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/apt-pkg/contrib/macros.h apt-0.7.25.3/apt-pkg/contrib/macros.h
+--- apt-0.7.25.3-orig/apt-pkg/contrib/macros.h	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/apt-pkg/contrib/macros.h	2011-05-04 16:24:56.000000000 +0200
 @@ -24,12 +24,6 @@
  #define MAX(x,y) _max(x,y)
  #endif
@@ -170,9 +170,9 @@ diff -Nurd apt-0.7.25.3/apt-pkg/contrib/macros.h apt-0.7.25.3-patched/apt-pkg/co
          /* likely() and unlikely() can be used to mark boolean expressions
             as (not) likely true which will help the compiler to optimise */
          #define likely(x)       __builtin_expect (!!(x), 1)
-diff -Nurd apt-0.7.25.3/apt-pkg/contrib/mmap.cc apt-0.7.25.3-patched/apt-pkg/contrib/mmap.cc
---- apt-0.7.25.3/apt-pkg/contrib/mmap.cc	2010-05-14 15:20:33.000000000 +0200
-+++ apt-0.7.25.3-patched/apt-pkg/contrib/mmap.cc	2010-05-14 15:20:23.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/apt-pkg/contrib/mmap.cc apt-0.7.25.3/apt-pkg/contrib/mmap.cc
+--- apt-0.7.25.3-orig/apt-pkg/contrib/mmap.cc	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/apt-pkg/contrib/mmap.cc	2011-05-04 16:24:56.000000000 +0200
 @@ -172,6 +172,13 @@
        return;
  
@@ -187,9 +187,9 @@ diff -Nurd apt-0.7.25.3/apt-pkg/contrib/mmap.cc apt-0.7.25.3-patched/apt-pkg/con
     // Set the permissions.
     int Prot = PROT_READ;
     int Map = MAP_PRIVATE | MAP_ANONYMOUS;
-diff -Nurd apt-0.7.25.3/apt-pkg/contrib/netrc.cc apt-0.7.25.3-patched/apt-pkg/contrib/netrc.cc
---- apt-0.7.25.3/apt-pkg/contrib/netrc.cc	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/apt-pkg/contrib/netrc.cc	2010-05-14 15:54:05.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/apt-pkg/contrib/netrc.cc apt-0.7.25.3/apt-pkg/contrib/netrc.cc
+--- apt-0.7.25.3-orig/apt-pkg/contrib/netrc.cc	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/apt-pkg/contrib/netrc.cc	2011-05-04 16:24:56.000000000 +0200
 @@ -160,10 +160,18 @@
      {
        char login[64] = "";
@@ -234,9 +234,9 @@ diff -Nurd apt-0.7.25.3/apt-pkg/contrib/netrc.cc apt-0.7.25.3-patched/apt-pkg/co
      }
    }
  }
-diff -Nurd apt-0.7.25.3/apt-pkg/deb/debsystem.cc apt-0.7.25.3-patched/apt-pkg/deb/debsystem.cc
---- apt-0.7.25.3/apt-pkg/deb/debsystem.cc	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/apt-pkg/deb/debsystem.cc	2010-05-14 17:19:39.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/apt-pkg/deb/debsystem.cc apt-0.7.25.3/apt-pkg/deb/debsystem.cc
+--- apt-0.7.25.3-orig/apt-pkg/deb/debsystem.cc	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/apt-pkg/deb/debsystem.cc	2011-05-04 16:31:48.000000000 +0200
 @@ -23,6 +23,12 @@
  #include <unistd.h>
  #include <dirent.h>
@@ -282,7 +282,7 @@ diff -Nurd apt-0.7.25.3/apt-pkg/deb/debsystem.cc apt-0.7.25.3-patched/apt-pkg/de
        Score += 10;
     if (FileExists("/etc/debian_version") == true)
        Score += 10;
-@@ -205,6 +213,44 @@
+@@ -205,6 +213,54 @@
     if (StatusFile == 0)
        StatusFile = new debStatusIndex(_config->FindFile("Dir::State::status"));
     List.push_back(StatusFile);
@@ -290,13 +290,23 @@ diff -Nurd apt-0.7.25.3/apt-pkg/deb/debsystem.cc apt-0.7.25.3-patched/apt-pkg/de
 +
 +   if (FinkStatusFile == 0) {
 +      struct stat unused_sbuf;
-+      int sys_ok=0;
 +      unlink(FINKSTATUSFILE);
 +      if ( 0 == stat("@PREFIX@/bin/fink-virtual-pkgs",&unused_sbuf)) {
-+          if ( 0 == system("@PREFIX@/bin/fink-virtual-pkgs --apt")) sys_ok=1;
-+      }    
-+      if (stat(FINKSTATUSFILE, &unused_sbuf) || !sys_ok) {
-+   std::ofstream finkstatus(FINKSTATUSFILE);
++        // will be trying to use fink's own virtpkg data
++        int have_fvp_data = 0;
++        if ( 0 == system("@PREFIX@/bin/fink-virtual-pkgs --apt")) {
++          if (0 == stat(FINKSTATUSFILE, &unused_sbuf)) {
++            // f-v-p did not fail and we have its data-file available
++            have_fvp_data = 1;
++          }
++        }
++        if( !have_fvp_data ) {
++          // f-v-p failed somehow? ABORT!
++          return _error->Error("Error while setting up data-piping from fink-virtual-pkgs");
++        }
++      } else {
++        // no f-v-p...use dummy data
++      std::ofstream finkstatus(FINKSTATUSFILE);
 +      if(macosx_version.version != 0)
 +      {
 +        finkstatus << "Package: macosx" << std::endl;
@@ -319,7 +329,7 @@ diff -Nurd apt-0.7.25.3/apt-pkg/deb/debsystem.cc apt-0.7.25.3-patched/apt-pkg/de
 +      finkstatus << "Description: Pseudo package representing Darwin" << std::endl;
 +      finkstatus << " Pseudo package representing Darwin" << std::endl << std::endl;
 +      finkstatus.close();
-+      }    
++      }
 +      FinkStatusFile = new debStatusIndex(FINKSTATUSFILE);
 +   }
 +   List.push_back(FinkStatusFile);
@@ -327,7 +337,7 @@ diff -Nurd apt-0.7.25.3/apt-pkg/deb/debsystem.cc apt-0.7.25.3-patched/apt-pkg/de
     return true;
  }
  									/*}}}*/
-@@ -214,12 +260,16 @@
+@@ -214,12 +270,16 @@
  bool debSystem::FindIndex(pkgCache::PkgFileIterator File,
  			  pkgIndexFile *&Found) const
  {
@@ -345,9 +355,9 @@ diff -Nurd apt-0.7.25.3/apt-pkg/deb/debsystem.cc apt-0.7.25.3-patched/apt-pkg/de
     }
     
     return false;
-diff -Nurd apt-0.7.25.3/apt-pkg/deb/debsystem.h apt-0.7.25.3-patched/apt-pkg/deb/debsystem.h
---- apt-0.7.25.3/apt-pkg/deb/debsystem.h	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/apt-pkg/deb/debsystem.h	2010-05-14 17:23:06.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/apt-pkg/deb/debsystem.h apt-0.7.25.3/apt-pkg/deb/debsystem.h
+--- apt-0.7.25.3-orig/apt-pkg/deb/debsystem.h	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/apt-pkg/deb/debsystem.h	2011-05-04 16:24:56.000000000 +0200
 @@ -12,6 +12,19 @@
  
  #include <apt-pkg/pkgsystem.h>
@@ -376,9 +386,9 @@ diff -Nurd apt-0.7.25.3/apt-pkg/deb/debsystem.h apt-0.7.25.3-patched/apt-pkg/deb
     
     public:
  
-diff -Nurd apt-0.7.25.3/apt-pkg/deb/dpkgpm.cc apt-0.7.25.3-patched/apt-pkg/deb/dpkgpm.cc
---- apt-0.7.25.3/apt-pkg/deb/dpkgpm.cc	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/apt-pkg/deb/dpkgpm.cc	2010-05-14 20:19:29.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/apt-pkg/deb/dpkgpm.cc apt-0.7.25.3/apt-pkg/deb/dpkgpm.cc
+--- apt-0.7.25.3-orig/apt-pkg/deb/dpkgpm.cc	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/apt-pkg/deb/dpkgpm.cc	2011-05-04 16:24:56.000000000 +0200
 @@ -22,6 +22,7 @@
  #include <sys/select.h>
  #include <sys/types.h>
@@ -433,9 +443,9 @@ diff -Nurd apt-0.7.25.3/apt-pkg/deb/dpkgpm.cc apt-0.7.25.3-patched/apt-pkg/deb/d
        sighandler_t old_SIGQUIT = signal(SIGQUIT,SIG_IGN);
        sighandler_t old_SIGINT = signal(SIGINT,SIG_IGN);
  
-diff -Nurd apt-0.7.25.3/apt-pkg/indexcopy.cc apt-0.7.25.3-patched/apt-pkg/indexcopy.cc
---- apt-0.7.25.3/apt-pkg/indexcopy.cc	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/apt-pkg/indexcopy.cc	2010-05-14 20:21:53.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/apt-pkg/indexcopy.cc apt-0.7.25.3/apt-pkg/indexcopy.cc
+--- apt-0.7.25.3-orig/apt-pkg/indexcopy.cc	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/apt-pkg/indexcopy.cc	2011-05-04 16:24:56.000000000 +0200
 @@ -603,8 +603,8 @@
        const char *Args[400];
        unsigned int i = 0;
@@ -447,9 +457,9 @@ diff -Nurd apt-0.7.25.3/apt-pkg/indexcopy.cc apt-0.7.25.3-patched/apt-pkg/indexc
        string releasegpg = *I+"Release.gpg";
        string release = *I+"Release";
  
-diff -Nurd apt-0.7.25.3/apt-pkg/init.cc apt-0.7.25.3-patched/apt-pkg/init.cc
---- apt-0.7.25.3/apt-pkg/init.cc	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/apt-pkg/init.cc	2010-05-14 16:30:30.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/apt-pkg/init.cc apt-0.7.25.3/apt-pkg/init.cc
+--- apt-0.7.25.3-orig/apt-pkg/init.cc	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/apt-pkg/init.cc	2011-05-04 16:24:56.000000000 +0200
 @@ -16,6 +16,8 @@
  #include <config.h>
  #include <cstdlib>
@@ -486,9 +496,9 @@ diff -Nurd apt-0.7.25.3/apt-pkg/init.cc apt-0.7.25.3-patched/apt-pkg/init.cc
     Sys = 0;
     string Label = Cnf.Find("Apt::System","");
     if (Label.empty() == false)
-diff -Nurd apt-0.7.25.3/apt-pkg/makefile apt-0.7.25.3-patched/apt-pkg/makefile
---- apt-0.7.25.3/apt-pkg/makefile	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/apt-pkg/makefile	2010-05-14 17:10:21.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/apt-pkg/makefile apt-0.7.25.3/apt-pkg/makefile
+--- apt-0.7.25.3-orig/apt-pkg/makefile	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/apt-pkg/makefile	2011-05-04 16:24:56.000000000 +0200
 @@ -22,7 +22,7 @@
           contrib/configuration.cc contrib/progress.cc contrib/cmndline.cc \
  	 contrib/md5.cc contrib/sha1.cc contrib/sha256.cc contrib/hashes.cc \
@@ -498,9 +508,9 @@ diff -Nurd apt-0.7.25.3/apt-pkg/makefile apt-0.7.25.3-patched/apt-pkg/makefile
  HEADERS = mmap.h error.h configuration.h fileutl.h  cmndline.h netrc.h\
  	  md5.h crc-16.h cdromutl.h strutl.h sptr.h sha1.h sha256.h hashes.h \
  	  macros.h
-diff -Nurd apt-0.7.25.3/apt-pkg/pkgcachegen.cc apt-0.7.25.3-patched/apt-pkg/pkgcachegen.cc
---- apt-0.7.25.3/apt-pkg/pkgcachegen.cc	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/apt-pkg/pkgcachegen.cc	2010-05-13 23:42:59.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/apt-pkg/pkgcachegen.cc apt-0.7.25.3/apt-pkg/pkgcachegen.cc
+--- apt-0.7.25.3-orig/apt-pkg/pkgcachegen.cc	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/apt-pkg/pkgcachegen.cc	2011-05-04 16:24:56.000000000 +0200
 @@ -827,7 +827,7 @@
  			MMap **OutMap,bool AllowMem)
  {
@@ -510,9 +520,21 @@ diff -Nurd apt-0.7.25.3/apt-pkg/pkgcachegen.cc apt-0.7.25.3-patched/apt-pkg/pkgc
     
     vector<pkgIndexFile *> Files;
     for (vector<metaIndex *>::const_iterator i = List.begin();
-diff -Nurd apt-0.7.25.3/buildlib/environment.mak.in apt-0.7.25.3-patched/buildlib/environment.mak.in
---- apt-0.7.25.3/buildlib/environment.mak.in	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/buildlib/environment.mak.in	2010-05-14 23:18:15.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/buildlib/configure.mak apt-0.7.25.3/buildlib/configure.mak
+--- apt-0.7.25.3-orig/buildlib/configure.mak	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/buildlib/configure.mak	2011-05-04 16:24:56.000000000 +0200
+@@ -28,7 +28,7 @@
+ 	aclocal -I buildlib
+ 	
+ $(BUILDDIR)/config.status: configure
+-	/usr/bin/test -e $(BUILDDIR) || mkdir $(BUILDDIR)	
++	/bin/test -e $(BUILDDIR) || mkdir $(BUILDDIR)	
+ 	(HERE=`pwd`; cd $(BUILDDIR) && $$HERE/configure)
+ 	
+ $(addprefix $(BUILDDIR)/,$(CONVERTED)):
+diff -Nurd apt-0.7.25.3-orig/buildlib/environment.mak.in apt-0.7.25.3/buildlib/environment.mak.in
+--- apt-0.7.25.3-orig/buildlib/environment.mak.in	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/buildlib/environment.mak.in	2011-05-04 16:24:56.000000000 +0200
 @@ -11,8 +11,8 @@
  NUM_PROCS = @NUM_PROCS@
  
@@ -545,9 +567,9 @@ diff -Nurd apt-0.7.25.3/buildlib/environment.mak.in apt-0.7.25.3-patched/buildli
 +#endif
 +SONAME_MAGIC=-install_name @PREFIX@/lib/
 +LFLAGS_SO=-dynamiclib	
-diff -Nurd apt-0.7.25.3/buildlib/library.mak apt-0.7.25.3-patched/buildlib/library.mak
---- apt-0.7.25.3/buildlib/library.mak	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/buildlib/library.mak	2010-05-14 22:31:34.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/buildlib/library.mak apt-0.7.25.3/buildlib/library.mak
+--- apt-0.7.25.3-orig/buildlib/library.mak	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/buildlib/library.mak	2011-05-04 16:24:56.000000000 +0200
 @@ -16,11 +16,11 @@
  # See defaults.mak for information about LOCAL
  
@@ -602,9 +624,9 @@ diff -Nurd apt-0.7.25.3/buildlib/library.mak apt-0.7.25.3-patched/buildlib/libra
  	   $(filter %.opic,$^) \
  	   $($(@F)-SLIBS) 
  
-diff -Nurd apt-0.7.25.3/buildlib/libversion.mak apt-0.7.25.3-patched/buildlib/libversion.mak
---- apt-0.7.25.3/buildlib/libversion.mak	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/buildlib/libversion.mak	2010-05-14 21:18:19.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/buildlib/libversion.mak apt-0.7.25.3/buildlib/libversion.mak
+--- apt-0.7.25.3-orig/buildlib/libversion.mak	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/buildlib/libversion.mak	2011-05-04 16:24:56.000000000 +0200
 @@ -18,4 +18,5 @@
  # want to drop this, but this a ABI break.
  # And we don't want to do this now. So we hardcode a value here,
@@ -612,9 +634,9 @@ diff -Nurd apt-0.7.25.3/buildlib/libversion.mak apt-0.7.25.3-patched/buildlib/li
 -LIBEXT=-libc6.9-6
 +# FINK LOCAL empty here
 +LIBEXT=
-diff -Nurd apt-0.7.25.3/cmdline/apt-get.cc apt-0.7.25.3-patched/cmdline/apt-get.cc
---- apt-0.7.25.3/cmdline/apt-get.cc	2010-02-01 20:44:41.000000000 +0100
-+++ apt-0.7.25.3-patched/cmdline/apt-get.cc	2010-05-14 19:02:56.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/cmdline/apt-get.cc apt-0.7.25.3/cmdline/apt-get.cc
+--- apt-0.7.25.3-orig/cmdline/apt-get.cc	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/cmdline/apt-get.cc	2011-05-04 16:24:56.000000000 +0200
 @@ -53,7 +53,12 @@
  #include <termios.h>
  #include <sys/ioctl.h>
@@ -757,9 +779,9 @@ diff -Nurd apt-0.7.25.3/cmdline/apt-get.cc apt-0.7.25.3-patched/cmdline/apt-get.
     // Deal with stdout not being a tty
     if (!isatty(STDOUT_FILENO) && _config->FindI("quiet",0) < 1)
        _config->Set("quiet","1");
-diff -Nurd apt-0.7.25.3/cmdline/apt-key apt-0.7.25.3-patched/cmdline/apt-key
---- apt-0.7.25.3/cmdline/apt-key	2010-02-01 20:44:41.000000000 +0100
-+++ apt-0.7.25.3-patched/cmdline/apt-key	2010-05-14 20:26:56.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/cmdline/apt-key apt-0.7.25.3/cmdline/apt-key
+--- apt-0.7.25.3-orig/cmdline/apt-key	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/cmdline/apt-key	2011-05-04 16:24:56.000000000 +0200
 @@ -5,7 +5,7 @@
  
  # We don't use a secret keyring, of course, but gpg panics and
@@ -784,9 +806,9 @@ diff -Nurd apt-0.7.25.3/cmdline/apt-key apt-0.7.25.3-patched/cmdline/apt-key
  	if [ -d "$TRUSTEDPARTS" ]; then
  		#echo "parts active"
  		for trusted in $(run-parts --list $TRUSTEDPARTS --regex '^.*\.gpg$'); do
-diff -Nurd apt-0.7.25.3/debian/bugscript apt-0.7.25.3-patched/debian/bugscript
---- apt-0.7.25.3/debian/bugscript	2010-02-01 20:44:41.000000000 +0100
-+++ apt-0.7.25.3-patched/debian/bugscript	2010-05-14 20:27:37.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/debian/bugscript apt-0.7.25.3/debian/bugscript
+--- apt-0.7.25.3-orig/debian/bugscript	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/debian/bugscript	2011-05-04 16:24:56.000000000 +0200
 @@ -11,14 +11,14 @@
  
  EOF
@@ -804,9 +826,9 @@ diff -Nurd apt-0.7.25.3/debian/bugscript apt-0.7.25.3-patched/debian/bugscript
    if [ -f $config ]; then
      yesno "May I include your $config configuration file? [Y/n] " yep
      if [ "$REPLY" = "yep" ]; then
-diff -Nurd apt-0.7.25.3/doc/apt-get.8.xml apt-0.7.25.3-patched/doc/apt-get.8.xml
---- apt-0.7.25.3/doc/apt-get.8.xml	2010-02-01 20:44:41.000000000 +0100
-+++ apt-0.7.25.3-patched/doc/apt-get.8.xml	2010-05-13 23:41:59.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/doc/apt-get.8.xml apt-0.7.25.3/doc/apt-get.8.xml
+--- apt-0.7.25.3-orig/doc/apt-get.8.xml	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/doc/apt-get.8.xml	2011-05-04 16:24:56.000000000 +0200
 @@ -344,6 +344,19 @@
       Configuration Item: <literal>APT::Get::Fix-Broken</literal>.</para></listitem>
       </varlistentry>
@@ -827,9 +849,9 @@ diff -Nurd apt-0.7.25.3/doc/apt-get.8.xml apt-0.7.25.3-patched/doc/apt-get.8.xml
       <varlistentry><term><option>-m</option></term><term><option>--ignore-missing</option></term>
       <term><option>--fix-missing</option></term>
       <listitem><para>Ignore missing packages; If packages cannot be retrieved or fail the    
-diff -Nurd apt-0.7.25.3/doc/examples/apt-https-method-example.conf apt-0.7.25.3-patched/doc/examples/apt-https-method-example.conf
---- apt-0.7.25.3/doc/examples/apt-https-method-example.conf	2010-02-01 20:44:41.000000000 +0100
-+++ apt-0.7.25.3-patched/doc/examples/apt-https-method-example.conf	2010-05-14 18:57:49.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/doc/examples/apt-https-method-example.conf apt-0.7.25.3/doc/examples/apt-https-method-example.conf
+--- apt-0.7.25.3-orig/doc/examples/apt-https-method-example.conf	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/doc/examples/apt-https-method-example.conf	2011-05-04 16:24:56.000000000 +0200
 @@ -59,11 +59,15 @@
  // server certificate using its cert.
  Acquire::https::secure.dom1.tld::CaInfo     "/etc/apt/certs/ca-dom1-crt.pem";
@@ -864,9 +886,9 @@ diff -Nurd apt-0.7.25.3/doc/examples/apt-https-method-example.conf apt-0.7.25.3-
  
    Acquire::https[::repo.domain.tld]::IssuerCert "/path/to/issuer/cert.pem";
  
-diff -Nurd apt-0.7.25.3/doc/manpage-style.xsl apt-0.7.25.3-patched/doc/manpage-style.xsl
---- apt-0.7.25.3/doc/manpage-style.xsl	2010-02-01 20:44:41.000000000 +0100
-+++ apt-0.7.25.3-patched/doc/manpage-style.xsl	2010-05-14 19:12:06.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/doc/manpage-style.xsl apt-0.7.25.3/doc/manpage-style.xsl
+--- apt-0.7.25.3-orig/doc/manpage-style.xsl	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/doc/manpage-style.xsl	2011-05-04 16:24:56.000000000 +0200
 @@ -2,7 +2,7 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0">
@@ -876,9 +898,9 @@ diff -Nurd apt-0.7.25.3/doc/manpage-style.xsl apt-0.7.25.3-patched/doc/manpage-s
  
  <xsl:param name="man.output.encoding" select="'UTF-8'" />
  
-diff -Nurd apt-0.7.25.3/dselect/install apt-0.7.25.3-patched/dselect/install
---- apt-0.7.25.3/dselect/install	2010-02-01 20:44:41.000000000 +0100
-+++ apt-0.7.25.3-patched/dselect/install	2010-05-13 23:26:46.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/dselect/install apt-0.7.25.3/dselect/install
+--- apt-0.7.25.3-orig/dselect/install	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/dselect/install	2011-05-04 16:24:56.000000000 +0200
 @@ -6,8 +6,8 @@
  # Get the configuration from /etc/apt/apt.conf
  CLEAN="prompt"
@@ -890,9 +912,9 @@ diff -Nurd apt-0.7.25.3/dselect/install apt-0.7.25.3-patched/dselect/install
  DPKG_OPTS="--admindir=$1"
  APT_OPT0="-oDir::State::status=$1/status"
  APT_OPT1="-oDPkg::Options::=$DPKG_OPTS"
-diff -Nurd apt-0.7.25.3/dselect/setup apt-0.7.25.3-patched/dselect/setup
---- apt-0.7.25.3/dselect/setup	2010-02-01 20:44:41.000000000 +0100
-+++ apt-0.7.25.3-patched/dselect/setup	2010-05-14 15:22:07.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/dselect/setup apt-0.7.25.3/dselect/setup
+--- apt-0.7.25.3-orig/dselect/setup	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/dselect/setup	2011-05-04 16:24:56.000000000 +0200
 @@ -23,15 +23,20 @@
  my $vardir=$ARGV[0];
  my $method=$ARGV[1];
@@ -967,9 +989,9 @@ diff -Nurd apt-0.7.25.3/dselect/setup apt-0.7.25.3-patched/dselect/setup
      my $answer = <STDIN>;
      chomp ($answer);
      $answer =~ s/\s+/ /og;
-diff -Nurd apt-0.7.25.3/dselect/update apt-0.7.25.3-patched/dselect/update
---- apt-0.7.25.3/dselect/update	2010-02-01 20:44:41.000000000 +0100
-+++ apt-0.7.25.3-patched/dselect/update	2010-05-13 23:24:22.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/dselect/update apt-0.7.25.3/dselect/update
+--- apt-0.7.25.3-orig/dselect/update	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/dselect/update	2011-05-04 16:24:56.000000000 +0200
 @@ -7,13 +7,13 @@
  # Get the configuration from /etc/apt/apt.conf
  CLEAN="prompt"
@@ -988,9 +1010,9 @@ diff -Nurd apt-0.7.25.3/dselect/update apt-0.7.25.3-patched/dselect/update
  PROMPT="false"
  RES=`apt-config shell CLEAN DSelect::Clean OPTS DSelect::UpdateOptions \
  		      DPKG Dir::Bin::dpkg/f APTGET Dir::Bin::apt-get/f \
-diff -Nurd apt-0.7.25.3/fink/fink_unauthenticated.conf apt-0.7.25.3-patched/fink/fink_unauthenticated.conf
---- apt-0.7.25.3/fink/fink_unauthenticated.conf	1970-01-01 01:00:00.000000000 +0100
-+++ apt-0.7.25.3-patched/fink/fink_unauthenticated.conf	2010-05-15 23:17:15.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/fink/fink_unauthenticated.conf apt-0.7.25.3/fink/fink_unauthenticated.conf
+--- apt-0.7.25.3-orig/fink/fink_unauthenticated.conf	1970-01-01 01:00:00.000000000 +0100
++++ apt-0.7.25.3/fink/fink_unauthenticated.conf	2011-05-04 16:24:56.000000000 +0200
 @@ -0,0 +1,9 @@
 +# Fink's apt was updated in may 2010. It now features cryptographic signing of
 +# packages, but Fink doesn't do this at all yet. In order to have a clean
@@ -1001,9 +1023,9 @@ diff -Nurd apt-0.7.25.3/fink/fink_unauthenticated.conf apt-0.7.25.3-patched/fink
 +    AllowUnauthenticated "true";
 +  }
 +}
-diff -Nurd apt-0.7.25.3/methods/connect.cc apt-0.7.25.3-patched/methods/connect.cc
---- apt-0.7.25.3/methods/connect.cc	2010-02-01 20:44:41.000000000 +0100
-+++ apt-0.7.25.3-patched/methods/connect.cc	2010-05-13 23:25:17.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/methods/connect.cc apt-0.7.25.3/methods/connect.cc
+--- apt-0.7.25.3-orig/methods/connect.cc	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/methods/connect.cc	2011-05-04 16:24:56.000000000 +0200
 @@ -107,7 +107,7 @@
  
     // Check the socket for an error condition
@@ -1013,9 +1035,9 @@ diff -Nurd apt-0.7.25.3/methods/connect.cc apt-0.7.25.3-patched/methods/connect.
     if (getsockopt(Fd,SOL_SOCKET,SO_ERROR,&Err,&Len) != 0)
        return _error->Errno("getsockopt",_("Failed"));
     
-diff -Nurd apt-0.7.25.3/methods/ftp.cc apt-0.7.25.3-patched/methods/ftp.cc
---- apt-0.7.25.3/methods/ftp.cc	2010-02-01 20:44:41.000000000 +0100
-+++ apt-0.7.25.3-patched/methods/ftp.cc	2010-05-13 23:26:24.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/methods/ftp.cc apt-0.7.25.3/methods/ftp.cc
+--- apt-0.7.25.3-orig/methods/ftp.cc	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/methods/ftp.cc	2011-05-04 16:24:56.000000000 +0200
 @@ -703,7 +703,7 @@
        if (WaitFd(DataFd,true,TimeOut) == false)
  	 return _error->Error(_("Could not connect data socket, connection timed out"));
@@ -1025,9 +1047,9 @@ diff -Nurd apt-0.7.25.3/methods/ftp.cc apt-0.7.25.3-patched/methods/ftp.cc
        if (getsockopt(DataFd,SOL_SOCKET,SO_ERROR,&Err,&Len) != 0)
  	 return _error->Errno("getsockopt",_("Failed"));
        if (Err != 0)
-diff -Nurd apt-0.7.25.3/methods/gpgv.cc apt-0.7.25.3-patched/methods/gpgv.cc
---- apt-0.7.25.3/methods/gpgv.cc	2010-02-01 20:44:41.000000000 +0100
-+++ apt-0.7.25.3-patched/methods/gpgv.cc	2010-05-14 20:28:59.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/methods/gpgv.cc apt-0.7.25.3/methods/gpgv.cc
+--- apt-0.7.25.3-orig/methods/gpgv.cc	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/methods/gpgv.cc	2011-05-04 16:24:56.000000000 +0200
 @@ -59,8 +59,8 @@
     string const gpgvpath = _config->Find("Dir::Bin::gpg", "/usr/bin/gpgv");
     // FIXME: remove support for deprecated APT::GPGV setting
@@ -1039,9 +1061,9 @@ diff -Nurd apt-0.7.25.3/methods/gpgv.cc apt-0.7.25.3-patched/methods/gpgv.cc
     if (Debug == true)
     {
        std::clog << "gpgv path: " << gpgvpath << std::endl;
-diff -Nurd apt-0.7.25.3/methods/https.cc apt-0.7.25.3-patched/methods/https.cc
---- apt-0.7.25.3/methods/https.cc	2010-02-01 20:44:41.000000000 +0100
-+++ apt-0.7.25.3-patched/methods/https.cc	2010-05-14 18:51:01.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/methods/https.cc apt-0.7.25.3/methods/https.cc
+--- apt-0.7.25.3-orig/methods/https.cc	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/methods/https.cc	2011-05-04 16:24:56.000000000 +0200
 @@ -151,12 +151,14 @@
        default_verify = 0;
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, verify);
@@ -1072,9 +1094,9 @@ diff -Nurd apt-0.7.25.3/methods/https.cc apt-0.7.25.3-patched/methods/https.cc
  
     // cache-control
     if(_config->FindB("Acquire::https::No-Cache",
-diff -Nurd apt-0.7.25.3/methods/rfc2553emu.h apt-0.7.25.3-patched/methods/rfc2553emu.h
---- apt-0.7.25.3/methods/rfc2553emu.h	2010-02-01 20:44:41.000000000 +0100
-+++ apt-0.7.25.3-patched/methods/rfc2553emu.h	2010-05-13 23:45:34.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/methods/rfc2553emu.h apt-0.7.25.3/methods/rfc2553emu.h
+--- apt-0.7.25.3-orig/methods/rfc2553emu.h	2011-05-04 16:24:31.000000000 +0200
++++ apt-0.7.25.3/methods/rfc2553emu.h	2011-05-04 16:24:56.000000000 +0200
 @@ -26,6 +26,11 @@
  #include <sys/types.h>
  #include <sys/socket.h>
@@ -1106,9 +1128,9 @@ diff -Nurd apt-0.7.25.3/methods/rfc2553emu.h apt-0.7.25.3-patched/methods/rfc255
  
    #define sockaddr_storage sockaddr_in
  #endif
-diff -Nurd apt-0.7.25.3/patch_flush apt-0.7.25.3-patched/patch_flush
---- apt-0.7.25.3/patch_flush	1970-01-01 01:00:00.000000000 +0100
-+++ apt-0.7.25.3-patched/patch_flush	2010-05-13 23:27:54.000000000 +0200
+diff -Nurd apt-0.7.25.3-orig/patch_flush apt-0.7.25.3/patch_flush
+--- apt-0.7.25.3-orig/patch_flush	1970-01-01 01:00:00.000000000 +0100
++++ apt-0.7.25.3/patch_flush	2011-05-04 16:24:56.000000000 +0200
 @@ -0,0 +1,11 @@
 +#!/bin/sh
 +set -e
@@ -1121,14 +1143,3 @@ diff -Nurd apt-0.7.25.3/patch_flush apt-0.7.25.3-patched/patch_flush
 +done
 +
 +exit 0
---- apt-0.7.25.3/buildlib/configure.mak	2010-02-01 20:44:40.000000000 +0100
-+++ apt-0.7.25.3-patched/buildlib/configure.mak	2011-04-12 21:20:07.000000000 +0200
-@@ -28,7 +28,7 @@
- 	aclocal -I buildlib
- 	
- $(BUILDDIR)/config.status: configure
--	/usr/bin/test -e $(BUILDDIR) || mkdir $(BUILDDIR)	
-+	/bin/test -e $(BUILDDIR) || mkdir $(BUILDDIR)	
- 	(HERE=`pwd`; cd $(BUILDDIR) && $$HERE/configure)
- 	
- $(addprefix $(BUILDDIR)/,$(CONVERTED)):
