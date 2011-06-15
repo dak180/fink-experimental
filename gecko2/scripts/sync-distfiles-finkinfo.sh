@@ -3,7 +3,7 @@
 # Change this to match your local mirror structur
 ###
 GENERATEDIR="/home/f/fink/finkinfo"
-HTTPSNAPDIR="/home/f/fink/infodist"
+HTTPSNAPDIR="/home/f/fink/httpsnap"
 LOGDIR="/home/f/fink/log"
 SCRIPTDIR="/home/f/fink/scripts"
 TMPDIR="/home/f/fink/mirwork"
@@ -68,6 +68,7 @@ if [ \! -s ${TMPDIR}/mirror.lock ]; then
 	fi
 	printf ' Getting TIMESTAMP\n'
 	cp -p ${GENERATEDIR}/dists.public/TIMESTAMP ${HTTPSNAPDIR}/TIMESTAMP
+	ln -f ${GENERATEDIR}/dists.public/TIMESTAMP ${GENERATEDIR}/dists.public/LOCAL
 	printf ' Cleaning up\n'
 	rm -f ${LOGDIR}/change.log
 	printf 'done\n'
