@@ -1,18 +1,19 @@
 Package: f90cache
-Version: 0.93
+Version: 0.93.6
 Revision: 1
 Maintainer: David Fang <fangism@users.sourceforge.net>
 Source: http://www.irisa.fr/sage/edouard/canot/%n/%n-%v.tar.bz2
-Source-MD5: a6238ac637588ae6e815bc4a9ce6a5cb
+Source-MD5: c2ae064849c8c3204b5d36018654f16e
 PatchScript: <<
 	#!/bin/sh -ev
 	# patch Makefile to not depend on implicit rules
 	file=Makefile.in
 	mv $file $file.orig
-	echo ".SUFFIXES: .c .o" > $file
-	echo ".c.o:" >> $file
-	echo '	$(CC) $(CFLAGS) -o $@ -c $<' >> $file
-	cat $file.orig >> $file
+	{ echo ".SUFFIXES: .c .o"
+	echo ".c.o:"
+	echo '	$(CC) $(CFLAGS) -o $@ -c $<'
+	cat $file.orig
+	} > $file
 <<
 ConfigureParams: --mandir=%p/share/man --infodir=%p/share/info
 CompileScript: <<
@@ -66,17 +67,26 @@ InstallScript: <<
 #	echo "***************** WARNING ********************"
 #	<<
 #<<
-DocFiles: README CHANGES TODO INSTALL
+DocFiles: README CHANGES INSTALL
 Description: Fortran compiler cache
 DescDetail: <<
-%n acts as a caching pre-processor to Fortran compilers, using the -E
-compiler switch and a hash to detect when a compilation can be satisfied
-from cache. This often results in a 5 to 10 times speedup in common
-compilations.
+%n acts as a caching pre-processor to Fortran compilers, akin to ccache.
 If you wish %n to be the default Fortran compiler (to override and send ALL 
-compilations through ccache), install the "%n-default" package.
+compilations through %n), install the "%n-default" package.
+<<
+DescUsage: <<
+By default the user cache lives in ~/.f90cache, which may be overridden
+with F90CACHE_DIR.
 <<
 DescPort: <<
+Port was effortless.  
+<<
+DescPackaging: <<
+TODO:
+* Before fink enables f90cache-default, need to set aside fink's
+  private cache dir by setting env F90CACHE_DIR=%p/var/f90cache.
+* some clean way to install sym-links over installed fortran compilers
+  for %n-default.  Maybe fortran builds can detect -cache C-suffixed binaries?
 <<
 Homepage: http://www.irisa.fr/sage/edouard/canot/f90cache/
 License: GPL
