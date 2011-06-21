@@ -1,5 +1,5 @@
-+++ mozilla-central/.mozconfig	2009-04-27 16:56:30.000000000 -0400
-@@ -0,0 +1,50 @@
++++ mozilla-release/.mozconfig	2009-04-27 16:56:30.000000000 -0400
+@@ -0,0 +1,52 @@
 +# sh
 +# Build configuration script
 +#
@@ -13,16 +13,18 @@
 +
 +mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-@FINK_ARCH_TARGET@-apple-darwin`uname -r`
 +mk_add_options AUTOCONF=autoconf
-+CC="flag-sort gcc-4.0"
-+CXX="flag-sort g++-4.0"
++SRCDIR=@SRCDIR@
++GCC_EXEC_OVERRIDE="-B$SRCDIR/opt-bin"
++CC="flag-sort gcc-4.0 $GCC_EXEC_OVERRIDE"
++CXX="flag-sort g++-4.0 $GCC_EXEC_OVERRIDE"
 +ac_add_options --target=@FINK_ARCH_TARGET@-apple-darwin`uname -r`
 +ac_add_options --with-macos-sdk=/Developer/SDKs/MacOSX10.4u.sdk
-+HOST_CC="flag-sort gcc-4.0"
-+HOST_CXX="flag-sort g++-4.0"
++HOST_CC="flag-sort gcc-4.0 $GCC_EXEC_OVERRIDE"
++HOST_CXX="flag-sort g++-4.0 $GCC_EXEC_OVERRIDE"
 +RANLIB=/usr/bin/ranlib
 +AR=/usr/bin/ar
 +AS=$CC
-+LD=/usr/bin/ld
++LD="$GCC_EXEC_OVERRIDE/ld"
 +STRIP="strip -x -S"
 +CROSS_COMPILE=1
 +
@@ -59,9 +61,9 @@
 +ac_add_options --disable-cpp-exceptions
 +ac_add_options --enable-printing
 +ac_add_options --enable-prebinding
-diff -ruN mozilla-central-orig/browser/locales/generic/profile/bookmarks.html.in mozilla-central/browser/locales/generic/profile/bookmarks.html.in
---- mozilla-central-orig/browser/locales/generic/profile/bookmarks.html.in	2009-04-23 21:46:37.000000000 -0400
-+++ mozilla-central/browser/locales/generic/profile/bookmarks.html.in	2009-04-27 16:56:30.000000000 -0400
+diff -ruN mozilla-release-orig/browser/locales/generic/profile/bookmarks.html.in mozilla-release/browser/locales/generic/profile/bookmarks.html.in
+--- mozilla-release-orig/browser/locales/generic/profile/bookmarks.html.in	2009-04-23 21:46:37.000000000 -0400
++++ mozilla-release/browser/locales/generic/profile/bookmarks.html.in	2009-04-27 16:56:30.000000000 -0400
 @@ -15,6 +15,7 @@
      <DL><p>
          <DT><A HREF="http://www.mozilla.com/@AB_CD@/firefox/central/" ID="rdf:#$GvPhC3">@getting_started@</A>
@@ -70,9 +72,9 @@ diff -ruN mozilla-central-orig/browser/locales/generic/profile/bookmarks.html.in
      </DL><p>
      <HR>
      <DT><H3 ID="rdf:#$ZvPhC3">@firefox_heading@</H3>
-diff -ruN mozilla-central-orig/config/autoconf.mk.in mozilla-central/config/autoconf.mk.in
---- mozilla-central-orig/config/autoconf.mk.in	2009-04-23 21:46:37.000000000 -0400
-+++ mozilla-central/config/autoconf.mk.in	2009-04-27 16:56:30.000000000 -0400
+diff -ruN mozilla-release-orig/config/autoconf.mk.in mozilla-release/config/autoconf.mk.in
+--- mozilla-release-orig/config/autoconf.mk.in	2009-04-23 21:46:37.000000000 -0400
++++ mozilla-release/config/autoconf.mk.in	2009-04-27 16:56:30.000000000 -0400
 @@ -58,14 +58,14 @@
  prefix		= @prefix@
  exec_prefix	= @exec_prefix@
@@ -92,9 +94,9 @@ diff -ruN mozilla-central-orig/config/autoconf.mk.in mozilla-central/config/auto
  
  DIST		= $(DEPTH)/dist
  LIBXUL_SDK      = @LIBXUL_SDK@
-diff -ruN mozilla-central-orig/configure mozilla-central/configure
---- mozilla-central-orig/configure.in	2009-04-23 21:51:07.000000000 -0400
-+++ mozilla-central/configure.in	2009-04-27 16:56:30.000000000 -0400
+diff -ruN mozilla-release-orig/configure mozilla-release/configure
+--- mozilla-release-orig/configure.in	2009-04-23 21:51:07.000000000 -0400
++++ mozilla-release/configure.in	2009-04-27 16:56:30.000000000 -0400
 @@ -203,6 +203,10 @@
      fi
      if test -z "$MIDL"; then MIDL=midl; fi
@@ -141,9 +143,9 @@ diff -ruN mozilla-central-orig/configure mozilla-central/configure
      STRIP="$STRIP -x -S"
      _PLATFORM_DEFAULT_TOOLKIT='cairo-cocoa'
      TARGET_NSPR_MDCPUCFG='\"md/_darwin.cfg\"'
-diff -ruN mozilla-central-orig/fink/applications/firefox.desktop mozilla-central/fink/applications/firefox.desktop
---- mozilla-central-orig/fink/applications/firefox.desktop	1969-12-31 19:00:00.000000000 -0500
-+++ mozilla-central/fink/applications/firefox.desktop	2009-04-27 16:56:30.000000000 -0400
+diff -ruN mozilla-release-orig/fink/applications/firefox.desktop mozilla-release/fink/applications/firefox.desktop
+--- mozilla-release-orig/fink/applications/firefox.desktop	1969-12-31 19:00:00.000000000 -0500
++++ mozilla-release/fink/applications/firefox.desktop	2009-04-27 16:56:30.000000000 -0400
 @@ -0,0 +1,10 @@
 +[Desktop Entry]
 +Encoding=UTF-8
@@ -155,14 +157,14 @@ diff -ruN mozilla-central-orig/fink/applications/firefox.desktop mozilla-central
 +Type=Application
 +Categories=Application;Network
 +StartupNotify=true
-diff -ruN mozilla-central-orig/fink/fink.js mozilla-central/fink/fink.js
---- mozilla-central-orig/fink/fink.js	1969-12-31 19:00:00.000000000 -0500
-+++ mozilla-central/fink/fink.js	2009-04-27 16:56:30.000000000 -0400
+diff -ruN mozilla-release-orig/fink/fink.js mozilla-release/fink/fink.js
+--- mozilla-release-orig/fink/fink.js	1969-12-31 19:00:00.000000000 -0500
++++ mozilla-release/fink/fink.js	2009-04-27 16:56:30.000000000 -0400
 @@ -0,0 +1 @@
 +pref("general.useragent.extra.vendorComment", "Fink Community Edition");
-diff -ruN mozilla-central-orig/xpcom/io/nsAppFileLocationProvider.cpp mozilla-central/xpcom/io/nsAppFileLocationProvider.cpp
---- mozilla-central-orig/xpcom/io/nsAppFileLocationProvider.cpp
-+++ mozilla-central/xpcom/io/nsAppFileLocationProvider.cpp
+diff -ruN mozilla-release-orig/xpcom/io/nsAppFileLocationProvider.cpp mozilla-release/xpcom/io/nsAppFileLocationProvider.cpp
+--- mozilla-release-orig/xpcom/io/nsAppFileLocationProvider.cpp
++++ mozilla-release/xpcom/io/nsAppFileLocationProvider.cpp
 @@ -235,19 +235,19 @@ nsAppFileLocationProvider::GetFile(const
          rv = GetProductDirectory(getter_AddRefs(localFile));
          if (NS_SUCCEEDED(rv))
@@ -185,21 +187,21 @@ diff -ruN mozilla-central-orig/xpcom/io/nsAppFileLocationProvider.cpp mozilla-ce
  #endif
      else if (nsCRT::strcmp(prop, NS_APP_SEARCH_DIR) == 0)
      {
-diff -ruN mozilla-central-orig/config/rules.mk mozilla-central/config/rules.mk
---- mozilla-central-orig/config/rules.mk     2010-03-22 12:47:26.000000000 -0700
-+++ mozilla-central/config/rules.mk       2010-03-22 12:47:35.000000000 -0700
+diff -ruN mozilla-release-orig/config/rules.mk mozilla-release/config/rules.mk
+--- mozilla-release-orig/config/rules.mk     2010-03-22 12:47:26.000000000 -0700
++++ mozilla-release/config/rules.mk       2010-03-22 12:47:35.000000000 -0700
 @@ -121,6 +121,11 @@
- EXPAND_MOZLIBNAME = $(addprefix -l,$(1))
- endif          
+ EXTRA_DSO_LIBS	:= $(call EXPAND_MOZLIBNAME,$(EXTRA_DSO_LIBS))
+ endif
  
 +# patch for darwin8 (needed for gtk+2 build):
 +# EXPAND_DYLIB_NAME - $(call EXPAND_DYLIB_NAME,foo)
 +# expands to -dylib_file $(installdir)/libfoo.dylib:$(DISTLIB)/libfoo.dylib
 +EXPAND_DYLIB_NAME = -dylib_file $(installdir)/$(DLL_PREFIX)$(1)$(DLL_SUFFIX):$(DISTLIB)/$(DLL_PREFIX)$(1)$(DLL_SUFFIX)
 +
- ifdef MOZ_FAKELIBS
- # If a lib.fake is present, replace it with @lib.fake, otherwise just pass
- # the library name through unchanged.
+ 
+ ################################################################################
+ # Testing frameworks support
 @@ -485,7 +490,7 @@
  
  define SUBMAKE # $(call SUBMAKE,target,directory)
@@ -257,11 +259,11 @@ diff -ruN mozilla-central-orig/config/rules.mk mozilla-central/config/rules.mk
  endif
  else # !WINNT || GNU_CC
  ifeq ($(CPP_PROG_LINK),1)
--	$(CCC) -o $@ $(CXXFLAGS) $(WRAP_MALLOC_CFLAGS) $(PROGOBJS) $(RESFILE) $(WIN32_EXE_LDFLAGS) $(LDFLAGS) $(LIBS_DIR) $(call EXPAND_FAKELIBS,$(LIBS) $(OS_LIBS) $(EXTRA_LIBS)) $(BIN_FLAGS) $(call EXPAND_FAKELIBS,$(WRAP_MALLOC_LIB)) $(EXE_DEF_FILE)
-+	$(CCC) -o $@ $(WRAP_MALLOC_CFLAGS) $(PROGOBJS) $(RESFILE) $(WIN32_EXE_LDFLAGS) $(LDFLAGS) $(LIBS_DIR) $(call EXPAND_FAKELIBS,$(LIBS) $(OS_LIBS) $(EXTRA_LIBS)) $(BIN_FLAGS) $(call EXPAND_FAKELIBS,$(WRAP_MALLOC_LIB)) $(EXE_DEF_FILE)
+-	$(EXPAND_CCC) -o $@ $(CXXFLAGS) $(WRAP_MALLOC_CFLAGS) $(PROGOBJS) $(RESFILE) $(WIN32_EXE_LDFLAGS) $(LDFLAGS) $(LIBS_DIR) $(LIBS) $(OS_LIBS) $(EXTRA_LIBS) $(BIN_FLAGS) $(WRAP_MALLOC_LIB) $(EXE_DEF_FILE)
++	$(EXPAND_CCC) -o $@ $(WRAP_MALLOC_CFLAGS) $(PROGOBJS) $(RESFILE) $(WIN32_EXE_LDFLAGS) $(LDFLAGS) $(LIBS_DIR) $(LIBS) $(OS_LIBS) $(EXTRA_LIBS) $(BIN_FLAGS) $(WRAP_MALLOC_LIB) $(EXE_DEF_FILE)
  else # ! CPP_PROG_LINK
--	$(CC) -o $@ $(CFLAGS) $(PROGOBJS) $(RESFILE) $(WIN32_EXE_LDFLAGS) $(LDFLAGS) $(LIBS_DIR) $(call EXPAND_FAKELIBS,$(LIBS) $(OS_LIBS) $(EXTRA_LIBS)) $(BIN_FLAGS) $(EXE_DEF_FILE)
-+	$(CC) -o $@ $(PROGOBJS) $(RESFILE) $(WIN32_EXE_LDFLAGS) $(LDFLAGS) $(LIBS_DIR) $(call EXPAND_FAKELIBS,$(LIBS) $(OS_LIBS) $(EXTRA_LIBS)) $(BIN_FLAGS) $(EXE_DEF_FILE)
+-	$(EXPAND_CC) -o $@ $(CFLAGS) $(PROGOBJS) $(RESFILE) $(WIN32_EXE_LDFLAGS) $(LDFLAGS) $(LIBS_DIR) $(LIBS) $(OS_LIBS) $(EXTRA_LIBS) $(BIN_FLAGS) $(EXE_DEF_FILE)
++	$(EXPAND_CC) -o $@ $(PROGOBJS) $(RESFILE) $(WIN32_EXE_LDFLAGS) $(LDFLAGS) $(LIBS_DIR) $(LIBS) $(OS_LIBS) $(EXTRA_LIBS) $(BIN_FLAGS) $(EXE_DEF_FILE)
  endif # CPP_PROG_LINK
  endif # WINNT && !GNU_CC
  endif # WINCE
@@ -274,21 +276,21 @@ diff -ruN mozilla-central-orig/config/rules.mk mozilla-central/config/rules.mk
  	$(LOOP_OVER_PARALLEL_DIRS)
  	$(LOOP_OVER_DIRS)
  	$(LOOP_OVER_TOOL_DIRS)
---- mozilla-central-orig/client.mk	2010-12-14 17:02:33.000000000 -0800
-+++ mozilla-central/client.mk	2010-12-28 16:37:53.000000000 -0800
+--- mozilla-release-orig/client.mk	2010-12-14 17:02:33.000000000 -0800
++++ mozilla-release/client.mk	2010-12-28 16:37:53.000000000 -0800
 @@ -207,11 +207,11 @@
  endif
  
  profiledbuild::
--	$(MAKE) -f $(TOPSRCDIR)/client.mk build MOZ_PROFILE_GENERATE=1
+-	$(MAKE) -f $(TOPSRCDIR)/client.mk realbuild MOZ_PROFILE_GENERATE=1
 -	$(MAKE) -C $(PGO_OBJDIR) package
-+	+$(MAKE) -f $(TOPSRCDIR)/client.mk build MOZ_PROFILE_GENERATE=1
++	+$(MAKE) -f $(TOPSRCDIR)/client.mk realbuild MOZ_PROFILE_GENERATE=1
 +	+$(MAKE) -C $(PGO_OBJDIR) package
  	OBJDIR=${PGO_OBJDIR} $(PROFILE_GEN_SCRIPT)
 -	$(MAKE) -f $(TOPSRCDIR)/client.mk maybe_clobber_profiledbuild
--	$(MAKE) -f $(TOPSRCDIR)/client.mk build MOZ_PROFILE_USE=1
+-	$(MAKE) -f $(TOPSRCDIR)/client.mk realbuild MOZ_PROFILE_USE=1
 +	+$(MAKE) -f $(TOPSRCDIR)/client.mk maybe_clobber_profiledbuild
-+	+$(MAKE) -f $(TOPSRCDIR)/client.mk build MOZ_PROFILE_USE=1
++	+$(MAKE) -f $(TOPSRCDIR)/client.mk realbuild MOZ_PROFILE_USE=1
  
  #####################################################
  # Build date unification
@@ -312,7 +314,7 @@ diff -ruN mozilla-central-orig/config/rules.mk mozilla-central/config/rules.mk
 @@ -253,7 +253,7 @@
  
  ifeq (,$(MOZ_CURRENT_PROJECT)$(if $(MOZ_BUILD_PROJECTS),,1))
- configure depend build install export libs clean realclean distclean alldep preflight postflight maybe_clobber_profiledbuild upload sdk::
+ configure depend realbuild install export libs clean realclean distclean alldep preflight postflight maybe_clobber_profiledbuild upload sdk::
 -	set -e; \
 +	+set -e; \
  	for app in $(MOZ_BUILD_PROJECTS); do \
@@ -337,7 +339,7 @@ diff -ruN mozilla-central-orig/config/rules.mk mozilla-central/config/rules.mk
  ####################################
  # Preflight
  
- build alldep preflight::
+ realbuild alldep preflight::
  ifdef MOZ_PREFLIGHT
 -	set -e; \
 +	+set -e; \
@@ -347,7 +349,7 @@ diff -ruN mozilla-central-orig/config/rules.mk mozilla-central/config/rules.mk
 @@ -342,21 +342,21 @@
  # Build it
  
- build::  $(OBJDIR)/Makefile $(OBJDIR)/config.status
+ realbuild::  $(OBJDIR)/Makefile $(OBJDIR)/config.status
 -	$(MOZ_MAKE)
 +	+$(MOZ_MAKE)
  
@@ -362,7 +364,7 @@ diff -ruN mozilla-central-orig/config/rules.mk mozilla-central/config/rules.mk
  ####################################
  # Postflight
  
- build alldep postflight::
+ realbuild alldep postflight::
  ifdef MOZ_POSTFLIGHT
 -	set -e; \
 +	+set -e; \

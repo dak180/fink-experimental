@@ -53,7 +53,7 @@ Source2-MD5: a36e2a6da1deab5f72030cd04e44974e
 Source3: http://tenfourfox.googlecode.com/files/ldx3.zip
 Source3-MD5: 849c5bc88f06387bbd2040cf804204e7
 PatchFile: %n.patch
-PatchFile-MD5: 54a6d68b8289a0224d76d9e8f42335d7
+PatchFile-MD5: 673d070456a618274174c5d4bac0767a
 PatchScript: <<
   #!/bin/sh -ev
   # apply patchset from TenFourFox:
@@ -65,15 +65,23 @@ PatchScript: <<
   test -z "$patch_err" || { echo "Patch error above.  Aborting." ; exit 1;}
   ### apply the patch
   echo "Applying patch %{PatchFile} ..."
-  /usr/bin/sed -e 's|@FINKPREFIX@|%p|g' -e 's|@FINK_ARCH_TARGET@|%m|g' <%{PatchFile} | /usr/bin/patch -p1
+  /usr/bin/sed -e 's|@FINKPREFIX@|%p|g' \
+	-e 's|@FINK_ARCH_TARGET@|%m|g' \
+	-e 's|@SRCDIR@|%b|g' \
+	< %{PatchFile} | /usr/bin/patch -p1
   # leave @executable_path alone and take care of adjusting install_names
   # between build and install, below.
   # configure inputs were patched, hence regeneration
   export PATH=%p/lib/autoconf2.13/bin:$PATH
   autoconf
   # new Xcode 3 linker (2.5's does not suffice)
-  ln -s ../ldx3 ld
-  sed -i.orig -e 's|/usr/bin/ldx3|'`pwd`/bin/ldx3 SHIM.ld
+  mkdir -p opt-bin
+  pushd opt-bin
+    ln -s /usr/bin/ld ld32
+    ln -s ../../ldx3 .
+  popd
+  sed -e '/^#/!s|/usr/bin|%b/opt-bin|' SHIM.ld > opt-bin/ld
+  chmod +x opt-bin/ld
 <<
 # even on 10.5
 SetMACOSX_DEPLOYMENT_TARGET: 10.4
