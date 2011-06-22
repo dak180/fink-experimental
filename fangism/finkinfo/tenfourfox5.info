@@ -25,6 +25,7 @@ BuildConflicts: <<
 BuildDepends: <<
 	autoconf2.13-legacy,
 	bzip2-dev,
+	ccache,
 #	dbus-dev,
 	fink (>= 0.28-1),
 	fink-package-precedence,
@@ -53,7 +54,7 @@ Source2-MD5: a36e2a6da1deab5f72030cd04e44974e
 Source3: http://tenfourfox.googlecode.com/files/ldx3.zip
 Source3-MD5: 849c5bc88f06387bbd2040cf804204e7
 PatchFile: %n.patch
-PatchFile-MD5: 673d070456a618274174c5d4bac0767a
+PatchFile-MD5: 92945662457877500669f1a68baf2437
 PatchScript: <<
   #!/bin/sh -ev
   # apply patchset from TenFourFox:
@@ -97,8 +98,8 @@ make=%p/bin/make
 echo "open -a %p/Applications/TenFourFox.app \"$@\"" ;} > tenfourfox
 chmod +x tenfourfox
 
-# pwd for ldx3
-export PATH=`pwd`:%p/lib/autoconf2.13/bin:$PATH
+export LD64=1
+export PATH=%p/lib/autoconf2.13/bin:$PATH
 export PKG_CONFIG_PATH=%p/lib/system-openssl/lib/pkgconfig:$PKG_CONFIG_PATH
 $make -w -f client.mk build
 objdir=obj-%m-apple-darwin`uname -r`

@@ -1,5 +1,5 @@
 +++ mozilla-release/.mozconfig	2009-04-27 16:56:30.000000000 -0400
-@@ -0,0 +1,52 @@
+@@ -0,0 +1,53 @@
 +# sh
 +# Build configuration script
 +#
@@ -14,13 +14,14 @@
 +mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-@FINK_ARCH_TARGET@-apple-darwin`uname -r`
 +mk_add_options AUTOCONF=autoconf
 +SRCDIR=@SRCDIR@
++GCC_PREFIX="flag-sort ccache"
 +GCC_EXEC_OVERRIDE="-B$SRCDIR/opt-bin"
-+CC="flag-sort gcc-4.0 $GCC_EXEC_OVERRIDE"
-+CXX="flag-sort g++-4.0 $GCC_EXEC_OVERRIDE"
++CC="$GCC_PREFIX gcc-4.0 $GCC_EXEC_OVERRIDE"
++CXX="$GCC_PREFIX g++-4.0 $GCC_EXEC_OVERRIDE"
 +ac_add_options --target=@FINK_ARCH_TARGET@-apple-darwin`uname -r`
 +ac_add_options --with-macos-sdk=/Developer/SDKs/MacOSX10.4u.sdk
-+HOST_CC="flag-sort gcc-4.0 $GCC_EXEC_OVERRIDE"
-+HOST_CXX="flag-sort g++-4.0 $GCC_EXEC_OVERRIDE"
++HOST_CC="$CC"
++HOST_CXX="$CXX"
 +RANLIB=/usr/bin/ranlib
 +AR=/usr/bin/ar
 +AS=$CC
