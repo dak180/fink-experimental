@@ -1,5 +1,5 @@
 Package: rtorrent
-Version: 0.8.6
+Version: 0.8.9
 Revision: 1
 License: GPL
 HomePage: http://libtorrent.rakshasa.no
@@ -11,7 +11,7 @@ Depends: <<
 	libsigc++2-shlibs, 
 	libcurl4-shlibs (>= 7.12.0-1), 
 	libncursesw5-shlibs, 
-	libtorrent12-shlibs (>= 0.12.6-1)
+	libtorrent12-shlibs (>= 0.12.9-1)
 <<
 BuildDepends: <<
         libssh2.1,
@@ -19,12 +19,12 @@ BuildDepends: <<
 	libcurl4 (>= 7.12.0-1), 
 	pkgconfig (>= 0.9-1), 
 	libncursesw5, 
-	libtorrent12 (>= 0.12.6-1)
+	libtorrent12 (>= 0.12.9-1)
 <<
 BuildConflicts: openssl-dev, openssl097-dev, openssl098-dev
 
 Source: http://libtorrent.rakshasa.no/downloads/%n-%v.tar.gz
-Source-MD5: b804c45c01c40312926bcea6b55bb084
+Source-MD5: 629247636cb1210663b52dadbd040a6c
 # Source-SHA1: ffce3959ba91738bb444d689db3db1e2375b14ce
 
 GCC: 4.0
