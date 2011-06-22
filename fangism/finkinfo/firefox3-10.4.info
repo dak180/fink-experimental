@@ -1,6 +1,6 @@
 Info3: <<
 Package: firefox3
-Version: 3.6.17
+Version: 3.6.18
 Revision: 1
 Architecture: i386, powerpc
 Distribution: 10.4
@@ -46,7 +46,7 @@ BuildDepends: <<
 	pango1-xft2-ft219-dev (>= 1.24.5-4),
 	pixman (>= 0.16.0-1),
 	pkgconfig (>= 0.23),
-	sqlite3-dev (>= 3.6.22-1),
+	sqlite3-dev (>= 3.7.4-1),
 	system-sdk-10.4,
 #	system-sdk-10.5,
 	x11-dev,
@@ -54,7 +54,7 @@ BuildDepends: <<
 <<
 Source: http://releases.mozilla.org/pub/mozilla.org/firefox/releases/%v/source/firefox-%v.source.tar.bz2
 SourceDirectory: mozilla-1.9.2
-Source-MD5: 49509c51010bd91a198aee63780aeaf9
+Source-MD5: 2f1b6f82c6f3fa59254b32468e29e008
 PatchFile: %n-10.4.patch
 PatchFile-MD5: 961e2c578d72912d7706720f3e194350
 PatchScript: <<
@@ -169,7 +169,7 @@ SplitOff3: <<
 	libgettext8-shlibs,
 	libjpeg8-shlibs,
 	pango1-xft2-ft219-shlibs (>= 1.24.5-4),
-	sqlite3-shlibs (>= 3.6.22-1),
+	sqlite3-shlibs (>= 3.7.4-1),
 	x11-shlibs
   <<
   Description: Lightweight browser from mozilla.org (shared libraries)
@@ -239,6 +239,8 @@ DescPort: <<
 GTK+2 build of the Mozilla Firefox browser for Mac OS X/X11.  Compiled 
 without built-in support for GNOME (except for an app launcher button).
 
+## following option was removed so that it can build with XCode4.
+## kept here as a note for future reference
 ac_add_options --enable-macos-target=foo in patch file (.mozconfig) is 
 for the minimum OS version that this will compile in, so usually the 
 lowest Distribution used in the Fink tree this lives in.
