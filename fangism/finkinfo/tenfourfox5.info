@@ -25,7 +25,6 @@ BuildConflicts: <<
 BuildDepends: <<
 	autoconf2.13-legacy,
 	bzip2-dev,
-	ccache,
 #	dbus-dev,
 	fink (>= 0.28-1),
 	fink-package-precedence,
@@ -54,7 +53,7 @@ Source2-MD5: a36e2a6da1deab5f72030cd04e44974e
 Source3: http://tenfourfox.googlecode.com/files/ldx3.zip
 Source3-MD5: 849c5bc88f06387bbd2040cf804204e7
 PatchFile: %n.patch
-PatchFile-MD5: 92945662457877500669f1a68baf2437
+PatchFile-MD5: 63c190acd1a86fda0d1f57164b6147ea
 PatchScript: <<
   #!/bin/sh -ev
   # apply patchset from TenFourFox:

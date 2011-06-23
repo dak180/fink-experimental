@@ -14,7 +14,7 @@
 +mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-@FINK_ARCH_TARGET@-apple-darwin`uname -r`
 +mk_add_options AUTOCONF=autoconf
 +SRCDIR=@SRCDIR@
-+GCC_PREFIX="flag-sort ccache"
++GCC_PREFIX="flag-sort"
 +GCC_EXEC_OVERRIDE="-B$SRCDIR/opt-bin"
 +CC="$GCC_PREFIX gcc-4.0 $GCC_EXEC_OVERRIDE"
 +CXX="$GCC_PREFIX g++-4.0 $GCC_EXEC_OVERRIDE"
