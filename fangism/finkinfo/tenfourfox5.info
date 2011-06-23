@@ -73,7 +73,7 @@ PatchScript: <<
   # leave @executable_path alone and take care of adjusting install_names
   # between build and install, below.
   # configure inputs were patched, hence regeneration
-  export PATH=%p/lib/autoconf2.13/bin:$PATH
+  export PATH=%b/opt-bin:%p/lib/autoconf2.13/bin:$PATH
   autoconf
   # new Xcode 3 linker (2.5's does not suffice)
   mkdir -p opt-bin
