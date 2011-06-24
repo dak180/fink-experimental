@@ -3,7 +3,7 @@ Package: grass64%type_pkg[gui]
 Type: gui (-mac -x11)
 Distribution: (%type_raw[gui] = -x11) 10.4, (%type_raw[gui] = -x11) 10.5, (%type_raw[gui] = -mac) 10.6
 Version: 6.4.0
-Revision: 5
+Revision: 6
 Conflicts: grass64, grass64-mac, grass64-x11
 Replaces: grass64, grass64-mac, grass64-x11
 
@@ -14,8 +14,8 @@ Maintainer: Kurt Schwehr <goatbar@users.sourceforge.net>
 DescDetail: <<
 Very Powerful Geographical Information System with CLI and GUI. 
 
-PostgreSQL: 8.3
-Python: 2.6
+PostgreSQL: 8.4
+Python: 2.7
 SQLite: 3
 
 Mac version (10.6 only) uses Mac's TclTk.
@@ -34,17 +34,18 @@ Depends: <<
 <<
 BuildDepends: <<
     fink (>= 0.28),
-        ncurses-dev,
-	libiconv-dev, readline5, libgettext3-dev, gettext-tools,
+    libncurses5,
+    libgettext8-dev, gettext-tools,
+	libiconv-dev, readline5, 
 	fftw3,
 	gdal-dev, 
-	libjpeg, libpng3, libtiff,
+	libjpeg8, libpng3, libtiff,
 	unixodbc2 | unixodbc2-nox,
-	szip, hdf5-18 | hdf5, xerces-c-dev, libogdi3,
+	szip, hdf5-18, xerces-c-dev, libogdi3,
 	postgresql83-dev,
-	python26,
+	python27,
 	sqlite3-dev,
-	(%type_raw[gui] = -x11) wxgtk2.8-py26-dev
+	(%type_raw[gui] = -x11) wxgtk2.8-py27-dev
 <<
 
 Source: http://grass.itc.it/grass64/source/grass-%vRC6.tar.gz
@@ -125,15 +126,17 @@ SplitOff2: <<
   Conflicts: grass64-shlibs, grass64-mac-shlibs, grass64-x11-shlibs
   Replaces: grass64-shlibs, grass64-mac-shlibs, grass64-x11-shlibs
   Depends: <<
-  	ncurses-shlibs,
+  	libncurses5-shlibs,
+  	libgettext8-shlibs,
 	fftw3-shlibs, 
 	gdal-shlibs, 
-	gettext, libjpeg-shlibs, libpng3-shlibs, libtiff-shlibs,
-	postgresql83-shlibs,
-	python26-shlibs,
+	gettext, libjpeg8-shlibs, libpng3-shlibs, libtiff-shlibs,
+	hdf5-18-shlibs,
+	postgresql84-shlibs,
+	python27-shlibs,
 	sqlite3-shlibs,
 	unixodbc2-shlibs | unixodbc2-nox-shlibs,
-	(%type_raw[gui] = -x11) wxgtk2.8-py26
+	(%type_raw[gui] = -x11) wxgtk2.8-py27
 <<
   Files: Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_*.dylib lib/GRASS
   Shlibs: <<

@@ -1,9 +1,9 @@
 Info4: <<
 Package: pgrouting%type_pkg[postgresql]
 Version: 1.05
-Revision: 0.3
+Revision: 2
 Description: Geospatial routing functionality for PostGIS
-Type: postgresql (8.4 9.0)
+Type: postgresql (9.0 8.4 8.3 8.2 8.1 8.0)
 License: BSD
 Maintainer: BABA Yoshihiko <babayoshihiko@mac.com>
 
@@ -21,7 +21,12 @@ BuildDepends: <<
   proj
 <<
 BuildConflicts: <<
-  (%type_pkg[postgresql]=90) postgresql84-dev, (%type_pkg[postgresql]=84) postgresql90-dev
+  (%type_pkg[postgresql]!=90) postgresql90-dev,
+  (%type_pkg[postgresql]!=84) postgresql84-dev,
+  (%type_pkg[postgresql]!=83) postgresql83-dev,
+  (%type_pkg[postgresql]!=82) postgresql82-dev,
+  (%type_pkg[postgresql]!=81) postgresql81-dev,
+  (%type_pkg[postgresql]!=80) postgresql81-dev
 <<
 GCC: 4.0
 
