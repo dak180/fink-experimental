@@ -71,7 +71,7 @@ PatchScript: <<
   # leave @executable_path alone and take care of adjusting install_names
   # between build and install, below.
   # bypass python version check b/c dies on darwin9, bdep enforces >= 2.5
-  sed -i.nobypass -e '/^_python_res=/s|=.*|=0|' configure.in
+  sed -i.nobypass -e '/PYTHON.*PYTHON_VERSION/s|.*|:|' configure.in
   # configure inputs were patched, hence regeneration
   export PATH=%p/lib/autoconf2.13/bin:$PATH
   autoconf
