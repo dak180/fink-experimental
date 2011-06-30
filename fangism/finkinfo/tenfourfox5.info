@@ -241,6 +241,14 @@ Bunch of patches to rules.mk and client.mk are for enabling
 parallel builds to share the same jobserver as the master/parent
 make, so recursive instances of make benefit from -jN MAKEFLAGS.  
 
+Compiling on darwin9 (10.5) was a big pain (MACOSX_DEPLOYMENT_TARGET):
+M_D_T needed to be set to 10.4 to use the 10.4 SDK.
+Python scripts (wrappers) however need M_D_T equal to that with which
+python was built, which happens to be 10.5.
+M_D_T was overriden in wrapped calls to python, but then gcc 
+needed the outermost M_D_T, so CC/CXX were wrapped in yet
+another layer of M_D_T.
+
 Using system-provided libraries:
 --------------------------------
 . system-png cannot be used because it lacks APNG (upstream won't include it)
