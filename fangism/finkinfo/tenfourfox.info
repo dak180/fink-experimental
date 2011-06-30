@@ -173,9 +173,13 @@ rm -f /Applications/Fink/TenFourFox.app
 DocFiles: LEGAL LICENSE README.txt toolkit/content/license.html
 # shlibs are all private for now, until there is actual interest in them
 Shlibs: <<
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libangle.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libfreebl3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libgkgfx.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libmozalloc.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libmozjs.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libmozsqlite3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libmozz.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libnspr4.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libnss3.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libnssckbi.dylib
@@ -186,7 +190,10 @@ Shlibs: <<
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libsmime3.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libsoftokn3.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libssl3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libthebes.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libxpcom.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libxpcom_core.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libycbcr.dylib
 <<
 Homepage: http://www.tenfourfox.com/
 DescDetail: <<
