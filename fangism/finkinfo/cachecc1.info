@@ -8,6 +8,7 @@ Source: http://sourceforge.net/projects/%n/files/%n/%n-%v/%n-%v.tar.gz
 Source-MD5: ffe7a9391af62d4153673a4ee4dfde2f
 License: GPL
 BuildDependsOnly: true
+BuildDepends: fink (>= 0.24.12)
 PatchFile: %n.patch
 PatchFile-MD5: 8bcc95cef1bae7af2d2234adbdb5d59a
 CompileScript: <<
