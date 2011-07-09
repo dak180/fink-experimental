@@ -1,0 +1,57 @@
+Package: cachecc1
+Version: 0.3
+Revision: 1
+Description: GCC plug-in for caching bootstraps
+Maintainer: David Fang <fangism@users.sourceforge.net>
+Source: http://sourceforge.net/projects/%n/files/%n/%n-%v/%n-%v.tar.gz
+# Source: mirror:sourceforge:projects/%n/files/%n/%n-%v/%n-%v.tar.gz
+Source-MD5: ffe7a9391af62d4153673a4ee4dfde2f
+License: GPL
+BuildDependsOnly: true
+PatchFile: %n.patch
+PatchFile-MD5: 8bcc95cef1bae7af2d2234adbdb5d59a
+CompileScript: <<
+  #!/bin/sh -ev
+  make
+<<
+InstallScript: <<
+  #!/bin/sh -ev
+  mkdir -p %i/lib
+  cp bin/cachecc1.so %i/lib/
+<<
+DocFiles: COPYING README.*
+DescDetail: <<
+It works as follows:
+gcc compilation is divided into 3 steps:
+        1) cpp : the sources files a preprocessed into one C/C++ file (send
+                though a pipe, or written into a temporary file)
+        2) cc1/cc1plus : the preprocessed file is concerted into an assembly
+                language file
+        3) as : the assembly language file is converted into an object file
+
+cachecc1 assumes that if
+	1) the input of cc1/cc1plus is the same
+	2) cc1/cc1plus is the same
+	3) the cc1/cc1plus invocation parameters are the same
+then the output is the same.
+
+cachecc1.so does the following :
+	1) overload exec* calls of the libc library in order to :
+	2) disable the '-pipe' parameter sometimes given to gcc (cachecc1
+	    breaks the parallelism that allows '-pipe', and reading results
+	    from cpp and cc1/cc1plus in files is a lot faster that reading
+	    pipes, so '-pipe' does not make sense in this context)
+	3) wrap calls to cc1/cc1plus/as
+<<
+DescUsage: <<
+To use it, you need to define 2 variables:
+	1) CACHECC1_DIR : the pathname of the cache
+	2) LD_PRELOAD : to tell the dynamic loader to load cachecc1.so
+<<
+DescPackaging: <<
+The cachecc1.so plug-in is installed in %p/lib/.
+<<
+DescPort: <<
+This was never ported to darwin before, and could use some help, 
+especially regarding .global assembly directives.
+<<

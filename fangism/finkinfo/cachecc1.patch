@@ -1,0 +1,30 @@
+diff -u -r cachecc1-0.3/followcc1.c cachecc1-0.3-patched/followcc1.c
+--- cachecc1-0.3/followcc1.c	2004-03-28 12:49:20.000000000 -0800
++++ cachecc1-0.3-patched/followcc1.c	2011-07-08 17:37:43.000000000 -0700
+@@ -37,6 +37,7 @@
+ #include <fcntl.h>
+ #include <string.h>
+ #include <poll.h>
++#undef _POSIX_C_SOURCE
+ #include <dlfcn.h>
+ 
+ #include "cachecc1.h"
+@@ -54,6 +55,9 @@
+ int real_execve(const char *name, char *const argv[], char *const envp[])
+ {
+     static int (*real_fun)() = 0;
++#ifdef __APPLE__
++    char *execve_name = "execve";
++#endif
+ #ifdef __linux
+     char *execve_name = "execve";
+ #endif
+@@ -124,7 +128,7 @@
+             char *fname;
+             strcpy(ifgcc3, "CACHECC1_ifgcc3=");
+             fname = &ifgcc3[strlen(ifgcc3)];
+-            sprintf(fname, "%s/gcc3_%lx_%lx_%lx_%lx",
++            sprintf(fname, "%s/gcc3_%lx_%llx_%x_%lx",
+                     env_dir,
+                     st.st_mtime, st.st_size, st.st_ino, (long)st.st_dev);
+             if (!access(fname, F_OK)) {
