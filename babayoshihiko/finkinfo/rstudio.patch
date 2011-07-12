@@ -1,0 +1,107 @@
+diff -ruN rstudio-rstudio-a250b30/CMakeGlobals.txt rstudio-rstudio-a250b30-new/CMakeGlobals.txt
+--- rstudio-rstudio-a250b30/CMakeGlobals.txt	2011-06-12 00:09:57.000000000 +0900
++++ rstudio-rstudio-a250b30-new/CMakeGlobals.txt	2011-07-12 12:31:08.000000000 +0900
+@@ -13,17 +13,17 @@
+ 
+ # version info
+ if ("$ENV{RSTUDIO_VERSION_MAJOR}" STREQUAL "")
+-  set(CPACK_PACKAGE_VERSION_MAJOR "99")
++  set(CPACK_PACKAGE_VERSION_MAJOR "0")
+ else()
+   set(CPACK_PACKAGE_VERSION_MAJOR $ENV{RSTUDIO_VERSION_MAJOR})
+ endif()
+ if ("$ENV{RSTUDIO_VERSION_MINOR}" STREQUAL "")
+-  set(CPACK_PACKAGE_VERSION_MINOR "9")
++  set(CPACK_PACKAGE_VERSION_MINOR "94")
+ else()
+   set(CPACK_PACKAGE_VERSION_MINOR $ENV{RSTUDIO_VERSION_MINOR})
+ endif()
+ if ("$ENV{RSTUDIO_VERSION_PATCH}" STREQUAL "")
+-  set(CPACK_PACKAGE_VERSION_PATCH "9")
++  set(CPACK_PACKAGE_VERSION_PATCH "82")
+ else()
+   set(CPACK_PACKAGE_VERSION_PATCH $ENV{RSTUDIO_VERSION_PATCH})
+ endif()
+diff -ruN rstudio-rstudio-a250b30/cmake/modules/FindLibR.cmake rstudio-rstudio-a250b30-new/cmake/modules/FindLibR.cmake
+--- rstudio-rstudio-a250b30/cmake/modules/FindLibR.cmake	2011-06-12 00:09:57.000000000 +0900
++++ rstudio-rstudio-a250b30-new/cmake/modules/FindLibR.cmake	2011-07-11 07:35:12.000000000 +0900
+@@ -22,9 +22,9 @@
+ 
+    find_library(LIBR_LIBRARIES R)
+    if(LIBR_LIBRARIES)
+-      set(LIBR_HOME "${LIBR_LIBRARIES}/Resources" CACHE PATH "R home directory")
+-      set(LIBR_INCLUDE_DIRS "${LIBR_HOME}/include" CACHE PATH "R include directory")
+-      set(LIBR_DOC_DIR "${LIBR_HOME}/doc" CACHE PATH "R doc directory")
++      set(LIBR_HOME "@PREFIX@/Library/Frameworks/R.framework/Resources" CACHE PATH "R home directory")
++      set(LIBR_INCLUDE_DIRS "@PREFIX@/Library/Frameworks/R.framework/Headers" CACHE PATH "R include directory")
++      set(LIBR_DOC_DIR "@PREFIX@/Library/Frameworks/R.framework/Resources/doc" CACHE PATH "R doc directory")
+    endif()
+ 
+ # detection for UNIX & Win32
+Binary files rstudio-rstudio-a250b30/dependencies/.DS_Store and rstudio-rstudio-a250b30-new/dependencies/.DS_Store differ
+diff -ruN rstudio-rstudio-a250b30/dependencies/common/install-gwt rstudio-rstudio-a250b30-new/dependencies/common/install-gwt
+--- rstudio-rstudio-a250b30/dependencies/common/install-gwt	2011-06-12 00:09:57.000000000 +0900
++++ rstudio-rstudio-a250b30-new/dependencies/common/install-gwt	2011-07-11 07:36:22.000000000 +0900
+@@ -46,7 +46,7 @@
+ then
+    echo "$GIN_ZIP already installed"
+ else
+-   download $GIN_ZIP
++   # download $GIN_ZIP
+    mkdir -p "$LIB_DIR/gin/$GIN_VER"
+    unzip -qd "$LIB_DIR/gin/$GIN_VER" "$GIN_ZIP"
+    rm $GIN_ZIP
+@@ -60,7 +60,7 @@
+ then
+    echo "$GWT_SDK_ZIP already installed"
+ else
+-   download $GWT_SDK_ZIP
++   # download $GWT_SDK_ZIP
+    mkdir -p "$LIB_DIR/gwt"
+    unzip -qd "$LIB_DIR" "$GWT_SDK_ZIP"
+    mv "$LIB_DIR/$GWT_SDK" "$LIB_DIR/gwt/$GWT_SDK_VER"
+diff -ruN rstudio-rstudio-a250b30/dependencies/osx/install-dependencies-osx rstudio-rstudio-a250b30-new/dependencies/osx/install-dependencies-osx
+--- rstudio-rstudio-a250b30/dependencies/osx/install-dependencies-osx	2011-06-12 00:09:57.000000000 +0900
++++ rstudio-rstudio-a250b30-new/dependencies/osx/install-dependencies-osx	2011-07-11 07:37:31.000000000 +0900
+@@ -21,9 +21,9 @@
+ ./install-gwt
+ 
+ # boost
+-./install-boost
++# ./install-boost
+ 
+ cd ../osx
+ 
+ # enable PAM
+-sudo cp /etc/pam.d/ftpd /etc/pam.d/rstudio
++# sudo cp /etc/pam.d/ftpd /etc/pam.d/rstudio
+diff -ruN rstudio-rstudio-a250b30/src/cpp/core/r_util/REnvironmentPosix.cpp rstudio-rstudio-a250b30-new/src/cpp/core/r_util/REnvironmentPosix.cpp
+--- rstudio-rstudio-a250b30/src/cpp/core/r_util/REnvironmentPosix.cpp	2011-06-12 00:09:57.000000000 +0900
++++ rstudio-rstudio-a250b30-new/src/cpp/core/r_util/REnvironmentPosix.cpp	2011-07-12 13:48:39.000000000 +0900
+@@ -81,6 +81,7 @@
+    rScriptPaths.push_back("/usr/bin/R");
+    rScriptPaths.push_back("/usr/local/bin/R");
+    rScriptPaths.push_back("/opt/local/bin/R");
++   rScriptPaths.push_back("@PREFIX@/Library/Frameworks/R.framework/R");
+    return scanForRScript(rScriptPaths, pErrMsg);
+ }
+ 
+@@ -140,7 +141,7 @@
+                                     std::string* pErrMsg)
+ {
+    // home path
+-   *pHomePath = FilePath("/Library/Frameworks/R.framework/Resources");
++   *pHomePath = FilePath("@PREFIX@/Library/Frameworks/R.framework/Resources");
+ 
+    // lib path
+    std::string rLibPath;
+@@ -597,7 +598,7 @@
+       rLibPath = FilePath();
+       scriptVars.clear();
+       std::string scriptErrMsg;
+-      rScriptPath = "/Library/Frameworks/R.framework/Resources/bin/R";
++      rScriptPath = "@PREFIX@/Library/Frameworks/R.framework/Resources/bin/R";
+       if (!detectRLocationsUsingFramework(&rHomePath,
+                                           &rLibPath,
+                                           &scriptVars,
+Binary files rstudio-rstudio-a250b30/src/cpp/server/.DS_Store and rstudio-rstudio-a250b30-new/src/cpp/server/.DS_Store differ

@@ -1,0 +1,67 @@
+Package: rstudio-desktop
+Version: 0.94.82
+Revision: 0.3
+Description: IDE for R
+License: GPL
+Homepage: http://rstudio.org
+Maintainer: BABA Yoshihiko <babayoshihiko@mac.com>
+Depends: <<
+  r-base, 
+  qt4-base-mac-core-shlibs
+<<
+BuildDepends: << 
+  fink (>= 0.28), cmake, boost1.46.nopython,
+  qt4-base-mac
+<<
+Source: http://homepage.mac.com/babayoshihiko/fink/rstudio-rstudio-v%v-0-ga250b30.tar.gz
+Source-MD5: 43754f89fe079700c5d3a181968133e3
+SourceDirectory: rstudio-rstudio-a250b30
+# Source: https://github.com/rstudio/rstudio/zipball/rstudio-rstudio-v0.93.91-1-g12cb413.tar.gz
+# Source-MD5: 989e64f2e29ab447c1955a35c71a868a
+# SourceDirectory: rstudio-rstudio-12cb413
+Source2: https://s3.amazonaws.com/rstudio-buildtools/gin-1.5.zip
+Source2-MD5: 2409168cc18bf5f341e107e6887fe359
+Source3: https://s3.amazonaws.com/rstudio-buildtools/gwt-2.3.0.zip
+Source3-MD5: 785cac54f4c359a98e8f5898d5a43dfa
+PatchFile: rstudio.patch
+PatchFile-MD5: bb192dbfbfa4aa88859ba9b9bda77cb3
+PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+
+SetLDFLAGS: %p/Library/Frameworks/R.framework/Libraries/libR.dylib
+CompileScript: <<
+#!/bin/bash -ev
+  export QTDIR=%p/lib/qt4-mac
+  mkdir -p src/gwt/lib/gin/1.5
+  mv ../LICENSE   src/gwt/lib/gin/1.5/
+  mv ../README   src/gwt/lib/gin/1.5/  
+  mv  ../javadoc   src/gwt/lib/gin/1.5/
+  mv  ../*.jar         src/gwt/lib/gin/1.5/
+  mkdir -p src/gwt/lib/gwt
+  mv ../gwt-2.3.0 src/gwt/lib/gwt/2.3.0
+  # pushd ./dependencies/osx  &&  ./install-dependencies-osx  && popd
+ 
+  mkdir -p build
+  cd build
+  cmake -DRSTUDIO_TARGET=Desktop \
+         -DCMAKE_BUILD_TYPE=Release \
+         -DCMAKE_INSTALL_PREFIX=%b/Applications \
+         -DCMAKE_INSTALL_LOCAL_ONLY=TRUE \
+         -DCMAKE_VERBOSE_MAKEFILE=TRUE \
+         -DLIBR_LIBRARIES=%p/Library/Frameworks/R.framework/Libraries \
+         -DBoost_INCLUDE_DIR=%p/include \
+         ..
+  perl -pi -e 's|include|# include|'                       src/cpp/desktop/cmake_install.cmake
+  perl -pi -e 's|fixup_bundle|# fixup_bundle|'   src/cpp/desktop/cmake_install.cmake
+  make VERBOSE=0  
+  make install CMAKE_INSTALL_PREFIX=%p/Applications
+<<
+# Install Phase.
+InstallScript: <<
+#!/bin/bash -ev
+  echo "test"
+<<
+AppBundles: Applications/RStudio.app
+
+DescPackaging: <<
+  Requires Boost
+<<
