@@ -100,6 +100,7 @@ ConfigureParams: <<
 	PKG_CONFIG_PATH="%p/lib/pango-ft219/lib/pkgconfig:%p/lib/fontconfig2/lib/pkgconfig:%p/lib/freetype219/lib/pkgconfig:$PKG_CONFIG_PATH"	
 <<
 SetCFLAGS: -Os -g
+UseMaxBuildJobs: true
 CompileScript: <<
 #!/bin/sh -ev
 # additional patching of configure: to fix validation-failure on .la files

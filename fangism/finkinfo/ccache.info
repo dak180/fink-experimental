@@ -11,6 +11,7 @@ PatchScript: <<
 	mv $file $file.orig
 	{ echo ".SUFFIXES: .c .o" && cat $file.orig ;} > $file
 <<
+UseMaxBuildJobs: true
 CompileScript: <<
  ./configure %c
  make CFLAGS='-g -O2 -Wall -W -I. -prebind'

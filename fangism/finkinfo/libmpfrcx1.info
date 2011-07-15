@@ -22,6 +22,7 @@ PatchFile: %n.patch
 PatchFile-MD5: 27297b88b32a6bbf38c58b06d96e136d
 PatchScript: patch -p1 < %{PatchFile}
 BuildDependsOnly: True
+UseMaxBuildJobs: true
 CompileScript: <<
   #! /bin/sh -ev
   mkdir -p build

@@ -41,6 +41,7 @@ PatchScript: <<
 	mac-render.cpp > temp.cpp
   mv temp.cpp mac-render.cpp
 <<
+UseMaxBuildJobs: true
 CompileScript: <<
   #!/bin/sh -ev
   { echo "#!/bin/sh" ; echo "open -a Snes9x.app" ;} > snes9x

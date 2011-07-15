@@ -12,6 +12,7 @@ BuildDependsOnly: True
 License: GPL
 ConfigureParams: --mandir='${prefix}/share/man' --infodir='${prefix}/share/info' --disable-static
 GCC: 4.0
+UseMaxBuildJobs: true
 SplitOff: <<
   Package: %N-shlibs
   Depends: gmp-shlibs

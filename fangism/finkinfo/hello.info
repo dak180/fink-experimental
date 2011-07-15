@@ -7,12 +7,13 @@ Source-MD5: fc01b05c7f943d3c42124942a2a9bb3a
 BuildDepends: <<
 	gettext-bin,
 	gettext-tools,
-	libgettext8-dev
+	libgettext8-dev (>= 0.17-1)
 <<
-Depends: libgettext8-shlibs
+Depends: libgettext8-shlibs (>= 0.17-1)
 BuildDependsOnly: True
 License: GPL
 ConfigureParams: --mandir='${prefix}/share/man' --infodir='${prefix}/share/info'
+UseMaxBuildJobs: true
 CompileScript: <<
 	#!/bin/sh -ev
 	mkdir build

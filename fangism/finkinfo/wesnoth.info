@@ -92,6 +92,7 @@ PatchScript: <<
 	-e 's|png_voidp_NULL|NULL|' \
 	-e 's|png_error_ptr_NULL|png_error_ptr(NULL)|g' $file
 <<
+UseMaxBuildJobs: true
 CompileScript: <<
   #!/bin/sh -ev
   # configure and Makefile.in aren't distributed with this release, hmmm...

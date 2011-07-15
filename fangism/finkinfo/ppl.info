@@ -65,6 +65,7 @@ PatchScript: <<
 	# failed attempt to use inline sed b/c differences between GNU/BSD sed
 	patch -p1 < %{PatchFile}
 <<
+UseMaxBuildJobs: true
 CompileScript: <<
 	#!/bin/sh -ev
 	mkdir build

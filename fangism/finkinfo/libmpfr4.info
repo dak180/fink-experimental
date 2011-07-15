@@ -16,6 +16,7 @@ InfoDocs: mpfr.info
 # PatchFile: %{Ni}.patch
 # PatchFile-MD5: ac4591dea9abdd7573cd05a2fce2bb14
 BuildDependsOnly: True
+UseMaxBuildJobs: true
 CompileScript: <<
   #!/bin/sh -ev
   # mkdir -p build
