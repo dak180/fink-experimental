@@ -17,7 +17,7 @@ Source-MD5: b128bbd324f03eb42ef5060080f87548
 # Source-SHA1: bf7082f98bd6281493cba94a456697fb88c2c21b
 
 PatchFile: %n.patch
-PatchFile-MD5: b5c86f39012aa57be4a553ad1201bf41
+PatchFile-MD5: 8465b02c2abf57b7b31cd30d74e25279
 
 #PKG_CONFIG_PATH: %p/lib/system-openssl/lib/pkgconfig
 BuildDependsOnly: true

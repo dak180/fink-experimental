@@ -56,3 +56,25 @@
  
    static const size_type npos = static_cast<size_type>(-1);
  
+--- libtorrent-0.12.9-orig/src/torrent/utils/extents.h	2011-07-16 17:26:37.000000000 -0700
++++ libtorrent-0.12.9/src/torrent/utils/extents.h	2011-07-17 00:28:48.000000000 -0700
+@@ -39,6 +39,19 @@
+ 
+ #include <tr1/array>
+ 
++#if (__GNUC__ == 4 && __GNUC_MINOR__ < 1 && __GNUC_PATCHLEVEL__ < 2)
++// apple-gcc-4.0.1 missing definition of std::tr1::array::assign
++namespace std {
++namespace tr1 {
++template<typename _Tp, size_t _Nm>
++void
++array<_Tp,_Nm>::assign(const value_type& v) {
++	std::fill_n(this->begin(), this->size(), v);
++}
++}	// end namespace tr1
++}	// end namespace std
++#endif
++
+ namespace torrent {
+ 
+ template <typename Key, typename Tp, unsigned int TableSize, unsigned int TableBits>
