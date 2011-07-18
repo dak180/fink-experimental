@@ -4,7 +4,7 @@ Revision: 1
 License: GPL
 HomePage: http://libtorrent.rakshasa.no
 Description: Ncurses ui bittorrent client
-Maintainer: Michal Suchanek <hramrach@centrum.cz>
+Maintainer: David Fang <fangism@users.sourceforge.net>
 
 Depends: <<
         libssh2.1-shlibs,
@@ -36,7 +36,7 @@ GCC: 4.0
 SetCPPFLAGS: -I%p/lib/system-openssl/include
 SetLDFLAGS: -L%p/lib/system-openssl/lib
 
-ConfigureParams:  --disable-dependency-tracking --mandir='${prefix}'/share/man --enable-ipv6
+ConfigureParams: --mandir='${prefix}'/share/man --enable-ipv6
 
 CompileScript:
 
@@ -74,6 +74,8 @@ possible to save torrents with broken (improperly encoded) filenames.
 DescPackaging: <<
 pkgconfig does not find the system openssl
 versioned deps added based on configure[.ac] checks for requirements
+
+Former maintainer: Michal Suchanek <hramrach@centrum.cz>
 <<
 DescPort: <<
 Upstream now requires g++-4.2+, but fangism ported to g++-4.0.1

@@ -4,7 +4,7 @@ Revision: 1
 License: GPL
 HomePage: http://libtorrent.rakshasa.no
 Description: Bittorrent library
-Maintainer: Michal Suchanek <hramrach@centrum.cz>
+Maintainer: David Fang <fangism@users.sourceforge.net>
 
 Depends: %n-shlibs (=%v-%r)
 BuildDepends: fink (>= 0.24.12), libsigc++2, system-openssl-dev, pkgconfig (>= 0.9-1)
@@ -27,7 +27,7 @@ GCC: 4.0
 SetCPPFLAGS: -I%p/lib/system-openssl/include
 SetLDFLAGS: -L%p/lib/system-openssl/lib
 
-ConfigureParams:  --disable-dependency-tracking --enable-ipv6 --with-kqueue
+ConfigureParams: --enable-ipv6 --with-kqueue
 
 CompileScript:<<
 PKG_CONFIG_PATH=%p/lib/system-openssl/lib/pkgconfig ./configure %c
@@ -63,6 +63,8 @@ DescPackaging: <<
 pkgconfig does not find the system openssl
 
 Library version info and name change inconsistently between major versions.
+
+Former maintainer: Michal Suchanek <hramrach@centrum.cz>
 <<
 DescPort: <<
 fangism:
