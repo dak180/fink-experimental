@@ -1,3 +1,4 @@
+Binary files rstudio-rstudio-a250b30/.DS_Store and rstudio-rstudio-a250b30-new/.DS_Store differ
 diff -ruN rstudio-rstudio-a250b30/CMakeGlobals.txt rstudio-rstudio-a250b30-new/CMakeGlobals.txt
 --- rstudio-rstudio-a250b30/CMakeGlobals.txt	2011-06-12 00:09:57.000000000 +0900
 +++ rstudio-rstudio-a250b30-new/CMakeGlobals.txt	2011-07-12 12:31:08.000000000 +0900
@@ -77,15 +78,15 @@ diff -ruN rstudio-rstudio-a250b30/dependencies/osx/install-dependencies-osx rstu
 +# sudo cp /etc/pam.d/ftpd /etc/pam.d/rstudio
 diff -ruN rstudio-rstudio-a250b30/src/cpp/core/r_util/REnvironmentPosix.cpp rstudio-rstudio-a250b30-new/src/cpp/core/r_util/REnvironmentPosix.cpp
 --- rstudio-rstudio-a250b30/src/cpp/core/r_util/REnvironmentPosix.cpp	2011-06-12 00:09:57.000000000 +0900
-+++ rstudio-rstudio-a250b30-new/src/cpp/core/r_util/REnvironmentPosix.cpp	2011-07-12 13:48:39.000000000 +0900
-@@ -81,6 +81,7 @@
++++ rstudio-rstudio-a250b30-new/src/cpp/core/r_util/REnvironmentPosix.cpp	2011-07-14 08:42:40.000000000 +0900
+@@ -78,6 +78,7 @@
+ {
+    // define potential paths
+    std::vector<std::string> rScriptPaths;
++   rScriptPaths.push_back("@PREFIX@/Library/Frameworks/R.framework/R");
     rScriptPaths.push_back("/usr/bin/R");
     rScriptPaths.push_back("/usr/local/bin/R");
     rScriptPaths.push_back("/opt/local/bin/R");
-+   rScriptPaths.push_back("@PREFIX@/Library/Frameworks/R.framework/R");
-    return scanForRScript(rScriptPaths, pErrMsg);
- }
- 
 @@ -140,7 +141,7 @@
                                      std::string* pErrMsg)
  {
@@ -105,3 +106,51 @@ diff -ruN rstudio-rstudio-a250b30/src/cpp/core/r_util/REnvironmentPosix.cpp rstu
                                            &rLibPath,
                                            &scriptVars,
 Binary files rstudio-rstudio-a250b30/src/cpp/server/.DS_Store and rstudio-rstudio-a250b30-new/src/cpp/server/.DS_Store differ
+diff -ruN rstudio-rstudio-a250b30/src/cpp/server/extras/admin/rstudio-server.in rstudio-rstudio-a250b30-new/src/cpp/server/extras/admin/rstudio-server.in
+--- rstudio-rstudio-a250b30/src/cpp/server/extras/admin/rstudio-server.in	2011-06-12 00:09:57.000000000 +0900
++++ rstudio-rstudio-a250b30-new/src/cpp/server/extras/admin/rstudio-server.in	2011-07-19 10:27:03.000000000 +0900
+@@ -1,21 +1,21 @@
+ #!/bin/sh
+ 
+ daemonCmd() {
+-  if test -e /etc/init/rstudio-server.conf
++  if test -e @PREFIX@/etc/init/rstudio-server.conf
+   then
+      eval "initctl $1 rstudio-server"
+   else
+-     eval "/etc/init.d/rstudio-server $1"
++     eval "@PREFIX@/etc/init.d/rstudio-server $1"
+   fi
+   return $?
+ }
+ 
+ testConfig() {
+- `${CMAKE_INSTALL_PREFIX}/bin/rserver --test-config`
++ `@PREFIX@/share/rstudio-server/bin/rserver --test-config`
+ }
+ 
+ verifyInstallation() {
+- `${CMAKE_INSTALL_PREFIX}/bin/rserver --verify-installation=1 --server-daemonize=0`
++ `@PREFIX@/share/rstudio-server/bin/rserver --verify-installation=1 --server-daemonize=0`
+ }
+ 
+ 
+@@ -73,14 +73,14 @@
+         ;;
+ 
+     offline)
+-        mkdir -p /etc/rstudio
+-        touch /etc/rstudio/offline
++        mkdir -p @PREFIX@/etc/rstudio
++        touch @PREFIX@/etc/rstudio/offline
+         daemonCmd "restart"
+         ;;
+ 
+     online)
+-        mkdir -p /etc/rstudio
+-        rm -f /etc/rstudio/offline
++        mkdir -p @PREFIX@/etc/rstudio
++        rm -f @PREFIX@/etc/rstudio/offline
+         daemonCmd "restart"
+         ;;
+ 

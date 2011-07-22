@@ -7,10 +7,13 @@ Homepage: http://rstudio.org
 Maintainer: BABA Yoshihiko <babayoshihiko@mac.com>
 Depends: <<
   r-base, 
-  qt4-base-mac-core-shlibs
+  boost1.46.nopython-shlibs,
+  libiconv, libpng14-shlibs,
+  qt4-base-mac-qtcore-shlibs
 <<
 BuildDepends: << 
   fink (>= 0.28), cmake, boost1.46.nopython,
+  libiconv-dev, libpng14,
   qt4-base-mac
 <<
 Source: http://homepage.mac.com/babayoshihiko/fink/rstudio-rstudio-v%v-0-ga250b30.tar.gz
@@ -24,13 +27,16 @@ Source2-MD5: 2409168cc18bf5f341e107e6887fe359
 Source3: https://s3.amazonaws.com/rstudio-buildtools/gwt-2.3.0.zip
 Source3-MD5: 785cac54f4c359a98e8f5898d5a43dfa
 PatchFile: rstudio.patch
-PatchFile-MD5: bb192dbfbfa4aa88859ba9b9bda77cb3
+PatchFile-MD5: 3da57867199591b1d12b33926038e191
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 
 SetLDFLAGS: %p/Library/Frameworks/R.framework/Libraries/libR.dylib
 CompileScript: <<
 #!/bin/bash -ev
   export QTDIR=%p/lib/qt4-mac
+  
+  # Move Source2 and Source3 files
+  # See dependencies/osx/install-dependencies-osx
   mkdir -p src/gwt/lib/gin/1.5
   mv ../LICENSE   src/gwt/lib/gin/1.5/
   mv ../README   src/gwt/lib/gin/1.5/  
@@ -38,11 +44,12 @@ CompileScript: <<
   mv  ../*.jar         src/gwt/lib/gin/1.5/
   mkdir -p src/gwt/lib/gwt
   mv ../gwt-2.3.0 src/gwt/lib/gwt/2.3.0
-  # pushd ./dependencies/osx  &&  ./install-dependencies-osx  && popd
- 
+
+  # See package/osx/make-package
   mkdir -p build
   cd build
   cmake -DRSTUDIO_TARGET=Desktop \
+         -DRSTUDIO_PACKAGE_BUILD=1 \
          -DCMAKE_BUILD_TYPE=Release \
          -DCMAKE_INSTALL_PREFIX=%b/Applications \
          -DCMAKE_INSTALL_LOCAL_ONLY=TRUE \
@@ -50,8 +57,11 @@ CompileScript: <<
          -DLIBR_LIBRARIES=%p/Library/Frameworks/R.framework/Libraries \
          -DBoost_INCLUDE_DIR=%p/include \
          ..
+  
   perl -pi -e 's|include|# include|'                       src/cpp/desktop/cmake_install.cmake
   perl -pi -e 's|fixup_bundle|# fixup_bundle|'   src/cpp/desktop/cmake_install.cmake
+  # perl -pi -e 's|dylib|bundle|'   src/cpp/desktop/cmake_install.cmake
+  
   make VERBOSE=0  
   make install CMAKE_INSTALL_PREFIX=%p/Applications
 <<
