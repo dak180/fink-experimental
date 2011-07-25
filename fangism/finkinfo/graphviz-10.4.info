@@ -1,8 +1,8 @@
 Info3: <<
 Package: graphviz%type_pkg[var]
 Type: var (. -nox)
-Version: 2.28.0
-Revision: 1
+Version: 2.26.3
+Revision: 4
 Distribution: 10.4
 License: OSI-Approved
 # License: Common Public License 1.0
@@ -16,19 +16,12 @@ nam-US: http://www.graphviz.org/pub/graphviz/ARCHIVE
 nam-US: http://www.graphviz.org/pub/graphviz
 <<
 SourceDirectory: graphviz-%v
-Source-MD5: 8d26c1171f30ca3b1dc1b429f7937e58
+Source-MD5: 6f45946fa622770c45609778c0a982ee
 PatchFile: graphviz.patch
 PatchFile-MD5: 57cf9d74eab1a71fcb0e58c9fb464095
-PatchScript: <<
-	#!/bin/sh -ev
-	patch -p1 < %{PatchFile}
-	# API: data struct changed after 10.4
-	# http://developer.apple.com/library/mac/#documentation/GraphicsImaging/Reference/CGDataProvider/History/Revision.html%23//apple_ref/doc/uid/TP30000952-CH203-SW1
-	sed -i.orig \
-	  -e '/CGData/s/DirectCallbacks/DirectAccessCallbacks/g' \
-	  -e '/CGData.*Callbacks.* = {/,/^};/s|0,|/* & */|' \
-		plugin/quartz/gvdevice_quartz.c
-<<
+# PatchScript: <<
+#	patch -p0 < %{PatchFile}
+# <<
 GCC: 4.0
 Depends: <<
 	%N-shlibs (= %v-%r)
@@ -50,12 +43,12 @@ BuildDepends: <<
 	guile18,
 	guile18-dev, 
 	libpng14,
-	libjpeg, 
+	libjpeg8, 
 	(%type_raw[var] = .) librsvg2 (>= 2.20.0-1),
 	(%type_raw[var] = .) libiconv-dev, 
 	(%type_raw[var] = .) libgettext8-dev (>= 0.14.5-1),
 	(%type_raw[var] = .) gettext-tools,
-	libtool14,
+	libtool2,
 	lua51-dev,
 	lua51,
 	expat1 (>= 2.0.0-1), 
@@ -77,6 +70,7 @@ BuildDepends: <<
 	(%type_raw[var] = .) libglade2 (>= 2.6.2-2),
 	libming1-dev
 <<
+# TODO: --with-quartz
 ConfigureParams: <<
 	--mandir=%p/share/man \
 	--disable-static \
@@ -156,12 +150,15 @@ CompileScript: <<
 	make
 <<
 InfoTest: <<
+	TestDepends: fink-package-precedence
+	TestConfigureParams: --enable-dependency-tracking
 	TestScript: <<
 	#!/bin/sh -ev
+	fink-package-precedence --headers .
+	fink-package-precedence --libs .
  	echo "rtest.sh looks intended for post-install checking"
 	# cd rtest && ./rtest.sh -v || exit 2
 	<<
-#	TestDepends:
 	TestSuiteSize: small
 <<
 InstallScript: <<
@@ -197,12 +194,12 @@ SplitOff: <<
 		(%type_raw[var] = .) glitz-shlibs,
 		(%type_raw[var] = .) gts75-shlibs, 
 		libpng14-shlibs, 
-		libjpeg-shlibs, 
+		libjpeg8-shlibs, 
 		(%type_raw[var] = .) libiconv, 
 		(%type_raw[var] = .) librsvg2-shlibs (>= 2.20.0-1),
 		(%type_raw[var] = .) libgettext8-shlibs,
 		(%type_raw[var] = .) libgsf1.114-shlibs (>= 1.14.8-2),
-		libtool14-shlibs, 
+		libtool2-shlibs, 
 		lua51-shlibs,
 		(%type_raw[var] = .) gd2-shlibs (>= 2.0.35-8), 
 		(%type_raw[var] = .) cairo-shlibs (>= 1.6.4-2),
@@ -298,7 +295,7 @@ Matthias Neeracher <neeracher@mac.com>
 DescPackaging: <<
 Use libiconv from fink
 postinstall 'dot -c' updates config file with list of built plugins.
-Links with libtool14's libltdl.dylib, therefore need build-depend on libtool14 
+Links with libtool2's libltdl.dylib, therefore need build-depend on libtool2 
 even though libltdl/ already includes ltdl.h
 Blindly added deps for guile, lua, ocaml, 
 though some may result in optional plug-ins.
