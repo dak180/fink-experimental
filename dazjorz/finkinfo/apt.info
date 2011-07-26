@@ -8,9 +8,9 @@ Source: http://snapshot.debian.org/archive/debian/20100202T220747Z/pool/main/a/a
 Source-MD5: ee59a90b91764aefeb5eb0f29d5cab96
 SourceDirectory: %n-%v
 PatchFile: %n.patch
-PatchFile-MD5: a6328a695e00f56dd44d9db7c3f5822d
+PatchFile-MD5: 6080319dbba1cf626b1e1759d4472e17
 PatchScript: <<
- sed -e 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+ sed -e 's|@PREFIX@|%p|g' -e "s|@PERLARCH32@|$VERSIONER_PERL_PREFER_32_BIT|" < %{PatchFile} | patch -p1
  sh patch_flush
  perl -pi -e 's|/usr|%p|g' doc/*.8.xml
  for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i; done
@@ -175,7 +175,11 @@ free everything ourselves. memrchr() doesn't exist on Mac, so add a public
 domain implementation. sighandler_t is called sig_t on Mac.
 
 This apt package includes a forward-ported patch by dmacks which improves
-fink-virtual-pkg reading in apt.
+fink-virtual-pkg reading in apt. Also, added to the patch is included a change
+to set a VERSIONER_PERL_PREFER_32_BIT environment variable, normally set in
+users' environments but removed by 'sudo'. It is required for perl in
+fink-virtual-pkgs to load the modules in the correct architecture, or the
+script will be unable to load Fink to detect anything.
 <<
 DescPackaging: <<
 Previous versions by Christoph Pfisterer. Version 0.7.25.3 by Sjors Gielen.
