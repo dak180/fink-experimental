@@ -80,7 +80,7 @@ CompileScript: <<
 InstallScript: <<
   #!/bin/sh -ev
   cd build
-  make DESTDIR=%d install
+  make -j1 DESTDIR=%d install
   #Move .la and symlinks to %p/%lib so packages don't need tricks to find them.
   mv %i/%lib/gmp5/libgmp.la %i/%lib
   mv %i/%lib/gmp5/libgmpxx.la %i/%lib
