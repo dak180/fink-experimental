@@ -7,7 +7,7 @@ Source: mirror:sourceforge:synfig/synfig-%v.tar.gz
 Source-MD5: 5555523dbe1401ff4d4be8094a54b939
 
 PatchFile: %n.patch
-PatchFile-MD5: 0ba807593a38739661ce422028b3917c
+PatchFile-MD5: e40d4ec59eaf98ddeadcfb209fc87685
 
 Maintainer: Hisashi T Fujinaka <htodd@fls.portland.or.us>
 
@@ -46,23 +46,24 @@ Description: Vector-based 2D animation renderer
 Homepage: http://synfig.sourceforge.net/
 License: GPL
 
-# PatchScript: <<
-# 	perl -pi -e 's/-lMagick(?!\+\+)/-lMagickCore/' configure
-# 	perl -ni -e 'print unless /mod_libavcodec/' src/modules/synfig_modules.cfg.in
+PatchScript: <<
+	%{default_script}
+ 	perl -pi -e 's/-lMagick(?!\+\+)/-lMagickCore/' configure
+ 	perl -ni -e 'print unless /mod_libavcodec/' src/modules/synfig_modules.cfg.in
 # 
 # 	# These two fix for the split of libMagick in recent releases - AdamW
-# 	sed -i -e 's.Magick,OptimizeImageTransparency.MagickCore,OptimizeImageTransparency.g' configure
-# 	sed -i -e 's,MagickLib::,MagickCore::,g' src/modules/mod_magickpp/trgt_magickpp.cpp
+ 	sed -i -e 's.Magick,OptimizeImageTransparency.MagickCore,OptimizeImageTransparency.g' configure
+ 	sed -i -e 's,MagickLib::,MagickCore::,g' src/modules/mod_magickpp/trgt_magickpp.cpp
 # 
-# 	perl -pi -e 's,(-lMagick\+\+),\1 -L/usr/X11R6/lib,' configure
+ 	perl -pi -e 's,(-lMagick\+\+),\1 -L/usr/X11R6/lib,' configure
 # 
 # 	# configure checks for Magick++ but uses it to decide to use
 # 	# symbols in MagickCore directly as well
-# 	perl -pi -e 's/(-lMagick\+\+)/\1 -lMagickCore/' configure
+ 	perl -pi -e 's/(-lMagick\+\+)/\1 -lMagickCore/' configure
 # 
 # 	# directly uses libxml, not just c++ wrappers
-# 	perl -pi -e 's/(libxml\+\+-2.6)/\1 libxml-2.0/g' configure
-# <<
+	perl -pi -e 's/(libxml\+\+-2.6)/\1 libxml-2.0/g' configure
+<<
 
 SetCPPFLAGS: -I%p/include/GraphicsMagick -I%p/lib/fontconfig2/include
 SetLDFLAGS: -L%p/lib/fontconfig2/lib
@@ -73,7 +74,7 @@ CompileScript: <<
 # 	libtoolize --ltdl --copy -f
 # 	autoreconf -if
 	./configure %c
-	make
+	make -j1
 <<
 
 InstallScript: <<
