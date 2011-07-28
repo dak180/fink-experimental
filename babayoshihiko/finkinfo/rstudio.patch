@@ -78,7 +78,7 @@ diff -ruN rstudio-rstudio-a250b30/dependencies/osx/install-dependencies-osx rstu
 +# sudo cp /etc/pam.d/ftpd /etc/pam.d/rstudio
 diff -ruN rstudio-rstudio-a250b30/src/cpp/core/r_util/REnvironmentPosix.cpp rstudio-rstudio-a250b30-new/src/cpp/core/r_util/REnvironmentPosix.cpp
 --- rstudio-rstudio-a250b30/src/cpp/core/r_util/REnvironmentPosix.cpp	2011-06-12 00:09:57.000000000 +0900
-+++ rstudio-rstudio-a250b30-new/src/cpp/core/r_util/REnvironmentPosix.cpp	2011-07-14 08:42:40.000000000 +0900
++++ rstudio-rstudio-a250b30-new/src/cpp/core/r_util/REnvironmentPosix.cpp	2011-07-20 11:30:55.000000000 +0900
 @@ -78,6 +78,7 @@
  {
     // define potential paths
@@ -96,7 +96,15 @@ diff -ruN rstudio-rstudio-a250b30/src/cpp/core/r_util/REnvironmentPosix.cpp rstu
  
     // lib path
     std::string rLibPath;
-@@ -597,7 +598,7 @@
+@@ -210,6 +211,7 @@
+       // scan in standard locations as a fallback
+       std::string scanErrMsg;
+       std::vector<std::string> rScriptPaths;
++      rScriptPaths.push_back("@PREFIX@/bin/R");
+       rScriptPaths.push_back("/usr/local/bin/R");
+       rScriptPaths.push_back("/usr/bin/R");
+       FilePath scriptPath = scanForRScript(rScriptPaths, &scanErrMsg);
+@@ -597,7 +599,7 @@
        rLibPath = FilePath();
        scriptVars.clear();
        std::string scriptErrMsg;
@@ -154,3 +162,16 @@ diff -ruN rstudio-rstudio-a250b30/src/cpp/server/extras/admin/rstudio-server.in 
          daemonCmd "restart"
          ;;
  
+diff -ruN rstudio-rstudio-a250b30/src/cpp/server/extras/init.d/rstudio-server.xml rstudio-rstudio-a250b30-new/src/cpp/server/extras/init.d/rstudio-server.xml
+--- rstudio-rstudio-a250b30/src/cpp/server/extras/init.d/rstudio-server.xml	1970-01-01 09:00:00.000000000 +0900
++++ rstudio-rstudio-a250b30-new/src/cpp/server/extras/init.d/rstudio-server.xml	2011-07-28 20:20:13.000000000 +0900
+@@ -0,0 +1,9 @@
++<service>
++<description>RStudio server</description>
++<message>RStudio server</message>
++
++<daemon name="rstudio-server">
++        <executable background="yes">@PREFIX@/share/rstudio-server/bin/rserver</executable>
++</daemon>
++
++</service>

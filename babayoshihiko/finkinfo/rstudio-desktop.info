@@ -1,6 +1,6 @@
 Package: rstudio-desktop
 Version: 0.94.82
-Revision: 0.3
+Revision: 0.4
 Description: IDE for R
 License: GPL
 Homepage: http://rstudio.org
@@ -27,7 +27,7 @@ Source2-MD5: 2409168cc18bf5f341e107e6887fe359
 Source3: https://s3.amazonaws.com/rstudio-buildtools/gwt-2.3.0.zip
 Source3-MD5: 785cac54f4c359a98e8f5898d5a43dfa
 PatchFile: rstudio.patch
-PatchFile-MD5: 3da57867199591b1d12b33926038e191
+PatchFile-MD5: 410cea75c0b96bc6497121aa2a0a17c9
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 
 SetLDFLAGS: %p/Library/Frameworks/R.framework/Libraries/libR.dylib
