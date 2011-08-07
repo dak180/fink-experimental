@@ -1,6 +1,6 @@
 diff -Nurd dpkg-1.15.5.6/configure dpkg-1.15.5.6-patched/configure
 --- dpkg-1.15.5.6/configure	2010-01-08 19:02:47.000000000 +0100
-+++ dpkg-1.15.5.6-patched/configure	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/configure	2011-07-31 23:09:00.000000000 +0200
 @@ -9745,11 +9745,7 @@
  if test "${enable_linker_optimisations+set}" = set; then :
    enableval=$enable_linker_optimisations; if test "x$enable_linker_optimisations" = "xno"; then
@@ -15,7 +15,7 @@ diff -Nurd dpkg-1.15.5.6/configure dpkg-1.15.5.6-patched/configure
  
 diff -Nurd dpkg-1.15.5.6/dpkg-deb/build.c dpkg-1.15.5.6-patched/dpkg-deb/build.c
 --- dpkg-1.15.5.6/dpkg-deb/build.c	2010-01-08 18:23:06.000000000 +0100
-+++ dpkg-1.15.5.6-patched/dpkg-deb/build.c	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/dpkg-deb/build.c	2011-07-31 23:09:00.000000000 +0200
 @@ -67,6 +67,7 @@
    "Installer-Menu-Item",
    "Homepage",
@@ -26,7 +26,7 @@ diff -Nurd dpkg-1.15.5.6/dpkg-deb/build.c dpkg-1.15.5.6-patched/dpkg-deb/build.c
  
 diff -Nurd dpkg-1.15.5.6/dselect/dselect.h dpkg-1.15.5.6-patched/dselect/dselect.h
 --- dpkg-1.15.5.6/dselect/dselect.h	2010-01-08 18:23:06.000000000 +0100
-+++ dpkg-1.15.5.6-patched/dselect/dselect.h	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/dselect/dselect.h	2011-07-31 23:09:00.000000000 +0200
 @@ -26,7 +26,7 @@
  
  #include "dselect-curses.h"
@@ -38,7 +38,7 @@ diff -Nurd dpkg-1.15.5.6/dselect/dselect.h dpkg-1.15.5.6-patched/dselect/dselect
  #define MAX_DISPLAY_INFO 120
 diff -Nurd dpkg-1.15.5.6/dselect/main.cc dpkg-1.15.5.6-patched/dselect/main.cc
 --- dpkg-1.15.5.6/dselect/main.cc	2010-01-08 09:00:34.000000000 +0100
-+++ dpkg-1.15.5.6-patched/dselect/main.cc	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/dselect/main.cc	2011-07-31 23:09:01.000000000 +0200
 @@ -52,6 +52,11 @@
  #include <dpkg/dpkg.h>
  #include <dpkg/dpkg-db.h>
@@ -238,7 +238,7 @@ diff -Nurd dpkg-1.15.5.6/dselect/main.cc dpkg-1.15.5.6-patched/dselect/main.cc
      error_unwind(ehflag_bombout); exit(2);
 diff -Nurd dpkg-1.15.5.6/dselect/pkgdepcon.cc dpkg-1.15.5.6-patched/dselect/pkgdepcon.cc
 --- dpkg-1.15.5.6/dselect/pkgdepcon.cc	2010-01-08 09:00:34.000000000 +0100
-+++ dpkg-1.15.5.6-patched/dselect/pkgdepcon.cc	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/dselect/pkgdepcon.cc	2011-07-31 23:09:01.000000000 +0200
 @@ -202,6 +202,17 @@
    return 2;
  }
@@ -288,9 +288,50 @@ diff -Nurd dpkg-1.15.5.6/dselect/pkgdepcon.cc dpkg-1.15.5.6-patched/dselect/pkgd
    if (possi->ed->clientdata) {
      want= possi->ed->clientdata->selected;
      would= would_like_to_install(want,possi->ed);
+diff -Nurd dpkg-1.15.5.6/fink/install-info.sh dpkg-1.15.5.6-patched/fink/install-info.sh
+--- dpkg-1.15.5.6/fink/install-info.sh	1970-01-01 01:00:00.000000000 +0100
++++ dpkg-1.15.5.6-patched/fink/install-info.sh	2011-07-31 23:09:01.000000000 +0200
+@@ -0,0 +1,37 @@
++#!/bin/sh
++#
++# Wrapper to the GNU's install-info, to be compatible with the one that used to
++# be packaged by dpkg on Debian.
++#
++# written by Norbert Preining, this is not copyrightable ;-)
++# Small textual modifications for Fink by Sjors Gielen, july 2011
++#
++set -e
++
++if [ -z "$DPKG_RUNNING_VERSION" ] ; then
++  # it seems we are running from outside a maintainer script, so give a
++  # warning and call ginstall-info without anything else
++  echo "This is not dpkg install-info anymore, but GNU install-info" >&2
++  ginstall-info "$@"
++else 
++  # we are running from a maintainer script, simply ignore the call
++  # since we have trigger support and people should rebuild their
++  # package with new debhelper which does not add calls to install-info
++  # Do not complain if called with "--remove" or "--remove-exactly",
++  # as these are used in old packages' prerm scripts (see #546165)
++  while [ -n "$1" ]; do
++    case "$1" in
++      --remove|--remove-exactly)
++        exit 0
++        ;;
++      *)
++        shift
++        ;;
++    esac
++  done
++  echo "Ignoring install-info call, infofiles will be installed automatically." >&2
++  # Don't give this warning, for now it's expected in Fink
++  #echo "The package $DPKG_MAINTSCRIPT_PACKAGE should be rebuilt with new debhelper to get trigger support" >&2
++fi
++
++
 diff -Nurd dpkg-1.15.5.6/fink/md5sum dpkg-1.15.5.6-patched/fink/md5sum
 --- dpkg-1.15.5.6/fink/md5sum	1970-01-01 01:00:00.000000000 +0100
-+++ dpkg-1.15.5.6-patched/fink/md5sum	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/fink/md5sum	2011-07-31 23:09:01.000000000 +0200
 @@ -0,0 +1,313 @@
 +#!/usr/bin/perl
 +use strict;
@@ -605,9 +646,111 @@ diff -Nurd dpkg-1.15.5.6/fink/md5sum dpkg-1.15.5.6-patched/fink/md5sum
 +    }
 +  }
 +}
+diff -Nurd dpkg-1.15.5.6/fink/update-info-dir dpkg-1.15.5.6-patched/fink/update-info-dir
+--- dpkg-1.15.5.6/fink/update-info-dir	1970-01-01 01:00:00.000000000 +0100
++++ dpkg-1.15.5.6-patched/fink/update-info-dir	2011-07-31 23:09:01.000000000 +0200
+@@ -0,0 +1,65 @@
++#!/bin/bash
++# update-info-dir
++# create a dir file from all installed info files
++# Copyright 2009 Norbert Preining
++# Slight modifications by Sjors Gielen for the Fink package manager, 2011
++# GPLv2
++
++INFODIR=@PREFIX@/share/info
++
++set -e
++
++#
++# since user's environment is taken over into root account when sudo-ing
++# we don't want that one's user LANGUAGE setting changes the messages in
++# the dir file. Unset LANGUAGE and reload /etc/environment to get
++# the system wide settings. See bug #536476
++unset LANGUAGE
++if [ -r @PREFIX@/etc/environment ] ; then
++  . @PREFIX@/etc/environment
++fi
++if [ -r @PREFIX@/etc/default/locale ] ; then
++  . @PREFIX@/etc/default/locale
++fi
++
++if [ -n "$1" ] ; then
++  INFODIR="$1"
++fi
++
++if [ ! -d "$INFODIR" ] ; then
++  echo "Not a directory: $INFODIR." >&2
++  exit 1
++fi
++
++if [ -r "$INFODIR/dir" ] ; then
++  rm -f "$INFODIR/dir.old"
++  cp $INFODIR/dir $INFODIR/dir.old
++fi
++
++# we have to remove the dir file not make ginstall-info being surprised
++rm -f "$INFODIR/dir"
++
++errors=0
++find "$INFODIR" -type f | while read file ; do
++  case $file in
++    */dir|*/dir.gz|*/dir.old|*/dir.old.gz|*-[0-9]|*-[0-9].gz|*-[1-9][0-9]|*-[1-9][0-9].gz|*.png)
++      # these files are ignored
++      continue
++      ;;
++    *)
++      ginstall-info "$file" "$INFODIR/dir" || {
++        errors=$[errors+1]
++      }
++      ;;
++  esac
++done
++
++if [ $errors -gt 0 ] ; then
++  exec >&2
++  echo
++  echo "Updating the index of info documentation produced $errors errors."
++fi
++
++exit 0
++
++# vim:set expandtab tabstop=2: #
+diff -Nurd dpkg-1.15.5.6/fink/update-info-dir.8 dpkg-1.15.5.6-patched/fink/update-info-dir.8
+--- dpkg-1.15.5.6/fink/update-info-dir.8	1970-01-01 01:00:00.000000000 +0100
++++ dpkg-1.15.5.6-patched/fink/update-info-dir.8	2011-07-31 23:09:01.000000000 +0200
+@@ -0,0 +1,29 @@
++.TH UPDATE-INFO-DIR 8
++.\" NAME should be all caps, SECTION should be 1-8, maybe w/ subsection
++.\" other parms are allowed: see man(7), man(1)
++.SH NAME
++update-info-dir \- (re-)create /usr/share/info/dir from all installed info files
++.SH SYNOPSIS
++.B update-info-dir
++.I "[options]"
++.br
++.SH DESCRIPTION
++This manual page documents briefly the
++.BR update-info-dir
++command.
++This manual page was written for the Debian GNU/Linux distribution
++because the original script was designed for Debian packaging system.
++.PP
++.B update-info-dir [info-directory]
++(re-)creates the index of available documentation in info format
++(the file /usr/share/info/dir) which is usually presented by info browsers
++on startup.
++.SH OPTIONS
++.TP
++.B info-directory
++If an argument is given update the dir file in the directory given, otherwise
++use /usr/share/info.
++.PP
++.SH AUTHOR
++This manual page was written by Norbert Preining <preining@logic.at>,
++for the Debian GNU/Linux system (but may be used by others).
 diff -Nurd dpkg-1.15.5.6/lib/dpkg/Makefile.am dpkg-1.15.5.6-patched/lib/dpkg/Makefile.am
 --- dpkg-1.15.5.6/lib/dpkg/Makefile.am	2010-01-08 18:23:06.000000000 +0100
-+++ dpkg-1.15.5.6-patched/lib/dpkg/Makefile.am	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/lib/dpkg/Makefile.am	2011-07-31 23:09:01.000000000 +0200
 @@ -7,7 +7,7 @@
  AM_CPPFLAGS = \
  	-DLOCALEDIR=\"$(localedir)\" \
@@ -619,7 +762,7 @@ diff -Nurd dpkg-1.15.5.6/lib/dpkg/Makefile.am dpkg-1.15.5.6-patched/lib/dpkg/Mak
  	-I$(top_srcdir)/lib
 diff -Nurd dpkg-1.15.5.6/lib/dpkg/Makefile.in dpkg-1.15.5.6-patched/lib/dpkg/Makefile.in
 --- dpkg-1.15.5.6/lib/dpkg/Makefile.in	2010-01-08 19:02:49.000000000 +0100
-+++ dpkg-1.15.5.6-patched/lib/dpkg/Makefile.in	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/lib/dpkg/Makefile.in	2011-07-31 23:09:01.000000000 +0200
 @@ -277,7 +277,7 @@
  AM_CPPFLAGS = \
  	-DLOCALEDIR=\"$(localedir)\" \
@@ -631,7 +774,7 @@ diff -Nurd dpkg-1.15.5.6/lib/dpkg/Makefile.in dpkg-1.15.5.6-patched/lib/dpkg/Mak
  	-I$(top_srcdir)/lib
 diff -Nurd dpkg-1.15.5.6/lib/dpkg/buffer.c dpkg-1.15.5.6-patched/lib/dpkg/buffer.c
 --- dpkg-1.15.5.6/lib/dpkg/buffer.c	2010-01-08 18:23:06.000000000 +0100
-+++ dpkg-1.15.5.6-patched/lib/dpkg/buffer.c	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/lib/dpkg/buffer.c	2011-07-31 23:09:01.000000000 +0200
 @@ -103,7 +103,7 @@
  	switch (data->type) {
  	case BUFFER_WRITE_BUF:
@@ -643,7 +786,7 @@ diff -Nurd dpkg-1.15.5.6/lib/dpkg/buffer.c dpkg-1.15.5.6-patched/lib/dpkg/buffer
  		varbufaddbuf((struct varbuf *)data->arg.ptr, buf, length);
 diff -Nurd dpkg-1.15.5.6/lib/dpkg/dpkg.h dpkg-1.15.5.6-patched/lib/dpkg/dpkg.h
 --- dpkg-1.15.5.6/lib/dpkg/dpkg.h	2010-01-08 18:23:06.000000000 +0100
-+++ dpkg-1.15.5.6-patched/lib/dpkg/dpkg.h	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/lib/dpkg/dpkg.h	2011-07-31 23:09:01.000000000 +0200
 @@ -91,7 +91,7 @@
  #define SHELLENV            "SHELL"
  #define DEFAULTSHELL        "sh"
@@ -672,7 +815,7 @@ diff -Nurd dpkg-1.15.5.6/lib/dpkg/dpkg.h dpkg-1.15.5.6-patched/lib/dpkg/dpkg.h
  #define GZIP		"gzip"
 diff -Nurd dpkg-1.15.5.6/lib/dpkg/nfmalloc.c dpkg-1.15.5.6-patched/lib/dpkg/nfmalloc.c
 --- dpkg-1.15.5.6/lib/dpkg/nfmalloc.c	2010-01-08 09:00:34.000000000 +0100
-+++ dpkg-1.15.5.6-patched/lib/dpkg/nfmalloc.c	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/lib/dpkg/nfmalloc.c	2011-07-31 23:09:01.000000000 +0200
 @@ -23,7 +23,7 @@
  
  #include <string.h>
@@ -684,7 +827,7 @@ diff -Nurd dpkg-1.15.5.6/lib/dpkg/nfmalloc.c dpkg-1.15.5.6-patched/lib/dpkg/nfma
  #include <dpkg/dpkg.h>
 diff -Nurd dpkg-1.15.5.6/lib/dpkg/subproc.c dpkg-1.15.5.6-patched/lib/dpkg/subproc.c
 --- dpkg-1.15.5.6/lib/dpkg/subproc.c	2010-01-08 18:23:06.000000000 +0100
-+++ dpkg-1.15.5.6-patched/lib/dpkg/subproc.c	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/lib/dpkg/subproc.c	2011-07-31 23:09:01.000000000 +0200
 @@ -80,7 +80,9 @@
  			return 0;
  		if (flags & PROCNOERR)
@@ -698,7 +841,7 @@ diff -Nurd dpkg-1.15.5.6/lib/dpkg/subproc.c dpkg-1.15.5.6-patched/lib/dpkg/subpr
  		else
 diff -Nurd dpkg-1.15.5.6/lib/dpkg/tarfn.c dpkg-1.15.5.6-patched/lib/dpkg/tarfn.c
 --- dpkg-1.15.5.6/lib/dpkg/tarfn.c	2010-01-08 18:23:06.000000000 +0100
-+++ dpkg-1.15.5.6-patched/lib/dpkg/tarfn.c	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/lib/dpkg/tarfn.c	2011-07-31 23:09:01.000000000 +0200
 @@ -80,8 +80,13 @@
  {
  	int len;
@@ -716,14 +859,14 @@ diff -Nurd dpkg-1.15.5.6/lib/dpkg/tarfn.c dpkg-1.15.5.6-patched/lib/dpkg/tarfn.c
  	str[len] = '\0';
 diff -Nurd dpkg-1.15.5.6/origin.fink dpkg-1.15.5.6-patched/origin.fink
 --- dpkg-1.15.5.6/origin.fink	1970-01-01 01:00:00.000000000 +0100
-+++ dpkg-1.15.5.6-patched/origin.fink	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/origin.fink	2011-07-31 23:09:01.000000000 +0200
 @@ -0,0 +1,3 @@
 +Vendor: Fink
 +Vendor-URL: http://fink.sourceforge.net/
 +Bugs: http://fink.sourceforge.net/
 diff -Nurd dpkg-1.15.5.6/src/archives.c dpkg-1.15.5.6-patched/src/archives.c
 --- dpkg-1.15.5.6/src/archives.c	2010-01-08 18:23:06.000000000 +0100
-+++ dpkg-1.15.5.6-patched/src/archives.c	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/src/archives.c	2011-07-31 23:09:01.000000000 +0200
 @@ -758,9 +758,6 @@
  #ifdef HAVE_LCHOWN
        if (lchown(fnametmpvb.buf,stab.st_uid,stab.st_gid))
@@ -736,7 +879,7 @@ diff -Nurd dpkg-1.15.5.6/src/archives.c dpkg-1.15.5.6-patched/src/archives.c
        debug(dbg_eachfiledetail,"tarobject nondirectory, `link' backup");
 diff -Nurd dpkg-1.15.5.6/src/configure.c dpkg-1.15.5.6-patched/src/configure.c
 --- dpkg-1.15.5.6/src/configure.c	2010-01-08 18:23:06.000000000 +0100
-+++ dpkg-1.15.5.6-patched/src/configure.c	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/src/configure.c	2011-07-31 23:09:01.000000000 +0200
 @@ -527,8 +527,10 @@
  	const char *s;
  	int pid;
@@ -764,7 +907,7 @@ diff -Nurd dpkg-1.15.5.6/src/configure.c dpkg-1.15.5.6-patched/src/configure.c
  /**
 diff -Nurd dpkg-1.15.5.6/src/filesdb.c dpkg-1.15.5.6-patched/src/filesdb.c
 --- dpkg-1.15.5.6/src/filesdb.c	2010-01-08 18:23:06.000000000 +0100
-+++ dpkg-1.15.5.6-patched/src/filesdb.c	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/src/filesdb.c	2011-07-31 23:09:01.000000000 +0200
 @@ -28,6 +28,7 @@
  #include <assert.h>
  #include <errno.h>
@@ -793,8 +936,28 @@ diff -Nurd dpkg-1.15.5.6/src/filesdb.c dpkg-1.15.5.6-patched/src/filesdb.c
    if (*pointerp) return *pointerp;
 diff -Nurd dpkg-1.15.5.6/src/help.c dpkg-1.15.5.6-patched/src/help.c
 --- dpkg-1.15.5.6/src/help.c	2010-01-08 18:23:06.000000000 +0100
-+++ dpkg-1.15.5.6-patched/src/help.c	2011-06-06 07:41:22.000000000 +0200
-@@ -86,11 +86,15 @@
++++ dpkg-1.15.5.6-patched/src/help.c	2011-07-31 23:16:34.000000000 +0200
+@@ -42,6 +42,19 @@
+ #include "filesdb.h"
+ #include "main.h"
+ 
++/* FINK LOCAL start */
++// SystemB setenv() crashes when value == 0, but this occasionally happens
++// in dpkg.
++int _setenv(const char *name, const char *value, int overwrite) {
++  if(name == 0 || value == 0) {
++    return 0;
++  }
++  return setenv(name, value, overwrite);
++}
++#undef setenv
++#define setenv _setenv
++/* FINK LOCAL end */
++
+ const char *const statusstrings[]= {
+   N_("not installed"),
+   N_("not installed but configs remain"),
+@@ -86,11 +99,15 @@
      TAR,
      FIND,
      BACKEND,
@@ -810,7 +973,7 @@ diff -Nurd dpkg-1.15.5.6/src/help.c dpkg-1.15.5.6-patched/src/help.c
      NULL
    };
  
-@@ -108,6 +112,14 @@
+@@ -108,6 +125,14 @@
      const char *path, *path_end;
      size_t path_len;
  
@@ -825,7 +988,7 @@ diff -Nurd dpkg-1.15.5.6/src/help.c dpkg-1.15.5.6-patched/src/help.c
      path = path_list;
      while (path) {
        path_end = strchr(path, ':');
-@@ -278,6 +290,7 @@
+@@ -278,6 +303,7 @@
  {
    const char *scriptexec;
    int c1, r;
@@ -833,7 +996,7 @@ diff -Nurd dpkg-1.15.5.6/src/help.c dpkg-1.15.5.6-patched/src/help.c
    setexecute(scriptpath,stab);
  
    push_cleanup(cu_post_script_tasks, ehflag_bombout, NULL, 0, 0);
-@@ -285,12 +298,70 @@
+@@ -285,12 +311,70 @@
    c1= m_fork();
    if (!c1) {
      const char **narglist;
@@ -905,7 +1068,7 @@ diff -Nurd dpkg-1.15.5.6/src/help.c dpkg-1.15.5.6-patched/src/help.c
      if (setenv(MAINTSCRIPTPKGENVVAR, pkg->name, 1) ||
          setenv(MAINTSCRIPTARCHENVVAR, pif->architecture, 1) ||
          setenv(MAINTSCRIPTDPKGENVVAR, PACKAGE_VERSION, 1))
-@@ -324,8 +395,13 @@
+@@ -324,8 +408,13 @@
      if (errno == ENOENT) {
        debug(dbg_scripts, "vmaintainer_script_installed nonexistent %s",
              scriptname);
@@ -921,7 +1084,7 @@ diff -Nurd dpkg-1.15.5.6/src/help.c dpkg-1.15.5.6-patched/src/help.c
      ohshite(_("unable to stat %s `%.250s'"), buf, scriptpath);
    }
    do_script(pkg, &pkg->installed, scriptname, scriptpath, &stab,
-@@ -385,8 +461,14 @@
+@@ -385,8 +474,14 @@
    if (stat(cidir,&stab)) {
      if (errno == ENOENT) {
        debug(dbg_scripts,"maintainer_script_new nonexistent %s `%s'",scriptname,cidir);
@@ -938,7 +1101,7 @@ diff -Nurd dpkg-1.15.5.6/src/help.c dpkg-1.15.5.6-patched/src/help.c
      ohshite(_("unable to stat %s `%.250s'"), buf, cidir);
    }
    do_script(pkg, &pkg->available, scriptname, cidir, &stab,
-@@ -415,17 +497,20 @@
+@@ -415,17 +510,20 @@
      if (errno == ENOENT) {
        debug(dbg_scripts,"maintainer_script_alternative nonexistent %s `%s'",
              scriptname,oldscriptpath);
@@ -963,7 +1126,7 @@ diff -Nurd dpkg-1.15.5.6/src/help.c dpkg-1.15.5.6-patched/src/help.c
    fprintf(stderr, _("dpkg - trying script from the new package instead ...\n"));
  
    arglist= buildarglist(scriptname,
-@@ -435,6 +520,9 @@
+@@ -435,6 +533,9 @@
    strcpy(cidirrest,scriptname);
    sprintf(buf, _("new %s script"), desc);
  
@@ -973,7 +1136,7 @@ diff -Nurd dpkg-1.15.5.6/src/help.c dpkg-1.15.5.6-patched/src/help.c
    if (stat(cidir,&stab)) {
      if (errno == ENOENT)
        ohshit(_("there is no script in the new version of the package - giving up"));
-@@ -510,6 +598,26 @@
+@@ -510,6 +611,26 @@
      
    debug(dbg_veryverbose, "isdirectoryinuse `%s' (except %s)", file->name,
          pkg ? pkg->name : "<none>");
@@ -1002,7 +1165,7 @@ diff -Nurd dpkg-1.15.5.6/src/help.c dpkg-1.15.5.6-patched/src/help.c
            packageslump->pkgs[0] ? packageslump->pkgs[0]->name : "<none>");
 diff -Nurd dpkg-1.15.5.6/src/main.c dpkg-1.15.5.6-patched/src/main.c
 --- dpkg-1.15.5.6/src/main.c	2010-01-08 18:23:06.000000000 +0100
-+++ dpkg-1.15.5.6-patched/src/main.c	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/src/main.c	2011-07-31 23:09:01.000000000 +0200
 @@ -47,6 +47,12 @@
  #include <dpkg/dpkg-db.h>
  #include <dpkg/myopt.h>
@@ -1201,7 +1364,7 @@ diff -Nurd dpkg-1.15.5.6/src/main.c dpkg-1.15.5.6-patched/src/main.c
    actionfunction(argv);
 diff -Nurd dpkg-1.15.5.6/src/main.h dpkg-1.15.5.6-patched/src/main.h
 --- dpkg-1.15.5.6/src/main.h	2010-01-08 18:23:06.000000000 +0100
-+++ dpkg-1.15.5.6-patched/src/main.h	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/src/main.h	2011-07-31 23:09:01.000000000 +0200
 @@ -134,6 +134,11 @@
  	const char *command;
  };
@@ -1216,7 +1379,7 @@ diff -Nurd dpkg-1.15.5.6/src/main.h dpkg-1.15.5.6-patched/src/main.h
  void archivefiles(const char *const *argv);
 diff -Nurd dpkg-1.15.5.6/src/packages.c dpkg-1.15.5.6-patched/src/packages.c
 --- dpkg-1.15.5.6/src/packages.c	2010-01-08 09:00:34.000000000 +0100
-+++ dpkg-1.15.5.6-patched/src/packages.c	2011-06-06 07:19:23.000000000 +0200
++++ dpkg-1.15.5.6-patched/src/packages.c	2011-07-31 23:09:01.000000000 +0200
 @@ -526,6 +526,30 @@
    return ok;
  }
