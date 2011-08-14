@@ -206,11 +206,24 @@ Splitoff3: <<
 		var/%{Ni}/%v
 	<<
 	PostInstScript: <<
-		update-alternatives --install %p/share/info/%{Ni}.info %{Ni}.info %p/share/%{Ni}/%v/info/%{Ni}.info 1\
-							--slave %p/share/info/%{Ni}.info-1 %{Ni}.info-1 %p/share/%Ni1
-		
+		update-alternatives --install %p/share/info/%{Ni}.info %{Ni}.info %p/share/%{Ni}/%v/info/%{Ni}.info 1 \
+							--slave %p/share/info/%{Ni}.info-1 %{Ni}.info-1 %p/share/%{Ni}/%v/info/%{Ni}.info-1 \
+							--slave %p/share/info/%{Ni}.info-1 %{Ni}.info-1 %p/share/%{Ni}/%v/info/%{Ni}.info-2 \
+							--slave %p/share/info/%{Ni}.info-1 %{Ni}.info-1 %p/share/%{Ni}/%v/info/%{Ni}.info-3 \
+							--slave %p/share/info/%{Ni}.info-1 %{Ni}.info-1 %p/share/%{Ni}/%v/info/%{Ni}.info-4 \
+							--slave %p/share/info/%{Ni}.info-1 %{Ni}.info-1 %p/share/%{Ni}/%v/info/%{Ni}.info-5 
+		if [ -f %p/share/info/dir ]; then
+        	if [ -f %p/sbin/install-info ]; then
+                %p/sbin/install-info --infodir=%p/share/info %p/share/info/%{Ni}.info
+        	elif [ -f %p/bootstrap/sbin/install-info ]; then
+                %p/bootstrap/sbin/install-info --infodir=%p/share/info %p/share/info/%{Ni}.info
+        	fi
+		fi		
 	<<
 	PreRmScript: <<
+	if [ -f %p/share/info/dir ]; then
+    	%p/sbin/install-info --infodir=%p/share/info --remove {%Ni}.info
+	fi
 	if [ $1 != "upgrade" ]; then
 		update-alternatives --remove %{Ni}.info %p/share/%{Ni}/%v/info/%{Ni}.info
 	fi
