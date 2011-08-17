@@ -1,7 +1,7 @@
 Info3: <<
 Package: tenfourfox6
 Version: 6.0
-Revision: 0.b5
+Revision: 1
 Distribution: 10.4, 10.5
 Architecture: powerpc
 Description: Port of Firefox 6 to 10.4 and PowerPC
@@ -45,9 +45,9 @@ BuildDepends: <<
 <<
 Conflicts: tenfourfox, tenfourfox5
 Replaces: tenfourfox, tenfourfox5
-Source: ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/6.0b5/source/firefox-%vb5.source.tar.bz2
-SourceDirectory: mozilla-beta
-Source-MD5: bfd7ae5a378f0078e8be6577a267baf8
+Source: ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/%v/source/firefox-%v.source.tar.bz2
+SourceDirectory: mozilla-release
+Source-MD5: 1840185865a1a8975df4a3db59080ddc
 Source2: http://tenfourfox.googlecode.com/files/TenFourFox6-changesets-20110713.zip
 Source2-MD5: 3681650363bd7ee027412d461dd4989b
 Source3: http://tenfourfox.googlecode.com/files/ldx3.zip
