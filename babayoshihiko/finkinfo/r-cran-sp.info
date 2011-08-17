@@ -1,26 +1,37 @@
 Package: r-cran-sp
-Version: 0.9-70
-Revision: 2
+Version: 0.9-84
+Revision: 0.1
 Description: GNU R classes and methods for spatial data
 Homepage: http://r-spatial.sourceforge.net/
 License: GPL
 Maintainer:  BABA Yoshihiko <babayoshihiko@mac.com>
 Source: http://cran.r-project.org/src/contrib/sp_%v.tar.gz
-Source-MD5: 6c0591674c12248b1cf234649d64c515
+Source-MD5: 8647226a2b4df58ca6b2017e4d5a5750
 SourceDirectory: sp
-Depends: r-base
-BuildDepends: texlive-texmf 
+PatchFile: %n.patch
+PatchFile-MD5: 3b497f44efaa66cfd91cd14248fc3a39
+Depends: r-base (>=2.13.0-2)
+BuildDepends: fink (>= 0.24.12)
 CompileScript: <<
   #!/bin/sh -ev
-  export TMPDIR=%b
-  pushd ../ && %p/bin/R CMD build --binary sp
+  export TMPDIR=%b/tmp
+  pushd ..
+  %p/bin/R --verbose CMD build --no-vignettes sp
 <<
 InstallScript: <<
   #!/bin/sh -ev
-  mkdir -p %i/Library/Frameworks/R.framework/Resources/site-library
-  cp -R %b/Rinst*/sp %i/Library/Frameworks/R.framework/Resources/site-library
-  install_name_tool -id %p/Library/Frameworks/R.framework/Resources/site-library/sp/libs/sp.dylib %i/Library/Frameworks/R.framework/Resources/site-library/sp/libs/sp.dylib
+  mkdir -p %i/lib/R/site-library
+  pushd %b/.. && %p/bin/R --verbose CMD install --library=%i/lib/R/site-library sp
+  install_name_tool -id %p/lib/R/site-library/sp/libs/sp.dylib %i/lib/R/site-library/sp/libs/sp.dylib
 <<
 Shlibs: <<
-  %p/Library/Frameworks/R.framework/Resources/library/sp/libs/sp.dylib 0.0.0 %n (>=0.9-70-1)
+  %p/lib/R/site-library/sp/libs/sp.dylib 0.0.0 %n (>=0.9-70-1)
+<<
+
+SplitOff: <<
+  Package: %N-dev
+  Description: Headers for CRAN sp
+  BuildDependsOnly: true
+  Depends: %N (=%v-%r)
+  Files: lib/R/site-library/sp/include
 <<

@@ -1,25 +1,27 @@
 Package: r-cran-maptools
-Version: 0.7-38
-Revision: 2
-Description: GNU R Tools for reading and handling spatial objects
+Version: 0.8-9
+Revision: 3.1
+Description: GNU R Tools for handling spatial objects
 Homepage: http://r-spatial.sourceforge.net/
 License: GPL
 Maintainer:  BABA Yoshihiko <babayoshihiko@mac.com>
 Source: http://cran.r-project.org/src/contrib/maptools_%v.tar.gz
-Source-MD5: d49a7fad79956b80dc1c3c935d243c27
+Source-MD5: 9b5568c2f1a4ecb0f152e1ca73285be7
 SourceDirectory: maptools
 Depends: r-base, r-cran-sp
+BuildDepends: r-base
 CompileScript: <<
   #!/bin/sh -ev
-  export TMPDIR=%b
-  pushd ../ && %p/bin/R CMD build --binary maptools
+  export TMPDIR=%b/tmp
+  pushd ..
+  %p/bin/R --verbose CMD build --no-vignettes maptools
 <<
 InstallScript: <<
   #!/bin/sh -ev
-  mkdir -p %i/Library/Frameworks/R.framework/Resources/site-library
-  cp -R %b/Rinst*/maptools %i/Library/Frameworks/R.framework/Resources/site-library
-  install_name_tool -id %p/Library/Frameworks/R.framework/Resources/site-library/maptools/libs/maptools.dylib %i/Library/Frameworks/R.framework/Resources/site-library/maptools/libs/maptools.dylib
+  mkdir -p %i/lib/R/site-library
+  pushd %b/.. && %p/bin/R --verbose CMD install --library=%i/lib/R/site-library maptools
+  install_name_tool -id %p/lib/R/site-library/maptools/libs/maptools.dylib %i/lib/R/site-library/maptools/libs/maptools.dylib
 <<
 Shlibs: <<
-  %p/Library/Frameworks/R.framework/Resources/library/maptools/libs/maptools.dylib 0.0.0 %n (>=0.7-38-1)
+  %p/lib/R/site-library/maptools/libs/maptools.dylib 0.0.0 %n (>=0.7-38-1)
 <<
