@@ -1,6 +1,6 @@
 Package: apt
 Version: 0.7.25.3
-Revision: 10
+Revision: 11
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12), libtool2, docbook-xsl
 Depends: %N-inst4-shlibs (= %v-%r), %N-pkg1-shlibs (= %v-%r), dpkg (>= 1.15.5.6-9)
@@ -8,7 +8,7 @@ Source: http://snapshot.debian.org/archive/debian/20100202T220747Z/pool/main/a/a
 Source-MD5: ee59a90b91764aefeb5eb0f29d5cab96
 SourceDirectory: %n-%v
 PatchFile: %n.patch
-PatchFile-MD5: 6080319dbba1cf626b1e1759d4472e17
+PatchFile-MD5: 74a6a16dc3a1515bbf9f152589628fcd
 PatchScript: <<
  sed -e 's|@PREFIX@|%p|g' -e "s|@PERLARCH32@|$VERSIONER_PERL_PREFER_32_BIT|" < %{PatchFile} | patch -p1
  sh patch_flush
