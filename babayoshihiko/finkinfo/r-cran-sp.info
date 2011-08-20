@@ -10,7 +10,7 @@ Source-MD5: 8647226a2b4df58ca6b2017e4d5a5750
 SourceDirectory: sp
 PatchFile: %n.patch
 PatchFile-MD5: 3b497f44efaa66cfd91cd14248fc3a39
-Depends: r-base (>=2.13.0-2)
+Depends: r-base
 BuildDepends: fink (>= 0.24.12)
 CompileScript: <<
   #!/bin/sh -ev

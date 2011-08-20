@@ -8,7 +8,7 @@ Maintainer:  BABA Yoshihiko <babayoshihiko@mac.com>
 Source: http://www.rforge.net/proj4/snapshot/proj4_%v.tar.gz
 Source-MD5: 4518912befcc3138b38a4f3fcfe47caf
 SourceDirectory: proj4
-Depends: r-base (>=2.12.0-1), proj-shlibs
+Depends: r-base, proj-shlibs
 BuildDepends: proj
 CompileScript: <<
   #!/bin/sh -ev
