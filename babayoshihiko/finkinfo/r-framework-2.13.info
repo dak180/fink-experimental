@@ -1,15 +1,17 @@
 Info2: <<
 Package: r-framework-2.13
-Version: 2.13.0
+Version: 2.13.1
 Revision: 0.1
 Distribution: 10.7
-Description: Environment for statistical computing
+Description: R Framework
 Maintainer:  BABA Yoshihiko <babayoshihiko@mac.com>
 Depends: bzip2-shlibs, gcc46-shlibs, libgettext8-shlibs, libiconv, libjpeg8-shlibs, libpng14-shlibs, pcre-shlibs, readline5-shlibs, tcltk
 BuildDepends: fink (>= 0.28.1), bzip2-dev, gcc46-compiler, libgettext8-dev, libiconv-dev, libncurses5, libjpeg8, libpng14, pcre, readline5, tcltk-dev, x11-dev
+Conflicts: r-base (<< 2.13.1)
+Replaces: r-base (<< 2.13.1)
 
 Source: http://cran.r-project.org/src/base/R-2/R-%v.tar.gz
-Source-MD5: ecfb928067cfd932e75135f8b8bba3e7
+Source-MD5: 28dd0d68ac3a0eab93fe7035565a1c30
 PatchFile: %n.patch
 PatchFile-MD5: 0b80e77b4dc51597ffd8d7ea20168ebb
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
@@ -36,44 +38,63 @@ InfoTest: <<
 <<
 InstallScript: <<
   #!/bin/sh -ex
+  FW_VER=`echo %v | sed -e's/[\.][0-9]$//'`
+
   make install prefix=%i/Library/Frameworks
-  perl -pi -e 's|%i|%p|g' %i/Library/Frameworks/R.framework/Resources/bin/R
-  perl -pi -e 's|%i|%p|g' %i/Library/Frameworks/R.framework/Resources/etc/Makeconf
-  perl -pi -e 's|%i|%p|g' %i/lib/pkgconfig/libR.pc
+  
+  cd %i
+  
+  # Fix path
+  perl -pi -e 's|%i|%p|g' Library/Frameworks/R.framework/Resources/bin/R
+  perl -pi -e 's|%i|%p|g' Library/Frameworks/R.framework/Resources/etc/Makeconf
+  # perl -pi -e 's|%i|%p|g' lib/pkgconfig/libR.pc
   if [[ $( sw_vers -productVersion ) > 10.5 ]];then
-    perl -pi -e 's|# export PATH|export PATH|' %i/Library/Frameworks/R.framework/Resources/bin/R
+    perl -pi -e 's|# export PATH|export PATH|' Library/Frameworks/R.framework/Resources/bin/R
   fi
 
-  # move site-library out of R
-  ln -s %p/lib/R/site-library %i/Library/Frameworks/R.framework/Resources/site-library
- 
-  mkdir -p %i/bin
-  ln -s %p/Library/Frameworks/R.framework/Resources/bin/R %i/bin/R
-  mkdir -p %i/share/man/man1
-  ln -s %p/Library/Frameworks/R.framework/Versions/%v/Resources/man1/R.1 %i/share/man/man1/R.1
-  # fix install_name in libR.dylib
-  FW_VER=`echo %v | sed -e's/[\.][0-9]$//'`
-  install_name_tool -id "%p/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/lib/libR.dylib" %i/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/lib/libR.dylib
-  ln -s %p/Library/Frameworks/R.framework/Versions/$FW_VER %i/Library/Frameworks/R.framework/Versions/%v
+  # Fix install_name in libR.dylib
+  install_name_tool -id "%p/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/lib/libR.dylib" Library/Frameworks/R.framework/Versions/$FW_VER/Resources/lib/libR.dylib
 
+  # Move site-library out of R
+  pushd Library/Frameworks/R.framework/Resources/
+  ln -s %p/lib/R/site-library site-library
+  popd
+  
+  # Make more version specific symlink 
+  pushd Library/Frameworks/R.framework/Versions/
+  ln -s $FW_VER %v
+  popd
+  
+  # Fix install names in libs and modules
+  pushd Library/Frameworks/R.framework/Versions/$FW_VER/Resources/library/
   LIBS="class cluster foreign grDevices grid KernSmooth lattice MASS Matrix methods mgcv nlme nnet rpart spatial splines stats survival tcltk tools "
   for LIB in $LIBS;
     do
-        install_name_tool -id %p/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/library/$LIB/libs/$LIB.dylib %i/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/library/$LIB/libs/$LIB.dylib
+        install_name_tool -id %p/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/library/$LIB/libs/$LIB.dylib $LIB/libs/$LIB.dylib
     done
-
-  install_name_tool -id %p/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/modules/internet.dylib %i/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/modules/internet.dylib
-  install_name_tool -id %p/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/modules/lapack.dylib %i/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/modules/lapack.dylib
-  install_name_tool -id %p/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/modules/R_X11.dylib %i/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/modules/R_X11.dylib
-  install_name_tool -id %p/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/modules/vfonts.dylib %i/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/modules/vfonts.dylib
- 
-  # To keep the library folder safe. Users can install their libraries in $HOME/Library/R.
-  chmod 555 %i/Library/Frameworks/R.framework/Resources/library
+  popd
   
-  rm -f %i/Library/Frameworks/R.framework/Versions/Current
-<<
-RuntimeVars: <<
-  R_HOME: %p/Library/Frameworks/R.framework/Resources
+  pushd Library/Frameworks/R.framework/Versions/$FW_VER/Resources/modules
+  install_name_tool -id %p/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/modules/internet.dylib internet.dylib
+  install_name_tool -id %p/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/modules/lapack.dylib lapack.dylib
+  install_name_tool -id %p/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/modules/R_X11.dylib R_X11.dylib
+  install_name_tool -id %p/Library/Frameworks/R.framework/Versions/$FW_VER/Resources/modules/vfonts.dylib vfonts.dylib
+  popd
+ 
+  # Keep the library folder safe. Users can install their libraries in $HOME/Library/R.
+  chmod 555 Library/Frameworks/R.framework/Resources/library
+  
+  # Remove duplicated directories
+  pushd %i
+  rm -f Library/Frameworks/R.framework/R
+  rm -f Library/Frameworks/R.framework/Headers
+  rm -f Library/Frameworks/R.framework/Libraries
+  rm -f Library/Frameworks/R.framework/PrivateHeaders
+  rm -f Library/Frameworks/R.framework/Resources
+  rm -f Library/Frameworks/R.framework/Versions/Current
+  rm -rf bin lib share
+  popd
+  
 <<
 Shlibs: <<
   %p/Library/Frameworks/R.framework/Versions/2.13/Resources/lib/libR.dylib 2.13.0 %n (>= 2.13.0-1)
@@ -124,7 +145,7 @@ to http://cran.r-project.org/bin/macosx/, download and install R-GUI.dmg.
 You will then need to edit Info.plist inside the app bundle to point
 to %p/Library/R.Framework (instead of /Library/R.Framework).
 <<
-DescPackaging: 'pdflatex' is needed to make NEWS.pdf but is missing on your system.
+DescPackaging: 'pdflatex' is needed to make NEWS.pdf
 License: GPL
 Homepage: http://cran.R-project.org/
 <<
