@@ -50,7 +50,8 @@ SplitOff: <<
 	Files: lib/*a lib/lib%{Ni}.dylib
 	DocFiles: COPYING README
 	DescUsage: <<
-	This package contains a static library, libtool archive, and 
-	unversioned dylib.
+		This package contains a static library, libtool archive, and 
+		unversioned dylib.
+	<<
 <<
 <<
