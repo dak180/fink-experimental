@@ -19,7 +19,7 @@ This package contains the executables, manpages, and other documentation.
 <<
 DescPort: <<
 	Upstream doesn't appear to grok OS X, so we handcraft the dylib's 
-	install_name, current_version, and compatibility_version.
+	install_name.
 <<
 DescPackaging: <<
 	For some reason I was getting a lib%N6.dylib -> lib%N6.2.0.dylib hardlink
@@ -38,30 +38,35 @@ Conflicts: qhull
 Replaces: qhull
 
 PatchFile: %n.patch
-PatchFile-MD5:  7e94049d9c1d5a514f9b72a215f6cf53
-PatchScript:  sed -e 's,@INSTPREFIX@,%i,' -e 's,@FINKPREFIX@,%p,' %{PatchFile} | patch -p1
+PatchFile-MD5: abf949ee16a68f9720198798b07725b0
+PatchScript:  <<
+sed -e 's,@INSTPREFIX@,%i,' -e 's,@FINKPREFIX@,%p,' %{PatchFile} | patch -p1
+sed -ie 's|-Wno-sign-conversion||' Makefile
+<<
 
 GCC: 4.0
 CompileScript: make
+
+InfoTest: <<
+	TestScript: make test || exit 2
+<<
 
 InstallScript: <<
 #!/bin/sh -ev
 make -j1 install
 pushd %i/lib
-rm %i/lib/lib%N6.dylib
-ln -s lib%N6.2.0.dylib lib%N6.dylib
-ln -s lib%N6.2.0.dylib lib%N.dylib
+rm %i/lib/lib%N.dylib
+ln -s lib%N.2.0.dylib lib%N.dylib
 popd
 cd %i/include
-ln -s lib%N %N
 <<
 
-DocFiles: Announce.txt COPYING.txt README.txt REGISTER.txt
+DocFiles: Announce.txt COPYING.txt README.txt REGISTER.txt index.htm
 Homepage: http://www.qhull.org/
 SplitOff:  <<
 	Package: %N-shlibs
-	Files: lib/lib%N.6.2.0.dylib lib/lib%N.6.dylib
-	Shlibs: %p/lib/libqhull6.2.0.dylib 7.0.0 %n (>= 2011.1-1)
+	Files: lib/lib%N.2.0.dylib
+	Shlibs: %p/lib/libqhull6.2.0.dylib 0.0.0 %n (>= 2011.1-1)
 	DocFiles: Announce.txt COPYING.txt README.txt REGISTER.txt
 	DescUsage: <<
 	This package contains the shared library.
