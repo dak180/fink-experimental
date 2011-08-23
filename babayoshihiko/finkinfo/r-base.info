@@ -1,6 +1,6 @@
 Package: r-base
 Version: 2.13.1
-Revision: 0.2
+Revision: 0.4
 Description: Environment for statistical computing
 Maintainer:  BABA Yoshihiko <babayoshihiko@mac.com>
 Depends: r-framework-2.13
@@ -25,17 +25,18 @@ InstallScript: <<
   popd
   
   pushd Library/Frameworks/R.framework
+  ln -s %p/Library/Frameworks/R.framework/Versions/Current/Resources/lib/libR.dylib R
   ln -s %p/Library/Frameworks/R.framework/Versions/Current/Headers Headers
   ln -s %p/Library/Frameworks/R.framework/Versions/Current/Resources/lib Libraries
   ln -s %p/Library/Frameworks/R.framework/Versions/Current/PrivateHeaders PrivateHeaders
   ln -s %p/Library/Frameworks/R.framework/Versions/Current/Resources Resources
   popd
   
-  mkdir -p lib
-  pushd lib
-  echo 'rhome=/sw/Library/Frameworks/R.framework/Versions/Current/Resources' >libR.pc
+  mkdir -p lib/pkgconfig
+  pushd lib/pkgconfig
+  echo 'rhome=%p/Library/Frameworks/R.framework/Versions/Current/Resources' >libR.pc
   echo 'rlibdir=${rhome}/lib' >>libR.pc
-  echo 'rincludedir=/sw/Library/Frameworks/R.framework/Versions/Current/Resources/include' >>libR.pc
+  echo 'rincludedir=%p/Library/Frameworks/R.framework/Versions/Current/Resources/include' >>libR.pc
   echo ' ' >>libR.pc
   echo 'Name: libR' >>libR.pc
   echo 'Description: R as a library' >>libR.pc
