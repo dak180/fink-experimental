@@ -29,7 +29,7 @@ diff -Nurd qhull-2011.1/Makefile qhull-2011.1.patched/Makefile
  
  # for shared library link
 -CC_OPTS3  =
-+CC_OPTS3  = -dynamiclib -install_name @FINKPREFIX@/lib/libqhull.6.dylib -compatibility_version 7.0.0 -current_version 7.2.0
++CC_OPTS3  = -dynamiclib -install_name @FINKPREFIX@/lib/libqhull6.2.0.dylib
  # Define qhull_VERSION in CMakeLists.txt, Makefile, qhull-exports.def, and qhull-warn.pri
  qhull_VERSION_MAJOR=6
 -SO  = so.6.2.0
@@ -42,7 +42,7 @@ diff -Nurd qhull-2011.1/Makefile qhull-2011.1.patched/Makefile
  lib/libqhull$(qhull_VERSION_MAJOR).$(SO): $(LIBQHULLSP_OBJS)
  	$(CC) -shared -o $@ $(CC_OPTS3) $^
 -	cd lib && ln -f -s libqhull$(qhull_VERSION_MAJOR).$(SO) libqhull$(qhull_VERSION_MAJOR).so
-+	cd lib && ln -f -s libqhull.$(qhull_VERSION_MAJOR).$(SO) libqhull$(qhull_VERSION_MAJOR).dylib
++	cd lib && ln -f -s libqhull$(qhull_VERSION_MAJOR).$(SO) libqhull$(qhull_VERSION_MAJOR).dylib
  
  # don't use ../qconvex.	 Does not work on Red Hat Linux
  bin/qconvex: src/qconvex/qconvex.o lib/libqhullstatic.a
