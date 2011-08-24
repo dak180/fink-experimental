@@ -2,7 +2,7 @@ Info2: <<
 Package: octave%type_pkg[-atlas]
 Type: -atlas (.), oct(3.2.4)
 Version: 3.2.4
-Revision: 0.0004
+Revision: 0.0006
 Maintainer: Alexander Hansen <alexkhansen@users.sourceforge.net>
 
 # disable atlas on 10.7 distro file until atlas is available
@@ -12,13 +12,13 @@ Source-MD5: 90c39fa9e241ad2e978bcee4682a2ba9
 
 BuildDepends: <<
 	arpack, glpk-dev, hdf5.7, readline5, libncurses5, fftw3 (>= 3.1.1-7), 
-        libcurl4, 
-	pcre, gcc46-compiler, suitesparse, qhull, fink (>= 0.28), fink-package-precedence, sed, 
+        libcurl4, fltk-x11, x11-dev, libftgl2, qhull6-dev, qrupdate-dev,
+	pcre, gcc46-compiler, suitesparse, fink (>= 0.28), fink-package-precedence, sed, 
 	imagemagick10-dev,
 	(%type_raw[-atlas] = atlas) atlas
 <<
 Depends: %{Ni}%type_pkg[oct]%type_pkg[-atlas] (=%v-%r)
-BuildConflicts: coot-dev, broken-gcc, lammpi-dev, fort77, 4ti2-dev
+BuildConflicts: coot-dev, broken-gcc, lammpi-dev, fort77, 4ti2-dev, graphicsmagick-dev
 Suggests: %{Ni}%type_pkg[oct]-docs
 GCC: 4.0
 Conflicts: <<
@@ -38,6 +38,7 @@ PatchScript: <<
 	cp doc/interpreter/mkoctfile.1 doc/interpreter/mkoctfile-%v.1
 	sed -e 's/@OCTVERSION@/%v/g' %{PatchFile} | patch -p1 
 	sed -i -e 's|@FINKPREFIX@|%p|g'   %{Ni}-forge* %{Ni}rc doc/interpreter/*.1 mkoctfile.in
+	perl -pi -e 's|(qhull[/.])|lib\1|g ; s|lqhull|lqhull6|' configure
 <<
 
 SetLDFLAGS: -Wl,-dead_strip_dylibs 
@@ -194,7 +195,7 @@ Splitoff3: <<
 	Package: octave%type_pkg[oct]%type_pkg[-atlas]
 	Depends: <<
 	%{Ni}%type_pkg[oct]%type_pkg[-atlas]-shlibs (=%v-%r),
-	arpack-shlibs, fftw3-shlibs (>= 3.1.1-7), fltk-aqua-shlibs, glpk-shlibs,
+	arpack-shlibs, fftw3-shlibs (>= 3.1.1-7), fltk-x11-shlibs, glpk-shlibs,
 	libcurl4-shlibs, octave324-shlibs, pcre-shlibs, ncurses,
 	(%type_raw[-atlas] = -atlas) atlas-shlibs (>= 3.8.1-1)
 	<<
