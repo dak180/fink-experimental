@@ -1,0 +1,57 @@
+Info2: <<
+Package: qrupdate%type_pkg[-shlibs]
+Type: -shlibs (-shlibs)
+Version: 1.1.1
+Revision: 0.05
+Source: mirror:sourceforge:%{Ni}/1.1/%{Ni}-%v.tar.gz
+Source-MD5: 7782c7ee6c234e56a72d6b86c1856fa0
+Description: QR and Cholesky decomposition library
+DescDetail: qrupdate is a Fortran library for fast updates of QR and Cholesky decompositions.
+Descusage: This package contains a shared library.
+DescPackaging: <<
+Abuse Type so that we can use %Ni instead of "qrupdate".
+
+Patch out hardcoded /usr/local.
+
+Uses GNU 'install -D', so we patch that out and use 'mkdir -p' first to avoid
+BuildDepends: coreutils-default.
+<<
+Maintainer: Alexander Hansen <alexkhansen@users.sourceforge.net>
+License: GPL
+
+BuildDepends: gcc46
+Depends: gcc46-shlibs
+BuildDependsOnly: false
+
+PatchScript: <<
+	perl -pi -e 's|/usr/local|%p|g' Makeconf
+	perl -pi -e 's|install -D|install|g' src/Makefile
+<<
+
+CompileScript: <<
+	make solib
+<<
+
+InfoTest: <<
+	TestScript:  make test || exit 2
+<<
+
+InstallScript: <<
+	mkdir -p %i/lib
+	make -j1 install DESTDIR=%d
+<<
+
+Shlibs:  %p/lib/libqrupdate.1.dylib 0.0.0 %n (>= 1.1.1-1)
+
+DocFiles: COPYING README
+
+SplitOff: <<
+	Package: qrupdate-dev
+	Files: lib/*a lib/lib%{Ni}.dylib
+	DocFiles: COPYING README
+	DescUsage: <<
+		This package contains a static library, libtool archive, and 
+		unversioned dylib.
+	<<
+<<
+<<
