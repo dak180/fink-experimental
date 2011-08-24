@@ -6,14 +6,17 @@ License: GPL
 Homepage: http://rstudio.org
 Maintainer: BABA Yoshihiko <babayoshihiko@mac.com>
 Depends: <<
-  r-base, 
+  r-base213, 
   boost1.46.nopython-shlibs,
   libiconv, libpng14-shlibs,
+  webkit-1.0.2-shlibs,
   qt4-base-mac-qtcore-shlibs
 <<
 BuildDepends: << 
   fink (>= 0.28), cmake, boost1.46.nopython,
+  r-base213-dev,
   libiconv-dev, libpng14,
+  webkit-1.0.2,
   qt4-base-mac
 <<
 Source: http://homepage.mac.com/babayoshihiko/fink/rstudio-rstudio-v%v-0-ga250b30.tar.gz
@@ -55,7 +58,7 @@ CompileScript: <<
          -DCMAKE_INSTALL_LOCAL_ONLY=TRUE \
          -DCMAKE_VERBOSE_MAKEFILE=TRUE \
          -DLIBR_LIBRARIES=%p/Library/Frameworks/R.framework/Libraries \
-         -DBoost_INCLUDE_DIR=%p/include \
+         -DBOOST_INCLUDE_DIR=%p/include \
          ..
   
   perl -pi -e 's|include|# include|'                       src/cpp/desktop/cmake_install.cmake

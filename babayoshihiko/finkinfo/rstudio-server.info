@@ -7,12 +7,15 @@ Homepage: http://rstudio.org
 Maintainer: BABA Yoshihiko <babayoshihiko@mac.com>
 DescUsage: <<
 Server:
+  First, run 
+  `sudo cp -R /etc/pam.d/ftpd /etc/pam.d/rstudio'
+  then start the server:
   Run `sudo daemonic enable rstudio-server'
 Client:
   Access http://localhost:8787/
 <<
-Depends: r-base, daemonic, boost1.46.nopython-shlibs
-BuildDepends: fink (>= 0.28), cmake, boost1.46.nopython
+Depends: r-base213, daemonic, boost1.46.nopython-shlibs
+BuildDepends: fink (>= 0.28),   r-base213-dev, cmake, boost1.46.nopython
 Source: http://homepage.mac.com/babayoshihiko/fink/rstudio-rstudio-v%v-0-ga250b30.tar.gz
 Source-MD5: 43754f89fe079700c5d3a181968133e3
 SourceDirectory: rstudio-rstudio-a250b30
@@ -48,16 +51,16 @@ CompileScript: <<
          -DCMAKE_INSTALL_LOCAL_ONLY=TRUE \
          -DCMAKE_VERBOSE_MAKEFILE=TRUE \
          -DLIBR_LIBRARIES=%p/Library/Frameworks/R.framework/Libraries \
-         -DBoost_INCLUDE_DIR=%p/include \
+         -DBOOST_INCLUDE_DIR=%p/include \
          ..
   make VERBOSE=0  
 <<
 # Install Phase.
 InstallScript: <<
 #!/bin/bash -ev
-  mkdir -p %i/bin
-  cp src/cpp/server/extras/admin/rstudio-server.in %i/bin/rstudio-server
-  chmod a+x %i/bin/rstudio-server
+  # mkdir -p %i/bin
+  # cp src/cpp/server/extras/admin/rstudio-server.in %i/bin/rstudio-server
+  # chmod a+x %i/bin/rstudio-server
   
   pushd build
   make install CMAKE_INSTALL_PREFIX=%i/share/%n
