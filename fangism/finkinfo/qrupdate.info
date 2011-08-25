@@ -51,7 +51,7 @@ InfoTest: <<
 
 InstallScript: <<
 	mkdir -p %i/lib
-	make -j1 install-shlibs install-staticlib DESTDIR=%d
+	make -j1 install-shlib install-staticlib DESTDIR=%d
 <<
 
 Shlibs:  %p/lib/libqrupdate.1.dylib 0.0.0 %n (>= 1.1.1-1)
