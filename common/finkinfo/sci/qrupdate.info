@@ -2,7 +2,7 @@ Info2: <<
 Package: qrupdate%type_pkg[-shlibs]
 Type: -shlibs (-shlibs)
 Version: 1.1.1
-Revision: 0.06
+Revision: 0.07
 Source: mirror:sourceforge:%{Ni}/1.1/%{Ni}-%v.tar.gz
 Source-MD5: 7782c7ee6c234e56a72d6b86c1856fa0
 Description: QR and Cholesky decomposition library
@@ -60,6 +60,7 @@ DocFiles: COPYING README
 
 SplitOff: <<
 	Package: qrupdate-dev
+	Depends: %N (= %v-%r)
 	Files: lib/*a lib/lib%{Ni}.dylib
 	DocFiles: COPYING README
 	DescUsage: <<
