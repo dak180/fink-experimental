@@ -21,12 +21,6 @@ DescPort: <<
 	Upstream doesn't appear to grok OS X, so we handcraft the dylib's 
 	install_name.
 <<
-DescPackaging: <<
-	For some reason I was getting a lib%N6.dylib -> lib%N6.2.0.dylib hardlink
-	instead of symlink, so clean that up manually.
-	Put in %p/include/%n -> %p/include/lib%n compatibility symlink for packages
-	which were using the previous static-only version of the package.
-<<
 
 Source: http://www.qhull.org/download/qhull-%v-src.tgz
 Source-MD5: a65061cf2a6e6581182f4df0f3667a8e
@@ -38,10 +32,12 @@ Conflicts: qhull
 Replaces: qhull
 
 PatchFile: %n.patch
-PatchFile-MD5: abf949ee16a68f9720198798b07725b0
+PatchFile-MD5: 8498f1f42b4aa2c2a47fd70353acb293
 PatchScript:  <<
 sed -e 's,@INSTPREFIX@,%i,' -e 's,@FINKPREFIX@,%p,' %{PatchFile} | patch -p1
-sed -ie 's|-Wno-sign-conversion||' Makefile
+#sed -ie 's|-Wno-sign-conversion||' Makefile
+# fangism: g++-4.0 needs qualifier on friend member class, even if forward-declared
+sed -i.orig -e '/friend.*class.*const_iterator;/s|const_iterator|QhullPointSet::&|;' src/libqhullcpp/QhullPointSet.h
 <<
 
 GCC: 4.0
@@ -54,11 +50,11 @@ InfoTest: <<
 InstallScript: <<
 #!/bin/sh -ev
 make -j1 install
-pushd %i/lib
-rm %i/lib/lib%N.dylib
-ln -s lib%N.2.0.dylib lib%N.dylib
-popd
-cd %i/include
+#pushd %i/lib
+#rm %i/lib/lib%N.dylib
+#ln -s lib%N.2.0.dylib lib%N.dylib
+#popd
+#cd %i/include
 <<
 
 DocFiles: Announce.txt COPYING.txt README.txt REGISTER.txt index.htm
