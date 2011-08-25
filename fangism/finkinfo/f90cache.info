@@ -77,6 +77,8 @@ compilations through %n), install the "%n-default" package.
 DescUsage: <<
 By default the user cache lives in ~/.f90cache, which may be overridden
 with F90CACHE_DIR.
+This version of %n expects the fortran compiler to be named
+'gfortran-4.x', so a temporary wrapper may need to be created.
 <<
 DescPort: <<
 Port was effortless.  
