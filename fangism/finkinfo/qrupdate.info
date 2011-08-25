@@ -1,0 +1,70 @@
+Info2: <<
+Package: qrupdate%type_pkg[-shlibs]
+Type: -shlibs (-shlibs)
+Version: 1.1.1
+Revision: 0.05
+Source: mirror:sourceforge:%{Ni}/1.1/%{Ni}-%v.tar.gz
+Source-MD5: 7782c7ee6c234e56a72d6b86c1856fa0
+Description: QR and Cholesky decomposition library
+DescDetail: qrupdate is a Fortran library for fast updates of QR, Cholesky decompositions.
+Descusage: This package contains a shared library.
+DescPackaging: <<
+Abuse Type so that we can use %Ni instead of "qrupdate".
+
+Patch out hardcoded /usr/local.
+
+Uses GNU 'install -D', so we patch that out and use 'mkdir -p' first to avoid
+BuildDepends: coreutils-default.
+<<
+Maintainer: Alexander Hansen <alexkhansen@users.sourceforge.net>
+License: GPL
+
+BuildDepends: gcc46-compiler
+Depends: gcc46-shlibs
+BuildDependsOnly: false
+
+PatchScript: <<
+	#!/bin/sh -ev
+	sed -i.orig -e 's|/usr/local|%p|g' \
+		-e '/FC/s|gfortran|&-fsf-4.6|' \
+		Makeconf
+	sed -i.orig -e 's|install -D|install|g' src/Makefile
+	# recursive parallel Makefiles please -- fangism
+	sed -i.orig -e '/make -C/s|make|+&|' Makefile
+	darwin_vers=`uname -r | cut -d. -f1`
+	if test $darwin_vers = 8
+	then
+	sed -i.orig2 -e '/BLAS=/i\
+ATLAS_HOME=/Developer/SDKs/MacOSX10.4u.sdk/usr\
+LDFLAGS=-L$(ATLAS_HOME)/lib' Makeconf
+	sed -i.orig -e '/FFLAGS.*LIBS/s|(FFLAGS)|& $(LDFLAGS)|' test/Makefile
+	fi
+<<
+
+CompileScript: <<
+	make solib && make lib
+<<
+
+InfoTest: <<
+	TestScript:  make test || exit 2
+<<
+
+InstallScript: <<
+	mkdir -p %i/lib
+	make -j1 install-shlibs install-staticlib DESTDIR=%d
+<<
+
+Shlibs:  %p/lib/libqrupdate.1.dylib 0.0.0 %n (>= 1.1.1-1)
+
+DocFiles: COPYING README
+
+SplitOff: <<
+	Package: qrupdate-dev
+	Files: lib/*a lib/lib%{Ni}.dylib
+	DocFiles: COPYING README
+	DescUsage: <<
+		This package contains a static library, libtool archive, and 
+		unversioned dylib.
+	<<
+<<
+<<
