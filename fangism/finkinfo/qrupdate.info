@@ -2,7 +2,7 @@ Info2: <<
 Package: qrupdate%type_pkg[-shlibs]
 Type: -shlibs (-shlibs)
 Version: 1.1.1
-Revision: 0.05
+Revision: 0.06
 Source: mirror:sourceforge:%{Ni}/1.1/%{Ni}-%v.tar.gz
 Source-MD5: 7782c7ee6c234e56a72d6b86c1856fa0
 Description: QR and Cholesky decomposition library
@@ -32,7 +32,7 @@ PatchScript: <<
 	# recursive parallel Makefiles please -- fangism
 	sed -i.orig -e '/make -C/s|make|+&|' Makefile
 	darwin_vers=`uname -r | cut -d. -f1`
-	if test $darwin_vers = 8
+	if [ $darwin_vers = 8 -o $darwin_vers = 9 ]
 	then
 	sed -i.orig2 -e '/BLAS=/i\
 ATLAS_HOME=/Developer/SDKs/MacOSX10.4u.sdk/usr\
@@ -62,8 +62,9 @@ SplitOff: <<
 	Package: qrupdate-dev
 	Files: lib/*a lib/lib%{Ni}.dylib
 	DocFiles: COPYING README
+	Depends: qrupdate-shlibs
 	DescUsage: <<
-		This package contains a static library, libtool archive, and 
+		This package contains a static library, header, and 
 		unversioned dylib.
 	<<
 <<
