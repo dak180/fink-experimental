@@ -35,7 +35,7 @@ PatchFile: %n.patch
 PatchFile-MD5: 8498f1f42b4aa2c2a47fd70353acb293
 PatchScript:  <<
 sed -e 's,@INSTPREFIX@,%i,' -e 's,@FINKPREFIX@,%p,' %{PatchFile} | patch -p1
-#sed -ie 's|-Wno-sign-conversion||' Makefile
+sed -ie 's|-Wno-sign-conversion||' Makefile
 # fangism: g++-4.0 needs qualifier on friend member class, even if forward-declared
 sed -i.orig -e '/friend.*class.*const_iterator;/s|const_iterator|QhullPointSet::&|;' src/libqhullcpp/QhullPointSet.h
 <<
@@ -48,13 +48,11 @@ InfoTest: <<
 <<
 
 InstallScript: <<
-#!/bin/sh -ev
-make -j1 install
-#pushd %i/lib
-#rm %i/lib/lib%N.dylib
-#ln -s lib%N.2.0.dylib lib%N.dylib
-#popd
-#cd %i/include
+	#!/bin/sh -ev
+	make -j1 install
+	cd %i/lib
+	rm lib%N.dylib
+	ln -s lib%N6.2.0.dylib lib%N.dylib
 <<
 
 DocFiles: Announce.txt COPYING.txt README.txt REGISTER.txt index.htm
