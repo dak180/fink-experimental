@@ -60,6 +60,8 @@ using std::size_t;' liboctave/oct-alloc.h
 	for f in liboctave/DiagArray2.h liboctave/intNDArray.h
 	do sed -i.orig -e '/using.*element_type;/s|using|& typename|' $f
 	done
+	# missing qualifier to dependent-name member-function
+	sed -i.orig -e '/truncate_int/s|\(return\) \(truncate_int\)|\1 this->\2|' liboctave/oct-inttypes.h
 <<
 
 # SetLDFLAGS: -Wl,-dead_strip_dylibs
