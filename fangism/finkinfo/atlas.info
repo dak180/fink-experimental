@@ -1,5 +1,5 @@
 Package: atlas
-Version: 3.9.38
+Version: 3.9.47
 Revision: 1
 Description: Portably optimal linear algebra software
 DescDetail: <<
@@ -19,7 +19,7 @@ libatlas.a		: The main ATLAS library,
 libptf77blas.a.
   libcblas.a and libf77blas.a are symlinks pointing to the threaded versions
 if available, else to the unthreaded versions.
-  The dylibs for latlas lcblas lf77bas and llapack are also installed
+  The dylibs for latlas lcblas lf77blas and llapack are also installed
 <<
 DescPort: <<
 The optimized subset of LAPACK provided by ATLAS is merged
@@ -32,28 +32,29 @@ Order is important when linking! Use:
 -L%p/lib -llapack -lcblas -lf77blas -latlas
 <<
 Source: mirror:sourceforge:math-atlas/%n%v.tar.bz2
-Source-MD5: 64380ed122cd4adbee825d5c4654eefb
-Source2: http://www.netlib.org/lapack/lapack-3.3.0.tgz
-Source2-MD5: 84213fca70936cc5f1b59a7b1bf71697
+Source-MD5: 0ece88b5c579259bbfb006f81104c4e5
+Source2: http://www.netlib.org/lapack/lapack-3.3.1.tgz
+Source2-MD5: d0d533ec9a5b74933c2a1e84eedc58b4
 SourceDirectory: ATLAS
 License: BSD
 # since we're experimenting with building a dylib :
 BuildDependsOnly: true
-BuildDepends: gcc44-compiler
+BuildDepends: gcc46-compiler
+# gcc4x for gfortran
 PatchScript: <<
 #!/bin/sh -ev
 sed -i.bak -e '/PowerBook/,/RackMac/s,"c,"k,g' CONFIG/src/backend/archinfo_freebsd.c
 cd ..
-chmod +rx lapack-3.3.0
-ln -s lapack-3.3.0 LAPACK
-ln -s %b/../../../lapack-3.3.0.tgz .
+chmod +rx lapack-3.3.1
+ln -s lapack-3.3.1 LAPACK
+ln -s %b/../../../lapack-3.3.1.tgz .
 cd LAPACK
 sed -e 's,\.\./\.\./blas\$(PLAT)\.a,%b/../bld/lib/libf77blas.a %b/../bld/lib/libcblas.a %b/../bld/lib/libatlas.a,' \
-    -e 's|g77|gfortran-fsf-4.4|g' -e 's,^TIMER,\#TIMER,' -e '/INT_ETIME/s,^\# *,,' < make.inc.example > make.inc
+    -e 's|g77|gfortran-fsf-4.6|g' -e 's,^TIMER,\#TIMER,' -e '/INT_ETIME/s,^\# *,,' < make.inc.example > make.inc
 <<
 ConfigureParams: <<
---cc=gcc-fsf-4.4 --shared -v 2 \
---with-netlib-lapack-tarfile=lapack-3.3.0.tgz \
+--cc=gcc-fsf-4.6 --shared -v 2 \
+--with-netlib-lapack-tarfile=lapack-3.3.1.tgz \
 -b $arch -F ic "$iflags" -F if "$iflags" $cflags 
 <<
 # --with-netlib-lapack=%b/../LAPACK/lapack_LINUX.a
@@ -80,7 +81,7 @@ if false ; then
  ar cr ../bld/lib/libf77blas.a BLAS/SRC/scabs1.o; ar cr ../bld/lib/libptf77blas.a BLAS/SRC/scabs1.o
 fi
  cd ..
- # ln -s %p/bin/gcc-fsf-4.4 gcc
+ # ln -s %p/bin/gcc-fsf-4.6 gcc
  # export PATH=`pwd`:$PATH
  mkdir -p bld/lib
  cd bld
@@ -107,7 +108,7 @@ fi
  # We link 'manually', with ld, to avoid having unnecessary libs like lgcc_s among the load commands.
  # This way the libs can be safely used in linking with any compiler: they will not bring themselves
  # the wrong lgcc_s in the search list.
- ld="ld -dynamic -dylib -single_module -dead_strip -x -all_load -L. -L%p/lib/gcc4.4/lib -ldylib1.o -dylib_install_name"
+ ld="ld -dynamic -dylib -single_module -dead_strip -x -all_load -L. -L%p/lib/gcc4.6/lib -ldylib1.o -dylib_install_name"
  $ld %p/lib/libatlas.dylib libatlas.a -o libatlas.dylib -lSystem
  $ld %p/lib/libcblas.dylib libcblas.a -o libcblas.dylib -latlas -lSystem
  $ld %p/lib/libf77blas.dylib libf77blas.a -o libf77blas.dylib -lgfortran -latlas -lSystem
