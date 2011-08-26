@@ -52,7 +52,7 @@ InstallScript: <<
 	make -j1 install
 	cd %i/lib
 	rm lib%N.dylib
-	ln -s lib%N6.2.0.dylib lib%N.dylib
+	ln -s lib%N.2.0.dylib lib%N.dylib
 <<
 
 DocFiles: Announce.txt COPYING.txt README.txt REGISTER.txt index.htm
