@@ -57,7 +57,9 @@ using std::size_t;' liboctave/oct-alloc.h
 	do sed -i.orig -e '/include/s|qhull/|lib&|' $f
 	done
 	# needed by clang++, safe for g++: using-declaration as typedef
-	sed -i.orig -e '/using.*element_type;/s|using|& typename|' liboctave/DiagArray2.h
+	for f in liboctave/DiagArray2.h liboctave/intNDArray.h
+	do sed -i.orig -e '/using.*element_type;/s|using|& typename|' $f
+	done
 <<
 
 # SetLDFLAGS: -Wl,-dead_strip_dylibs
