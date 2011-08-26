@@ -60,15 +60,27 @@ using std::size_t;' liboctave/oct-alloc.h
 
 # SetLDFLAGS: -Wl,-dead_strip_dylibs
 ConfigureParams: <<
-	F77=%p/bin/gfortran-fsf-4.6 --host=%m-apple-darwin --build=%m-apple-darwin \
+	--host=%m-apple-darwin --build=%m-apple-darwin \
 	--infodir='${prefix}/share/info' --mandir='${prefix}/share/man' --libexecdir='${prefix}/lib' \
 	--enable-shared --enable-dl --disable-static --without-mpi --with-hdf5 --with-fftw
 <<
 CompileScript: <<
  #!/bin/sh -ev
- export CFLAGS='-O3'
- export CXXFLAGS='-O3'
- export FFLAGS='-O3'
+ export CFLAGS='-g -O3'
+ export CXXFLAGS='-g -O3'
+ export FFLAGS='-g -O3 -ff2c'
+ export F77=gfortran-fsf-4.6
+ # auto-detect and use f90cache
+ if test -x %p/bin/f90cache
+ then
+	export F90CACHE_DIR=%p/var/f90cache
+	mkdir opt-bin
+	{ echo "#!/bin/sh" ; echo "exec $F77 \"\$@\"" ;} \
+		> opt-bin/gfortran-4.6
+	chmod +x opt-bin/gfortran-4.6
+	export PATH=%b/opt-bin:$PATH
+	export F77="f90cache gfortran-4.6"
+ fi
  if [ "%type_pkg[-atlas]" == "" ]
 	then a='--with-lapack=-Wl,-framework,Accelerate,-dylib_file,/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libLAPACK.dylib:/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libLAPACK.dylib --with-blas=-Wl,-framework,Accelerate,-dylib_file,/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib:/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib'
 	else a='--with-lapack=%p/lib/liblapack.dylib --with-blas=%p/lib/libf77blas.dylib'
