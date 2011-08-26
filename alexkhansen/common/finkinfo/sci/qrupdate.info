@@ -27,18 +27,15 @@ PatchScript: <<
 	#!/bin/sh -ev
 	sed -i.orig -e 's|/usr/local|%p|g' \
 		-e '/FC/s|gfortran|&-fsf-4.6|' \
+		-e 's|-lblas||' \
+		-e 's|-llapack||'\
 		Makeconf
 	sed -i.orig -e 's|install -D|install|g' src/Makefile
 	# recursive parallel Makefiles please -- fangism
 	sed -i.orig -e '/make -C/s|make|+&|' Makefile
-	darwin_vers=`uname -r | cut -d. -f1`
-	if [ $darwin_vers = 8 -o $darwin_vers = 9 ]
-	then
 	sed -i.orig2 -e '/BLAS=/i\
-ATLAS_HOME=/Developer/SDKs/MacOSX10.4u.sdk/usr\
-LDFLAGS=-L$(ATLAS_HOME)/lib' Makeconf
+LDFLAGS=-framework Accelerate' Makeconf
 	sed -i.orig -e '/FFLAGS.*LIBS/s|(FFLAGS)|& $(LDFLAGS)|' test/Makefile
-	fi
 <<
 
 CompileScript: <<
