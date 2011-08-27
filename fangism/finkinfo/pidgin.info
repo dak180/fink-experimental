@@ -2,7 +2,7 @@ Info3: <<
 # Info3 packaging is temporary, just to support comments in depends fields
 Package: pidgin
 Version: 2.10.0
-Revision: 1
+Revision: 2
 # Architecture: powerpc, i386
 Maintainer: David Fang <fangism@users.sourceforge.net>
 Source: mirror:sourceforge:%n/%n-%v.tar.bz2
@@ -30,7 +30,7 @@ BuildDepends: <<
 	gettext-tools,
 	glib2-dev (>= 2.14.0-1),
 #	glitz,
-	gnutls26 (>= 2.2.2-3),
+	gnutls-2.12 (>= 2.2.2-3),
 	gstreamer-0.10-dev (>= 0.10.17-1),
 	gst-plugins-base-0.10-dev, 
 	gtk+2-dev (>= 2.12.8-1),
@@ -94,6 +94,7 @@ ConfigureParams: <<
 	--enable-cyrus-sasl \
 	--enable-farsight \
 	--enable-gnutls \
+	--with-gnutls-libs=%p/lib/gnutls-2.12 \
 	--enable-doxygen \
 	--enable-dot \
 	--enable-sm \
@@ -251,7 +252,7 @@ SplitOff4: <<
 	dbus1.3-shlibs,
 	farsight2-shlibs (>= 0.0.9), 
 	glib2-shlibs (>= 2.14.0-1),
-	gnutls26-shlibs (>= 2.2.2-3),
+	gnutls-2.12-shlibs (>= 2.2.2-3),
 	gstreamer-0.10-shlibs,
 	gst-plugins-base-0.10-shlibs, 
 	libavahi-client3-shlibs,
