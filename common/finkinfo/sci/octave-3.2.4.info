@@ -30,8 +30,6 @@ UseMaxBuildJobs: true
 
 PatchFile: %{ni}.patch
 PatchFile-MD5: efef1c4d103b5c87d25ad1a2d0671469
-PatchFile2: %{ni}-10.7.patch
-PatchFile2-MD5:  a04b8081dbe76972f823d098097a26a2
 
 PatchScript: <<
 	#!/bin/sh -ev
@@ -65,8 +63,6 @@ using std::size_t;' liboctave/oct-alloc.h
 	done
 	# missing qualifier to dependent-name member-function
 	sed -i.orig -e '/truncate_int/s|\(return\) \(truncate_int\)|\1 octave_int_base<T>::\2|' liboctave/oct-inttypes.h
-    # Needed for 10.7 only, but may work on earlier OSes
-	patch -p1 < %{PatchFile2}
 <<
 
 # SetLDFLAGS: -Wl,-dead_strip_dylibs
