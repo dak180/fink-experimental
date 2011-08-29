@@ -5,6 +5,7 @@ Source: http://www.cise.ufl.edu/research/sparse/SuiteSparse/SuiteSparse-%v.tar.g
 Source-MD5: 88a44890e8f61cdbb844a76b7259d876
 SourceDirectory: SuiteSparse
 BuildDepends: fink (>= 0.24.12), metis (= 4.0.3-1)
+BuildConflicts: coreutils-default
 
 PatchFile: %n-%v.patch
 PatchFile-MD5: 86e123887db5bcc19880b49fe4ffe2e6
@@ -33,6 +34,7 @@ echo CHOLMOD_CONFIG = $CHOLMOD_CONFIG
 echo **** Stop: Message from SuiteSparse CompileScript ****
 make default
 <<
+
 InstallScript: <<
 #! /bin/sh -ev
 
@@ -65,8 +67,9 @@ find .  \( -name Makefile \
 	\) -exec rm \{\} \;
 cd -
 <<
+
 Description: Suite of Sparse matrix packages
 
 License: GPL/LGPL
-Maintainer: Ben Abbott <bpabbott@mac.com>
+Maintainer: Alexander Hansen <alexkhansen@users.sourceforge.net>
 Homepage: http://www.cise.ufl.edu/research/sparse/SuiteSparse/
