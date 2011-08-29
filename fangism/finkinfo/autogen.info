@@ -1,8 +1,8 @@
 Package: autogen
-Version: 5.11.4
+Version: 5.12
 Revision: 1
 Source: mirror:gnu:%n/rel%v/%n-%v.tar.gz
-Source-MD5: 12ad6176f63b3f019c849c4327d036b8
+Source-MD5: 6c6671b76021fb30dd43b0d5fdb7180b
 # PatchFile: %n.patch
 # PatchFile-MD5: c562e12618399d3c486a1ea5db14211d
 BuildDepends: guile18-dev, gmp, libxml2, libiconv-dev, fink (>= 0.24.12-1)
@@ -16,7 +16,7 @@ SplitOff: <<
   lib/libopts.25.dylib 
  <<
  Shlibs: <<
-  %p/lib/libopts.25.dylib 34.0.0 %n (>= 5.10-1)
+  %p/lib/libopts.25.dylib 36.0.0 %n (>= 5.12-1)
 <<
  DocFiles: README ChangeLog AUTHORS COPYING INSTALL NEWS NOTES THANKS TODO VERSION
 <<
