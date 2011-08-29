@@ -6,14 +6,24 @@ Source-MD5: 88a44890e8f61cdbb844a76b7259d876
 SourceDirectory: SuiteSparse
 BuildDepends: fink (>= 0.24.12), metis (= 4.0.3-1)
 
-PatchFile: %n.patch
+PatchFile: %n-%v.patch
 PatchFile-MD5: 86e123887db5bcc19880b49fe4ffe2e6
 PatchScript: <<
+	#!/bin/sh -ev
 	sed -e 's,@METISPREFIX@,%p,g' %{PatchFile} | patch -p1
 	sed -i.bak -e 's,^CFLAGS = -O,&3 -fstrict-aliasing,' C{,X}Sparse/Lib/Makefile
 	sed -i -e 's,I$(METIS_PATH)/Lib,I$(METIS_PATH)/include,' CHOLMOD/Lib/Makefile
+	for file in `find .`
+	do
+		if [ -f $file ] 
+		then
+			sed -i -e 's|-no-cpp-precomp||g' $file
+		fi
+	done
 <<
 
+# avoid race condidtion
+UseMaxBuildJobs: false
 CompileScript: <<
 #! /bin/sh -ev
 # Compile SuiteSparse with METIS.
