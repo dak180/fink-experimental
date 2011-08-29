@@ -3,7 +3,7 @@ Version: 2011.1
 Revision: 1
 Description: Calculate convex hulls and related structures
 License: BSD
-Maintainer: 
+Maintainer: Alexander Hansen <alexanderk.hansen@gmail.com>
 DescDetail: <<
 Qhull computes convex hulls, Delaunay triangulations, halfspace 
 intersections about a point, Voronoi diagrams, furthest-site 
@@ -33,7 +33,7 @@ SourceDirectory: %n-%v
 BuildDepends: fink (>= 0.24.12-1)
 Depends: %N6-shlibs (= %v-%r )
 
-PatchFile: %n.patch
+PatchFile: %n-%v.patch
 PatchFile-MD5: 8498f1f42b4aa2c2a47fd70353acb293
 PatchScript:  <<
 sed -e 's,@INSTPREFIX@,%i,' -e 's,@FINKPREFIX@,%p,' %{PatchFile} | patch -p1
@@ -54,16 +54,6 @@ InstallScript: <<
 	make -j1 install
 	pushd %i/lib
 	ln -sf lib%N6.2.0.dylib lib%N6.dylib
-	ln -sf  lib%Nstatic.a lib%N.a
-	popd
-	# add directory with symlinks for compatibility with prior %v
-	mkdir %i/include/%n
-	cd %i/include/%n
-	for file in ../lib%N/*
-	do
-		ln -s $file
-	done
-	
 <<
 
 DocFiles: Announce.txt COPYING.txt README.txt REGISTER.txt index.htm
