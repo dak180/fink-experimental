@@ -48,8 +48,8 @@ Replaces: tenfourfox, tenfourfox5
 Source: ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/%v/source/firefox-%v.source.tar.bz2
 SourceDirectory: mozilla-release
 Source-MD5: 1840185865a1a8975df4a3db59080ddc
-Source2: http://tenfourfox.googlecode.com/files/TenFourFox6-changesets-20110713.zip
-Source2-MD5: 3681650363bd7ee027412d461dd4989b
+Source2: http://tenfourfox.googlecode.com/files/TenFourFox6-changesets-20110815.zip
+Source2-MD5: 3176d7f3ca3e81049063a623842e24b0
 Source3: http://tenfourfox.googlecode.com/files/ldx3.zip
 Source3-MD5: 849c5bc88f06387bbd2040cf804204e7
 PatchFile: %n.patch
