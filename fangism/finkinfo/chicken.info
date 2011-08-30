@@ -5,14 +5,27 @@ Description: Compiler for the Scheme programming language
 License: BSD
 Depends: %n-shlibs (= %v-%r)
 Homepage: http://www.call-with-current-continuation.org/
-Maintainer: Sebastian Gonzalez <tagae@users.sourceforge.net>
+Maintainer: Colonel Sanders <fink-devel@lists.sourceforge.net>
+# Maintainer: David Fang <fangism@users.sourceforge.net>
 Source: http://code.call-cc.org/releases/%v/%n-%v.tar.gz
 Source-MD5: 9389388fdf04c3c64de29633aae12539
 BuildDependsOnly: False
+PatchScript: <<
+<<
+CompileScript: <<
+	#!/bin/sh -ev
+	make PLATFORM=macosx
+<<
+InfoTest: <<
+  TestScript: <<
+	# make PLATFORM=macosx check || exit 2
+  <<
+<<
 InstallScript: <<
-  make install prefix=%i mandir=%i/share/man infodir=%i/share/info
-  mkdir -p %i/share/doc/
-  mv %i/share/%n/doc %i/share/doc/%n
+  #!/bin/sh -ev
+  make PLATFORM=macosx DESTDIR=%d PREFIX=%i install
+  # mkdir -p %i/share/doc/
+  # mv %i/share/%n/doc %i/share/doc/%n
 <<
 SplitOff: <<
   Description: chicken shared libraries
@@ -35,4 +48,6 @@ Header files have not been put into a separate 'dev' splitoff since
 they are needed for the normal operation of the Chicken Scheme
 compiler (csc); csc generates intermediate C code that relies on those
 headers.
+
+Former maintainer: Sebastian Gonzalez <sgm@acm.org>
 <<
