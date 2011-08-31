@@ -68,6 +68,10 @@ PatchScript: <<
   /usr/bin/sed -e 's|@FINKPREFIX@|%p|g' \
 	-e 's|@FINK_ARCH_TARGET@|%m|g' \
 	< %{PatchFile} | /usr/bin/patch -p1
+  # a bit more patching...
+  # for 5.0.1: this member disappeared from struct
+  sed -i.orig -e '/CGFontRef[ ]*mCGFont;/i\
+    ATSFontRef            mATSFont;' gfx/thebes/gfxMacFont.h
   # leave @executable_path alone and take care of adjusting install_names
   # between build and install, below.
   # configure inputs were patched, hence regeneration
