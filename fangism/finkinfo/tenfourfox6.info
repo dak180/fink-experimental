@@ -192,6 +192,7 @@ Shlibs: <<
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libnssutil3.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libplc4.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libplds4.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libplugin_child_interpose.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libsmime3.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libsoftokn3.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libssl3.dylib
