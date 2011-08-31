@@ -53,14 +53,14 @@ Source2-MD5: 3176d7f3ca3e81049063a623842e24b0
 Source3: http://tenfourfox.googlecode.com/files/ldx3.zip
 Source3-MD5: 849c5bc88f06387bbd2040cf804204e7
 PatchFile: %n.patch
-PatchFile-MD5: 5f6a780246066a8f037040d64518f994
+PatchFile-MD5: 72d62cc4a3aff2cd428a81245f6892dd
 PatchScript: <<
   #!/bin/sh -ev
   # apply patchset from TenFourFox:
   for f in ../6exports/*
   do
     echo "Patching in changeset $f ..."
-    git apply -p1 $f || { echo "... patch $f failed." ; patch_err=1 ;}
+    git apply -v -C3 -p1 $f || { echo "... patch $f failed." ; patch_err=1 ;}
   done
   test -z "$patch_err" || { echo "Patch error above.  Aborting." ; exit 1;}
   ### apply the patch
