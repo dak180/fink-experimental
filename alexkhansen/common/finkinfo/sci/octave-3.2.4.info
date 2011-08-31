@@ -1,8 +1,8 @@
 Info2: <<
 Package: octave%type_pkg[-atlas]
-Type: -atlas (.), oct(3.2.4)
+Type: -atlas (boolean), oct(3.2.4)
 Version: 3.2.4
-Revision: 0.8000
+Revision: 0.9000
 Maintainer: Alexander Hansen <alexkhansen@users.sourceforge.net>
 
 # disable atlas on 10.7 distro file until atlas is available
@@ -12,9 +12,9 @@ Source-MD5: 90c39fa9e241ad2e978bcee4682a2ba9
 
 BuildDepends: <<
 	arpack, glpk-dev, hdf5.7, readline5, libncurses5, fftw3 (>= 3.1.1-7), 
-        libcurl4, fltk13-aqua, x11-dev, libftgl2, qhull6-dev, qrupdate,
+	libcurl4, libftgl2, qhull6-dev, qrupdate,
 	pcre, gcc46-compiler, suitesparse-metis, fink (>= 0.30.0), fink-package-precedence, sed, 
-	graphicsmagick-dev,
+	graphicsmagick-dev, freetype219,
 	(%type_raw[-atlas] = atlas) atlas
 <<
 Depends: %{Ni}%type_pkg[oct]%type_pkg[-atlas] (=%v-%r)
@@ -30,7 +30,8 @@ UseMaxBuildJobs: true
 
 PatchFile: %{ni}.patch
 PatchFile-MD5: efef1c4d103b5c87d25ad1a2d0671469
-
+PatchFile2: %{ni}-%v.patch
+PatchFile2-MD5: 28dea047c7b3e51539a35b76249c8f67
 PatchScript: <<
 	#!/bin/sh -ev
 	cp doc/interpreter/%{Ni}.1 doc/interpreter/%{Ni}-%v.1
@@ -62,6 +63,8 @@ using std::size_t;' liboctave/oct-alloc.h
 	done
 	# missing qualifier to dependent-name member-function
 	sed -i.orig -e '/truncate_int/s|\(return\) \(truncate_int\)|\1 octave_int_base<T>::\2|' liboctave/oct-inttypes.h
+	# disable FLTK backend
+	patch -p1 < %{PatchFile2}
 <<
 
 SetLDFLAGS: -Wl,-dead_strip_dylibs
@@ -70,7 +73,7 @@ ConfigureParams: <<
 	F77=%p/bin/gfortran-fsf-4.6 --host=%m-apple-darwin --build=%m-apple-darwin \
 	--infodir='${prefix}/share/info' --mandir='${prefix}/share/man' --libexecdir='${prefix}/lib' \
 	--enable-shared --enable-dl --disable-static --without-mpi --with-hdf5 --with-fftw \
-	--x-includes=/usr/X11R6/include --x-libraries=/usr/X11R6/lib
+	--x-libraries=/usr/X11/lib --x-headers=/usr/X11/include
 <<
 CompileScript: <<
  #!/bin/sh -ev
@@ -121,6 +124,7 @@ RuntimeVars: <<
  GNUTERM: aqua
 <<
 DocFiles: BUGS ChangeLog README ROADMAP SENDING-PATCHES COPYING
+
 SplitOff: <<
 	Package: octave%type_pkg[oct]%type_pkg[-atlas]-shlibs
 	Conflicts: << 
@@ -218,14 +222,16 @@ SplitOff2: <<
 	<<
 	DocFiles: BUGS ChangeLog README ROADMAP SENDING-PATCHES COPYING
 <<
+
 Splitoff3: <<
 	Package: octave%type_pkg[oct]%type_pkg[-atlas]
 	Depends: <<
 	%{Ni}%type_pkg[oct]%type_pkg[-atlas]-shlibs (=%v-%r),
-	arpack-shlibs, fftw3-shlibs (>= 3.1.1-7), fltk13-aqua-shlibs, glpk-shlibs,
-	graphicsmagick-shlibs, libcurl4-shlibs, octave324-shlibs, pcre-shlibs, 
+	arpack-shlibs, fftw3-shlibs (>= 3.1.1-7), glpk-shlibs,
+	graphicsmagick-shlibs, libcurl4-shlibs, %{Ni}%type_pkg[oct]%type_pkg[-atlas]-shlibs, pcre-shlibs, 
 	qhull6-shlibs, (%type_raw[-atlas] = -atlas) atlas-shlibs (>= 3.8.1-1),
-	ncurses, gnuplot | gnuplot-nox | gnuplot-nogtk
+	ncurses, gnuplot | gnuplot-nox | gnuplot-nogtk,
+	fltk-backend-aqua-oct%type_pkg[oct] | fltk-backend-x11-oct%type_pkg[oct]
 	<<
 	Conflicts: << 
 		(%type_raw[-atlas] = atlas) %{Ni}%type_pkg[oct], 
@@ -351,19 +357,23 @@ run the following command in your script:
  
 <<
 DescPort: <<
- Thanks to Per Persson for most (if not all) of the work on the macos X port.
+Thanks to Per Persson for most (if not all) of the work on the macos X port.
+
+Cleanups from David Fang to get the package to build using clang.
 <<
 DescPackaging:  <<
-Set the GNUTERM environment variable to AquaTerm because autodetection
-of DISPLAY seems to cause options to be fed to our gnuplot that it doesn't understand.
-AquaTerm seems to be a sensible default, particularly since gnuplot-nox is also a 
-legal dependency.
-
 Not sane (and now not even compilable) to use private code
 from glpk. Import the functions needed so can still use it
 even when glpk stops exporting its internals. See:
 	http://octave.1599824.n4.nabble.com/GLPK-interface-was-Re-Multithreaded-Atlas-td1654632.html
  
+Set the GNUTERM environment variable to AquaTerm because autodetection
+of DISPLAY seems to cause options to be fed to our gnuplot that it doesn't understand.
+AquaTerm seems to be a sensible default, particularly since gnuplot-nox is also a 
+legal dependency.
+
+Create manpages for the versioned executables.
+
 Remove a desktop file that gets generated only for users with GNOME/KDE installed.
 
 Patch mkoctfile.in so that it uses Fink's compiler wrappers
@@ -380,6 +390,9 @@ Unfortunately, Octave's 'pkg' tool doesn't seem to know how to deal with
 variables, and the individual octave-forge  packages have to make copies
 of the octave scripts during their build process and edit them to use the
 package's name.
+
+We don't build the FLTK backend since we are allowing for Aqua and X11 variants
+of that bundle in the fltk-backend-{aqua|x11}.
 <<
 Homepage: http://www.octave.org/
 License: GPL
