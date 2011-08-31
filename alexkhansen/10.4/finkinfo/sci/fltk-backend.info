@@ -29,7 +29,7 @@ Depends: <<
 	(%type_pkg[ui] = x11) x11,
 	(%type_pkg[ui] = aqua) fltk13-aqua-shlibs,
 <<
-BuildConflicts: coot-dev, broken-gcc, lammpi-dev, fort77, 4ti2-dev
+BuildConflicts: coot-dev, broken-gcc, lammpi-dev, fort77, 4ti2-dev, imagemagick-dev
 GCC: 4.0
 Conflicts: fltk-backend-aqua-oct%type_pkg[oct], fltk-backend-x11-oct%type_pkg[oct]
 Replaces: fltk-backend-aqua-oct%type_pkg[oct], fltk-backend-x11-oct%type_pkg[oct]

@@ -18,9 +18,10 @@ BuildDepends: <<
 	(%type_raw[-atlas] = atlas) atlas
 <<
 Depends: %{Ni}%type_pkg[oct]%type_pkg[-atlas] (=%v-%r)
-BuildConflicts: coot-dev, broken-gcc, lammpi-dev, fort77, 4ti2-dev
+BuildConflicts: coot-dev, broken-gcc, lammpi-dev, fort77, 4ti2-dev, imagemagick10-dev
 Suggests: %{Ni}%type_pkg[oct]-docs
 GCC: 4.0
+
 Conflicts: <<
 	(%type_raw[-atlas] = atlas) %{Ni}, (%type_raw[-atlas] != -atlas) %{Ni}-atlas, 
 	%{Ni}3.0.2 ( << 3.0.2-5), %{Ni}3.0.2-atlas ( << 3.0.2-5) 
