@@ -38,10 +38,10 @@ UseMaxBuildJobs: true
 
 PatchFile: octave.patch
 PatchFile-MD5: efef1c4d103b5c87d25ad1a2d0671469
-PatchFile2: octave-10.7.patch
-PatchFile2-MD5: adf5439f08870b6f7ba0d9be7e85bb22
-PatchFile3: fltk-backend-x11.patch
-PatchFile3-MD5: 6dd5be3b8d199fb76a72997ea50d05d4
+PatchFile3: octave-10.7.patch
+PatchFile3-MD5: adf5439f08870b6f7ba0d9be7e85bb22
+PatchFile2: fltk-backend-x11.patch
+PatchFile2-MD5: 6dd5be3b8d199fb76a72997ea50d05d4
 
 PatchScript: <<
 	#!/bin/sh -ev
@@ -77,9 +77,9 @@ using std::size_t;' liboctave/oct-alloc.h
     # Needed for 10.7 only, but may work on earlier OSes
 	if [ "%type_pkg[ui]" = "aqua" ]
 	then
-		patch -p1 < %{PatchFile2}
-	else
 		patch -p1 < %{PatchFile3}
+	else
+		patch -p1 < %{PatchFile2}
 	fi
 <<
 
