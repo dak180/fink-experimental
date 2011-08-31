@@ -1,7 +1,7 @@
 Info3: <<
 Package: tenfourfox5
-Version: 5.0
-Revision: 2
+Version: 5.0.1
+Revision: 1
 Distribution: 10.4, 10.5
 Architecture: powerpc
 Description: Port of Firefox 5 to 10.4 and PowerPC
@@ -43,11 +43,11 @@ BuildDepends: <<
 	system-openssl-dev,
 	system-sdk-10.4
 <<
-Conflicts: tenfourfox
-Replaces: tenfourfox
+Conflicts: tenfourfox, tenfourfox6
+Replaces: tenfourfox, tenfourfox6
 Source: http://releases.mozilla.org/pub/mozilla.org/firefox/releases/%v/source/firefox-%v.source.tar.bz2
 SourceDirectory: mozilla-release
-Source-MD5: 9f64a01e86a5d424e12a8e3305c5debe
+Source-MD5: 6d1f43e402cec84459a3d7f950bd5192
 Source2: http://tenfourfox.googlecode.com/files/TenFourFox5-changesets-20110616.zip
 Source2-MD5: a36e2a6da1deab5f72030cd04e44974e
 Source3: http://tenfourfox.googlecode.com/files/ldx3.zip
@@ -60,7 +60,7 @@ PatchScript: <<
   for f in ../5exports/*
   do
     echo "Patching in changeset $f ..."
-    git apply -p1 $f || { echo "... patch $f failed." ; patch_err=1 ;}
+    git apply -v -C3 -p1 $f || { echo "... patch $f failed." ; patch_err=1 ;}
   done
   test -z "$patch_err" || { echo "Patch error above.  Aborting." ; exit 1;}
   ### apply the patch
@@ -139,8 +139,7 @@ export PKG_CONFIG_PATH=%p/lib/system-openssl/lib/pkgconfig:$PKG_CONFIG_PATH
 $make -w -f client.mk build
 objdir=obj-%m-apple-darwin`uname -r`
 pushd $objdir
-fink-package-precedence --headers --depfile-ext=.pp .
-fink-package-precedence --libs .
+fink-package-precedence --depfile-ext=.pp .
 popd
 <<
 # AppBundles: UninstalledAppDir/TenFourFox.app
