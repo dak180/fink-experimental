@@ -28,7 +28,6 @@ Depends: <<
 	(%type_pkg[ui] = x11) fltk-x11-shlibs,  
 	(%type_pkg[ui] = x11) x11,
 	(%type_pkg[ui] = aqua) fltk13-aqua-shlibs,
-	octave%type_pkg[oct]-shlibs
 <<
 BuildConflicts: coot-dev, broken-gcc, lammpi-dev, fort77, 4ti2-dev
 GCC: 4.0
