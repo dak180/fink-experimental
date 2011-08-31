@@ -1,6 +1,6 @@
 Info2: <<
 Package: octave%type_pkg[-atlas]
-Type: -atlas (boolean), oct(3.2.4)
+Type: -atlas (.), oct(3.2.4)
 Version: 3.2.4
 Revision: 0.9000
 Maintainer: Alexander Hansen <alexkhansen@users.sourceforge.net>
@@ -14,7 +14,7 @@ BuildDepends: <<
 	arpack, glpk-dev, hdf5.7, readline5, libncurses5, fftw3 (>= 3.1.1-7), 
 	libcurl4, libftgl2, qhull6-dev, qrupdate,
 	pcre, gcc46-compiler, suitesparse-metis, fink (>= 0.30.0), fink-package-precedence, sed, 
-	graphicsmagick-dev, freetype219, 
+	graphicsmagick-dev, freetype219,
 	(%type_raw[-atlas] = atlas) atlas
 <<
 Depends: %{Ni}%type_pkg[oct]%type_pkg[-atlas] (=%v-%r)
@@ -33,9 +33,7 @@ PatchFile-MD5: efef1c4d103b5c87d25ad1a2d0671469
 PatchFile2: %{ni}-%v.patch
 PatchFile2-MD5: 28dea047c7b3e51539a35b76249c8f67
 PatchFile3: %{ni}-10.7.patch
-PatchFile3-MD5: 77c28648a021b821f7106b5cfa8757af
-
-
+PatchFile3-MD5: adf5439f08870b6f7ba0d9be7e85bb22
 PatchScript: <<
 	#!/bin/sh -ev
 	cp doc/interpreter/%{Ni}.1 doc/interpreter/%{Ni}-%v.1
@@ -69,6 +67,7 @@ using std::size_t;' liboctave/oct-alloc.h
 	sed -i.orig -e '/truncate_int/s|\(return\) \(truncate_int\)|\1 octave_int_base<T>::\2|' liboctave/oct-inttypes.h
 	# disable FLTK backend
 	patch -p1 < %{PatchFile2}
+	# fix lack of CGDisplayBitsPerPixel
 	patch -p1 < %{PatchFile3}
 <<
 
@@ -375,7 +374,7 @@ Not sane (and now not even compilable) to use private code
 from glpk. Import the functions needed so can still use it
 even when glpk stops exporting its internals. See:
 	http://octave.1599824.n4.nabble.com/GLPK-interface-was-Re-Multithreaded-Atlas-td1654632.html
-
+ 
 Set the GNUTERM environment variable to AquaTerm because autodetection
 of DISPLAY seems to cause options to be fed to our gnuplot that it doesn't understand.
 AquaTerm seems to be a sensible default, particularly since gnuplot-nox is also a 
@@ -400,7 +399,7 @@ variables, and the individual octave-forge  packages have to make copies
 of the octave scripts during their build process and edit them to use the
 package's name.
 
-Don't build the FLTK backend since we are allowing for Aqua and X11 variants
+We don't build the FLTK backend since we are allowing for Aqua and X11 variants
 of that bundle in the fltk-backend-{aqua|x11}.
 <<
 Homepage: http://www.octave.org/
