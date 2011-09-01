@@ -3,7 +3,7 @@ Version: 2011.1
 Revision: 1
 Description: Calculate convex hulls and related structures
 License: BSD
-Maintainer: Stefan Langerman <fink@slef.org>
+Maintainer: Alexander Hansen <alexkhansen@users.sourceforge.net>
 DescDetail: <<
 Qhull computes convex hulls, Delaunay triangulations, halfspace 
 intersections about a point, Voronoi diagrams, furthest-site 
@@ -20,6 +20,10 @@ This package contains the executables, manpages, and other documentation.
 DescPort: <<
 	Upstream doesn't appear to grok OS X, so we handcraft the dylib's 
 	install_name.
+<<
+DescPackaging: <<
+The prior static-only qhull package was maintained by Stefan Langerman 
+<fink@slef.org>.
 <<
 
 Source: http://www.qhull.org/download/qhull-%v-src.tgz
@@ -54,9 +58,8 @@ InfoTest: <<
 InstallScript: <<
 	#!/bin/sh -ev
 	make -j1 install
-	cd %i/lib
-	rm lib%N.dylib
-	ln -s lib%N6.2.0.dylib lib%N.dylib
+	pushd %i/lib
+	ln -sf lib%N.2.0.dylib lib%N.dylib
 <<
 
 DocFiles: Announce.txt COPYING.txt README.txt REGISTER.txt index.htm
@@ -64,7 +67,7 @@ Homepage: http://www.qhull.org/
 SplitOff:  <<
 	Package: %N-shlibs
 	Files: lib/lib%N.2.0.dylib
-	Shlibs: %p/lib/libqhull6.2.0.dylib 0.0.0 %n (>= 2011.1-1)
+	Shlibs: %p/lib/lib%N.2.0.dylib 0.0.0 %n (>= 2011.1-1)
 	DocFiles: Announce.txt COPYING.txt README.txt REGISTER.txt
 	DescUsage: <<
 	This package contains the shared library.
@@ -74,11 +77,11 @@ SplitOff2:  <<
 	Package: %N-dev
 	BuildDependsOnly: true
 	Depends: %N-shlibs (= %v-%r)
-	Conflicts: qhull
+	Conflicts: qhull 
 	Replaces: qhull
 	Files: <<
-	include
-	lib
+		include
+		lib
 	<<
 	DocFiles: Announce.txt COPYING.txt README.txt REGISTER.txt
 	DescUsage:  <<
