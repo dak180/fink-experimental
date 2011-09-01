@@ -1,12 +1,12 @@
 Package: r-cran-sp
-Version: 0.9-84
+Version: 0.9-85
 Revision: 0.1
 Description: GNU R classes and methods for spatial data
 Homepage: http://r-spatial.sourceforge.net/
 License: GPL
 Maintainer:  BABA Yoshihiko <babayoshihiko@mac.com>
 Source: http://cran.r-project.org/src/contrib/sp_%v.tar.gz
-Source-MD5: 8647226a2b4df58ca6b2017e4d5a5750
+Source-MD5: a2bc57536084782b4d47c54d106cfc2c
 SourceDirectory: sp
 PatchFile: %n.patch
 PatchFile-MD5: 3b497f44efaa66cfd91cd14248fc3a39
