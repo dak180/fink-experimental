@@ -1,5 +1,5 @@
 Package: atlas
-Version: 3.9.47
+Version: 3.9.49
 Revision: 1
 Description: Portably optimal linear algebra software
 DescDetail: <<
@@ -32,7 +32,7 @@ Order is important when linking! Use:
 -L%p/lib -llapack -lcblas -lf77blas -latlas
 <<
 Source: mirror:sourceforge:math-atlas/%n%v.tar.bz2
-Source-MD5: 0ece88b5c579259bbfb006f81104c4e5
+Source-MD5: 56d903c666c080c074f8fe0e2ec95fc0
 Source2: http://www.netlib.org/lapack/lapack-3.3.1.tgz
 Source2-MD5: d0d533ec9a5b74933c2a1e84eedc58b4
 SourceDirectory: ATLAS
