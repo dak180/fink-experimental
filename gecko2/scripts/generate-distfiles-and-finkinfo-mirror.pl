@@ -4,16 +4,16 @@ $|++;
 
 BEGIN {
 	# thetis
-        our $CHANGELOG   = '/home/f/fink/log/change.log';
-        our $CHECKOUTDIR = '/home/f/fink/finkinfo';
-        our $CVSROOT     = ':ext:gecko2@fink.cvs.sourceforge.net:/cvsroot/fink';
-        our $DEBUG       = 0;
-        our $DOWNLOADDIR = '/home/f/fink/distfiles';
-        our $FINKROOT    = '/home/f/fink/fink';
-        our $LOGFILE     = '/home/f/fink/log/mirror.log';
-        our $SVNROOT     = '/home/f/fink/svn';
-        our $VALIDATE_EXISTING_FILES = 0;
-        our $WORKDIR     = '/home/f/fink/mirwork';
+	our $CHANGELOG   = '/home/f/fink/log/change.log';
+	our $CHECKOUTDIR = '/home/f/fink/finkinfo';
+	our $CVSROOT     = ':ext:gecko2@fink.cvs.sourceforge.net:/cvsroot/fink';
+	our $DEBUG       = 0;
+	our $DOWNLOADDIR = '/home/f/fink/distfiles';
+	our $FINKROOT    = '/home/f/fink/fink';
+	our $LOGFILE     = '/home/f/fink/log/mirror.log';
+	our $SVNROOT     = '/home/f/fink/svn';
+	our $VALIDATE_EXISTING_FILES = 0;
+	our $WORKDIR     = '/home/f/fink/mirwork';
 }
 
 use lib $FINKROOT . '/perlmod';
