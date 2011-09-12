@@ -180,7 +180,7 @@ sub find_fetch_infofile
 		@arches = ('powerpc', 'i386');
 	}
 
-	if ($dist =~ /^10.4$/ or $dist =~ '/^10.7/')
+	if ($dist =~ /^10.4$/ or $dist =~ /^10.7/)
 	{
 		for my $dist ('10.4', '10.5', '10.6', '10.7')
 		{
