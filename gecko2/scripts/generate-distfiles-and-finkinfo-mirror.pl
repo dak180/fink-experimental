@@ -124,7 +124,7 @@ print LOG "- scanning info files\n";
 opendir(DIR, $CHECKOUTDIR . '/dists') or die "unable to read from $CHECKOUTDIR/dists: $!";
 for my $dir (readdir(DIR))
 {
-	if ($dir eq '10.3' or $dir eq '10.4')
+	if ($dir eq '10.3' or $dir eq '10.4' or $dir eq '10.7')
 	{
 		print LOG "searching $dir\n";
 		finddepth( { wanted => \&find_fetch_infofile, follow => 1 }, $CHECKOUTDIR . '/dists/' . $dir);
@@ -180,9 +180,9 @@ sub find_fetch_infofile
 		@arches = ('powerpc', 'i386');
 	}
 
-	if ($dist =~ /^10.4$/)
+	if ($dist =~ /^10.4$/ or $dist =~ '/^10.7/')
 	{
-		for my $dist ('10.4', '10.5', '10.6')
+		for my $dist ('10.4', '10.5', '10.6', '10.7')
 		{
 			for my $arch (@arches)
 			{
