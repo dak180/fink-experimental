@@ -37,7 +37,7 @@ Source-MD5: @SOURCE_MD5@
 
 #### Insert required changes here ####
 
-@CHANGES@
+#@CHANGES@
 
 ######################################
 
