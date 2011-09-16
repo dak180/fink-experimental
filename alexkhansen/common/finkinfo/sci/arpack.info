@@ -98,10 +98,14 @@ DescPackaging:  <<
 	
 	Needs a gfortran; I've arbitrarily chosen gcc46, as it's the
 	lowest-versioned one available on 10.7.
+
+	Needs -ff2c when using Accelerate.framework, but not when using
+	ATLAS.
 <<
 DescPort: <<
 	Dynamic library originally courtesy of Ben Abbot.  I've tweaked it to
-	have a nonzero compatibility_version and current_version.
+	have a nonzero compatibility_version and current_version.  Additional
+	tweaks thanks to J-F Mertens and Peter O'Gorman
 	
 	Fortran files are built at -O0 to avoid runtime crashes--thanks to
 	Martin Costabel for bringing this up.
