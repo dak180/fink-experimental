@@ -17,9 +17,9 @@ BuildDepends: <<
 	graphicsmagick-dev, freetype219,
 	(%type_raw[-atlas] = atlas) atlas, 
 	(%type_raw[-atlas] = atlas) qrupdate-atlas (>=1.1.1-3),
-	(%type_raw[-atlas] != atlas) qrupdate (>=1.1.1-3) 
-	(%type_raw[-atlas] = atlas) arpack-atlas (>=1.1.1-3) ,
-	(%type_raw[-atlas] != atlas) arpack (>=1.1.1-3) 
+	(%type_raw[-atlas] != atlas) qrupdate (>=1.1.1-3),
+	(%type_raw[-atlas] = atlas) arpack-atlas (>= 96patched-6),
+	(%type_raw[-atlas] != atlas) arpack (>= 96patched-6)
 <<
 Depends: %{Ni}%type_pkg[oct]%type_pkg[-atlas] (=%v-%r)
 BuildConflicts: coot-dev, broken-gcc, lammpi-dev, fort77, 4ti2-dev
@@ -265,8 +265,8 @@ Splitoff3: <<
 	qhull6-shlibs, (%type_raw[-atlas] = -atlas) atlas-shlibs (>= 3.8.1-1),
 	ncurses, gnuplot | gnuplot-nox | gnuplot-nogtk,
 	fltk-backend-aqua-oct%type_pkg[oct] | fltk-backend-x11-oct%type_pkg[oct],
-	(%type_raw[-atlas] = -atlas) arpack-atlas-shlibs (>= 96patched-5),
-	(%type_raw[-atlas] != -atlas) arpack-shlibs (>= 96patched-5)
+	(%type_raw[-atlas] = -atlas) arpack-atlas-shlibs (>= 96patched-6),
+	(%type_raw[-atlas] != -atlas) arpack-shlibs (>= 96patched-6)
 	<<
 	Conflicts: << 
 		(%type_raw[-atlas] = atlas) %{Ni}%type_pkg[oct], 
