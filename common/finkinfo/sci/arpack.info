@@ -34,7 +34,7 @@ Depends: %N-shlibs (= %v-%r )
 Conflicts: %{Ni}, %{Ni}-atlas
 Replaces: %{Ni}, %{Ni}-atlas
 
-PatchFile: %n.patch
+PatchFile: %{ni}.patch
 PatchFile-MD5:7f2b7e1cc58e18f9705c784a680e71ef
 PatchScript: <<
 	#!/bin/sh -ev
