@@ -1,6 +1,6 @@
 Info2: <<
 Package: octave%type_pkg[-atlas]
-Type: -atlas (.), oct(3.0.5)
+Type: -atlas (boolean), oct(3.0.5)
 Version: 3.0.5
 Revision: 23
 Maintainer: Alexander Hansen <alexkhansen@users.sourceforge.net>
