@@ -260,11 +260,13 @@ Splitoff3: <<
 	Package: octave%type_pkg[oct]%type_pkg[-atlas]
 	Depends: <<
 	%{Ni}%type_pkg[oct]%type_pkg[-atlas]-shlibs (=%v-%r),
-	arpack-shlibs(>= 96patched-5), fftw3-shlibs (>= 3.1.1-7), glpk-shlibs,
+	fftw3-shlibs (>= 3.1.1-7), glpk-shlibs,
 	graphicsmagick-shlibs, libcurl4-shlibs, %{Ni}%type_pkg[oct]%type_pkg[-atlas]-shlibs, pcre-shlibs, 
 	qhull6-shlibs, (%type_raw[-atlas] = -atlas) atlas-shlibs (>= 3.8.1-1),
 	ncurses, gnuplot | gnuplot-nox | gnuplot-nogtk,
-	fltk-backend-aqua-oct%type_pkg[oct] | fltk-backend-x11-oct%type_pkg[oct]
+	fltk-backend-aqua-oct%type_pkg[oct] | fltk-backend-x11-oct%type_pkg[oct],
+	(%type_raw[-atlas] = -atlas) arpack-atlas-shlibs (>= 96patched-5),
+	(%type_raw[-atlas] != -atlas) arpack-shlibs (>= 96patched-5)
 	<<
 	Conflicts: << 
 		(%type_raw[-atlas] = atlas) %{Ni}%type_pkg[oct], 
