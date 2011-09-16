@@ -119,6 +119,8 @@ Splitoff: <<
 	(%type_raw[-atlas] != .) atlas-shlibs,
 	gcc46-shlibs
 	<<
+	Conflicts: %{Ni}-shlibs, %{Ni}-atlas-shlibs
+	Replaces: %{Ni}-shlibs, %{Ni}-atlas-shlibs
 	DescDetail: <<
 	This package contains a dynamic library.
 	<<
