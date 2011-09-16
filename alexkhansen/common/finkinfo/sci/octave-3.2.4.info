@@ -11,7 +11,7 @@ Source: mirror:gnu:%{Ni}/%{Ni}-%v.tar.gz
 Source-MD5: 90c39fa9e241ad2e978bcee4682a2ba9
 
 BuildDepends: <<
-	=glpk-dev, hdf5.7, readline5, libncurses5, fftw3 (>= 3.1.1-7), 
+	glpk-dev, hdf5.7, readline5, libncurses5, fftw3 (>= 3.1.1-7), 
 	libcurl4, libftgl2, qhull6-dev, flag-sort,
 	pcre, gcc46-compiler, suitesparse-metis, fink (>= 0.30.0), fink-package-precedence, sed, 
 	graphicsmagick-dev, freetype219,
