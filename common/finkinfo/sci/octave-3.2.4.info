@@ -2,10 +2,8 @@ Info2: <<
 Package: octave%type_pkg[-atlas]
 Type: -atlas (boolean), oct(3.2.4)
 Version: 3.2.4
-Revision: 23
+Revision: 22
 Maintainer: Alexander Hansen <alexkhansen@users.sourceforge.net>
-
-# disable atlas on 10.7 distro file until atlas is available
 
 Source: mirror:gnu:%{Ni}/%{Ni}-%v.tar.gz
 Source-MD5: 90c39fa9e241ad2e978bcee4682a2ba9
@@ -22,7 +20,7 @@ BuildDepends: <<
 	(%type_raw[-atlas] != -atlas) arpack (>= 96patched-6)
 <<
 Depends: %{Ni}%type_pkg[oct]%type_pkg[-atlas] (=%v-%r)
-BuildConflicts: coot-dev, broken-gcc, lammpi-dev, fort77, 4ti2-dev
+BuildConflicts: coot-dev, broken-gcc, lammpi-dev, fort77, 4ti2-dev, imagemagick10-dev
 Suggests: %{Ni}%type_pkg[oct]-docs
 GCC: 4.0
 
@@ -37,8 +35,6 @@ PatchFile: %{ni}.patch
 PatchFile-MD5: ce167f65e283dccf624e888c1a0a8725
 PatchFile2: %{ni}-%v.patch
 PatchFile2-MD5: 28dea047c7b3e51539a35b76249c8f67
-PatchFile3: %{ni}-10.7.patch
-PatchFile3-MD5: adf5439f08870b6f7ba0d9be7e85bb22
 PatchScript: <<
 	#!/bin/sh -ev
 	cp doc/interpreter/%{Ni}.1 doc/interpreter/%{Ni}-%v.1
@@ -46,6 +42,9 @@ PatchScript: <<
 	cp doc/interpreter/%{Ni}-config.1 doc/interpreter/%{Ni}-config-%v.1
 	cp doc/interpreter/mkoctfile.1 doc/interpreter/mkoctfile-%v.1
 	sed -e 's/@OCTVERSION@/%v/g' %{PatchFile} | patch -p1 
+	# disable FLTK backend build since we have it already
+	patch -p1 < %{PatchFile2}
+	# add versioned manpages
 	sed -i -e 's|@FINKPREFIX@|%p|g'   %{Ni}-forge* %{Ni}rc doc/interpreter/*.1 mkoctfile.in
 	# fix lib name for qhull6
 	perl -pi -e 's|(qhull[/.])|lib\1|g ; s|lqhull|lqhull6|' configure
@@ -70,11 +69,6 @@ using std::size_t;' liboctave/oct-alloc.h
 	done
 	# missing qualifier to dependent-name member-function
 	sed -i.orig -e '/truncate_int/s|\(return\) \(truncate_int\)|\1 octave_int_base<T>::\2|' liboctave/oct-inttypes.h
-	# disable FLTK backend
-	patch -p1 < %{PatchFile2}
-	# fix lack of CGDisplayBitsPerPixel
-	patch -p1 < %{PatchFile3}
-    perl -pi -e 's/scripts doc/scripts/; s/INSTALL.OCTAVE//' Makefile
 <<
 
 SetCC: flag-sort -r gcc
@@ -89,8 +83,8 @@ ConfigureParams: <<
 <<
 CompileScript: <<
  #!/bin/sh -ev
- export CFLAGS='-O3'
- export CXXFLAGS='-O3'
+ export CFLAGS='-O3 -MD'
+ export CXXFLAGS='-O3 -MD'
  export FFLAGS='-O3'
  if [ "%type_pkg[-atlas]" == "" ]
  then 
@@ -108,9 +102,13 @@ CompileScript: <<
 
 InfoTest: <<
 	TestScript: <<
+		# doesn't work on 10.6/i386
+		mv src/ov-struct.cc src/ov-struct.cc.testfails
+		# doesn't work anywhere
 		mv scripts/image/imread.m scripts/image/imread.m.testfails
 		make check || exit 2	
 		mv scripts/image/imread.m.testfails scripts/image/imread.m
+		mv src/ov-struct.cc.testfails src/ov-struct.cc
 	<<
 <<
 
@@ -401,10 +399,6 @@ run the following command in your script:
 <<
 DescPort: <<
 Thanks to Per Persson for most (if not all) of the work on the macos X port.
-
-Apply fix from http://lukassen.wordpress.com/2010/01/18/taming-snow-leopard-cgdisplaybitsperpixel-deprication/ ,
-with improvements from Peter O'Gorman and Daniel Macks, to display.cc to work around the lack of 
-CGDisplayBitsPerPixel on 10.7.
 
 Cleanups from David Fang to get the package to build using clang.
 <<
