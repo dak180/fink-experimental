@@ -407,6 +407,12 @@ Not sane (and now not even compilable) to use private code
 from glpk. Import the functions needed so can still use it
 even when glpk stops exporting its internals. See:
 	http://octave.1599824.n4.nabble.com/GLPK-interface-was-Re-Multithreaded-Atlas-td1654632.html
+
+Patch the graphicsmagick interface to use InitializeMagick before doing anything:
+
+http://sourceforge.net/tracker/?func=detail&aid=3104518&group_id=73485&atid=537937
+
+This was not mandatory in prior versions of GraphicsMagick, but now it is.
  
 Set the GNUTERM environment variable to AquaTerm because autodetection
 of DISPLAY seems to cause options to be fed to our gnuplot that it doesn't understand.
