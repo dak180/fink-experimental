@@ -28,3 +28,128 @@ diff -Nurd octave-3.2.4.orig/src/Makefile.in octave-3.2.4/src/Makefile.in
  
  check: all
  .PHONY: check
+diff -Nurd octave-3.2.4/src/DLD-FUNCTIONS/__magick_read__.cc octave-3.2.4.patched/src/DLD-FUNCTIONS/__magick_read__.cc
+--- octave-3.2.4/src/DLD-FUNCTIONS/__magick_read__.cc	2009-08-25 04:26:01.000000000 -0400
++++ octave-3.2.4.patched/src/DLD-FUNCTIONS/__magick_read__.cc	2011-09-20 11:28:51.000000000 -0400
+@@ -61,6 +61,8 @@
+ 
+   Array<int> idx (dim_vector (4));
+ 
++  // Initialize GraphicsMagick
++  InitializeMagick(*argv);
+   Magick::ImageType type = imvec[0].type ();
+ 
+   unsigned int mapsize = imvec[0].colorMapSize ();
+@@ -212,6 +214,8 @@
+ 
+   Array<int> idx (dim_vector (4));
+ 
++  // Initialize GraphicsMagick
++  InitializeMagick(*argv);
+   Magick::ImageType type = imvec[0].type ();
+ 
+   switch (type)
+@@ -357,6 +361,9 @@
+   octave_value_list output;
+ 
+ #ifdef HAVE_MAGICK
++  // Initialize GraphicsMagick
++  InitializeMagick(*argv);
++  std::vector<Magick::Image> imvec;
+ 
+   if (args.length () > 2 || args.length () < 1 || ! args(0).is_string ()
+       || nargout > 3)
+@@ -375,8 +382,6 @@
+       frameidx(0) = 1;
+     }
+ 
+-  std::vector<Magick::Image> imvec;
+-
+   try
+     {
+       // Read a file into vector of image objects
+@@ -463,6 +468,8 @@
+               const Octave_map& options,
+               bool)
+ {
++  // Initialize GraphicsMagick
++  InitializeMagick(*argv);
+   int nframes = static_cast<int>(imvec.size ());
+   bool something_set = 0;
+ 
+@@ -502,6 +509,9 @@
+ static void
+ encode_bool_image (std::vector<Magick::Image>& imvec, const octave_value& img)
+ {
++  // Initialize GraphicsMagick
++  InitializeMagick(*argv);
++
+   unsigned int nframes = 1;
+   boolNDArray m = img.bool_array_value ();
+ 
+@@ -545,6 +555,8 @@
+                    const octave_value& img,
+                    bool has_map)
+ {
++  // Initialize GraphicsMagick
++  InitializeMagick(*argv);
+   unsigned int bitdepth = 0;
+   T m;
+ 
+@@ -659,6 +671,9 @@
+   unsigned int mapsize = cmap.dim1 ();
+   int nframes = static_cast<int>(imvec.size ());
+ 
++  // Initialize GraphicsMagick
++  InitializeMagick(*argv);
++
+   for (int fnum = 0; fnum < nframes; fnum++)
+     {
+       imvec[fnum].colorMapSize (mapsize);
+@@ -699,6 +714,9 @@
+              const octave_value& map = octave_value (),
+              const octave_value& params = octave_value ())
+ {
++  // Initialize GraphicsMagick
++  InitializeMagick(*argv);
++
+   std::vector<Magick::Image> imvec;
+ 
+   bool has_map = map.is_defined ();
+@@ -819,6 +837,9 @@
+ 
+ static octave_value
+ magick_to_octave_value (const Magick::EndianType magick)
++
++  // Initialize GraphicsMagick
++  InitializeMagick(*argv);
+ {
+   switch (magick)
+     {
+@@ -836,6 +857,8 @@
+ static octave_value
+ magick_to_octave_value (const Magick::ResolutionType magick)
+ {
++  // Initialize GraphicsMagick
++  InitializeMagick(*argv);
+   switch (magick)
+     {
+       case Magick::PixelsPerInchResolution:
+@@ -852,6 +875,8 @@
+ static octave_value
+ magick_to_octave_value (const Magick::ImageType magick)
+ {
++  // Initialize GraphicsMagick
++  InitializeMagick(*argv);
+   switch (magick)
+     {
+       case Magick::BilevelType:
+@@ -897,6 +922,8 @@
+   octave_value_list output;
+ 
+ #ifdef HAVE_MAGICK
++  // Initialize GraphicsMagick
++  InitializeMagick(*argv);
+ 
+   if (args.length () < 1 || ! args (0).is_string ())
+     {
