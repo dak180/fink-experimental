@@ -422,8 +422,7 @@ Patch the graphicsmagick interface to use InitializeMagick before doing anything
 
 http://sourceforge.net/tracker/?func=detail&aid=3104518&group_id=73485&atid=537937
 
-Apparently this was not mandatory in prior versions of GraphicsMagick, but now it
-is.
+This was not mandatory in prior versions of GraphicsMagick, but now it is.
  
 Set the GNUTERM environment variable to AquaTerm because autodetection
 of DISPLAY seems to cause options to be fed to our gnuplot that it doesn't understand.
