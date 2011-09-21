@@ -36,7 +36,7 @@ UseMaxBuildJobs: false
 PatchFile: %{ni}.patch
 PatchFile-MD5: ce167f65e283dccf624e888c1a0a8725
 PatchFile2: %{ni}-%v.patch
-PatchFile2-MD5: 7e8f34f9d6a808873b1ec6042355639d
+PatchFile2-MD5: aacc46b743537523da744e1922c7bb7f
 PatchFile3: %{ni}-10.7.patch
 PatchFile3-MD5: adf5439f08870b6f7ba0d9be7e85bb22
 PatchScript: <<
