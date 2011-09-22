@@ -34,7 +34,7 @@ UseMaxBuildJobs: false
 PatchFile: %{ni}.patch
 PatchFile-MD5: ce167f65e283dccf624e888c1a0a8725
 PatchFile2: %{ni}-%v.patch
-PatchFile2-MD5: aacc46b743537523da744e1922c7bb7f
+PatchFile2-MD5: a09d6337e021085a8c9d14c5bdcdf088
 PatchScript: <<
 	#!/bin/sh -ev
 	cp doc/interpreter/%{Ni}.1 doc/interpreter/%{Ni}-%v.1
@@ -69,6 +69,8 @@ using std::size_t;' liboctave/oct-alloc.h
 	done
 	# missing qualifier to dependent-name member-function
 	sed -i.orig -e '/truncate_int/s|\(return\) \(truncate_int\)|\1 octave_int_base<T>::\2|' liboctave/oct-inttypes.h
+	# Make our own copy of Makeconf without "flag-sort" 
+    perl -pi -e 's|^(oct-conf.h: oct-conf.h.in ../Makeconf)|$1.fink|' src/Makefile.in
 <<
 
 SetCC: flag-sort -r gcc
@@ -95,7 +97,14 @@ CompileScript: <<
     export FFLAGS='-O3'
  fi
  FLIBDIR="%p/lib/gcc4.6/lib"
- ./configure FLIBS="${FLIBDIR}/libgfortran.dylib" %c $a
+ ./configure AR="/usr/bin/ar" FLIBS="${FLIBDIR}/libgfortran.dylib" %c $a
+ # put compiler information into our own version of Makeconf, which in turn
+ # goes into oct-conf.h, which in turn gets harcoded into the Octave 
+ # interpreter's 'octave_config_info' function, which is used by some of the 
+ # octave-forge packages.
+ sed  -e 's|flag-sort -r gcc|@WHICH_CC@|g' \
+ 			-e 's|flag-sort -r g++|@WHICH_CXX@|g' \
+ 			Makeconf > Makeconf.fink
  make
  fink-package-precedence --depfile-ext='\.d$' --prohibit-bdep=%{Ni},%{Ni}-atlas,%{Ni}%type_raw[oct]-dev,%{Ni}%type_raw[oct]-atlas-dev,%{Ni}305-dev,%{Ni}305-atlas-dev,saclib-gcc46,saclib src
 <<
@@ -136,10 +145,10 @@ InstallScript: <<
  # install the octave-forge helper scripts
  cp %{Ni}-forge* %i/share/%{Ni}/%v/scripts
  chmod a+x %i/share/%{Ni}/%v/scripts/*
- # oct-conf.h and octave-bug need to use Fink's compiler wrappers, too
+ # octave-bug needs to use Fink's compiler wrappers, too
  sed -i.bak -e 's|flag-sort -r gcc|@WHICH_CC@|g' \
  			-e 's|flag-sort -r g++|@WHICH_CXX@|g' \
- 			%i/include/%{Ni}-%v/%{Ni}/oct-conf.h %i/bin/%{Ni}-bug-%v
+ 			%i/bin/%{Ni}-bug-%v
  # for the -atlas variant, add libcblas.dylib to BLAS_LIBS:
  perl -pi -e 's|(%p/lib/liblapack.dylib %p/lib/libf77blas.dylib)|$1 %p/lib/libcblas.dylib|' \
  %i/bin/mkoctfile-%v %i/include/%{ni}-%v/%{ni}/oct-conf.h %i/bin/%{ni}-bug-%v
