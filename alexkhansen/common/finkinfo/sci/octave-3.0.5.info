@@ -43,6 +43,8 @@ PatchScript: <<
 	for f in `grep -l -r "qhull_a\.h" src`
 		do sed -i.orig -e '/include/s|qhull/|lib&|' $f
 	done
+	# put non-flag-sorted configuration info into oct-conf.h
+    perl -pi -e 's|^(oct-conf.h: oct-conf.h.in ../Makeconf)|$1.fink|' src/Makefile.in
 <<
 
 SetCC: flag-sort -r gcc
@@ -69,7 +71,14 @@ CompileScript: <<
     export FFLAGS='-O3'
  fi
  FLIBDIR="%p/lib/gcc4.6/lib"
- ./configure FLIBS="${FLIBDIR}/libgfortran.dylib" %c $a
+ ./configure AR="/usr/bin/ar" FLIBS="${FLIBDIR}/libgfortran.dylib" %c $a
+ # put compiler information into our own version of Makeconf, which in turn
+ # goes into oct-conf.h, which in turn gets harcoded into the Octave 
+ # interpreter's 'octave_config_info' function, which is used by some of the 
+ # octave-forge packages.
+ sed  -e 's|flag-sort -r gcc|@WHICH_CC@|g' \
+ 			-e 's|flag-sort -r g++|@WHICH_CXX@|g' \
+ 			Makeconf > Makeconf.fink
  make
  fink-package-precedence --depfile-ext='\.d$' --prohibit-bdep=%{Ni},%{Ni}-atlas,%{Ni}%type_raw[oct]-dev,%{Ni}%type_raw[oct]-atlas-dev,%{Ni}305-dev,%{Ni}305-atlas-dev,saclib-gcc46,saclib src
 <<
@@ -104,10 +113,10 @@ InstallScript: <<
  # install the octave-forge helper scripts
  cp %{Ni}-forge* %i/share/%{Ni}/%v/scripts
  chmod a+x %i/share/%{Ni}/%v/scripts/*
- # oct-conf.h and octave-bug need to use Fink's compiler wrappers, too
+ # octave-bug needs to use Fink's compiler wrappers, too
  sed -i.bak -e 's|flag-sort -r gcc|@WHICH_CC@|g' \
  			-e 's|flag-sort -r g++|@WHICH_CXX@|g' \
- 			%i/include/%{Ni}-%v/%{Ni}/oct-conf.h %i/bin/%{Ni}-bug-%v
+ 			%i/bin/%{Ni}-bug-%v
  # for the -atlas variant, add libcblas.dylib to BLAS_LIBS:
  perl -pi -e 's|(%p/lib/liblapack.dylib %p/lib/libf77blas.dylib)|$1 %p/lib/libcblas.dylib|' \
  %i/bin/mkoctfile-%v %i/include/%{ni}-%v/%{ni}/oct-conf.h %i/bin/%{ni}-bug-%v
