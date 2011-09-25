@@ -1,0 +1,33 @@
+Package: ghostscript-nox
+Version: 9.02
+Revision: 3
+Description: Interpreter for PostScript and PDF
+Source: mirror:sourceforge:ghostscript/ghostscript-%v.tar.gz
+Source-MD5: 86cc3a0509c0d96a641d58879d54274b
+PatchFile: %n.patch
+PatchFile-MD5: 593b3183e34b7cc76b981d912503ca9a
+Depends: ghostscript-fonts, libpng3-shlibs (>= 1.2.5-3)
+BuildDepends: fink (>= 0.24.12), libpng3 (>= 1.2.5-3)
+BuildConflicts: lcms
+Conflicts: ghostscript
+Replaces: ghostscript
+License: Restrictive/Distributable
+UseMaxBuildJobs: True
+ConfigureParams: --mandir=%p/share/man --disable-compile-inits --disable-cups --disable-gtk --without-x
+CompileScript: <<
+#!/bin/sh -ev
+mv zlib zlib_local
+mv libpng libpng_local
+mv jpeg jpeg_local
+mv jasper jasper_local
+mv tiff tiff_local
+ ./configure %c
+make
+<<
+InstallScript: <<
+ make install install-doc DESTDIR=%d
+ mkdir -p %i/share/doc
+<<
+DocFiles: LICENSE
+Maintainer: Hisashi T Fujinaka <htodd@twofifty.com>
+Homepage: http://www.cs.wisc.edu/~ghost/
