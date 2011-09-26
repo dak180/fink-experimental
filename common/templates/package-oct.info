@@ -22,18 +22,30 @@ License: GPL
 # not use the conditional, of course.
 
 BuildDepends: <<
-  @ADDITIONAL_BUILD_DEPENDS@
-  octave%type_pkg[oct]-dev | octave%type_pkg[oct]-atlas-dev, fftw3,
+  octave%type_pkg[oct]-dev | octave%type_pkg[oct]-atlas-dev, 
+  fftw3,
   ( %type_pkg[oct] = 305 ) hdf5.7-oldapi,
   ( %type_pkg[oct] != 305 ) hdf5.7 
- <<
+  @ADDITIONAL_BUILD_DEPENDS@
+<<
 Depends: <<
-  @ADDITIONAL_DEPENDS@
   octave%type_pkg[oct] | octave%type_pkg[oct]-atlas
-  <<
+  @ADDITIONAL_DEPENDS@
+<<
 Conflicts: octave-forge
 
 Source-MD5: @SOURCE_MD5@
+
+DescPackaging: <<
+Common for all octave-forge packages.
+
+We read in postinst and prerm template scripts installed by octaveN and modify
+them to use the name of this package because Octave's package manager can't 
+cope with non-literal arguments.
+
+The Type: forge (pkgname) is used to minimize what needs to be changed when
+using this .info file as a template.
+<<
 
 #### Insert required changes here ####
 
@@ -45,14 +57,14 @@ Source-MD5: @SOURCE_MD5@
 # since the foo-oct%type_pkg[oct] packages are designed to be built/installed
 # in the same way.
 
-Source: mirror:sourceforge:octave/%type_raw[forge]-%v.tar.gz
+Source: http://downloads.sourceforge.net/project/octave/Octave Forge Packages/Individual Package Releases/%type_raw[forge]-%v.tar.gz
 
 NoSetCPPFLAGS: true
 NoSetLDFLAGS: true
 SetLIBRARY_PATH: /usr/X11R6/lib:%p/lib
 SetMAKEFLAGS: -j1
 
-CompileScript: %p/share/octave/%type_raw[oct]/scripts/octave-forge-compile.sh %type_raw[forge]-%v
+CompileScript:  OCTAVE=%p/bin/octave-%type_raw[oct] %p/share/octave/%type_raw[oct]/scripts/octave-forge-compile.sh %type_raw[forge]-%v
 
 InstallScript: << 
 	#!/bin/sh -ev
@@ -75,15 +87,4 @@ PostInstScript:  <<
 <<
 
 PreRmScript: %p/share/octave/%type_raw[oct]/%type_raw[forge]-%v/octave-forge-prerm
-
-DescPackaging: <<
-Common for all octave-forge packages.
-
-We read in postinst and prerm template scripts installed by octaveN and modify
-them to use the name of this package because Octave's package manager can't 
-cope with non-literal arguments.
-
-The Type: forge (pkgname) is used to minimize what needs to be changed when
-using this .info file as a template.
-<<
 <<
