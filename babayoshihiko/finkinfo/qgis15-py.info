@@ -6,7 +6,7 @@ Architecture: powerpc, i386, x86_64
 Distribution: 10.4, 10.5, 10.6, 10.7
 
 Version: 1.5.0
-Revision: 8.2
+Revision: 8.3
 Description: User friendly Open Source GIS
 License: GPL
 Homepage: http://qgis.org
@@ -114,7 +114,7 @@ CompileScript: <<
   make install CMAKE_INSTALL_PREFIX=%b SIP_MAC_PATH=%p/bin
   popd
   
-  mv Applications/qgis%v.app Applications/qgis%v-py%type_pkg[python].app/
+  mv Applications/qgis%v.app Applications/qgis%v-py%type_pkg[python].app
   
   # Fix install names
   pushd %b/$QGIS_DIR/MacOS/lib
@@ -134,7 +134,8 @@ CompileScript: <<
   popd
   
   # Plugins are now managed by their own package (e.g. qgis-plugin-ftools)
-  rm -rf %b/$QGIS_DIR/Resources/python/plugins
+  rm -rf $QGIS_DIR/Resources/python/plugins
+  rm -rf $QGIS_DIR/MacOS/share/qgis/python/plugins
     
   # Workaround to SJIS problem
   mkdir -p %b/$QGIS_DIR/PlugIns
@@ -150,6 +151,8 @@ CompileScript: <<
 InstallScript: <<
   mkdir -p %b/Applications/qgis%v-py%type_pkg[python].app/Contents/Resources/python
   ln -s %p/share/qgis/python/plugins %b/Applications/qgis%v-py%type_pkg[python].app/Contents/Resources/python/plugins
+  mkdir -p %b/Applications/qgis%v-py%type_pkg[python].app/Contents/MacOS/share/qgis/python
+  ln -s %p/share/qgis/python/plugins %b/Applications/qgis%v-py%type_pkg[python].app/Contents/MacOS/share/qgis/python/plugins
 <<
 AppBundles: Applications/qgis%v-py%type_pkg[python].app
 
