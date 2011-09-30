@@ -1,8 +1,7 @@
 Info2: <<
 Package: grass62
-#Type: -nopgsql (boolean)
-Version: 6.2.1
-Revision: 1001
+Version: 6.2.3
+Revision: 1001.1
 Description: Powerful GIS software
 License: GPL
 Homepage: http://grass.itc.it
@@ -23,12 +22,12 @@ Depends: <<
 	x11-shlibs
 <<
 BuildDepends: <<
-	gettext-tools (>= 0.14.5),
-	libiconv-dev, readline (>= 4.3-1028) | readline5 (>= 5.0-1004), libgettext3-dev,
+	libiconv-dev, readline (>= 4.3-1028) | readline5 (>= 5.0-1004), libgettext8-dev,
 	fftw | fftw-mpi | fftw-absoft, 
 	gdal-dev (>= 1.3.1-1001), 
-	libjpeg, libpng3, libtiff, lesstif, 
-	postgresql82-dev,
+	libjpeg8, libpng14, libtiff, lesstif, 
+	proj,
+	postgresql84-dev,
 	tcltk-dev (>= 8.4.1-1), 
 	unixodbc2-nox (>= 2.2.11-1010) | unixodbc2 (>= 2.2.11-1010), 
 	x11, x11-dev,
@@ -51,7 +50,7 @@ CustomMirror: <<
  eur-UK: http://www.fieldinstruments.co.uk/grass/grass62/source/
  nam-US: http://grass.ibiblio.org/grass62/source/
 <<
-Source-MD5: cbe14d34503a75e8102d2f56c7b527a7
+Source-MD5: 75c8832f90e445ff361d767c8a2c3ece
 
 # Patch Phase.
 
@@ -100,8 +99,9 @@ SplitOff2: <<
   Depends: <<
 	fftw-shlibs | fftw-mpi-shlibs | fftw-absoft-shlibs, 
 	gdal-shlibs (>= 1.3.1-1001) | gdal-ssl-shlibs (>= 1.3.1-1001), 
-	proj, gettext, libjpeg-shlibs, libpng3-shlibs, libtiff-shlibs, lesstif-shlibs, 
-	postgresql82-shlibs,
+	libgettext8-shlibs, libjpeg8-shlibs, libpng14-shlibs, libtiff-shlibs, lesstif-shlibs, 
+	proj-shlibs,
+	postgresql84-shlibs,
 	unixodbc2-nox-shlibs (>= 2.2.11-1010) | unixodbc2-shlibs (>= 2.2.11-1010), 
 	x11-shlibs
   <<
