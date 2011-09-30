@@ -45,9 +45,8 @@ BuildDepends: <<
 	cmake, bison (>= 2.3),
 	gsl,
 	qt4-base-mac, 
-	pyqt4-mac-py27, 
-	sip-py27-bin, 
-	libiconv-dev, giflib, libtiff, libjpeg8, libogdi3 (>= 3.1.5-1002), libpng15, netcdf (>= 3.6.0-1002), 
+	pyqt4-mac-py%type_pkg[python] (>=4.8.5-0.1), sip-py%type_pkg[python]-bin (>=4.12.3-1), 
+	libiconv-dev, giflib, libtiff, libjpeg8, libogdi3 (>= 3.1.5-1002), libpng14, netcdf (>= 3.6.0-1002), 
 	libgeos3.3.0,
 	gdal-dev | gdal-pgsql-dev | gdal-mysql-dev| gdal-pgsql-mysql-dev, 
 	postgresql90-dev, 
@@ -72,6 +71,7 @@ SetCFLAGS: -fno-common
 SetLDFLAGS: -liconv
 CompileScript: <<
 #!/bin/bash -ev  
+
   # Find Fink's PyQt4
   PY_VER=%type_raw[python]
   perl -pi -e 's|sys.path = \[\\\"\"|sys.path = \[\\\"%p/lib/qt4-mac/lib/python'${PY_VER}'/site-packages\\", \\"\"|' src/python/qgspythonutilsimpl.cpp
@@ -110,7 +110,7 @@ CompileScript: <<
   # Workaround for Makefile bug (1.5.0 only)
   touch ../src/mac/Contents/SVN_MARKER-NOTFOUND
   
-  make VERSBOSE=0
+  make VERSBOSE=1
   make install CMAKE_INSTALL_PREFIX=%b SIP_MAC_PATH=%p/bin
   popd
   
@@ -161,19 +161,16 @@ SplitOff: <<
   Package: %N-shlibs
   Description: QGIS Shared Libraries
   Depends: <<
-	qt4-base-mac-qtcore-shlibs, 
-	python27, sip-py27,
-	pyqt4-mac-py27, 
-	gsl-shlibs,
-	libgeos3.3.0-shlibs,
-	gdal-shlibs | gdal-pgsql-shlibs | gdal-mysql-shlibs| gdal-pgsql-mysql-shlibs, 
-        libspatialite1-shlibs | libspatialite1-64bit-shlibs,
-	postgresql90-shlibs,
-	grass64-mac | grass64-x11 ,
-	proj-shlibs (>=4)
+    qt4-base-mac-qtcore-shlibs, 
+    python%type_pkg[python], pyqt4-mac-py%type_pkg[python] (>=4.8.5-0.1), sip-py%type_pkg[python] (>=4.12.3-1),
+    gsl-shlibs,
+    libgeos3.3.0-shlibs,
+    gdal-shlibs | gdal-pgsql-shlibs | gdal-mysql-shlibs| gdal-pgsql-mysql-shlibs, 
+    libspatialite1-shlibs | libspatialite1-64bit-shlibs,
+    postgresql90-shlibs,
+    grass64-mac | grass64-x11,
+    proj-shlibs (>=4)
   <<
-	# grass64-mac-shlibs | grass64-x11-shlibs, 
-	# grass64-mac | grass64-x11, 
   Files: <<
     Applications/qgis%v-py%type_pkg[python].app/Contents/MacOS/lib/libqgis*.%v.dylib
     Applications/qgis%v-py%type_pkg[python].app/Contents/MacOS/lib/qgis/plugins/*.so
