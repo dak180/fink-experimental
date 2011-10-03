@@ -14,10 +14,8 @@ Source: http://archive.apache.org/dist/xml/xerces-c/Xerces-C_3_1_0/sources/xerce
 Source-MD5: 4dc9460e011ed4857dcd290f22dd6f1b
 CompileScript: <<
 #!/bin/sh -ev
-  # x86-64 ./configure CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64"  
-  # PowerPC-64  ./configure CFLAGS="-arch ppc64" CXXFLAGS="-arch ppc64" 
-  # ./configure --disable-dependency-tracking CFLAGS="-arch i386 -arch ppc" CXXFLAGS="-arch i386 -arch ppc" 
   ./configure %c
+  perl -pi -e 's| -install_name | -compatibility_version %v -current_version %v -install_name |' libtool
   make
 <<
 InstallScript: <<
@@ -29,7 +27,7 @@ SplitOff: <<
  Package: %N-shlibs
  Files: lib/libxerces-c-3.1.dylib lib/pkgconfig
  Shlibs: <<
-  %p/lib/libxerces-c-3.1.dylib 0.0.0 %n (>= 3.1.0-0.1)
+  %p/lib/libxerces-c-3.1.dylib 3.1.0 %n (>= 3.1.0-0.1)
  <<
  DocFiles: LICENSE*
 <<
