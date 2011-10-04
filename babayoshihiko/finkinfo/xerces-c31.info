@@ -1,6 +1,6 @@
 Package: xerces-c31
 Version: 3.1.0
-Revision: 1
+Revision: 2
 Maintainer: BABA Yoshihiko <babayoshihiko@mac.com>
 License: BSD
 Homepage: http://xml.apache.org/xerces-c/
@@ -12,6 +12,9 @@ Replaces: xerces-c
 
 Source: http://archive.apache.org/dist/xml/xerces-c/Xerces-C_3_1_0/sources/xerces-c-%v.tar.gz
 Source-MD5: 4dc9460e011ed4857dcd290f22dd6f1b
+
+GCC: 4.0
+
 CompileScript: <<
 #!/bin/sh -ev
   ./configure %c
@@ -25,6 +28,7 @@ InstallScript: <<
 DocFiles: LICENSE*
 SplitOff: <<
  Package: %N-shlibs
+ Depends: libcurl4
  Files: lib/libxerces-c-3.1.dylib lib/pkgconfig
  Shlibs: <<
   %p/lib/libxerces-c-3.1.dylib 3.1.0 %n (>= 3.1.0-0.1)
@@ -37,7 +41,7 @@ SplitOff2: <<
  Replaces: xerces-c-dev, %N-dev (<< %v-%r)
  BuildDependsOnly: True
  Depends: %N-shlibs (= %v-%r)
- Files: include lib/libxerces-c.dylib lib/libxerces-c.a lib/libxerces-c.la share/doc/%N
+ Files: include lib/pkgconfig lib/libxerces-c.dylib lib/libxerces-c.a lib/libxerces-c.la share/doc/%N
  DocFiles: LICENSE*
 <<
 Description: XML parser in C++
