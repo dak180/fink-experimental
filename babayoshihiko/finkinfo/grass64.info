@@ -1,9 +1,9 @@
 Info2: <<
 Package: grass64%type_pkg[gui]
 Type: gui (-mac -x11)
-Distribution: (%type_raw[gui] = -mac) 10.7
+Distribution: (%type_raw[gui] = -mac) 10.7, (%type_raw[gui] = -x11) 10.7, (%type_raw[gui] = -x11) 10.4, (%type_raw[gui] = -x11) 10.5, (%type_raw[gui] = -x11) 10.6, (%type_raw[gui] = -mac) 10.6
 Version: 6.4.1
-Revision: 1001
+Revision: 1001.1
 Conflicts: grass64, grass64-mac, grass64-x11
 Replaces: grass64, grass64-mac, grass64-x11
 
@@ -18,7 +18,7 @@ PostgreSQL: 9.0
 Python: 2.7
 SQLite: 3
 
-Mac version (10.6 only) uses Mac's TclTk.
+Mac version (10.7 and 10.6 only) uses Mac's TclTk.
 
 X11 version uses Fink's TclTk and lacks OpenGL/NVIZ support.
 <<
@@ -33,19 +33,19 @@ Depends: <<
 <<
 BuildDepends: <<
     fink (>= 0.28),
-        libncurses5-dev,
-	libiconv-dev, readline5, libgettext8-dev, gettext-tools,
-	fftw3,
-	gdal-dev, 
-	libjpeg8, libpng14, libtiff,
-	szip, xerces-c31-dev, libogdi3,
-	postgresql90-dev,
-	python27,
-	sqlite3-dev
+    libncurses5-dev,
+    libiconv-dev, readline5, libgettext8-dev,
+    fftw3,
+    unixodbc2 | unixodbc2-nox,
+    hdf5.7-bin,
+    gdal-dev, 
+    libjpeg8, libpng14, libtiff,
+    szip, xerces-c31-dev, libogdi3,
+    postgresql90-dev,
+    python27,
+    sqlite3-dev
 <<
-#	unixodbc2 | unixodbc2-nox,
-#	hdf5-18-bin | hdf5-bin,
-#	(%type_raw[gui] = -mac) wxmac28,
+# (%type_raw[gui] = -mac) wxmac28,
 
 Source: http://grass.osgeo.org/grass64/source/grass-%v.tar.gz
 Source-MD5: d8ca83d416b5b0cf2aa9d36c81a77b23
@@ -128,13 +128,13 @@ SplitOff2: <<
   Depends: <<
     libncurses5-shlibs,
     fftw3-shlibs, 
+    unixodbc2-shlibs | unixodbc2-nox-shlibs,
     gdal-shlibs, 
     libgettext8-shlibs, libjpeg8-shlibs, libpng14-shlibs, libtiff-shlibs,
     postgresql90-shlibs,
     python27-shlibs,
     sqlite3-shlibs
   <<
-#	unixodbc2-shlibs | unixodbc2-nox-shlibs,
 #	(%type_raw[gui] = -mac) wxmac28-shlibs,
 
   Files: Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_*.dylib
