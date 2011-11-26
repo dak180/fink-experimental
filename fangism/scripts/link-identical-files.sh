@@ -1,9 +1,11 @@
 #!/bin/sh -e
+# vi: ts=4
 # "link-identical-files.sh"
 # usage:
 # $0 srcdir
 
-test $# = 1 || exit 1
+test $# = 1 || { echo "usage: $0 SRCDIR"; exit 1 ;}
+subdirs=
 srcdir=$1
 for f in $srcdir/*
 do
@@ -11,7 +13,14 @@ do
 dest=`basename $f`
 if test -d $f
 then
-	echo "dir:  $f"
+	echo "dir:  $dest"
+	if test "$dest" != "CVS"
+	then
+		if test -z "$subdirs"
+		then subdirs="$dest"
+		else subdirs="$subdirs $dest"
+		fi
+	fi
 else
 	if test -f $dest
 	then
@@ -38,5 +47,13 @@ else
 		echo "NEW:  $dest"
 	fi
 fi
+done
+
+for d in $subdirs
+do
+	# recurse
+	echo "******** Entering subdir: $d ********"
+	( pushd $d && $0 ../$1/$d ; popd ; )
+	echo "******** Leaving  subdir: $d ********"
 done
 
