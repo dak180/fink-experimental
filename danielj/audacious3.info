@@ -1,0 +1,141 @@
+Package: audacious3
+Version: 3.0.1
+Revision: 1
+Description: Advanced audio player
+DescDetail: <<
+	Audacious is an advanced audio player. It is free, lightweight, based
+	on GTK2, runs on Linux and many other *nix platforms and is focused on
+	audio quality and supporting a wide range of audio codecs.
+	
+	Its advanced audio playback engine is considerably more powerful than
+	GStreamer. Audacious is a fork of Beep Media Player (BMP), which itself
+	forked from XMMS.
+<<
+DescUsage: <<
+	audacious3-plugins must be installed for audacious3 to run properly.
+	Unfortunately, this seems pretty crashy right now. Oh well.
+<<
+DescPackaging: <<
+	audacious3-plugins Depends/BuildDepends on audacious3-shlibs/audacious3-dev
+	but the audacious3 binary requires audacious3-plugins to run. So we
+	Recommend audacious3-plugins to avoid a circular dependency.
+<<
+Homepage: http://www.audacious-media-player.org/
+License: GPL3
+Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
+
+Source: http://distfiles.atheme.org/audacious-%v.tar.gz
+Source-MD5: a988c9dcf7999051657a9f2859c1b168
+
+PatchFile: %n.patch
+PatchFile-MD5: 4f4c2c2897e03ac88e58d235bcaedf0d
+
+Depends: <<
+	%n-shlibs (= %v-%r),
+	dbus,
+	dbus-glib1.2-shlibs,
+	dbus1.3-shlibs,
+	desktop-file-utils,
+	glib2-shlibs,
+	gtk+2-shlibs,
+	libgettext8-shlibs,
+	libguess-shlibs,
+	libmcs-shlibs,
+	libmowgli-shlibs (>= 0.9.50-1),
+	pango1-xft2-ft219-shlibs,
+	pcre-shlibs,
+	x11-shlibs
+<<
+BuildDepends: <<
+	atk1,
+	cairo,
+	dbus-glib1.2-dev,
+	dbus1.3-dev,
+	fink (>= 0.24.12),
+	fink-package-precedence,
+	gettext-tools,
+	glib2-dev,
+	glitz,
+	gtk+2-dev,
+	libgettext8-dev,
+	libguess,
+	libmcs,
+	libmowgli (>= 0.9.50-1),
+	pango1-xft2-ft219-dev,
+	pcre,
+	pkgconfig
+<<
+Recommends: audacious3-plugins
+Conflicts: audacious2
+Replaces: audacious2
+
+ConfigureParams: --enable-dependency-tracking --disable-gtk3 --with-regexlib=pcre --disable-rpath --libdir=%p/lib/audacious3 ac_cv_path_AUDACIOUS_PATH="no"
+
+SetLDFLAGS: -Wl,-dead_strip_dylibs
+NoSetCPPFLAGS: true
+SetCPPFLAGS: -I. -I%p/include
+
+CompileScript: <<
+	./configure %c
+	make LIB_LDFLAGS='-dynamiclib -install_name ${libdir}/${LIB:.dylib=.${LIB_MAJOR}.dylib} -current_version ${LIB_MAJOR}.${LIB_MINOR} -compatibility_version ${LIB_MAJOR}.0' LIB_CFLAGS='-fPIC -fno-common'
+	fink-package-precedence --headers --libs --depfile-ext=".deps" .
+<<
+
+InstallScript: <<
+	#!/bin/bash -ev
+	make install DESTDIR=%d
+	mv %i/lib/audacious3/pkgconfig %i/lib
+	cd %i/lib
+	ln -s audacious3/libaudclient.2.0.dylib libaudclient.dylib
+	ln -s audacious3/libaudcore.1.0.dylib libaudcore.dylib
+	ln -s audacious3/libaudgui.1.0.dylib libaudgui.dylib
+	ln -s audacious3/libaudtag.1.0.dylib libaudtag.dylib
+<<
+
+DocFiles: AUTHORS COPYING GPL* NEWS README doc/HACKING doc/TODO
+
+PostInstScript: <<
+	. %p/bin/init.sh
+	[ -x %p/bin/update-desktop-database ] && update-desktop-database -q %p/share/applications || :
+<<
+
+PostRmScript: <<
+	. %p/bin/init.sh
+	[ -x %p/bin/update-desktop-database ] && update-desktop-database -q %p/share/applications || :
+<<
+
+SplitOff: <<
+	Package: %N-shlibs
+	
+	Depends: <<
+		dbus-glib1.2-shlibs,
+		glib2-shlibs,
+		gtk+2-shlibs,
+		libgettext8-shlibs,
+		libmowgli-shlibs (>= 0.9.50-1),
+		pango1-xft2-ft219-shlibs
+	<<
+	
+	Files: lib/audacious3/lib*.*.dylib
+	Shlibs: <<
+		%p/lib/audacious3/libaudclient.2.dylib 2.0.0 %n (>= 3.0.1-1)
+		%p/lib/audacious3/libaudcore.1.dylib 1.0.0 %n (>= 3.0.1-1)
+		%p/lib/audacious3/libaudgui.1.dylib 1.0.0 %n (>= 3.0.1-1)
+		%p/lib/audacious3/libaudtag.1.dylib 1.0.0 %n (>= 3.0.1-1)
+	<<
+	
+	DocFiles: AUTHORS COPYING GPL* NEWS README
+<<
+
+SplitOff2: <<
+	Package: %N-dev
+	
+	Depends: %N-shlibs (= %v-%r)
+	BuildDependsOnly: true
+	Conflicts: audacious2-dev
+	Replaces: audacious2-dev
+
+	Files: include lib
+	
+	DocFiles: AUTHORS COPYING GPL* NEWS README
+<<

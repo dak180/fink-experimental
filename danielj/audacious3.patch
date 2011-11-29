@@ -1,0 +1,39 @@
+diff -ru audacious-3.0.1.orig/configure audacious-3.0.1/configure
+--- audacious-3.0.1.orig/configure	2011-08-10 11:27:03.000000000 -0400
++++ audacious-3.0.1/configure	2011-08-23 16:28:15.000000000 -0400
+@@ -10502,7 +10502,7 @@
+ 
+ 
+ ### ---------------------------------------------------------------------------
+-plugindir="$libdir/audacious"
++plugindir="$libdir"
+ 
+ 
+ 
+diff -ru audacious-3.0.1.orig/src/libaudtag/tag_module.c audacious-3.0.1/src/libaudtag/tag_module.c
+--- audacious-3.0.1.orig/src/libaudtag/tag_module.c	2011-08-10 10:45:05.000000000 -0400
++++ audacious-3.0.1/src/libaudtag/tag_module.c	2011-08-23 12:57:39.000000000 -0400
+@@ -32,6 +32,9 @@
+ #include "ape/ape.h"
+ /* #include "aac/aac.h" */
+ 
++mowgli_list_t tag_modules;
++int number_of_modules = 0;
++
+ void init_tag_modules(void)
+ {
+     mowgli_node_add((void *)&id3v24, &id3v24.node, &tag_modules);
+diff -ru audacious-3.0.1.orig/src/libaudtag/tag_module.h audacious-3.0.1/src/libaudtag/tag_module.h
+--- audacious-3.0.1.orig/src/libaudtag/tag_module.h	2011-08-10 10:45:05.000000000 -0400
++++ audacious-3.0.1/src/libaudtag/tag_module.h	2011-08-23 12:56:18.000000000 -0400
+@@ -30,8 +30,8 @@
+ #include "libaudcore/tuple.h"
+ #include "libaudcore/vfs.h"
+ 
+-mowgli_list_t tag_modules;
+-int number_of_modules;
++extern mowgli_list_t tag_modules;
++extern int number_of_modules;
+ typedef Tuple* pTuple;
+ 
+ typedef struct _module {
