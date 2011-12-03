@@ -1,0 +1,460 @@
+diff -Nurd -x'*~' inkscape-0.46.orig/configure inkscape-0.46/configure
+--- inkscape-0.46.orig/configure	2008-03-11 00:47:08.000000000 -0400
++++ inkscape-0.46/configure	2008-10-29 01:36:01.000000000 -0400
+@@ -10638,6 +10638,9 @@
+ $as_echo "yes" >&6; }
+ 	:
+ fi
++INKSCAPE_CFLAGS="$INKSCAPE_CFLAGS -I/usr/X11R6/include"
++INKSCAPE_LIBS="$INKSCAPE_LIBS -L/usr/X11R6/lib -lX11"
++
+ 
+ # Check for Apple Mac OS X Carbon framework
+ carbon_ok=no
+diff -Nurd inkscape-0.46.orig/src/dom/uri.h inkscape-0.46/src/dom/uri.h
+--- inkscape-0.46.orig/src/dom/uri.h	2008-03-11 00:19:31.000000000 -0400
++++ inkscape-0.46/src/dom/uri.h	2008-04-25 02:39:17.000000000 -0400
+@@ -32,6 +32,7 @@
+ 
+ #include "dom.h"
+ 
++#include <glib.h>
+ 
+ namespace org
+ {
+diff -Nurd inkscape-0.46.orig/src/dom/util/ziptool.h inkscape-0.46/src/dom/util/ziptool.h
+--- inkscape-0.46.orig/src/dom/util/ziptool.h	2008-03-11 00:19:32.000000000 -0400
++++ inkscape-0.46/src/dom/util/ziptool.h	2008-04-25 02:39:17.000000000 -0400
+@@ -32,6 +32,7 @@
+  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  */
+ 
++#include <glib.h>
+ 
+ #include <vector>
+ #include <string>
+diff -Nurd inkscape-0.46.orig/src/dom/xmlreader.h inkscape-0.46/src/dom/xmlreader.h
+--- inkscape-0.46.orig/src/dom/xmlreader.h	2008-03-11 00:19:32.000000000 -0400
++++ inkscape-0.46/src/dom/xmlreader.h	2008-04-25 02:39:17.000000000 -0400
+@@ -39,6 +39,7 @@
+ namespace dom
+ {
+ 
++#include <glib.h>
+ 
+ 
+ class XmlReader
+diff -Nurd inkscape-0.46.orig/src/dom/xpathparser.h inkscape-0.46/src/dom/xpathparser.h
+--- inkscape-0.46.orig/src/dom/xpathparser.h	2008-03-11 00:19:31.000000000 -0400
++++ inkscape-0.46/src/dom/xpathparser.h	2008-04-25 02:39:17.000000000 -0400
+@@ -34,6 +34,8 @@
+ #include <stdio.h>
+ #include <stdarg.h>
+ 
++#include <glib.h>
++
+ #include <string>
+ #include <vector>
+ 
+diff -Nurd inkscape-0.46.orig/src/io/inkscapestream.h inkscape-0.46/src/io/inkscapestream.h
+--- inkscape-0.46.orig/src/io/inkscapestream.h	2008-03-11 00:20:06.000000000 -0400
++++ inkscape-0.46/src/io/inkscapestream.h	2008-04-25 02:39:17.000000000 -0400
+@@ -14,6 +14,7 @@
+ 
+ #include <cstdio>
+ #include <glibmm.h>
++#include <glib.h>
+ 
+ namespace Inkscape
+ {
+diff -Naur inkscape-0.48.1.old/src/2geom/solve-bezier-parametric.cpp inkscape-0.48.1/src/2geom/solve-bezier-parametric.cpp
+--- inkscape-0.48.1.old/src/2geom/solve-bezier-parametric.cpp	2010-07-13 12:48:40.000000000 +0900
++++ inkscape-0.48.1/src/2geom/solve-bezier-parametric.cpp	2011-12-03 17:37:51.000000000 +0900
+@@ -69,12 +69,12 @@
+     }
+ 
+     /* Otherwise, solve recursively after subdividing control polygon  */
+-    Geom::Point Left[degree+1],	/* New left and right  */
+-        Right[degree+1];	/* control polygons  */
+-    Bezier(w, degree, 0.5, Left, Right);
++    std::vector<Geom::Point> Left(degree + 1);	/* New left and right  */
++    std::vector<Geom::Point> Right(degree + 1);	/* control polygons  */
++    Bezier(w, degree, 0.5, &Left[0], &Right[0]);
+     total_subs ++;
+-    find_parametric_bezier_roots(Left,  degree, solutions, depth+1);
+-    find_parametric_bezier_roots(Right, degree, solutions, depth+1);
++    find_parametric_bezier_roots(&Left[0],  degree, solutions, depth + 1);
++    find_parametric_bezier_roots(&Right[0], degree, solutions, depth + 1);
+ }
+ 
+ 
+diff -Naur inkscape-0.48.1.old/src/box3d.cpp inkscape-0.48.1/src/box3d.cpp
+--- inkscape-0.48.1.old/src/box3d.cpp	2010-07-13 12:48:40.000000000 +0900
++++ inkscape-0.48.1/src/box3d.cpp	2011-12-03 17:39:40.000000000 +0900
+@@ -431,6 +431,9 @@
+ static double remember_snap_threshold = 30;
+ static guint remember_snap_index = 0;
+ 
++// constant for sizing the array of points to be considered:
++static const int MAX_POINT_COUNT = 4;
++
+ static Proj::Pt3
+ box3d_snap (SPBox3D *box, int id, Proj::Pt3 const &pt_proj, Proj::Pt3 const &start_pt) {
+     double z_coord = start_pt[Proj::Z];
+@@ -460,7 +463,7 @@
+     Box3D::Line diag2(A, E); // diag2 is only taken into account if id equals -1, i.e., if we are snapping the center
+ 
+     int num_snap_lines = (id != -1) ? 3 : 4;
+-    Geom::Point snap_pts[num_snap_lines];
++    Geom::Point snap_pts[MAX_POINT_COUNT];
+ 
+     snap_pts[0] = pl1.closest_to (pt);
+     snap_pts[1] = pl2.closest_to (pt);
+@@ -472,7 +475,7 @@
+     gdouble const zoom = inkscape_active_desktop()->current_zoom();
+ 
+     // determine the distances to all potential snapping points
+-    double snap_dists[num_snap_lines];
++    double snap_dists[MAX_POINT_COUNT];
+     for (int i = 0; i < num_snap_lines; ++i) {
+         snap_dists[i] = Geom::L2 (snap_pts[i] - pt) * zoom;
+     }
+diff -Naur inkscape-0.48.1.old/src/display/nr-filter-gaussian.cpp inkscape-0.48.1/src/display/nr-filter-gaussian.cpp
+--- inkscape-0.48.1.old/src/display/nr-filter-gaussian.cpp	2010-08-05 01:45:00.000000000 +0900
++++ inkscape-0.48.1/src/display/nr-filter-gaussian.cpp	2011-12-03 20:19:36.000000000 +0900
+@@ -708,22 +708,22 @@
+         };
+     } else if ( scr_len_x > 0 ) { // !use_IIR_x
+         // Filter kernel for x direction
+-        FIRValue kernel[scr_len_x+1];
+-        _make_kernel(kernel, deviation_x);
++        std::vector<FIRValue> kernel(scr_len_x+1);
++        _make_kernel(&kernel[0], deviation_x);
+ 
+         // Filter (x)
+         switch(in->mode) {
+         case NR_PIXBLOCK_MODE_A8:        ///< Grayscale
+-            filter2D_FIR<unsigned char,1>(NR_PIXBLOCK_PX(out), 1, out->rs, NR_PIXBLOCK_PX(ssin), 1, ssin->rs, width, height, kernel, scr_len_x, NTHREADS);
++            filter2D_FIR<unsigned char,1>(NR_PIXBLOCK_PX(out), 1, out->rs, NR_PIXBLOCK_PX(ssin), 1, ssin->rs, width, height, &kernel[0], scr_len_x, NTHREADS);
+             break;
+         case NR_PIXBLOCK_MODE_R8G8B8:    ///< 8 bit RGB
+-            filter2D_FIR<unsigned char,3>(NR_PIXBLOCK_PX(out), 3, out->rs, NR_PIXBLOCK_PX(ssin), 3, ssin->rs, width, height, kernel, scr_len_x, NTHREADS);
++            filter2D_FIR<unsigned char,3>(NR_PIXBLOCK_PX(out), 3, out->rs, NR_PIXBLOCK_PX(ssin), 3, ssin->rs, width, height, &kernel[0], scr_len_x, NTHREADS);
+             break;
+         //case NR_PIXBLOCK_MODE_R8G8B8A8N: ///< Normal 8 bit RGBA
+         //    filter2D_FIR<unsigned char,4>(NR_PIXBLOCK_PX(out), 4, out->rs, NR_PIXBLOCK_PX(ssin), 4, ssin->rs, width, height, kernel, scr_len_x, NTHREADS);
+         //    break;
+         case NR_PIXBLOCK_MODE_R8G8B8A8P: ///< Premultiplied 8 bit RGBA
+-            filter2D_FIR<unsigned char,4>(NR_PIXBLOCK_PX(out), 4, out->rs, NR_PIXBLOCK_PX(ssin), 4, ssin->rs, width, height, kernel, scr_len_x, NTHREADS);
++            filter2D_FIR<unsigned char,4>(NR_PIXBLOCK_PX(out), 4, out->rs, NR_PIXBLOCK_PX(ssin), 4, ssin->rs, width, height, &kernel[0], scr_len_x, NTHREADS);
+             break;
+         default:
+             assert(false);
+@@ -770,22 +770,22 @@
+         };
+     } else if ( scr_len_y > 0 ) { // !use_IIR_y
+         // Filter kernel for y direction
+-        FIRValue kernel[scr_len_y+1];
+-        _make_kernel(kernel, deviation_y);
++        std::vector<FIRValue> kernel(scr_len_y+1);
++        _make_kernel(&kernel[0], deviation_y);
+ 
+         // Filter (y)
+         switch(in->mode) {
+         case NR_PIXBLOCK_MODE_A8:        ///< Grayscale
+-            filter2D_FIR<unsigned char,1>(NR_PIXBLOCK_PX(out), out->rs, 1, NR_PIXBLOCK_PX(out), out->rs, 1, height, width, kernel, scr_len_y, NTHREADS);
++            filter2D_FIR<unsigned char,1>(NR_PIXBLOCK_PX(out), out->rs, 1, NR_PIXBLOCK_PX(out), out->rs, 1, height, width, &kernel[0], scr_len_y, NTHREADS);
+             break;
+         case NR_PIXBLOCK_MODE_R8G8B8:    ///< 8 bit RGB
+-            filter2D_FIR<unsigned char,3>(NR_PIXBLOCK_PX(out), out->rs, 3, NR_PIXBLOCK_PX(out), out->rs, 3, height, width, kernel, scr_len_y, NTHREADS);
++            filter2D_FIR<unsigned char,3>(NR_PIXBLOCK_PX(out), out->rs, 3, NR_PIXBLOCK_PX(out), out->rs, 3, height, width, &kernel[0], scr_len_y, NTHREADS);
+             break;
+         //case NR_PIXBLOCK_MODE_R8G8B8A8N: ///< Normal 8 bit RGBA
+         //    filter2D_FIR<unsigned char,4>(NR_PIXBLOCK_PX(out), out->rs, 4, NR_PIXBLOCK_PX(out), out->rs, 4, height, width, kernel, scr_len_y, NTHREADS);
+         //    break;
+         case NR_PIXBLOCK_MODE_R8G8B8A8P: ///< Premultiplied 8 bit RGBA
+-            filter2D_FIR<unsigned char,4>(NR_PIXBLOCK_PX(out), out->rs, 4, NR_PIXBLOCK_PX(out), out->rs, 4, height, width, kernel, scr_len_y, NTHREADS);
++            filter2D_FIR<unsigned char,4>(NR_PIXBLOCK_PX(out), out->rs, 4, NR_PIXBLOCK_PX(out), out->rs, 4, height, width, &kernel[0], scr_len_y, NTHREADS);
+             break;
+         default:
+             assert(false);
+diff -Naur inkscape-0.48.1.old/src/graphlayout.cpp inkscape-0.48.1/src/graphlayout.cpp
+--- inkscape-0.48.1.old/src/graphlayout.cpp	2010-07-13 12:48:40.000000000 +0900
++++ inkscape-0.48.1/src/graphlayout.cpp	2011-12-03 17:35:01.000000000 +0900
+@@ -155,11 +155,12 @@
+          ++i)
+     {
+         SPItem *iu=*i;
+-        map<string,unsigned>::iterator i=nodelookup.find(iu->getId());
+-        if(i==nodelookup.end()) {
++        map<string,unsigned>::iterator i_iter=nodelookup.find(iu->getId());    
++        map<string,unsigned>::iterator i_iter_end=nodelookup.end();
++        if(i_iter==i_iter_end) {
+             continue;
+         }
+-        unsigned u=i->second;
++        unsigned u=i_iter->second;
+         GSList *nlist=iu->avoidRef->getAttachedConnectors(Avoid::runningFrom);
+         list<SPItem *> connectors;
+ 
+diff -Naur inkscape-0.48.1.old/src/libcola/shortest_paths.cpp inkscape-0.48.1/src/libcola/shortest_paths.cpp
+--- inkscape-0.48.1.old/src/libcola/shortest_paths.cpp	2010-07-13 12:48:40.000000000 +0900
++++ inkscape-0.48.1/src/libcola/shortest_paths.cpp	2011-12-03 19:23:39.000000000 +0900
+@@ -81,9 +81,9 @@
+         double* eweights)
+ {
+     assert(s<n);
+-    Node vs[n];
+-    dijkstra_init(vs,es,eweights);
+-    dijkstra(s,n,vs,d);
++    std::vector<Node> vs(n);
++    dijkstra_init(&vs[0], es, eweights);
++    dijkstra(s, n, &vs[0], d);
+ }
+ void johnsons(
+         unsigned n,
+@@ -91,10 +91,10 @@
+         vector<Edge>& es,
+         double* eweights) 
+ {
+-    Node vs[n];
+-    dijkstra_init(vs,es,eweights);
++    std::vector<Node> vs(n);
++    dijkstra_init(&vs[0], es, eweights);
+     for(unsigned k=0;k<n;k++) {
+-        dijkstra(k,n,vs,D[k]);
++        dijkstra(k,n,&vs[0],D[k]);
+     }
+ }
+ }
+diff -Naur inkscape-0.48.1.old/src/ui/dialog/filedialog.h inkscape-0.48.1/src/ui/dialog/filedialog.h
+--- inkscape-0.48.1.old/src/ui/dialog/filedialog.h	2010-07-13 12:48:40.000000000 +0900
++++ inkscape-0.48.1/src/ui/dialog/filedialog.h	2011-12-04 01:11:06.000000000 +0900
+@@ -46,7 +46,8 @@
+ typedef enum {
+     SVG_TYPES,
+     IMPORT_TYPES,
+-    EXPORT_TYPES
++    EXPORT_TYPES,
++    EXE_TYPES
+     } FileDialogType;
+ 
+ /**
+diff -Naur inkscape-0.48.1.old/src/ui/dialog/inkscape-preferences.cpp inkscape-0.48.1/src/ui/dialog/inkscape-preferences.cpp
+--- inkscape-0.48.1.old/src/ui/dialog/inkscape-preferences.cpp	2010-11-07 03:47:19.000000000 +0900
++++ inkscape-0.48.1/src/ui/dialog/inkscape-preferences.cpp	2011-12-04 00:18:19.000000000 +0900
+@@ -1216,24 +1216,9 @@
+     _misc_bitmap_autoreload.init(_("Automatically reload bitmaps"), "/options/bitmapautoreload/value", true);
+     _page_bitmaps.add_line( false, "", _misc_bitmap_autoreload, "",
+                            _("Automatically reload linked images when file is changed on disk"));
+-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+-    Glib::ustring choices = prefs->getString("/options/bitmapeditor/choices");
+-    if (!choices.empty()) {
+-        gchar** splits = g_strsplit(choices.data(), ",", 0);
+-        gint numIems = g_strv_length(splits);
+-
+-        Glib::ustring labels[numIems];
+-        int values[numIems];
+-        for ( gint i = 0; i < numIems; i++) {
+-            values[i] = i;
+-            labels[i] = splits[i];
+-        }
+-        _misc_bitmap_editor.init("/options/bitmapeditor/value", labels, values, numIems, 0);
+-        _page_bitmaps.add_line( false, _("Bitmap editor:"), _misc_bitmap_editor, "", "", false);
+-
+-        g_strfreev(splits);
+-    }
+ 
++    _misc_bitmap_editor.init("/options/bitmapeditor/value", true);
++    _page_bitmaps.add_line( false, _("Bitmap editor:"), _misc_bitmap_editor, "", "", true);
+     _bitmap_copy_res.init("/options/createbitmap/resolution", 1.0, 6000.0, 1.0, 1.0, PX_PER_IN, true, false);
+     _page_bitmaps.add_line( false, _("Resolution for Create Bitmap Copy:"), _bitmap_copy_res, _("dpi"),
+                             _("Resolution used by the Create Bitmap Copy command"), false);
+diff -Naur inkscape-0.48.1.old/src/ui/dialog/inkscape-preferences.h inkscape-0.48.1/src/ui/dialog/inkscape-preferences.h
+--- inkscape-0.48.1.old/src/ui/dialog/inkscape-preferences.h	2010-11-07 03:47:19.000000000 +0900
++++ inkscape-0.48.1/src/ui/dialog/inkscape-preferences.h	2011-12-04 00:17:12.000000000 +0900
+@@ -296,7 +296,7 @@
+     UI::Widget::PrefCheckButton _spell_ignoreallcaps;
+ 
+     UI::Widget::PrefCombo       _misc_overs_bitmap;
+-    UI::Widget::PrefCombo       _misc_bitmap_editor;
++    UI::Widget::PrefEntryFileButtonHBox       _misc_bitmap_editor;
+     UI::Widget::PrefCheckButton _misc_bitmap_autoreload;
+     UI::Widget::PrefSpinButton  _bitmap_copy_res;
+ 
+diff -Naur inkscape-0.48.1.old/src/ui/widget/preferences-widget.cpp inkscape-0.48.1/src/ui/widget/preferences-widget.cpp
+--- inkscape-0.48.1.old/src/ui/widget/preferences-widget.cpp	2010-07-13 12:48:40.000000000 +0900
++++ inkscape-0.48.1/src/ui/widget/preferences-widget.cpp	2011-12-04 00:49:30.000000000 +0900
+@@ -22,7 +22,9 @@
+ #include "ui/widget/preferences-widget.h"
+ #include "verbs.h"
+ #include "selcue.h"
++#include "io/sys.h"
+ #include <iostream>
++#include "desktop.h"
+ #include "enums.h"
+ #include "inkscape.h"
+ #include "desktop-handles.h"
+@@ -30,6 +32,7 @@
+ #include "style.h"
+ #include "selection.h"
+ #include "selection-chemistry.h"
++#include "ui/dialog/filedialog.h"
+ #include "xml/repr.h"
+ 
+ using namespace Inkscape::UI::Widget;
+@@ -618,6 +621,107 @@
+     }
+ }
+ 
++void PrefEntryFileButtonHBox::init(Glib::ustring const &prefs_path,
++                                   bool visibility)
++{
++    _prefs_path = prefs_path;
++    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
++
++    relatedEntry = new Gtk::Entry();
++    relatedEntry->set_invisible_char('*');
++    relatedEntry->set_visibility(visibility);
++    relatedEntry->set_text(prefs->getString(_prefs_path));
++
++    relatedButton = new Gtk::Button();
++    Gtk::HBox* pixlabel = new Gtk::HBox(false, 3);
++    Gtk::Image *im = new Gtk::Image(Gtk::StockID(Gtk::Stock::INDEX),
++                                    Gtk::ICON_SIZE_BUTTON);
++    pixlabel->pack_start(*im);
++    Gtk::Label *l = new Gtk::Label();
++    l->set_markup_with_mnemonic(_("_Browse..."));
++    pixlabel->pack_start(*l);
++    relatedButton->add(*pixlabel);
++
++    this->pack_end(*relatedButton, false, false, 4);
++    this->pack_start(*relatedEntry, true, true, 0);
++
++    relatedButton->signal_clicked().connect(
++        sigc::mem_fun(*this, &PrefEntryFileButtonHBox::onRelatedButtonClickedCallback));
++    relatedEntry->signal_changed().connect(
++        sigc::mem_fun(*this, &PrefEntryFileButtonHBox::onRelatedEntryChangedCallback));
++}
++
++void PrefEntryFileButtonHBox::onRelatedEntryChangedCallback()
++{
++    if (this->is_visible()) //only take action if user changed value
++    {
++        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
++        prefs->setString(_prefs_path, relatedEntry->get_text());
++    }
++}
++
++static Inkscape::UI::Dialog::FileOpenDialog * selectPrefsFileInstance = NULL;
++
++void PrefEntryFileButtonHBox::onRelatedButtonClickedCallback()
++{
++    if (this->is_visible()) //only take action if user changed value
++    {
++        //# Get the current directory for finding files
++        static Glib::ustring open_path;
++        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
++
++
++        Glib::ustring attr = prefs->getString(_prefs_path);
++        if (!attr.empty()) open_path = attr;
++
++        //# Test if the open_path directory exists
++        if (!Inkscape::IO::file_test(open_path.c_str(),
++                  (GFileTest)(G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)))
++            open_path = "";
++
++        //# If no open path, default to our home directory
++        if (open_path.empty())
++        {
++            open_path = g_get_home_dir();
++            open_path.append(G_DIR_SEPARATOR_S);
++        }
++
++        //# Create a dialog
++        SPDesktop *desktop = SP_ACTIVE_DESKTOP;
++        if (!selectPrefsFileInstance) {
++        selectPrefsFileInstance =
++              Inkscape::UI::Dialog::FileOpenDialog::create(
++                 *desktop->getToplevel(),
++                 open_path,
++                 Inkscape::UI::Dialog::EXE_TYPES,
++                 _("Select a bitmap editor"));
++        }
++
++        //# Show the dialog
++        bool const success = selectPrefsFileInstance->show();
++
++        if (!success) {
++            return;
++        }
++
++        //# User selected something.  Get name and type
++        Glib::ustring fileName = selectPrefsFileInstance->getFilename();
++
++        if (!fileName.empty())
++        {
++            Glib::ustring newFileName = Glib::filename_to_utf8(fileName);
++
++            if ( newFileName.size() > 0)
++                open_path = newFileName;
++            else
++                g_warning( "ERROR CONVERTING OPEN FILENAME TO UTF-8" );
++
++            prefs->setString(_prefs_path, open_path);
++        }
++
++        relatedEntry->set_text(fileName);
++    }
++}
+ 
+ void PrefFileButton::init(Glib::ustring const &prefs_path)
+ {
+diff -Naur inkscape-0.48.1.old/src/ui/widget/preferences-widget.h inkscape-0.48.1/src/ui/widget/preferences-widget.h
+--- inkscape-0.48.1.old/src/ui/widget/preferences-widget.h	2010-07-13 12:48:40.000000000 +0900
++++ inkscape-0.48.1/src/ui/widget/preferences-widget.h	2011-12-04 00:15:48.000000000 +0900
+@@ -176,6 +176,19 @@
+     void onRelatedButtonClickedCallback();
+ };
+ 
++class PrefEntryFileButtonHBox : public Gtk::HBox
++{
++public:
++    void init(Glib::ustring const &prefs_path,
++              bool mask);
++protected:
++    Glib::ustring _prefs_path;
++    Gtk::Button *relatedButton;
++    Gtk::Entry *relatedEntry;
++    void onRelatedEntryChangedCallback();
++    void onRelatedButtonClickedCallback();
++};
++
+ class PrefFileButton : public Gtk::FileChooserButton
+ {
+ public:
+diff -Naur inkscape-0.48.1.old/src/ui/widget/registered-widget.h inkscape-0.48.1/src/ui/widget/registered-widget.h
+--- inkscape-0.48.1.old/src/ui/widget/registered-widget.h	2010-07-13 12:48:40.000000000 +0900
++++ inkscape-0.48.1/src/ui/widget/registered-widget.h	2011-12-03 18:00:02.000000000 +0900
+@@ -62,7 +62,7 @@
+     bool is_updating() {if (_wr) return _wr->isUpdating(); else return false;}
+ 
+     // provide automatic 'upcast' for ease of use. (do it 'dynamic_cast' instead of 'static' because who knows what W is)
+-    operator const Gtk::Widget () { return dynamic_cast<Gtk::Widget*>(this); }
++    operator const Gtk::Widget () { return *this; }
+ 
+ protected:
+     RegisteredWidget() : W() { construct(); }
+diff -Naur inkscape-0.48.1.old/src/widgets/desktop-widget.h inkscape-0.48.1/src/widgets/desktop-widget.h
+--- inkscape-0.48.1.old/src/widgets/desktop-widget.h	2010-07-13 12:48:40.000000000 +0900
++++ inkscape-0.48.1/src/widgets/desktop-widget.h	2011-12-03 17:53:40.000000000 +0900
+@@ -239,7 +239,7 @@
+ private:
+     GtkWidget *tool_toolbox;
+     GtkWidget *aux_toolbox;
+-    GtkWidget *commands_toolbox,;
++    GtkWidget *commands_toolbox;
+     GtkWidget *snap_toolbox;
+ 
+     static void init(SPDesktopWidget *widget);
