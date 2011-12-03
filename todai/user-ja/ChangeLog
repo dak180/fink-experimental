@@ -1,3 +1,8 @@
+2011-12-03 Tomoaki Okayama <okayama@sodan.ecc.u-tokyo.ac.jp>
+* 4.3 release
+* sedsrc/user-ja-conf.in: Modified the case statement for $X11NAME
+  in order to work good on 10.6 or upper.
+
 2008-05-24 Tomoaki Okayama <okayama@sodan.ecc.u-tokyo.ac.jp>
 * 4.2+cvs-1.24
 * doc/user-ja.txt: Add a description of uim for tgif.
@@ -319,4 +324,4 @@
 2004-04-12 AIDA Shinra <shinra@j10n.org>
 * Initial revision
 
-$Id: ChangeLog,v 1.23 2008/05/17 19:46:34 okayama Exp $
+$Id: ChangeLog,v 1.24 2008/05/23 17:33:46 okayama Exp $
