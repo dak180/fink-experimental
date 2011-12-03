@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: user-ja-conf.in,v 1.6 2008/02/16 10:11:11 okayama Exp $
+# $Id: user-ja-conf.in,v 1.7 2008/02/18 05:28:27 okayama Exp $
 # vim: set sw=4 sts=4 ts=8:
 set -e
 
@@ -69,7 +69,7 @@ esac
 
 case "`/usr/bin/uname -r`" in
     7*|8*) X11NAME=com.apple.x11 ;;
-    9*)    X11NAME=org.x.X11
+    *)    X11NAME=org.x.X11
     go defaults write $X11NAME app_to_run "xinitrc_apps_term_enable=YES xinitrc_apps_term_loginshell=YES fink_bindir=$fink_prefix/bin $fink_prefix/etc/xinitrc.d/73apps.sh"
     ;;
 esac
