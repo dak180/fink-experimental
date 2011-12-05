@@ -1,7 +1,7 @@
 Info2: <<
 Package: grass64%type_pkg[gui]
-Type: gui (-x11)
-Distribution: (%type_raw[gui] = -x11) 10.4, (%type_raw[gui] = -x11) 10.5, (%type_raw[gui] = -x11) 10.6, (%type_raw[gui] = -x11) 10.7
+Type: gui (-mac -x11)
+Distribution: (%type_raw[gui] = -x11) 10.4, (%type_raw[gui] = -x11) 10.5, (%type_raw[gui] = -x11) 10.6, (%type_raw[gui] = -mac) 10.6, (%type_raw[gui] = -mac) 10.7
 Version: 6.4.1
 Revision: 1002
 Conflicts: grass64, grass64-mac, grass64-x11
@@ -14,7 +14,7 @@ Maintainer:BABA Yoshihiko <babayoshihiko@mac.com>
 DescDetail: <<
 Very Powerful Geographical Information System with CLI and GUI. 
 
-PostgreSQL: 8.4
+PostgreSQL: 9.0
 Python: 2.7
 SQLite: 3
 
@@ -40,7 +40,7 @@ BuildDepends: <<
   libjpeg, libpng14 | libpng3, libtiff,
   unixodbc2 | unixodbc2-nox,
   szip, xerces-c31-dev, libogdi3,
-  postgresql84-dev,
+  postgresql90-dev,
   python27,
   sqlite3-dev
 <<
@@ -66,7 +66,7 @@ ConfigureParams: --with-curses --with-freetype --with-freetype-includes=%p/lib/f
 CompileScript: <<
 #!/bin/bash -xe
   
-  PGSQLPARAM=" --with-postgres --with-postgres-includes=%p/opt/postgresql-8.4/include --with-postgres-libs=%p/opt/postgresql-8.4/lib "
+  PGSQLPARAM=" --with-postgres --with-postgres-includes=%p/opt/postgresql-9.0/include --with-postgres-libs=%p/opt/postgresql-9.0/lib "
   
   if [ "%type_raw[gui]" == "-mac" ]; then
     ./configure %c $PGSQLPARAM --without-x '--with-tcltk-includes=/System/Library/Frameworks/Tcl.framework/Headers /System/Library/Frameworks/Tk.framework/Headers /System/Library/Frameworks/Tk.framework/PrivateHeaders' --with-tcltk-libs=/usr/lib --with-opengl=aqua '--with-opengl-includes=/System/Library/Frameworks/OpenGL.framework/Headers /System/Library/Frameworks/GLUT.framework/Headers /System/Library/Frameworks/AGL.framework/Headers'
@@ -140,7 +140,7 @@ SplitOff2: <<
     gdal-shlibs, 
     libgettext8-shlibs, libjpeg-shlibs, libpng14-shlibs | libpng3-shlibs, libtiff-shlibs,
     xerces-c31-shlibs,
-    postgresql84-shlibs,
+    postgresql90-shlibs,
     python27-shlibs,
     sqlite3-shlibs,
     unixodbc2-shlibs | unixodbc2-nox-shlibs
