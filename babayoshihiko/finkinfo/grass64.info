@@ -1,9 +1,9 @@
 Info2: <<
 Package: grass64%type_pkg[gui]
-Type: gui (-mac -x11)
-Distribution: (%type_raw[gui] = -mac) 10.7, (%type_raw[gui] = -x11) 10.7, (%type_raw[gui] = -x11) 10.6, (%type_raw[gui] = -mac) 10.6, (%type_raw[gui] = -x11) 10.5, (%type_raw[gui] = -x11) 10.4
+Type: gui (-x11)
+Distribution: (%type_raw[gui] = -x11) 10.4, (%type_raw[gui] = -x11) 10.5, (%type_raw[gui] = -x11) 10.6, (%type_raw[gui] = -x11) 10.7
 Version: 6.4.1
-Revision: 1001.2
+Revision: 1002
 Conflicts: grass64, grass64-mac, grass64-x11
 Replaces: grass64, grass64-mac, grass64-x11
 
@@ -14,11 +14,11 @@ Maintainer:BABA Yoshihiko <babayoshihiko@mac.com>
 DescDetail: <<
 Very Powerful Geographical Information System with CLI and GUI. 
 
-PostgreSQL: 9.0
+PostgreSQL: 8.4
 Python: 2.7
 SQLite: 3
 
-Mac version (10.7 and 10.6 only) uses Mac's TclTk.
+Mac version (10.6 only) uses Mac's TclTk.
 
 X11 version uses Fink's TclTk and lacks OpenGL/NVIZ support.
 <<
@@ -29,60 +29,47 @@ Just type double click GRASS-6.4.app in %p/Applications.
 
 # Dependencies.
 Depends: <<
-	%n-shlibs (=%v-%r)
+  %n-shlibs (=%v-%r)
 <<
 BuildDepends: <<
-    fink (>= 0.28),
-    libncurses5-dev,
-    libiconv-dev, readline5, libgettext8-dev,
-    fftw3,
-    unixodbc2 | unixodbc2-nox,
-    hdf5.7-bin,
-    gdal-dev, 
-    libjpeg8, libpng14, libtiff,
-    szip, xerces-c31-dev, libogdi3,
-    postgresql90-dev,
-    python27,
-    sqlite3-dev
+  fink (>= 0.28),
+  libncurses5-dev,
+  libiconv-dev, readline5, libgettext8-dev, gettext-tools,
+  fftw3,
+  gdal-dev, 
+  libjpeg, libpng14 | libpng3, libtiff,
+  unixodbc2 | unixodbc2-nox,
+  szip, xerces-c31-dev, libogdi3,
+  postgresql84-dev,
+  python27,
+  sqlite3-dev
 <<
-# (%type_raw[gui] = -mac) wxmac28,
+# hdf5-18-bin | hdf5-bin,
+# (%type_raw[gui] = -mac) wxmac28
 
 Source: http://grass.osgeo.org/grass64/source/grass-%v.tar.gz
 Source-MD5: d8ca83d416b5b0cf2aa9d36c81a77b23
 
 # Patch Phase.
 PatchFile: grass64.patch
-PatchFile-MD5: 1287d269b2b47355bf3a9443d8541347
+PatchFile-MD5: e3bf9a0a35baea73d3eca03af93321b7
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 
 # Compile Phase.
 SetCFLAGS: -I%p/include
 SetLDFLAGS: -L%p/lib -lcurses
 
-ConfigureParams: <<
-  --with-curses --with-freetype --with-freetype-includes=%p/lib/freetype219/include/freetype2 --with-freetype-libs=%p/lib/freetype219/lib \
-  --with-cxx --without-motif --without-glw --without-readline \
-  --with-gdal=%p/bin/gdal-config \
-  --with-proj --with-proj-includes=%p/include --with-proj-libs=%p/lib --with-proj-share=%p/share/proj \
-  --with-jpeg-includes=%p/include --with-jpeg-libs=%p/lib --with-png-includes=%p/include --with-png-libs=%p/lib --with-tiff-includes=%p/include --with-tiff-libs=%p/lib \
-  --without-mysql --without-odbc --with-sqlite --with-sqlite-libs=%p/lib --with-sqlite-includes=%p/include \
-  --with-fftw-includes=%p/include --with-fftw-libs=%p/lib \
-  --with-python=%p/bin/python2.7-config -\
-  -prefix=%p/Applications --enable-macosx-app
-<<
+ConfigureParams: --with-curses --with-freetype --with-freetype-includes=%p/lib/freetype219/include/freetype2 --with-freetype-libs=%p/lib/freetype219/lib --with-gdal=%p/bin/gdal-config --with-proj --with-proj-includes=%p/include --with-proj-libs=%p/lib --with-proj-share=%p/share/proj --with-jpeg-includes=%p/include --with-jpeg-libs=%p/lib --with-png-includes=%p/include --with-png-libs=%p/lib --with-tiff-includes=%p/include --with-tiff-libs=%p/lib --without-mysql --with-odbc --with-sqlite --with-sqlite-libs=%p/lib --with-sqlite-includes=%p/include --with-fftw-includes=%p/include --with-fftw-libs=%p/lib --with-cxx --without-motif --without-glw --without-readline --with-python=%p/bin/python2.7-config --prefix=%p/Applications --enable-macosx-app
+
+
 
 CompileScript: <<
 #!/bin/bash -xe
-  darwin_vers=`uname -r | cut -d. -f1`
-  if test "$darwin_vers" = 11 ; then
-    export CC=gcc-fsf-4.6
-    export CXX=g++-fsf-4.6
-  fi
   
-  PGSQLPARAM=" --with-postgres --with-postgres-includes=%p/opt/postgresql-9.0/include --with-postgres-libs=%p/opt/postgresql-9.0/lib "
+  PGSQLPARAM=" --with-postgres --with-postgres-includes=%p/opt/postgresql-8.4/include --with-postgres-libs=%p/opt/postgresql-8.4/lib "
   
   if [ "%type_raw[gui]" == "-mac" ]; then
-    ./configure %c $PGSQLPARAM --without-x --without-wxwidgets --with-opengl=aqua '--with-opengl-includes=/System/Library/Frameworks/OpenGL.framework/Headers /System/Library/Frameworks/GLUT.framework/Headers /System/Library/Frameworks/AGL.framework/Headers'
+    ./configure %c $PGSQLPARAM --without-x '--with-tcltk-includes=/System/Library/Frameworks/Tcl.framework/Headers /System/Library/Frameworks/Tk.framework/Headers /System/Library/Frameworks/Tk.framework/PrivateHeaders' --with-tcltk-libs=/usr/lib --with-opengl=aqua '--with-opengl-includes=/System/Library/Frameworks/OpenGL.framework/Headers /System/Library/Frameworks/GLUT.framework/Headers /System/Library/Frameworks/AGL.framework/Headers'
     # --with-wxwidgets=%p/lib/wx/config/mac-ansi-release-2.8
     perl -pi -e "s|^TCLINCDIR|TCLINCDIR           =  -I/System/Library/Frameworks/Tcl.framework/Headers -I/System/Library/Frameworks/Tk.framework/Headers -I/System/Library/Frameworks/Tk.framework/PrivateHeaders #|" include/Make/Platform.make
     perl -pi -e "s|^TKINCDIR|TKINCDIR            =  -I/System/Library/Frameworks/Tcl.framework/Headers -I/System/Library/Frameworks/Tk.framework/Headers -I/System/Library/Frameworks/Tk.framework/PrivateHeaders #|" include/Make/Platform.make
@@ -107,6 +94,8 @@ CompileScript: <<
   fi 
 <<
 
+
+
 # Install Phase.
 InstallScript: <<
 #!/bin/sh -xe
@@ -115,6 +104,13 @@ InstallScript: <<
 AppBundles: Applications/GRASS-6.4.app
 
 DocFiles: 
+
+
+
+
+
+
+
 
 # Additional Phase.
 SplitOff: <<
@@ -128,22 +124,28 @@ SplitOff: <<
   DocFiles:
 <<
 
+
+
+
+
+
 SplitOff2: <<
   Package: %N-shlibs
   Description: GRASS Shared Libraries
   Conflicts: grass64-shlibs, grass64-mac-shlibs, grass64-x11-shlibs
   Replaces: grass64-shlibs, grass64-mac-shlibs, grass64-x11-shlibs
   Depends: <<
-    libncurses5-shlibs, libgettext8-shlibs,
+    libncurses5-shlibs,
     fftw3-shlibs, 
-    unixodbc2-shlibs | unixodbc2-nox-shlibs,
     gdal-shlibs, 
-    libjpeg8-shlibs, libpng14-shlibs, libtiff-shlibs,
-    postgresql90-shlibs,
+    libgettext8-shlibs, libjpeg-shlibs, libpng14-shlibs | libpng3-shlibs, libtiff-shlibs,
+    xerces-c31-shlibs,
+    postgresql84-shlibs,
     python27-shlibs,
-    sqlite3-shlibs
+    sqlite3-shlibs,
+    unixodbc2-shlibs | unixodbc2-nox-shlibs
   <<
-#	(%type_raw[gui] = -mac) wxmac28-shlibs,
+  # (%type_raw[gui] = -mac) wxmac28-shlibs
 
   Files: Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_*.dylib
   Shlibs: <<
@@ -196,7 +198,7 @@ SplitOff2: <<
     !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_vask.%v.dylib
     !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_vect.%v.dylib
     !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_vedit.%v.dylib
-    %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_I.dylib 6.4.0 %n (>= 6.4.0-1) 32
+    %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_I.dylib 6.4.0 %n (>= 6.4.0-1)
     (%type_raw[gui] = -x11) %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_Iortho.dylib 6.4.0 %n (>= 6.4.0-1)
     %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_arraystats.dylib 6.4.0 %n (>= 6.4.0-1)
     %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_bitmap.dylib 6.4.0 %n (>= 6.4.0-1)

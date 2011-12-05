@@ -1,106 +1,6 @@
-Binary files grass-6.4.1-orig/include/.DS_Store and grass-6.4.1/include/.DS_Store differ
-diff -ruN grass-6.4.1-orig/include/iostream/ami_stream.h grass-6.4.1/include/iostream/ami_stream.h
---- grass-6.4.1-orig/include/iostream/ami_stream.h	2011-09-24 11:17:17.000000000 +0900
-+++ grass-6.4.1/include/iostream/ami_stream.h	2011-09-24 11:40:29.000000000 +0900
-@@ -139,7 +139,7 @@
-   AMI_STREAM();
-   
-   // An AMI stream based on a specific path name.
--  AMI_STREAM(const char *path_name, AMI_stream_type st);
-+  AMI_STREAM(const char *path_name, AMI_stream_type st = AMI_READ_WRITE_STREAM);
- 
-   // convenience function with split path_name
-   //AMI_STREAM(const char *dir_name, const char *file_name, AMI_stream_type st);
-@@ -155,7 +155,7 @@
-   // Read and write elements.
-   AMI_err read_item(T **elt);
-   AMI_err write_item(const T &elt);
--  AMI_err read_array(T *data, off_t len, off_t *lenp);
-+  AMI_err read_array(T *data, off_t len, off_t *lenp=NULL);
-   AMI_err write_array(const T *data, off_t len);
-   
-   // Return the number of items in the stream.
-@@ -171,7 +171,7 @@
-   // Query memory usage
-   static AMI_err main_memory_usage(size_t *usage,
- 			    //MM_stream_usage usage_type= MM_STREAM_USAGE_OVERHEAD);
--			    MM_stream_usage usage_type);
-+			    MM_stream_usage usage_type = MM_STREAM_USAGE_OVERHEAD);
-   
-   void persist(persistence p);
-   
-@@ -247,7 +247,7 @@
- // An AMI stream based on a specific path name.
- template<class T>
- AMI_STREAM<T>::AMI_STREAM(const char *path_name,
--			  AMI_stream_type st = AMI_READ_WRITE_STREAM) {
-+			  AMI_stream_type st) {
- 
-   access_mode = st;
- 
-@@ -465,7 +465,7 @@
- template<class T>
- AMI_err
- AMI_STREAM<T>::main_memory_usage(size_t *usage,
--								 MM_stream_usage usage_type= MM_STREAM_USAGE_OVERHEAD) {
-+								 MM_stream_usage usage_type) {
-   
-    switch (usage_type) {
-    case MM_STREAM_USAGE_OVERHEAD:
-@@ -544,7 +544,7 @@
- 
- /**********************************************************************/
- template<class T>
--AMI_err AMI_STREAM<T>::read_array(T *data, off_t len, off_t *lenp=NULL) {
-+AMI_err AMI_STREAM<T>::read_array(T *data, off_t len, off_t *lenp) {
-   size_t nobj;
-   assert(fp);
-   
-diff -ruN grass-6.4.1-orig/include/iostream/embuffer.h grass-6.4.1/include/iostream/embuffer.h
---- grass-6.4.1-orig/include/iostream/embuffer.h	2011-09-24 11:17:17.000000000 +0900
-+++ grass-6.4.1/include/iostream/embuffer.h	2011-09-24 12:34:15.000000000 +0900
-@@ -364,7 +364,7 @@
-   // return the number of items actually inserted 
-   long insert(AMI_STREAM<T>* str, 
- 	      //long bos=0); 
--	      long bos); 
-+	      long bos=0); 
-   
-   //print range of elements in buffer
-   void print_range();
-@@ -1120,7 +1120,7 @@
-    
-    return the number of items actually inserted */
- template<class T, class Key>
--long em_buffer<T,Key>::insert(AMI_STREAM<T>* str, long bos=0) {
-+long em_buffer<T,Key>::insert(AMI_STREAM<T>* str, long bos) {
- 
-   assert(str);
-   
-diff -ruN grass-6.4.1-orig/include/iostream/minmaxheap.h grass-6.4.1/include/iostream/minmaxheap.h
---- grass-6.4.1-orig/include/iostream/minmaxheap.h	2011-09-24 11:17:17.000000000 +0900
-+++ grass-6.4.1/include/iostream/minmaxheap.h	2011-09-24 15:51:50.000000000 +0900
-@@ -491,7 +491,7 @@
-   T a, b;
-   min(a);
-   max(b);
--  if (size) {
-+  if (size()) {
-     cout << a.getPriority() << ".."
- 	 << b.getPriority();
-   }
-@@ -744,7 +744,7 @@
-   //heap must be empty
-   assert(this->size()==0);
-   for (i = 0; !full() && i<n; i++) {
--    insert(arr[i]);
-+    this->insert(arr[i]);
-   }
-   if (i < n) {
-     assert(i == this->maxsize);
 diff -ruN grass-6.4.1-orig/lib/init/init.sh grass-6.4.1/lib/init/init.sh
---- grass-6.4.1-orig/lib/init/init.sh	2011-09-24 11:17:18.000000000 +0900
-+++ grass-6.4.1/lib/init/init.sh	2011-09-24 11:22:08.000000000 +0900
+--- grass-6.4.1-orig/lib/init/init.sh	2011-05-23 20:38:02.000000000 +0900
++++ grass-6.4.1/lib/init/init.sh	2011-05-23 21:34:33.000000000 +0900
 @@ -25,7 +25,8 @@
  trap "echo 'User break!' ; exit" 2 3 15
  
@@ -176,8 +76,8 @@ diff -ruN grass-6.4.1-orig/lib/init/init.sh grass-6.4.1/lib/init/init.sh
  
  "$ETC/clean_temp" > /dev/null
 diff -ruN grass-6.4.1-orig/macosx/Makefile grass-6.4.1/macosx/Makefile
---- grass-6.4.1-orig/macosx/Makefile	2011-09-24 11:17:18.000000000 +0900
-+++ grass-6.4.1/macosx/Makefile	2011-09-24 11:22:08.000000000 +0900
+--- grass-6.4.1-orig/macosx/Makefile	2011-05-23 20:38:04.000000000 +0900
++++ grass-6.4.1/macosx/Makefile	2011-05-23 21:35:02.000000000 +0900
 @@ -4,8 +4,8 @@
  
  MACOSX_APP_NAME = GRASS-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.app
@@ -228,8 +128,8 @@ diff -ruN grass-6.4.1-orig/macosx/Makefile grass-6.4.1/macosx/Makefile
  macosx-support-dir:
  	${MAKE_DIR_CMD} ${MACOSX_SUPPDIR}
 diff -ruN grass-6.4.1-orig/macosx/app/build_gui_user_menu.sh grass-6.4.1/macosx/app/build_gui_user_menu.sh
---- grass-6.4.1-orig/macosx/app/build_gui_user_menu.sh	2011-09-24 11:17:18.000000000 +0900
-+++ grass-6.4.1/macosx/app/build_gui_user_menu.sh	2011-09-24 11:22:08.000000000 +0900
+--- grass-6.4.1-orig/macosx/app/build_gui_user_menu.sh	2011-05-23 20:38:04.000000000 +0900
++++ grass-6.4.1/macosx/app/build_gui_user_menu.sh	2011-05-24 07:27:20.000000000 +0900
 @@ -13,7 +13,7 @@
  
  GRASS_MMVER=`cut -d . -f 1-2 "$GISBASE/etc/VERSIONNUMBER"`
@@ -240,8 +140,8 @@ diff -ruN grass-6.4.1-orig/macosx/app/build_gui_user_menu.sh grass-6.4.1/macosx/
  
  echo "Rebuilding Addon menu..."
 diff -ruN grass-6.4.1-orig/macosx/app/build_html_user_index.sh grass-6.4.1/macosx/app/build_html_user_index.sh
---- grass-6.4.1-orig/macosx/app/build_html_user_index.sh	2011-09-24 11:17:18.000000000 +0900
-+++ grass-6.4.1/macosx/app/build_html_user_index.sh	2011-09-24 11:22:08.000000000 +0900
+--- grass-6.4.1-orig/macosx/app/build_html_user_index.sh	2011-05-23 20:38:04.000000000 +0900
++++ grass-6.4.1/macosx/app/build_html_user_index.sh	2011-05-24 07:31:21.000000000 +0900
 @@ -19,13 +19,13 @@
  GRASS_MMVER=`cut -d . -f 1-2 "$GISBASE/etc/VERSIONNUMBER"`
  GRASSVERSION=`cat "$GISBASE/etc/VERSIONNUMBER"`
@@ -265,8 +165,8 @@ diff -ruN grass-6.4.1-orig/macosx/app/build_html_user_index.sh grass-6.4.1/macos
 +mkdir -p $HOME/Library/Documentation/Help/GRASS-$GRASS_MMVER
  ln -sfh ../../GRASS/$GRASS_MMVER/Modules/docs/html $HOME/Library/Documentation/Help/GRASS-$GRASS_MMVER
 diff -ruN grass-6.4.1-orig/macosx/app/grass.sh.in grass-6.4.1/macosx/app/grass.sh.in
---- grass-6.4.1-orig/macosx/app/grass.sh.in	2011-09-24 11:17:18.000000000 +0900
-+++ grass-6.4.1/macosx/app/grass.sh.in	2011-09-24 11:22:08.000000000 +0900
+--- grass-6.4.1-orig/macosx/app/grass.sh.in	2011-05-23 20:38:04.000000000 +0900
++++ grass-6.4.1/macosx/app/grass.sh.in	2011-05-24 07:28:43.000000000 +0900
 @@ -32,7 +32,7 @@
  grass_ver=`cut -d . -f 1-2 "$GISBASE/etc/VERSIONNUMBER"`
  
@@ -410,8 +310,8 @@ diff -ruN grass-6.4.1-orig/macosx/app/grass.sh.in grass-6.4.1/macosx/app/grass.s
  fi
  if [ "$GRASS_GUI" = "text" ] && [ "$x11" = "tig" ] ; then
 diff -ruN grass-6.4.1-orig/macosx/app/python_wrapper grass-6.4.1/macosx/app/python_wrapper
---- grass-6.4.1-orig/macosx/app/python_wrapper	2011-09-24 11:17:18.000000000 +0900
-+++ grass-6.4.1/macosx/app/python_wrapper	2011-09-24 11:22:08.000000000 +0900
+--- grass-6.4.1-orig/macosx/app/python_wrapper	2011-05-23 20:38:04.000000000 +0900
++++ grass-6.4.1/macosx/app/python_wrapper	2011-05-23 21:37:19.000000000 +0900
 @@ -29,9 +29,7 @@
  SYSARCH=`uname -p`
  SYSVER=`uname -r | cut -d . -f 1`
@@ -424,8 +324,8 @@ diff -ruN grass-6.4.1-orig/macosx/app/python_wrapper grass-6.4.1/macosx/app/pyth
  if [ $(($SYSVER)) -gt 5 ] && [ "$GRASS_WX64BIT" = "0" ] ; then
  	case $SYSARCH in
 diff -ruN grass-6.4.1-orig/macosx/modbuild/Makefile grass-6.4.1/macosx/modbuild/Makefile
---- grass-6.4.1-orig/macosx/modbuild/Makefile	2011-09-24 11:17:18.000000000 +0900
-+++ grass-6.4.1/macosx/modbuild/Makefile	2011-09-24 11:22:08.000000000 +0900
+--- grass-6.4.1-orig/macosx/modbuild/Makefile	2011-05-23 20:38:04.000000000 +0900
++++ grass-6.4.1/macosx/modbuild/Makefile	2011-05-24 07:29:31.000000000 +0900
 @@ -9,7 +9,7 @@
  	MACOSX_APP_NAME = GRASS-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.app
  endif
