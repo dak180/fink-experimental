@@ -18,6 +18,18 @@ SourceDirectory: llvm-%v.src
 BuildDependsOnly: false
 UseMaxBuildJobs: true
 
+PatchScript: <<
+	#!/bin/sh -ev
+	mv ../clang-%v.src tools/clang
+	cp utils/unittest/CMakeLists.txt{,.orig}
+	{ echo "add_llvm_library_dependencies(gtest LLVMSupport)" ; \
+	  echo "add_llvm_library_dependencies(gtest_main gtest)" ; \
+	} >> utils/unittest/CMakeLists.txt
+	cp tools/clang/lib/Serialization/CMakeLists.txt{,.orig}
+	{ echo "add_llvm_library_dependencies(clangSerialization clangAST clangBasic clangSema LLVMSupport)" ; \
+	} >> tools/clang/lib/Serialization/CMakeLists.txt
+	# circular dependence between clangSerialization and clangFrontend
+<<
 CompileScript: <<
 	#!/bin/sh -ev
 	case "%m" in
@@ -53,7 +65,6 @@ CompileScript: <<
 	*) : ;;
 	esac
 
-	mv ../clang-%v.src tools/clang
 	mkdir build
 	pushd build
 	cmake $CMAKE_OPTIONS -DCMAKE_INSTALL_PREFIX=%p/opt/llvm-%v -DLLVM_ENABLE_ASSERTIONS=OFF -DCMAKE_BUILD_TYPE=Release ..
