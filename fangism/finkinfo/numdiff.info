@@ -1,6 +1,6 @@
 Package: numdiff
 Version: 5.2.1
-Revision: 0
+Revision: 1
 Maintainer: David Fang <fangism@users.sourceforge.net>
 #
 Source: http://savannah.spinellicreations.com/%n/%n-%v.tar.gz
@@ -37,6 +37,8 @@ PatchScript: <<
 	mkdir trash
 	mv getopt* gettext* trash
 	touch getopt{,1}.c
+	# don't update info dir in Makefile, let PostInst do it
+	sed -i.orig -e '/SHELL.*INSTINFO/,/else true; fi/d' Makefile.in
 <<
 CompileScript: <<
 	#!/bin/sh -ev
@@ -55,7 +57,8 @@ InfoTest: <<
 		cd ../numdiff_tests
 		ln -s ../%n-%v/{numdiff,ndselect} .
 		export PATH=`pwd`:$PATH
-		./runalltests.sh || exit 2
+		# prompts for diffing binary files [n]
+		yes n | ./runalltests.sh || exit 2
 	<<
 	TestSuiteSize: small
 <<
