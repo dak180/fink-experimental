@@ -1,5 +1,5 @@
 Package: libtorrent15
-Version: 0.12.9
+Version: 0.13.0
 Revision: 1
 License: GPL
 HomePage: http://libtorrent.rakshasa.no
@@ -9,25 +9,30 @@ Maintainer: David Fang <fangism@users.sourceforge.net>
 Depends: %n-shlibs (=%v-%r)
 BuildDepends: fink (>= 0.24.12), libsigc++2, system-openssl-dev, pkgconfig (>= 0.9-1)
 BuildConflicts: openssl-dev, openssl097-dev, openssl098-dev
-Conflicts: libtorrent, libtorrent11, libtorrent12
-Replaces: libtorrent, libtorrent11, libtorrent12
+Conflicts: libtorrent, libtorrent11, libtorrent12, libtorrent15
+Replaces: libtorrent, libtorrent11, libtorrent12, libtorrent15
 
 Source: http://libtorrent.rakshasa.no/downloads/libtorrent-%v.tar.gz
-Source-MD5: b128bbd324f03eb42ef5060080f87548
-# Source-SHA1: bf7082f98bd6281493cba94a456697fb88c2c21b
+Source-MD5: d499178f72010d5067a77f41fa1a1505
+# Source-SHA1: d191fc62bb29c19d19a9cb7315e6f8308588efdb
 
 PatchFile: %n.patch
-PatchFile-MD5: 8465b02c2abf57b7b31cd30d74e25279
+PatchFile-MD5: cef4e207f4246e1dba2c82797890d335
 
 #PKG_CONFIG_PATH: %p/lib/system-openssl/lib/pkgconfig
 BuildDependsOnly: true
 
 GCC: 4.0
 
-SetCPPFLAGS: -I%p/lib/system-openssl/include
-SetLDFLAGS: -L%p/lib/system-openssl/lib
+# SetCPPFLAGS: -I%p/lib/system-openssl/include
+# SetLDFLAGS: -L%p/lib/system-openssl/lib
 
-ConfigureParams: --enable-ipv6 --with-kqueue
+ConfigureParams: <<
+	--enable-ipv6 \
+	--with-kqueue \
+	OPENSSL_CFLAGS=-L%p/lib/system-openssl/include \
+	OPENSSL_LIBS="-L%p/lib/system-openssl/lib -lcrypto"
+<<
 
 CompileScript:<<
 PKG_CONFIG_PATH=%p/lib/system-openssl/lib/pkgconfig ./configure %c

@@ -1,5 +1,5 @@
 Package: rtorrent
-Version: 0.8.9
+Version: 0.9.0
 Revision: 1
 License: GPL
 HomePage: http://libtorrent.rakshasa.no
@@ -11,7 +11,7 @@ Depends: <<
 	libsigc++2-shlibs, 
 	libcurl4-shlibs (>= 7.12.0-1), 
 	libncursesw5-shlibs, 
-	libtorrent15-shlibs (>= 0.12.9-1)
+	libtorrent15-shlibs (>= 0.13.0-1)
 <<
 BuildDepends: <<
 	fink (>= 0.24.12),
@@ -20,13 +20,13 @@ BuildDepends: <<
 	libcurl4 (>= 7.12.0-1), 
 	pkgconfig (>= 0.9-1), 
 	libncursesw5, 
-	libtorrent15 (>= 0.12.9-1)
+	libtorrent15 (>= 0.13.0-1)
 <<
 BuildConflicts: openssl-dev, openssl097-dev, openssl098-dev
 
 Source: http://libtorrent.rakshasa.no/downloads/%n-%v.tar.gz
-Source-MD5: 629247636cb1210663b52dadbd040a6c
-# Source-SHA1: ffce3959ba91738bb444d689db3db1e2375b14ce
+Source-MD5: 9bc258d7a63dd13e3348f310ae26a434
+# Source-SHA1: 66fb3e851f8fc961a7dd98ebde8369cc71eea861
 
 PatchFile: %n.patch
 PatchFile-MD5: 4de151654f2bb16a9be2bb027b4a93ec
@@ -36,7 +36,12 @@ GCC: 4.0
 SetCPPFLAGS: -I%p/lib/system-openssl/include
 SetLDFLAGS: -L%p/lib/system-openssl/lib
 
-ConfigureParams: --mandir='${prefix}'/share/man --enable-ipv6
+ConfigureParams: <<
+	--mandir='${prefix}'/share/man \
+	--enable-ipv6 \
+	OPENSSL_CFLAGS=-L%p/lib/system-openssl/include \
+	OPENSSL_LIBS="-L%p/lib/system-openssl/lib -lcrypto"
+<<
 
 CompileScript:
 
@@ -48,7 +53,6 @@ COPYING
 ChangeLog
 NEWS
 README
-TODO
 <<
 
 DescDetail: <<

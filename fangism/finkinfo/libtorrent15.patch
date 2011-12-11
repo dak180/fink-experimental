@@ -78,3 +78,14 @@
  namespace torrent {
  
  template <typename Key, typename Tp, unsigned int TableSize, unsigned int TableBits>
+--- libtorrent-0.13.0-orig/src/torrent/utils/log.cc	2011-12-10 17:05:09.000000000 -0800
++++ libtorrent-0.13.0/src/torrent/utils/log.cc	2011-12-10 17:05:16.000000000 -0800
+@@ -232,7 +232,7 @@
+ 
+ void
+ log_cleanup() {
+-  log_groups.assign(log_group());
++  std::fill(log_groups.begin(), log_groups.end(), log_group());
+   log_outputs.clear();
+   log_children.clear();
+ 
