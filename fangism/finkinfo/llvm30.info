@@ -39,12 +39,19 @@ PatchScript: <<
 	sed -i.orig -e '/clangSerialization/d' \
 		-e "s|Warnings\.cpp|& $ser_files|" CMakeLists.txt
 	popd
+	for d in tools/clang/{lib,include/clang}
+	do sed -i.orig -e '/clangSerialization/d' CMakeLists.txt
+	done
 	# purge refs to clangSerialization (that already have clangFrontend)
 	for f in tools/clang/{tools/{driver,libclang},examples/{wpa,clang-interpreter}}/CMakeLists.txt
 	do sed -i.orig -e '/clangSerialization/d' $f
 	done
+	sed -i.orig2 -e 's|compatibility_version|dylib_&|' tools/clang/tools/libclang/CMakeLists.txt
 	# JIT needs CodeGen, duh.
 	sed -i.orig -e 's|LLVMCore|LLVMCodeGen &|' lib/ExecutionEngine/JIT/CMakeLists.txt
+	# clang analyzers
+	sed -i.orig -e '/LLVM_USED_LIBS/s|)|clangAnalysis clangStaticAnalyzerCore)|' tools/clang/lib/StaticAnalyzer/Checkers/CMakeLists.txt
+	sed -i.orig -e '/LLVM_USED_LIBS/s|)|clangStaticAnalyzerCheckers clangStaticAnalyzerCore)|' tools/clang/lib/StaticAnalyzer/Frontend/CMakeLists.txt
 <<
 CompileScript: <<
 	#!/bin/sh -ev
@@ -84,7 +91,7 @@ CompileScript: <<
 	mkdir ../build
 	pushd ../build
 	cmake $CMAKE_OPTIONS -DCMAKE_INSTALL_PREFIX=%p/opt/llvm-%v -DLLVM_ENABLE_ASSERTIONS=OFF -DCMAKE_BUILD_TYPE=Release ../llvm-%v.src
-	make VERBOSE=1
+	make -k || make VERBOSE=1
 	popd
 <<
 
@@ -117,5 +124,9 @@ traditional virtual machines, though it does provide helpful libraries
 that can be used to build them.
 <<
 DescPort: <<
-fangism contributed the porting effort to get this to work on PowerPC-darwin8.
+fangism contributed this port for PowerPC-Darwin8.
+Original package maintained by 
+	Benjamin Reed <llvm@fink.raccoonfink.com>
+with contributions from
+	Jack Howarth <howarth@bromo.med.uc.edu>
 <<
