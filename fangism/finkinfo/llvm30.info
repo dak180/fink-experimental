@@ -13,11 +13,14 @@ InfoTest: <<
  	TestScript: <<
 	#!/bin/sh -ev
 	cd ../build
+#	echo "******** Running included LLVM and clang tests ... ********"
 	make -k check-all || :
 	echo "Expect 2 additional test failures due to i386 on powerpc target"
-	echo "******** Now running more comprehensive tests... ********"
-	cd projects/test-suite
-	make -k TEST=simple report report.html
+#	echo "******** Now running more comprehensive tests ... ********"
+#	mkdir -p projects/test-suite
+#	cd projects/test-suite
+#	../../../llvm-%v.src/projects/test-suite/configure --with-built-clang
+#	make -k TEST=simple report report.html
 	<<
 	TestSuiteSize: large
 <<
@@ -26,8 +29,8 @@ Source: http://llvm.org/releases/%v/llvm-%v.tar.gz
 Source-MD5: a8e5f5f1c1adebae7b4a654c376a6005
 Source2: http://llvm.org/releases/%v/clang-%v.tar.gz
 Source2-MD5: 43350706ae6cf05d0068885792ea0591
-Source3: http://llvm.org/releases/%v/test-suite-%v.tar.gz
-Source3-MD5: 36f72e2a932727fb86338e5939da5eaf
+# Source3: http://llvm.org/releases/%v/test-suite-%v.tar.gz
+# Source3-MD5: 36f72e2a932727fb86338e5939da5eaf
 
 SourceDirectory: llvm-%v.src
 BuildDependsOnly: false
@@ -37,7 +40,7 @@ PatchScript: <<
 	#!/bin/sh -ev
 	# relocated a few auxiliary directories where they are expected
 	mv ../clang-%v.src tools/clang
-	mv ../test-suite-%v.src projects/test-suite
+#	mv ../test-suite-%v.src projects/test-suite
 	# some libs failed to explicitly list their dependencies, so we append
 	cp utils/unittest/CMakeLists.txt{,.orig}
 	{ echo "add_llvm_library_dependencies(gtest LLVMSupport)" ; \
@@ -72,6 +75,10 @@ PatchScript: <<
 	sed -i.orig -e '/LLVM_USED_LIBS/s|)| clangStaticAnalyzerCheckers clangStaticAnalyzerCore)|' tools/clang/lib/StaticAnalyzer/Frontend/CMakeLists.txt
 	# test suite requires newer bash than /bin/bash for pipefail
 	sed -i.orig -e "/bashPath = None/s|None|'%p/bin/bash'|" utils/lit/lit/LitConfig.py
+	# projects/test-suite expects built llvm/clang to have been configured
+	# but sadly, we used cmake; don't include $llvmobjdir/Makefile.config
+	# TODO: replace cmake build with autoconf'd build
+	# sed -i.orig -e 's|HAS_LLVM := 1|HAS_LLVM := 0|' projects/test-suite/Makefile.config.in
 <<
 CompileScript: <<
 	#!/bin/sh -ev
@@ -136,11 +143,24 @@ InstallScript: <<
 		make -j1 install/fast DESTDIR="%d"
 	popd
 
+	pushd %i/opt/llvm-%v/lib
+	for f in *.dylib
+	do
+		if test ! -L $f
+		then
+		install_name_tool -id "%p/opt/llvm-%v/lib/$f" "$f"
+		fi
+	done
+	popd
+
+	if false
+	then
 	install_name_tool -id "%p/opt/llvm-%v/lib/liblibclang.%v.dylib" "%i/opt/llvm-%v/lib/liblibclang.%v.dylib"
 	install_name_tool -id "%p/opt/llvm-%v/lib/BugpointPasses.dylib" "%i/opt/llvm-%v/lib/BugpointPasses.dylib"
 	install_name_tool -id "%p/opt/llvm-%v/lib/LLVMHello.dylib" "%i/opt/llvm-%v/lib/LLVMHello.dylib"
 	install_name_tool -id "%p/opt/llvm-%v/lib/libLTO.dylib" "%i/opt/llvm-%v/lib/libLTO.dylib"
 	install_name_tool -id "%p/opt/llvm-%v/lib/profile_rt.dylib" "%i/opt/llvm-%v/lib/profile_rt.dylib"
+	fi
 <<
 DocFiles: *.TXT README.txt
 Shlibs: <<
@@ -150,6 +170,59 @@ Shlibs: <<
 		%p/opt/llvm-%v/lib/profile_rt.dylib 0.0.0  %n (>= 3.0-1)
 		%p/opt/llvm-%v/lib/BugpointPasses.dylib 0.0.0 %n (>= 3.0-1)
 		%p/opt/llvm-%v/lib/LLVMHello.dylib 0.0.0 %n (>= 3.0-1)
+		!%p/opt/llvm-%v/lib/libEnhancedDisassembly.dylib
+		!%p/opt/llvm-%v/lib/libLLVMAnalysis.dylib
+		!%p/opt/llvm-%v/lib/libLLVMArchive.dylib
+		!%p/opt/llvm-%v/lib/libLLVMAsmParser.dylib
+		!%p/opt/llvm-%v/lib/libLLVMAsmPrinter.dylib
+		!%p/opt/llvm-%v/lib/libLLVMBitReader.dylib
+		!%p/opt/llvm-%v/lib/libLLVMBitWriter.dylib
+		!%p/opt/llvm-%v/lib/libLLVMCodeGen.dylib
+		!%p/opt/llvm-%v/lib/libLLVMCore.dylib
+		!%p/opt/llvm-%v/lib/libLLVMDebugInfo.dylib
+		!%p/opt/llvm-%v/lib/libLLVMExecutionEngine.dylib
+		!%p/opt/llvm-%v/lib/libLLVMInstCombine.dylib
+		!%p/opt/llvm-%v/lib/libLLVMInstrumentation.dylib
+		!%p/opt/llvm-%v/lib/libLLVMInterpreter.dylib
+		!%p/opt/llvm-%v/lib/libLLVMJIT.dylib
+		!%p/opt/llvm-%v/lib/libLLVMLinker.dylib
+		!%p/opt/llvm-%v/lib/libLLVMMC.dylib
+		!%p/opt/llvm-%v/lib/libLLVMMCDisassembler.dylib
+		!%p/opt/llvm-%v/lib/libLLVMMCJIT.dylib
+		!%p/opt/llvm-%v/lib/libLLVMMCParser.dylib
+		!%p/opt/llvm-%v/lib/libLLVMObject.dylib
+		!%p/opt/llvm-%v/lib/libLLVMPowerPCAsmPrinter.dylib
+		!%p/opt/llvm-%v/lib/libLLVMPowerPCCodeGen.dylib
+		!%p/opt/llvm-%v/lib/libLLVMPowerPCDesc.dylib
+		!%p/opt/llvm-%v/lib/libLLVMPowerPCInfo.dylib
+		!%p/opt/llvm-%v/lib/libLLVMRuntimeDyld.dylib
+		!%p/opt/llvm-%v/lib/libLLVMScalarOpts.dylib
+		!%p/opt/llvm-%v/lib/libLLVMSelectionDAG.dylib
+		!%p/opt/llvm-%v/lib/libLLVMSupport.dylib
+		!%p/opt/llvm-%v/lib/libLLVMTableGen.dylib
+		!%p/opt/llvm-%v/lib/libLLVMTarget.dylib
+		!%p/opt/llvm-%v/lib/libLLVMTransformUtils.dylib
+		!%p/opt/llvm-%v/lib/libLLVMipa.dylib
+		!%p/opt/llvm-%v/lib/libLLVMipo.dylib
+		!%p/opt/llvm-%v/lib/libclangAnalysis.dylib
+		!%p/opt/llvm-%v/lib/libclangARCMigrate.dylib
+		!%p/opt/llvm-%v/lib/libclangAST.dylib
+		!%p/opt/llvm-%v/lib/libclangBasic.dylib
+		!%p/opt/llvm-%v/lib/libclangCodeGen.dylib
+		!%p/opt/llvm-%v/lib/libclangDriver.dylib
+		!%p/opt/llvm-%v/lib/libclangFrontend.dylib
+		!%p/opt/llvm-%v/lib/libclangFrontendTool.dylib
+		!%p/opt/llvm-%v/lib/libclangIndex.dylib
+		!%p/opt/llvm-%v/lib/libclangLex.dylib
+		!%p/opt/llvm-%v/lib/libclangParse.dylib
+		!%p/opt/llvm-%v/lib/libclangRewrite.dylib
+		!%p/opt/llvm-%v/lib/libclangSema.dylib
+		!%p/opt/llvm-%v/lib/libclangStaticAnalyzerCheckers.dylib
+		!%p/opt/llvm-%v/lib/libclangStaticAnalyzerCore.dylib
+		!%p/opt/llvm-%v/lib/libclangStaticAnalyzerFrontend.dylib
+		!%p/opt/llvm-%v/lib/libgtest.dylib
+		!%p/opt/llvm-%v/lib/libgtest_main.dylib
+		!%p/opt/llvm-%v/lib/libprofile_rt.dylib
 <<
 Homepage: http://llvm.org/
 DescDetail: <<
