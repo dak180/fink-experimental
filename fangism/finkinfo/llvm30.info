@@ -49,6 +49,10 @@ PatchScript: <<
 	cp tools/clang/lib/Serialization/CMakeLists.txt{,.orig}
 	{ echo "add_llvm_library_dependencies(clangSerialization clangAST clangBasic clangSema LLVMSupport)" ; \
 	} >> tools/clang/lib/Serialization/CMakeLists.txt
+	# ld warning about binding of _abort and _raise symbols vs. libSystem's
+	# suggests -bind_at_load
+#	cp lib/Support/CMakeLists.txt{,.orig}
+#	echo "SET_TARGET_PROPERTIES(LLVMSupport PROPERTIES LINK_FLAGS -Wl,-bind_at_load)" >> lib/Support/CMakeLists.txt
 	# circular dependence between clangSerialization and clangFrontend
 	# to resolve, lump all of Serialization into Frontend
 	pushd tools/clang/lib/Frontend
@@ -149,6 +153,33 @@ InstallScript: <<
 		if test ! -L $f
 		then
 		install_name_tool -id "%p/opt/llvm-%v/lib/$f" "$f"
+		deplibs=`otool -L $f | sed 1,2d | awk '{print $1;}' | tr '\n' ' '`
+		for d in $deplibs
+		do
+		# prefix absolute paths to llvm/clang's lib installation
+		case $d in
+		/*) ;;
+		*) install_name_tool -change "$d" "%p/opt/llvm-%v/lib/$d" $f ;;
+		esac
+		done
+		fi
+	done
+	popd
+	pushd %i/opt/llvm-%v/bin
+	for f in *
+	do
+		if test ! -L $f
+		then
+		deplibs=`otool -L $f | sed 1d | awk '{print $1;}' | tr '\n' ' '`
+		for d in $deplibs
+		do
+		# consider substituting with relative @executable_path/../lib ?
+		case $d in
+		/*) ;;
+		@*) ;;
+		*) install_name_tool -change "$d" "%p/opt/llvm-%v/lib/$d" $f ;;
+		esac
+		done
 		fi
 	done
 	popd
