@@ -17,7 +17,7 @@ InfoTest: <<
 	echo "Expect 2 additional test failures due to i386 on powerpc target"
 	echo "******** Now running more comprehensive tests... ********"
 	cd projects/test-suite
-	make -k report report.html
+	make -k TEST=simple report report.html
 	<<
 	TestSuiteSize: large
 <<
@@ -71,7 +71,7 @@ PatchScript: <<
 	sed -i.orig -e '/LLVM_USED_LIBS/s|)| clangAnalysis clangStaticAnalyzerCore)|' tools/clang/lib/StaticAnalyzer/Checkers/CMakeLists.txt
 	sed -i.orig -e '/LLVM_USED_LIBS/s|)| clangStaticAnalyzerCheckers clangStaticAnalyzerCore)|' tools/clang/lib/StaticAnalyzer/Frontend/CMakeLists.txt
 	# test suite requires newer bash than /bin/bash for pipefail
-	sed -i.orig -e '/bashPath = None/s|None|\'%p/bin/bash\'' utils/lit/lit/LitConfig.py
+	sed -i.orig -e "/bashPath = None/s|None|'%p/bin/bash'|" utils/lit/lit/LitConfig.py
 <<
 CompileScript: <<
 	#!/bin/sh -ev
