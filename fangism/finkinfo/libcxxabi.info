@@ -1,0 +1,125 @@
+Package: libcxxabi
+# Type: gcc (4.6)
+Version: r146430
+Revision: 0
+Description: C++ ABI low-level impl. library from LLVM
+License: BSD
+Maintainer: David Fang <fangism@users.sourceforge.net>
+
+DescPackaging: <<
+All of the code in libc++abi is dual licensed under the MIT license 
+and the UIUC License (a BSD-like license).
+<<
+
+BuildDepends: gcc46-compiler, fink (>= 0.28), ccache
+Depends: libcxxabi-shlibs
+
+Source: http://www.csl.cornell.edu/~fang/sw/%n-%v.tar.bz2
+Source-MD5: b04ae43bf7496d3e1e71c3e8c343c317
+
+BuildDependsOnly: true
+UseMaxBuildJobs: true
+
+PatchScript: <<
+	#!/bin/sh -ev
+	# for libcxxabi
+	# we've already patched the distro
+if false
+then
+	sed -i.orig -e '/include/s|Availability|&Macros|' src/abort_message.c
+	sed -i.orig -e '1i \
+#include <pthread.h>' src/fallback_malloc.cpp
+	sed -i.orig -e '/#include/s|string|cstring|' src/cxa_exception.cpp
+	cp src/cxa_handlers.hpp{,.orig}
+	{ echo "namespace std {" ; \
+	echo "unexpected_handler get_unexpected(void) _NOEXCEPT;" ; \
+	echo "terminate_handler get_terminate() _NOEXCEPT;" ; \
+	echo "}" ;} >> src/cxa_handlers.hpp
+	# __int128 seems to be a reserved keyword, can't use as class name
+	sed -i.orig -e 's|class __int128|class ____int128|' \
+		-e '/__make/s|<__int128>|<____int128>|' src/cxa_demangle.cpp
+	sed -i.orig -e '/cstdlib/a \
+#include <cstring>' test/test_demangle.cpp
+	# and create a missing Makefile...
+	pushd src
+	{ echo "CDEFS = -D_LIBCPP_HIDDEN= \\" ; \
+        echo "-D'_ATTRIBUTE(x)=__attribute__((x))' \\" ; \
+        echo "-D'_NOEXCEPT=throw()' \\" ; \
+        echo "-D'__has_feature(x)=0'" ; \
+	echo "CPPFLAGS = -I../include" ; \
+	echo 'CFLAGS = -fPIC -fno-common -g -O2' ; \
+	echo 'CXXFLAGS = $(CFLAGS) -std=c++0x' ; \
+	echo 'CC = gcc-fsf-4.6' ; \
+	echo 'CXX = g++-fsf-4.6' ; \
+	echo '.SUFFIXES: .c .cpp .o' ; \
+	echo '.c.o:' ; \
+	echo '	$(CC) $(CPPFLAGS) $(CDEFS) $(CFLAGS) -c $< -o $@' ; \
+	echo '.cpp.o:' ; \
+	echo '	$(CXX) $(CPPFLAGS) $(CDEFS) $(CXXFLAGS) -c $< -o $@' ; \
+	echo 'all: libcxxabi.dylib' ; \
+	objs=`ls -1 *.c *.cpp | sed 's|\..*|.o|' | tr '\n' ' '` ; \
+	echo "OBJS = $objs" ; \
+	echo 'libcxxabi.dylib: $(OBJS)' ; \
+	echo '	$(CXX) -dynamiclib $(OBJS) -o $@' ; \
+	echo 'clean:' ; \
+        echo '	rm -f *.o' ; \
+	} > Makefile
+	popd
+fi
+<<
+CompileScript: <<
+	#!/bin/sh -ev
+	cd src
+	make
+<<
+InfoTest: <<
+TestScript: <<
+	#!/bin/sh -ev
+	exit 0
+	# not sure if this test is supposed to be built with clang instead
+	pushd test
+	for f in *.cpp
+	do
+		exe=`basename $f .cpp`
+		g++-fsf-4.6 -std=c++0x -I../include -I../src $f -o $exe
+		./$exe || { echo "$exe FAILED" ; FAIL=1 ;}
+	done
+	test -z "$FAIL" || exit 2
+	popd
+<<
+<<
+InstallScript: <<
+	#!/bin/sh -ev
+	dprefix=%i/opt/libcxxabi
+	prefix=%p/opt/libcxxabi
+	cd src
+	mkdir -p $dprefix/{include,lib}
+	cp libcxxabi.dylib $dprefix/lib
+	pushd $dprefix/lib
+	for f in *.dylib
+	do install_name_tool -id "$prefix/lib/$f" "$f"
+	done
+	popd
+	cd ../include
+	cp *.h $dprefix/include/
+<<
+DocFiles: *.TXT
+SplitOff: <<
+Package: %n-shlibs
+Depends: gcc46-shlibs
+DocFiles: *.TXT
+Files: %p/opt/libcxxabi/lib/*.dylib
+Shlibs: <<
+ 	%p/opt/libcxxabi/lib/libcxxabi.dylib 0.0.0 %n (>= 0-0)
+<<
+<<
+Homepage: http://libcxxabi.llvm.org/
+DescDetail: <<
+libc++abi is a new implementation of low level support for a 
+standard C++ library.
+This is used to build LLVM's libc++.
+<<
+DescPort: <<
+Why does upstream not provide any Makefile?
+Using gcc46 because that is what we bootstrap llvm/clang with (darwin8).
+<<
