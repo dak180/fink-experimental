@@ -1,15 +1,19 @@
 Package: llvm30
 Version: 3.0
-Revision: 0
+Revision: 0.1
 Description: Modular and reusable compiler
 License: BSD
-Maintainer: Benjamin Reed <llvm@fink.raccoonfink.com>
+Maintainer: David Fang <fangism@users.sourceforge.net>
 
 # need bash because /bin/sh 2.0 is missing support for pipefail
-BuildDepends: cmake (>= 2.8.2-1), gcc46-compiler, fink (>= 0.28), bash, ccache
-Depends: gcc46-shlibs
+# ccache is only temporary, for accelerating rebuilds
+BuildDepends: cmake (>= 2.8.2-1), fink (>= 0.28), bash, ccache
+# gcc46-compiler
+# libcxxabi
+# Depends: gcc46-shlibs
+# libcxxabi-shlibs
 InfoTest: <<
-	TestDepends: dejagnu, expect
+#	TestDepends: dejagnu, expect
  	TestScript: <<
 	#!/bin/sh -ev
 	cd ../build
@@ -29,18 +33,36 @@ Source: http://llvm.org/releases/%v/llvm-%v.tar.gz
 Source-MD5: a8e5f5f1c1adebae7b4a654c376a6005
 Source2: http://llvm.org/releases/%v/clang-%v.tar.gz
 Source2-MD5: 43350706ae6cf05d0068885792ea0591
-# Source3: http://llvm.org/releases/%v/test-suite-%v.tar.gz
-# Source3-MD5: 36f72e2a932727fb86338e5939da5eaf
+# Source3: http://www.csl.cornell.edu/~fang/sw/libcxx-r146430.tar.bz2
+# Source3-MD5: f6fad56cbdc479caeb9567688ea7a237
+# libcxxabi is not recommended
+# want libcxxabi source for its tests?
+# Source4: http://www.csl.cornell.edu/~fang/sw/libcxxabi-r146430.tar.bz2
+# Source4-MD5: b04ae43bf7496d3e1e71c3e8c343c317
+# SourceN: http://llvm.org/releases/%v/test-suite-%v.tar.gz
+# SourceN-MD5: 36f72e2a932727fb86338e5939da5eaf
 
 SourceDirectory: llvm-%v.src
 BuildDependsOnly: false
 UseMaxBuildJobs: true
 
+PatchFile: %n.patch
+PatchFile-MD5: 51df7ea54b09e22d940f8dd5b6b6cd9d
 PatchScript: <<
 	#!/bin/sh -ev
 	# relocated a few auxiliary directories where they are expected
 	mv ../clang-%v.src tools/clang
 #	mv ../test-suite-%v.src projects/test-suite
+	%{default_script}
+	pushd ..
+#	ln -s libcxxabi-r* libcxxabi
+#	ln -s libcxx-r* libcxx
+	popd
+	# point hard-coded paths to system g++-4.0.1's C++ includes
+	# remove references to g++-4.2.1, never existed in Xcode 2.5
+	sed -i.orig -e 's|darwin10|darwin8|g' \
+		-e '/GnuCPlusPlusInclude.*4\.2\.1/,/);/d' \
+		tools/clang/lib/Frontend/InitHeaderSearch.cpp
 	# some libs failed to explicitly list their dependencies, so we append
 	cp utils/unittest/CMakeLists.txt{,.orig}
 	{ echo "add_llvm_library_dependencies(gtest LLVMSupport)" ; \
@@ -71,13 +93,14 @@ PatchScript: <<
 	for d in tools/clang/{tools/{driver,libclang},examples/{wpa,clang-interpreter}}
 	do sed -i.orig -e '/clangSerialization/d' $d/CMakeLists.txt
 	done
-	sed -i.orig2 -e 's|compatibility_version|dylib_&|' tools/clang/tools/libclang/CMakeLists.txt
+# needed for gcc-4.6
+#	sed -i.orig2 -e 's|compatibility_version|dylib_&|' tools/clang/tools/libclang/CMakeLists.txt
 	# JIT needs CodeGen, duh.
 	sed -i.orig -e 's|LLVMCore|LLVMCodeGen &|' lib/ExecutionEngine/JIT/CMakeLists.txt
 	# clang analyzers
 	sed -i.orig -e '/LLVM_USED_LIBS/s|)| clangAnalysis clangStaticAnalyzerCore)|' tools/clang/lib/StaticAnalyzer/Checkers/CMakeLists.txt
 	sed -i.orig -e '/LLVM_USED_LIBS/s|)| clangStaticAnalyzerCheckers clangStaticAnalyzerCore)|' tools/clang/lib/StaticAnalyzer/Frontend/CMakeLists.txt
-	# test suite requires newer bash than /bin/bash for pipefail
+	# test suite requires newer bash than /bin/bash 2.0 for pipefail
 	sed -i.orig -e "/bashPath = None/s|None|'%p/bin/bash'|" utils/lit/lit/LitConfig.py
 	# projects/test-suite expects built llvm/clang to have been configured
 	# but sadly, we used cmake; don't include $llvmobjdir/Makefile.config
@@ -91,7 +114,7 @@ CompileScript: <<
 	CMAKE_OPTIONS="-DLLVM_BUILD_32_BITS:BOOL=OFF -DLLVM_TARGETS_TO_BUILD=X86"
 	;;
 	powerpc)
-	CMAKE_OPTIONS="-DLLVM_BUILD_32_BITS:BOOL=ON -DLLVM_TARGETS_TO_BUILD=PowerPC"
+	CMAKE_OPTIONS="-DLLVM_TARGETS_TO_BUILD=PowerPC"
 	;;
 	*)
 	CMAKE_OPTIONS="-DLLVM_BUILD_32_BITS:BOOL=ON -DLLVM_TARGETS_TO_BUILD=X86"
@@ -103,13 +126,17 @@ CompileScript: <<
 	8)
 	  mkdir ../opt-bin
 	  pushd ../opt-bin
+	  { echo "#!/bin/sh" ; echo 'exec ccache gcc "$@"' ; } > ccgcc
+	  { echo "#!/bin/sh" ; echo 'exec ccache g++ "$@"' ; } > ccg++
 	  { echo "#!/bin/sh" ; echo 'exec ccache gcc-fsf-4.6 "$@"' ; } > ccgcc-4.6
 	  { echo "#!/bin/sh" ; echo 'exec ccache g++-fsf-4.6 "$@"' ; } > ccg++-4.6
 	  chmod +x ccg*
 	  export PATH=`pwd`:$PATH
 	  popd
-	  export CC=ccgcc-4.6
-	  export CXX=ccg++-4.6
+	  export CC=ccgcc
+	  export CXX=ccg++
+#	  export CC=ccgcc-4.6
+#	  export CXX=ccg++-4.6
 	  CMAKE_OPTIONS="$CMAKE_OPTIONS -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_C_FLAGS=-fno-common -DCMAKE_CXX_FLAGS=-fno-common"
 	  ;;
 	9)
@@ -137,8 +164,17 @@ CompileScript: <<
 		ln -s FinalLibDeps.txt{.tmp,}
 		popd
 	fi
-	make || make VERBOSE=1
-	popd
+	make || make VERBOSE=1 || exit 1
+	# add our newly built tools to our path
+#	cd bin
+#	export PATH=`pwd`:$PATH
+#	popd
+#	echo "******** Building libc++ ********"
+#	pushd ../libcxx
+#	cd lib
+#	env MACOSX_DEPLOYMENT_TARGET=10.6 TRIPLE=-apple- ./buildit
+# currently fails assembly
+#	popd
 <<
 
 InstallScript: <<
