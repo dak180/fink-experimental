@@ -18,6 +18,9 @@ IPython (enhanced interactive Python interpreter) and popular Python
 libraries such as NumPy (linear algebra), SciPy (signal and image 
 processing) or matplotlib (interactive 2D/3D plotting).
 <<
+DescUsage: <<
+spyder is installed as %p/bin/spyder-py%type_pkg[python]
+<<
 BuildDepends: distribute-py%type_pkg[python]
 Depends: <<
 	python%type_pkg[python], 
