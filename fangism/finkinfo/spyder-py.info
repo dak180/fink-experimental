@@ -1,0 +1,47 @@
+Info2: <<
+Package: spyder-py%type_pkg[python]
+Version: 2.1.2
+Revision: 0
+Maintainer: David Fang <fangism@users.sourceforge.net>
+Homepage: http://packages.python.org/spyder/
+License: OSI-Approved
+Distribution: (%type_pkg[python] = 24) 10.4, (%type_pkg[python] = 24) 10.5
+Type: python (2.4 2.5 2.6 2.7)
+Description: Scientific PYthon Development EnviRonment
+DescDetail: <<
+Spyder is the Scientific PYthon Development EnviRonment:
+        a powerful interactive development environment for the Python 
+language with advanced editing, interactive testing, debugging and 
+introspection features
+        and a numerical computing environment thanks to the support of 
+IPython (enhanced interactive Python interpreter) and popular Python 
+libraries such as NumPy (linear algebra), SciPy (signal and image 
+processing) or matplotlib (interactive 2D/3D plotting).
+<<
+BuildDepends: distribute-py%type_pkg[python]
+Depends: <<
+	python%type_pkg[python], 
+	numpy-py%type_pkg[python], 
+	scipy-py%type_pkg[python], 
+	matplotlib-py%type_pkg[python], 
+	sphinx-py%type_pkg[python], 
+	pyqt4-py%type_pkg[python] 
+<<
+Source: http://spyderlib.googlecode.com/files/spyder-%v.zip
+Source-MD5: 99a6a74f5aa0a940ab94cab79b2d3552
+CompileScript: <<
+	#!/bin/sh -ev
+	%p/bin/python%type_raw[python] setup.py build
+<<
+InstallScript: <<
+	#!/bin/sh -ev
+	%p/bin/python%type_raw[python] setup.py install --root %d
+	mkdir -p %i/share/%n
+	cp -R doc app_example %i/share/%n/
+	mv %i/bin/spyder{,-py%type_pkg[python]}
+<<
+DocFiles: <<
+	PKG-INFO
+	README
+<<
+<<
