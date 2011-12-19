@@ -289,6 +289,7 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/libLLVMipa.dylib
 		!%p/opt/llvm-%v/lib/libLLVMipo.dylib
 		!%p/opt/llvm-%v/lib/libLLVMX86AsmParser.dylib
+		!%p/opt/llvm-%v/lib/libLLVMX86AsmPrinter.dylib
 		!%p/opt/llvm-%v/lib/libLLVMX86CodeGen.dylib
 		!%p/opt/llvm-%v/lib/libLLVMX86Desc.dylib
 		!%p/opt/llvm-%v/lib/libLLVMX86Disassembler.dylib
