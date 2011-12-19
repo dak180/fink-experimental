@@ -228,6 +228,17 @@ InstallScript: <<
 	install_name_tool -id "%p/opt/llvm-%v/lib/libLTO.dylib" "%i/opt/llvm-%v/lib/libLTO.dylib"
 	install_name_tool -id "%p/opt/llvm-%v/lib/profile_rt.dylib" "%i/opt/llvm-%v/lib/profile_rt.dylib"
 	fi
+
+	# documentation
+	docdir=%p/opt/llvm-%v/share/doc
+	idocdir=%i/opt/llvm-%v/share/doc
+	mkdir -p $idocdir
+	cp -R docs $idocdir/llvm
+	cp -R tools/clang/docs $idocdir/clang
+	pushd %i/share/doc/%n
+	ln -s $docdir/llvm .
+	ln -s $docdir/clang .
+	popd
 <<
 DocFiles: *.TXT README.txt
 Shlibs: <<
