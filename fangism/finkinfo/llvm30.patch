@@ -42,3 +42,21 @@
  
      unsigned Paren, Brace, Square, Less, LLLess;
      unsigned& get(tok::TokenKind t) {
+--- llvm-3.0.src-orig/tools/clang/lib/Serialization/ASTWriter.cpp	2011-10-06 23:10:15.000000000 -0700
++++ llvm-3.0.src/tools/clang/lib/Serialization/ASTWriter.cpp	2011-12-18 15:13:25.000000000 -0800
+@@ -2483,9 +2495,14 @@ class ASTDeclContextNameLookupTrait {
+   void EmitData(raw_ostream& Out, key_type_ref,
+                 data_type Lookup, unsigned DataLen) {
+     uint64_t Start = Out.tell(); (void)Start;
+     clang::io::Emit16(Out, Lookup.second - Lookup.first);
+     for (; Lookup.first != Lookup.second; ++Lookup.first)
+-      clang::io::Emit32(Out, Writer.GetDeclRef(*Lookup.first));
++    {
++      const uint32_t ref = Writer.GetDeclRef(*Lookup.first);
++//    byte-swap fixes tons of PCH failures on powerpc-darwin8
++      clang::io::Emit32(Out, llvm::ByteSwap_32(ref));
++//      clang::io::Emit32(Out, ref);
++    }
+ 
+     assert(Out.tell() - Start == DataLen && "Data length is wrong");
+   }
