@@ -240,6 +240,12 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/libEnhancedDisassembly.dylib
 		!%p/opt/llvm-%v/lib/libLLVMAnalysis.dylib
 		!%p/opt/llvm-%v/lib/libLLVMArchive.dylib
+		!%p/opt/llvm-%v/lib/libLLVMARMAsmParser.dylib
+		!%p/opt/llvm-%v/lib/libLLVMARMAsmPrinter.dylib
+		!%p/opt/llvm-%v/lib/libLLVMARMCodeGen.dylib
+		!%p/opt/llvm-%v/lib/libLLVMARMDesc.dylib
+		!%p/opt/llvm-%v/lib/libLLVMARMDisassembler.dylib
+		!%p/opt/llvm-%v/lib/libLLVMARMInfo.dylib
 		!%p/opt/llvm-%v/lib/libLLVMAsmParser.dylib
 		!%p/opt/llvm-%v/lib/libLLVMAsmPrinter.dylib
 		!%p/opt/llvm-%v/lib/libLLVMBitReader.dylib
@@ -271,6 +277,12 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/libLLVMTransformUtils.dylib
 		!%p/opt/llvm-%v/lib/libLLVMipa.dylib
 		!%p/opt/llvm-%v/lib/libLLVMipo.dylib
+		!%p/opt/llvm-%v/lib/libLLVMX86AsmParser.dylib
+		!%p/opt/llvm-%v/lib/libLLVMX86CodeGen.dylib
+		!%p/opt/llvm-%v/lib/libLLVMX86Desc.dylib
+		!%p/opt/llvm-%v/lib/libLLVMX86Disassembler.dylib
+		!%p/opt/llvm-%v/lib/libLLVMX86Info.dylib
+		!%p/opt/llvm-%v/lib/libLLVMX86Utils.dylib
 		!%p/opt/llvm-%v/lib/libclangAnalysis.dylib
 		!%p/opt/llvm-%v/lib/libclangARCMigrate.dylib
 		!%p/opt/llvm-%v/lib/libclangAST.dylib
