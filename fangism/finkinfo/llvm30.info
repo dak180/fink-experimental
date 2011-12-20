@@ -13,6 +13,8 @@ BuildDepends: cmake (>= 2.8.2-1), fink (>= 0.28), bash, ccache
 # Depends: gcc46-shlibs
 # libcxxabi-shlibs
 InfoTest: <<
+# coreutils for gtimeout for tests
+	TestDepends: coreutils
 #	TestDepends: dejagnu, expect
  	TestScript: <<
 	#!/bin/sh -ev
@@ -102,6 +104,8 @@ PatchScript: <<
 	sed -i.orig -e '/LLVM_USED_LIBS/s|)| clangStaticAnalyzerCheckers clangStaticAnalyzerCore)|' tools/clang/lib/StaticAnalyzer/Frontend/CMakeLists.txt
 	# test suite requires newer bash than /bin/bash 2.0 for pipefail
 	sed -i.orig -e "/bashPath = None/s|None|'%p/bin/bash'|" utils/lit/lit/LitConfig.py
+	# force time limit per test
+	sed -i.orig -e "/command =.*BashPath.*script/s|\[|['gtimeout 5m', |" utils/lit/lit/TestRunner.py
 	# projects/test-suite expects built llvm/clang to have been configured
 	# but sadly, we used cmake; don't include $llvmobjdir/Makefile.config
 	# TODO: replace cmake build with autoconf'd build
@@ -146,6 +150,8 @@ CompileScript: <<
 	*) : ;;
 	esac
 
+#	the --max-time option applies to aggregate test time, not individual :(
+#	CMAKE_OPTIONS="$CMAKE_OPTIONS -DLLVM_LIT_ARGS="-s -v --max-time=14400"
 	mkdir ../build
 	pushd ../build
 	cmake $CMAKE_OPTIONS -DCMAKE_INSTALL_PREFIX=%p/opt/llvm-%v -DLLVM_ENABLE_ASSERTIONS=OFF -DCMAKE_BUILD_TYPE=Release ../llvm-%v.src
