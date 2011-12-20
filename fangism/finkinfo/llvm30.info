@@ -104,8 +104,10 @@ PatchScript: <<
 	sed -i.orig -e '/LLVM_USED_LIBS/s|)| clangStaticAnalyzerCheckers clangStaticAnalyzerCore)|' tools/clang/lib/StaticAnalyzer/Frontend/CMakeLists.txt
 	# test suite requires newer bash than /bin/bash 2.0 for pipefail
 	sed -i.orig -e "/bashPath = None/s|None|'%p/bin/bash'|" utils/lit/lit/LitConfig.py
-	# force time limit per test
-	sed -i.orig -e "/command =.*BashPath.*script/s|\[|['gtimeout 5m', |" utils/lit/lit/TestRunner.py
+	# force time limit per test, doesn't quite work
+#	sed -i.orig -e "/command =.*BashPath.*script/s|\[|['gtimeout 5m' +|" \
+#		-e "/command =.*bashPath.*script/s|\[|['gtimeout 5m' +|" \
+#		utils/lit/lit/TestRunner.py
 	# projects/test-suite expects built llvm/clang to have been configured
 	# but sadly, we used cmake; don't include $llvmobjdir/Makefile.config
 	# TODO: replace cmake build with autoconf'd build
@@ -241,6 +243,7 @@ InstallScript: <<
 	mkdir -p $idocdir
 	cp -R docs $idocdir/llvm
 	cp -R tools/clang/docs $idocdir/clang
+	mkdir -p %i/share/doc/%n
 	pushd %i/share/doc/%n
 	ln -s $docdir/llvm .
 	ln -s $docdir/clang .
