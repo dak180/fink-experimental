@@ -1,6 +1,6 @@
 Package: apt
 Version: 0.7.25.3
-Revision: 11
+Revision: 14
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12), libtool2, docbook-xsl
 Depends: %N-inst4-shlibs (= %v-%r), %N-pkg1-shlibs (= %v-%r), dpkg (>= 1.15.5.6-9)
@@ -17,6 +17,8 @@ PatchScript: <<
 <<
 NoSetCPPFLAGS: true
 NoSetLDFLAGS: true
+SetCXX: llvm-g++-4.2
+SetCC: llvm-gcc-4.2
 SetCXXFLAGS: -O2 -D__USE_MISC -fconstant-cfstrings
 SetLDFLAGS: -liconv
 ConfigureParams: --host=%m-apple-darwin`uname -r|cut -f1 -d.`
@@ -24,50 +26,44 @@ CompileScript: <<
  rm buildlib/config.guess buildlib/config.sub
  ln -s %p/share/libtool/config/config.sub buildlib/config.sub
  ln -s %p/share/libtool/config/config.guess buildlib/config.guess
- cp Makefile buildlib/makefile.in
+ aclocal -I buildlib
  autoconf
- ./configure %c
- #make -f makefile.wrap NOISY=1
  mkdir -p build/doc/doxygen
- make NOISY=1
+ ln -s ../buildlib build/buildlib
+ (cd build && ../configure %c)
+ (cd build && make NOISY=1)
 <<
 InstallScript: <<
+ # apt-* binaries
  mkdir -p %i/bin
- install -m 755 bin/apt-cache %i/bin/
- install -m 755 bin/apt-cdrom %i/bin/
- install -m 755 bin/apt-config %i/bin/
- install -m 755 bin/apt-extracttemplates %i/bin/
- install -m 755 bin/apt-get %i/bin/
- install -m 755 bin/apt-key %i/bin/
- install -m 755 bin/apt-sortpkgs %i/bin/
- install -m 755 bin/apt-mark %i/bin/
+ cp build/bin/apt-* %i/bin
+ chmod 0755 %i/bin/apt-*
+
+ # libraries
  mkdir -p %i/lib
- install -m 644 bin/libapt-pkg.4.8.0.dylib %i/lib
+ install -m 644 build/bin/libapt-pkg.4.8.0.dylib %i/lib
  cd %i/lib/ && ln -s libapt-pkg.4.8.0.dylib libapt-pkg.4.8.dylib && \
    ln -s libapt-pkg.4.8.0.dylib libapt-pkg.dylib
- install -m 644 bin/libapt-inst.1.1.0.dylib %i/lib
+ install -m 644 build/bin/libapt-inst.1.1.0.dylib %i/lib
  cd %i/lib/ && ln -s libapt-inst.1.1.0.dylib libapt-inst.1.1.dylib && \
    ln -s libapt-inst.1.1.0.dylib libapt-inst.dylib
+
+ # apt methods and dselect scripts
  mkdir -p %i/lib/apt/methods
- install -m 755 bin/methods/cdrom %i/lib/apt/methods/
- install -m 755 bin/methods/copy %i/lib/apt/methods/
- install -m 755 bin/methods/file %i/lib/apt/methods/
- install -m 755 bin/methods/ftp %i/lib/apt/methods/
- install -m 755 bin/methods/gpgv %i/lib/apt/methods/
- install -m 755 bin/methods/gzip %i/lib/apt/methods/
- install -m 755 bin/methods/http %i/lib/apt/methods/
- install -m 755 bin/methods/https %i/lib/apt/methods/
- install -m 755 bin/methods/rred %i/lib/apt/methods/
- install -m 755 bin/methods/rsh %i/lib/apt/methods/
- cd %i/lib/apt/methods && ln -s gzip bzip2 && ln -s gzip lzma && ln -s rsh ssh
  mkdir -p %i/lib/dpkg/methods/apt
- install -m 644 scripts/dselect/desc.apt %i/lib/dpkg/methods/apt/
- install -m 755 scripts/dselect/install %i/lib/dpkg/methods/apt/
- install -m 644 scripts/dselect/names %i/lib/dpkg/methods/apt/
- install -m 755 scripts/dselect/setup %i/lib/dpkg/methods/apt/
- install -m 755 scripts/dselect/update %i/lib/dpkg/methods/apt/
+ cp build/bin/methods/* %i/lib/apt/methods/
+ chmod 0755 %i/lib/apt/methods/*
+ install -m 644 build/scripts/dselect/desc.apt %i/lib/dpkg/methods/apt/
+ install -m 755 build/scripts/dselect/install %i/lib/dpkg/methods/apt/
+ install -m 644 build/scripts/dselect/names %i/lib/dpkg/methods/apt/
+ install -m 755 build/scripts/dselect/setup %i/lib/dpkg/methods/apt/
+ install -m 755 build/scripts/dselect/update %i/lib/dpkg/methods/apt/
+
+ # headers
  mkdir -p %i/include/apt-pkg
- cp include/apt-pkg/*.h %i/include/apt-pkg/
+ cp build/include/apt-pkg/*.h %i/include/apt-pkg/
+
+ # docs
  mkdir -p %i/share/man
  mkdir -p %i/share/man/man1
  mkdir -p %i/share/man/man5
@@ -75,6 +71,8 @@ InstallScript: <<
  install -m 644 doc/*.1 %i/share/man/man1/
  install -m 644 doc/*.5 %i/share/man/man5/
  install -m 644 doc/*.8 %i/share/man/man8/
+
+ # configuration and stub directories
  mkdir -p %i/etc/apt/apt.conf.d
  cp fink/fink_unauthenticated.conf %i/etc/apt/apt.conf.d
  mkdir -p %i/etc/apt/preferences.d
@@ -82,6 +80,10 @@ InstallScript: <<
  mkdir -p %i/var/cache/apt/archives/partial
  mkdir -p %i/var/lib/apt/lists/partial
  mkdir -p %i/var/log/apt
+
+ # locales
+ mkdir -p %i/share/locale
+ cp -R build/locale/* %i/share/locale
 <<
 SplitOff: <<
   Package: %N-inst4-shlibs

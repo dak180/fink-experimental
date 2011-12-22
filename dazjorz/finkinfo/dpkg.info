@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.15.5.6
-Revision: 13
+Revision: 14
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12), libgettext8-dev, gettext-tools
 Conflicts: dpkg-bootstrap
@@ -14,7 +14,7 @@ SourceDirectory: dpkg-%v
 Source-MD5: 4dcb0de9af234d16a62272bcc61b8873
 
 PatchFile: %n.patch
-PatchFile-MD5: 42ee7d3ff231292fc9a272dca8dc6bb0
+PatchFile-MD5: bd1be562b373bd336cfde9cb8331c5f7
 
 PatchScript: <<
  cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p0
@@ -24,6 +24,9 @@ PatchScript: <<
     -name '*.5' -or -name '*.8') scripts/dpkg-name.pl;
  perl -pi -e 's|/etc|%p/etc|g' $(find . -name '*.1' -or -name '*.3' -or \
     -name '*.5' -or -name '*.8') scripts/update-alternatives.pl;
+
+ # Fink uses "x86_64" instead of "amd64"
+ perl -pi -e 's|amd64|x86_64|g' *table
 <<
 
 SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework

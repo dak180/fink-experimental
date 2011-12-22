@@ -1,20 +1,21 @@
 Package: dpkg-bootstrap
 Version: 1.15.5.6
-Revision: 10
+Revision: 14
 GCC: 4.0
 BuildDepends: fink (>= 0.24.12)
 Conflicts: dpkg
 Replaces: dpkg
-Depends: gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006)
+Depends: gzip, tar, libncurses5-shlibs (>= 5.4-20041023-1006), install-info (>= 1.15.5.6-13)
 Essential: no
 Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
 
 Source: http://snapshot.debian.org/archive/debian/20100108T213813Z/pool/main/d/dpkg/dpkg_1.15.5.6.tar.bz2
 SourceDirectory: dpkg-%v
-Source-MD5: 94d80ccbb03ee8475cf48540f731128b
+Source-MD5: 4dcb0de9af234d16a62272bcc61b8873
 
 PatchFile: %n.patch
-PatchFile-MD5: 42ee7d3ff231292fc9a272dca8dc6bb0
+PatchFile-MD5: bd1be562b373bd336cfde9cb8331c5f7
+
 PatchScript: <<
  cd %b/..; sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p0
 
@@ -23,6 +24,9 @@ PatchScript: <<
     -name '*.5' -or -name '*.8') scripts/dpkg-name.pl;
  perl -pi -e 's|/etc|%p/etc|g' $(find . -name '*.1' -or -name '*.3' -or \
     -name '*.5' -or -name '*.8') scripts/update-alternatives.pl;
+
+ # Fink uses "x86_64" instead of "amd64"
+ perl -pi -e 's|amd64|x86_64|g' *table
 <<
 
 SetCFLAGS: -I%p/include -F/System/Library/Frameworks/CoreFoundation.framework
@@ -39,13 +43,23 @@ InstallScript: <<
  install -c -p -m 644 origin.fink %i/etc/dpkg/origins/fink
  rm -rf %i/lib/dpkg/methods/*
 
- # some files that were previously installed in sbin are now in bin
- # but some stuff still expects it in sbin
- ln -s %i/bin/dpkg-divert %i/sbin/dpkg-divert
- ln -s %i/bin/dpkg-statoverride %i/sbin/dpkg-statoverride
- ln -s %i/bin/update-alternatives %i/sbin/update-alternatives
+ mv %i/sbin/install-info %i/bin/ginstall-info
+ cp fink/install-info.sh %i/bin/install-info
+ chmod +x %i/bin/install-info
+
  cp fink/md5sum %i/bin
  chmod +x %i/bin/md5sum
+
+ cp fink/update-info-dir %i/sbin
+ chmod +x %i/sbin/update-info-dir
+ cp fink/update-info-dir.8 %i/share/man/man8
+
+ # some files that were previously installed in sbin are now in bin
+ # but some stuff still expects it in sbin
+ ln -s %p/bin/install-info %i/sbin/install-info
+ ln -s %p/bin/dpkg-divert %i/sbin/dpkg-divert
+ ln -s %p/bin/dpkg-statoverride %i/sbin/dpkg-statoverride
+ ln -s %p/bin/update-alternatives %i/sbin/update-alternatives
 
  # and move the Perl libraries, 'cause they are consistently installed in the
  # wrong place whatever PERL_LIBDIR is
@@ -80,6 +94,17 @@ DescPackaging: <<
  OSX dist, Leopard and Snow Leopard respectively. This infofile installs
  these files in lib/, so people updating from Leopard to Snow Leopard will
  not get any dpkg Perl file errors.
+
+ The current Debian plans are to remove install-info from dpkg in favor of
+ TeXinfo's install-info (which the current Fink package removes). However,
+ as long as dpkg still ships an install-info, we use that one in our
+ SplitOff because it's easier, considering the newer dpkg also needs to handle
+ install-info differently (with triggers).
+
+ As dpkg is mainly developed for Debian, I (Sjors) expect install-info to be
+ removed from dpkg sometime soon, leaving only TeXinfo install-info. Therefore,
+ it might be required to move the install-info SplitOff to the texinfo package
+ later.
 <<
 DescPort: <<
 1.10.9 
@@ -143,3 +168,25 @@ fi
 <<
 License: GPL
 Homepage: http://packages.qa.debian.org/d/dpkg.html
+
+SplitOff: <<
+  Package: install-info
+  Description: install-info binary from dpkg, wrapper and triggers
+  Conflicts: dpkg (<= 1.15.5.6-11)
+  Files: <<
+    bin/ginstall-info
+    bin/install-info
+    sbin/install-info
+    sbin/update-info-dir
+    share/man/man8/update-info-dir.8
+  <<
+  InstallScript: <<
+    # Install the trigger
+    echo "interest texinfo" >>%d/DEBIAN/triggers
+    echo "interest %p/share/info" >>%d/DEBIAN/triggers
+  <<
+  PostInstScript: <<
+    # Update the TeXinfo directory.
+    %p/sbin/update-info-dir
+  <<
+<<
