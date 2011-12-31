@@ -2,7 +2,7 @@ Package: apt
 Version: 0.7.25.3
 Revision: 15
 GCC: 4.0
-BuildDepends: fink (>= 0.24.12), libtool2, docbook-xsl
+BuildDepends: fink (>= 0.24.12), libtool2
 Depends: %N-inst4-shlibs (= %v-%r), %N-pkg1-shlibs (= %v-%r), dpkg (>= 1.15.5.6-9)
 Source: http://snapshot.debian.org/archive/debian/20100202T220747Z/pool/main/a/apt/apt_%v.tar.gz
 Source-MD5: ee59a90b91764aefeb5eb0f29d5cab96
@@ -12,7 +12,9 @@ PatchFile-MD5: dcce69750d12839389c2c1983be112d6
 PatchScript: <<
  sed -e 's|@PREFIX@|%p|g' -e "s|@PERLARCH32@|$VERSIONER_PERL_PREFER_32_BIT|" < %{PatchFile} | patch -p1
  sh patch_flush
- perl -pi -e 's|/usr|%p|g' doc/*.8.xml
+ #perl -pi -e 's|/usr|%p|g' doc/*.8.xml
+ rm doc/makefile
+ echo 'all:' >doc/makefile
  for i in `grep -rl '#ifdef __GNUG__' .` ; do perl -pi -e 's/#ifdef __GNUG__/#if defined(__GNUG__) && !defined(__APPLE_CC__)/' $i; done
 <<
 NoSetCPPFLAGS: true
@@ -26,7 +28,7 @@ CompileScript: <<
  ln -s %p/share/libtool/config/config.guess buildlib/config.guess
  aclocal -I buildlib
  autoconf
- mkdir -p build/doc/doxygen
+ mkdir build
  ln -s ../buildlib build/buildlib
  (cd build && ../configure %c)
  (cd build && make NOISY=1)
@@ -62,13 +64,13 @@ InstallScript: <<
  cp build/include/apt-pkg/*.h %i/include/apt-pkg/
 
  # docs
- mkdir -p %i/share/man
- mkdir -p %i/share/man/man1
- mkdir -p %i/share/man/man5
- mkdir -p %i/share/man/man8
- install -m 644 doc/*.1 %i/share/man/man1/
- install -m 644 doc/*.5 %i/share/man/man5/
- install -m 644 doc/*.8 %i/share/man/man8/
+ #mkdir -p %i/share/man
+ #mkdir -p %i/share/man/man1
+ #mkdir -p %i/share/man/man5
+ #mkdir -p %i/share/man/man8
+ #install -m 644 doc/*.1 %i/share/man/man1/
+ #install -m 644 doc/*.5 %i/share/man/man5/
+ #install -m 644 doc/*.8 %i/share/man/man8/
 
  # configuration and stub directories
  mkdir -p %i/etc/apt/apt.conf.d
@@ -205,8 +207,9 @@ Previous versions by Christoph Pfisterer. Version 0.7.25.3 by Sjors Gielen.
   not in 10.5. Therefore, IssuerCert and CrlFile support are only compiled in on
   platforms where the CURLOPTs are defined. Also, add a WARNING to the docs.
 
-  Sjors - Fix docs, since docbook.xsl is in another location on Mac. Also depend
-  on docbook-xsl to create the documentation.
+  Sjors - Don't build docs; the docs shipped with apt refer to external
+  locations that are fetched over HTTP, and we don't want this. This means
+  there are no manpages unless we pre-convert them ourselves.
 
   Sjors - The standard build process creates a 'makefile' next to 'Makefile',
   but on case insensitive Macs the normal Makefile is overwritten, causing an
