@@ -2,15 +2,17 @@ Package: apt
 Version: 0.7.25.3
 Revision: 15
 GCC: 4.0
-BuildDepends: fink (>= 0.24.12), libtool2
+BuildDepends: fink (>= 0.24.12), libtool2, gettext-tools
 Depends: %N-inst4-shlibs (= %v-%r), %N-pkg1-shlibs (= %v-%r), dpkg (>= 1.15.5.6-9)
 Source: http://snapshot.debian.org/archive/debian/20100202T220747Z/pool/main/a/apt/apt_%v.tar.gz
 Source-MD5: ee59a90b91764aefeb5eb0f29d5cab96
 SourceDirectory: %n-%v
 PatchFile: %n.patch
-PatchFile-MD5: dcce69750d12839389c2c1983be112d6
+PatchFile-MD5: 0e82e9453c676d8580e12dd21d6bd7dc
 PatchScript: <<
  sed -e 's|@PREFIX@|%p|g' -e "s|@PERLARCH32@|$VERSIONER_PERL_PREFER_32_BIT|" < %{PatchFile} | patch -p1
+ sed -e 's|@INTLLIBS@||' < buildlib/environment.mak.in > buildlib/environment.mak.in.new
+ sed -e 's|@XGETTEXT@|%p/bin/xgettext|' -e 's|@GMSGFMT@|%p/bin/msgfmt|' < buildlib/environment.mak.in.new > buildlib/environment.mak.in
  sh patch_flush
  #perl -pi -e 's|/usr|%p|g' doc/*.8.xml
  rm doc/makefile
