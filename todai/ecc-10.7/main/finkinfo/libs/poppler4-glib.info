@@ -84,8 +84,8 @@ SplitOff: <<
 		poppler5-shlibs (>= %v-1)
 	<<
 	DocFiles: AUTHORS COPYING ChangeLog NEWS README README-XPDF TODO
-	Files: lib/libpoppler-glib.5.*
-	Shlibs: %p/lib/libpoppler-glib.5.dylib 6.0.0 %n (>= 0.12.0-1)
+	Files: lib/libpoppler-glib.4.*
+	Shlibs: %p/lib/libpoppler-glib.4.dylib 5.0.0 %n (>= 0.10.0-1)
 <<
 
 Homepage: http://poppler.freedesktop.org/
