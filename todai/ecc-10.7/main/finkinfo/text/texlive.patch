@@ -13,20 +13,21 @@ diff -Naur texlive-20080816-source.orig/libs/lua51/lcoco.c texlive-20080816-sour
 diff -Naur texlive-20080816-source.orig/texk/kpathsea/texmf.cnf texlive-20080816-source/texk/kpathsea/texmf.cnf
 --- texlive-20080816-source.orig/texk/kpathsea/texmf.cnf	2008-07-27 06:39:36.000000000 +0900
 +++ texlive-20080816-source/texk/kpathsea/texmf.cnf	2009-05-10 21:31:18.000000000 +0900
-@@ -53,31 +53,31 @@
+@@ -49,7 +49,7 @@
+ % (http://tug.org/tds), or files may not be found.
+ %
+ % Redistributors will probably want $SELFAUTODIR/share, i.e., /usr/share.
+-TEXMFROOT = $SELFAUTOPARENT
++TEXMFROOT = @PREFIX@/share
  
  % The tree containing runtime files related to the specific
  % distribution and version.
--TEXMFMAIN = $TEXMFROOT/texmf
-+TEXMFMAIN = @PREFIX@/share/texmf
- 
- % The main tree of packages, distribution-agnostic:
--TEXMFDIST = $TEXMFROOT/texmf-dist
-+TEXMFDIST = @PREFIX@/share/texmf-dist
+@@ -59,25 +59,25 @@
+ TEXMFDIST = $TEXMFROOT/texmf-dist
  
  % Local additions to the distribution trees.
 -TEXMFLOCAL = $TEXMFROOT/../texmf-local
-+TEXMFLOCAL = @PREFIX@/share/texmf-local
++TEXMFLOCAL = $TEXMFROOT/texmf-local
  
  % TEXMFSYSVAR, where *-sys store cached runtime data.
 -TEXMFSYSVAR = $TEXMFROOT/texmf-var
@@ -141,15 +142,6 @@ diff -Naur texlive-20080816-source.orig/texk/kpathsea/texmf.cnf texlive-20080816
  
  % Architecture independent executables.
  TEXMFSCRIPTS = $TEXMF/scripts/{$progname,$engine,}//
-@@ -442,7 +452,7 @@
- % 
- % For security reasons, it is better not to include . in this path.
- %
--TEXMFCNF = {$SELFAUTOLOC,$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,}/web2c}
-+TEXMFCNF = {$SELFAUTOLOC,$SELFAUTODIR,$SELFAUTOPARENT,@PREFIX@}{,{/share,}/texmf{-local,}/web2c}
- 
- % kpathsea 3.5.3 and later sets these at runtime. To avoid empty
- % expansions from binaries linked against an earlier version of the
 @@ -514,7 +524,7 @@
  % for the purportedly safe shell_escape_commands above to system
  % directories.
