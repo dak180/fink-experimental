@@ -2,7 +2,7 @@ Info2: <<
 Package: texlive%type_pkg[-nox]
 Type: -nox (boolean)
 Version: 0.20110705
-Revision: 0test1
+Revision: 0test2
 GCC: 4.0
 Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
@@ -40,9 +40,9 @@ Tar2FilesRename: ptexlive-20100711:ptexlive
 Source3: http://fink.sodan.ecc.u-tokyo.ac.jp/pkgdists/dvipsk-TL2010-fix_20110208.diff
 Source3-MD5: c09419f618dbc3c9200cf471039404d8
 Source4: http://fink.sodan.ecc.u-tokyo.ac.jp/pkgdists/xdvik-20090903-texlive2009_2011.patch.gz
-Source4-MD5: ae999ad46d12b56a7a1ac680df283474
-Source5: http://sourceforge.jp/projects/eptex/wiki/TeX_Live_2011/attach/tl11supp-111023.tar.xz
-Source5-MD5: f6b83d8a5f0a27399b07cd6f593df2b1
+Source4-MD5: 1b2450cd11d5da052ee25d7b3803c768
+Source5: http://sourceforge.jp/projects/eptex/wiki/TeX_Live_2011/attach/tl11supp-111101.tar.xz
+Source5-MD5: 5faa742af438292971415bc088580353
 NoSourceDirectory: true
 UseMaxBuildJobs: true
 PatchFile: texlive.patch
@@ -119,7 +119,7 @@ fi
                                                ./ptex-cmap.sh
 
  ##### Apply patches taken from upstream svn
- xz -dc tl11supp-111023.tar.xz | tar xf -
+ xz -dc tl11supp-??????.tar.xz | tar xf -
  
  sed -i.bak -e "s|\(TLSRCDIR=\)/opt/home-supp/tl11|\1`pwd`/tl11|" \
             -e "s|\(TMPDIR=\)/tmp|\1`pwd`|" \
@@ -134,6 +134,11 @@ fi
  #####
 
  echo "f  kanjix.map" >> texlive/texk/dvipdfmx/dvipdfmx-20*/data/dvipdfmx.cfg
+
+ # adjust for Mac, and sync with pxdvik
+ sed -i.bak -e 's|firefox|open|' \
+            -e 's|kinput2|uim|'    texlive/texk/pxdvik/texmf/XDvi
+ cp texlive/texk/pxdvik/texmf/XDvi texlive/texk/xdvik/texmf/XDvi
 
  # wrapper for jbibtex
  echo '#!/bin/sh'    >> jbibtex
@@ -169,7 +174,7 @@ ConfigureParams: <<
  (%type_raw[-nox] = -nox) --disable-pxdvik
  (%type_raw[-nox] = -nox) --disable-pdfopen
 <<
-#InfoTest: 	TestScript: cd texlive/Work; make -k check || exit 1
+InfoTest: 	TestScript: cd texlive/Work; make -k check || exit 1
 CompileScript: <<
 #!/bin/bash -ev
  export PATH=%p/lib/xmkmf/bin:%p/lib/freetype219/bin:$PATH 
