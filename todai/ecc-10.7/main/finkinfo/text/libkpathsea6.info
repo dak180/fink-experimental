@@ -13,14 +13,16 @@ NoSourceDirectory: true
 PatchFile: texlive.patch
 PatchFile-MD5: 5fe3f561c0420ad82f6f041537b980e0
 PatchScript: <<
- xz -dc texlive-20110705-source.tar.xz | tar xf -
- mv     texlive-20110705-source texlive
+ xz -dc texlive-????????-source.tar.xz | tar xf -
+ mv     texlive-????????-source texlive
  sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -d texlive -p1
 
  # Change the directory to be installed
- for file in `find texlive -name Makefile.in`; \
-  do sed -i.bak -e 's|/texmf/|/share/texmf/|' \
-                -e 's|/texmf-dist/|/share/texmf-dist/|' ${file} ; done
+ for file in `find texlive -name Makefile.in`; do
+  sed -i.bak -e 's|/texmf/|/share/texmf/|' \
+             -e 's|\(texmfdir = \)${prefix}|\1${datadir}|' \
+             -e 's|/texmf-dist/|/share/texmf-dist/|' ${file}
+ done
 <<
 NoSetLDFLAGS: true
 ConfigureParams: <<
