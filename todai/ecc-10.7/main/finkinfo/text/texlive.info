@@ -2,13 +2,15 @@ Info2: <<
 Package: texlive%type_pkg[-nox]
 Type: -nox (boolean)
 Version: 0.20110705
-Revision: 0test2
+Revision: 0test3
 GCC: 4.0
 Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
 BuildDepends: <<
- libkpathsea6 (>= 6.0.1-0), t1lib5-nox, libpng15, libncurses5 (>= 5.4-20041023-1006), fink (>= 0.24.12),
- libjpeg8, libiconv-dev, ptexenc1 (>= 1.2.0-0), zziplib13-dev, teckit-dev, libpaper1-dev,
+ libkpathsea6 (>= 6.0.1-0), ptexenc1 (>= 1.2.0-0),
+ t1lib5-nox, libpng15, libncurses5 (>= 5.4-20041023-1006), fink (>= 0.24.12),
+ libjpeg8, libiconv-dev, zziplib13-dev, teckit-dev, libpaper1-dev,
+ system-perl (>= 5.8.8-1) | perl588,
  xz, freetype219 (>= 2.2.1-4),
  (%type_raw[-nox] = .)  gd2 (>= 2.0.35-2), 
  (%type_raw[-nox] = .) poppler4,
@@ -57,8 +59,7 @@ PatchScript: <<
  for file in `find texlive -name Makefile.in`; do
   sed -i.bak -e 's|/texmf/|/share/texmf/|' \
              -e 's|\(texmfdir = \)${prefix}|\1${datadir}|' \
-             -e 's|/texmf-dist/|/share/texmf-dist/|' ${file}
- done
+             -e 's|/texmf-dist/|/share/texmf-dist/|' ${file} ; done
 
  sed -i.bak -e 's|\(texconfdir = \)${prefix}|\1${datadir}|' \
             -e 's|\(REL=\).. \(TYPE=\)|\1../share \2|'      \
@@ -254,8 +255,9 @@ SplitOff: <<
  Depends: <<
   t1lib5-nox-shlibs, libpng15-shlibs,
   libncurses5-shlibs (>= 5.4-20041023-1006), ncurses (>= 5.4-20041023-1006),
-  fink (>= 0.12.0-1), libkpathsea6-shlibs (>= 6.0.1-0), texlive-texmf,
-  ptexenc1-shlibs (>= 1.2.0-0), zziplib13-shlibs, teckit-shlibs, nkf, libpaper1-shlibs,
+  fink (>= 0.12.0-1), texlive-texmf,
+  libkpathsea6-shlibs (>= 6.0.1-0), ptexenc1-shlibs (>= 1.2.0-0), 
+  zziplib13-shlibs, teckit-shlibs, nkf, libpaper1-shlibs,
   freetype219-shlibs (>= 2.2.1-4),
   (%type_raw[-nox] = .) applesystemfonts,
   (%type_raw[-nox] = .) appleotffonts,
