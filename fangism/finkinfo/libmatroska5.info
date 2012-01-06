@@ -19,7 +19,7 @@ BuildDepends: <<
   libebml3
 <<
 Depends: <<
-  libebml3-shlibs
+  %N-shlibs (= %v-%r)
 <<
 
 NoSetCPPFLAGS: true
@@ -54,6 +54,7 @@ BeOS. It depends on libebml to work.
 SplitOff: <<
 Package: %N-shlibs
 Description: C++ (shared) libary to parse Matroska files
+Depends: libebml3-shlibs
 Files: lib/libmatroska.*.dylib
 Shlibs: <<
 	%p/lib/libmatroska.5.dylib 6.0.0 %n (>= 1.3.0-1)
