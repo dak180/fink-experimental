@@ -56,7 +56,7 @@ Source3-MD5: 849c5bc88f06387bbd2040cf804204e7
 Source4: http://tenfourfox.googlecode.com/files/tenfourfox-quicktime-enabler-alpha114.xpi
 Source4-MD5: 4ca05fce34f71ce0cd39e45532421752
 PatchFile: %n.patch
-PatchFile-MD5: fee3f6480c86574c9bc5551eb11fb62a
+PatchFile-MD5: f40400ab3774c92e72694d1ed056de6a
 PatchScript: <<
   #!/bin/sh -ev
   # apply patchset from TenFourFox:
@@ -73,7 +73,11 @@ PatchScript: <<
   echo "Applying patch %{PatchFile} ..."
   /usr/bin/sed -e 's|@FINKPREFIX@|%p|g' \
 	-e 's|@FINK_ARCH_TARGET@|%m|g' \
-	< %{PatchFile} | /usr/bin/patch -p1 -l
+	< %{PatchFile} | /usr/bin/patch -p1
+  # some patches were difficult to apply, so we sed them instead
+  sed -i.orig2 -e '/MKSHLIB=/s| \$(CXXFLAGS)||' \
+	-e '/MKCSHLIB=/s| \$(CFLAGS)||' configure.in
+  sed -i.orig2 -e '/^default all::/,/^endif # SUPPRESS_DEFAULT_RULES/s|\$(MAKE)|+&|' config/rules.mk
   # leave @executable_path alone and take care of adjusting install_names
   # between build and install, below.
   # configure inputs were patched, hence regeneration

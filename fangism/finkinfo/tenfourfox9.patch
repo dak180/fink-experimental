@@ -114,30 +114,7 @@ diff -ruN mozilla-release-orig/configure mozilla-release/configure
  *-darwin*)
      if test -z "$CC"; then CC=gcc-4.2; fi
      if test -z "$CXX"; then CXX=g++-4.2; fi
-@@ -1564,8 +1568,8 @@
- if test "$GNU_CC"; then
-     # FIXME: Let us build with strict aliasing. bug 414641.
-     CFLAGS="$CFLAGS -fno-strict-aliasing"
--    MKSHLIB='$(CXX) $(CXXFLAGS) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -Wl,-h,$@ -o $@'
--    MKCSHLIB='$(CC) $(CFLAGS) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -Wl,-h,$@ -o $@'
-+    MKSHLIB='$(CXX) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -Wl,-h,$@ -o $@'
-+    MKCSHLIB='$(CC) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -Wl,-h,$@ -o $@'
-     DSO_LDOPTS='-shared'
-     if test "$GCC_USE_GNU_LD"; then
-         # Don't allow undefined symbols in libraries
-@@ -2013,17 +2017,17 @@
- 	    MKSHLIB_UNFORCE_ALL=''
- 	;;
-     esac
-     ;;
- 
- *-darwin*) 
--    MKSHLIB='$(CXX) $(CXXFLAGS) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -o $@'
--    MKCSHLIB='$(CC) $(CFLAGS) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -o $@'
-+    MKSHLIB='$(CXX) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -o $@'
-+    MKCSHLIB='$(CC) $(DSO_PIC_CFLAGS) $(DSO_LDOPTS) -o $@'
-     MOZ_OPTIMIZE_FLAGS="-O3"
-     _PEDANTIC=
+@@ -2013,7 +2017,7 @@
      CFLAGS="$CFLAGS -fno-common"
      CXXFLAGS="$CXXFLAGS -fno-common"
      DLL_SUFFIX=".dylib"
@@ -214,30 +191,6 @@ diff -ruN mozilla-release-orig/config/rules.mk mozilla-release/config/rules.mk
  
  endef # The extra line is important here! don't delete it
  
-@@ -701,16 +706,16 @@
- default all::
- ifneq (,$(strip $(STATIC_DIRS)))
- 	$(foreach dir,$(STATIC_DIRS),$(call SUBMAKE,,$(dir)))
- endif
--	$(MAKE) export
--	$(MAKE) libs
--	$(MAKE) tools
-+	+$(MAKE) export
-+	+$(MAKE) libs
-+	+$(MAKE) tools
- # Do depend as well
- alldep::
--	$(MAKE) export
--	$(MAKE) depend
--	$(MAKE) libs
--	$(MAKE) tools
-+	+$(MAKE) export
-+	+$(MAKE) depend
-+	+$(MAKE) libs
-+	+$(MAKE) tools
- 
- endif # TIERS
- endif # SUPPRESS_DEFAULT_RULES
 @@ -786,14 +791,14 @@
  $(foreach tier,$(TIERS),tier_$(tier))::
  	@$(ECHO) "$@: $($@_staticdirs) $($@_dirs)"
