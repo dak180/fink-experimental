@@ -78,6 +78,7 @@ PatchScript: <<
   sed -i.orig2 -e '/MKSHLIB=/s| \$(CXXFLAGS)||' \
 	-e '/MKCSHLIB=/s| \$(CFLAGS)||' configure.in
   sed -i.orig2 -e '/^default all::/,/^endif # SUPPRESS_DEFAULT_RULES/s|\$(MAKE)|+&|' config/rules.mk
+  cp config/rules.mk js/src/config/
   # leave @executable_path alone and take care of adjusting install_names
   # between build and install, below.
   # configure inputs were patched, hence regeneration
