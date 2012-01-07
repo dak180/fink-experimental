@@ -196,6 +196,7 @@ Shlibs: <<
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libfreebl3.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libmozalloc.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libmozsqlite3.dylib
+	!%p/Applications/TenFourFox.app/Contents/MacOS/libmozutils.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libnspr4.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libnss3.dylib
 	!%p/Applications/TenFourFox.app/Contents/MacOS/libnssckbi.dylib
