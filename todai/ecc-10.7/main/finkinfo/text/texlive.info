@@ -76,8 +76,13 @@ if [ %m = 'x86_64' ]; then
 fi
 
  # Allow to build with poppler 0.10 (configure requires poppler 0.12)
- sed -i.bak 's|\(poppler --atleast-version=0\).12|\1.10|' \
-   texlive/configure texlive/texk/web2c/configure
+ if [ "%type_raw[-nox]" == "." ]; then
+  sed -i.bak 's|\(poppler --atleast-version=0\).12|\1.10|' \
+    texlive/configure texlive/texk/web2c/configure
+ else
+  sed -i.bak 's|^//\(#define\)|\1|' \
+                      texlive/texk/web2c/luatexdir/image/pdftoepdf.cc
+ fi
 
  # Install pxdvik
  sed -i.bak -e 's|tex4htk|pxdvik|g' texlive/configure
