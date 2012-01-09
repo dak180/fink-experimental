@@ -2,7 +2,7 @@ Info2: <<
 Package: texlive%type_pkg[-nox]
 Type: -nox (boolean)
 Version: 0.20110705
-Revision: 0test3
+Revision: 0test4
 GCC: 4.0
 Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
@@ -39,16 +39,16 @@ Source-MD5: 968d238949e8a34a1fd74c374ddfe6f1
 Source2: http://tutimura.ath.cx/~nob/tex/ptexlive/ptexlive-20100711.tar.gz
 Source2-MD5: 2dbd0ab5290bf6dfb0b2b04a813df89f
 Tar2FilesRename: ptexlive-20100711:ptexlive
-Source3: http://fink.sodan.ecc.u-tokyo.ac.jp/pkgdists/dvipsk-TL2010-fix_20110208.diff
-Source3-MD5: c09419f618dbc3c9200cf471039404d8
+Source3: http://sourceforge.jp/projects/eptex/wiki/TeX_Live_2011/attach/tl11supp-111101.tar.xz
+Source3-MD5: 5faa742af438292971415bc088580353
 Source4: http://fink.sodan.ecc.u-tokyo.ac.jp/pkgdists/xdvik-20090903-texlive2009_2011.patch.gz
-Source4-MD5: 1b2450cd11d5da052ee25d7b3803c768
-Source5: http://sourceforge.jp/projects/eptex/wiki/TeX_Live_2011/attach/tl11supp-111101.tar.xz
-Source5-MD5: 5faa742af438292971415bc088580353
+Source4-MD5: 2177965a735d9fff0f206b5b8a309258
+Source5: http://fink.sodan.ecc.u-tokyo.ac.jp/pkgdists/pmpost-makeconf-tl11.diff.gz
+Source5-Md5: 0c25f072f252a42a9c4774ffe6378b31
 NoSourceDirectory: true
 UseMaxBuildJobs: true
 PatchFile: texlive.patch
-PatchFile-MD5: 5fe3f561c0420ad82f6f041537b980e0
+PatchFile-MD5: d06b3f633b64223544ebff713b663456
 PatchScript: <<
 #!/bin/bash -ev
  xz -dc texlive-????????-source.tar.xz | tar xf -
@@ -126,12 +126,16 @@ fi
             -e "s|\(TMPDIR=\)/tmp|\1`pwd`|" \
             -e 's|texlive-$TLV-source|texlive|' tl11/common.sh
 
- sed -n -e "1,4p" -e "8,18p" -e "34,61p" tl11/scripts/unpack.sh \
-                                       > tl11/unpack.sh
- sed -i.bak /ovp2ovf_web.patch/d         tl11/unpack.sh
- chmod +x                                tl11/unpack.sh
- pushd tl11 &&                              ./unpack.sh
+ sed -n -e "1,4p"   -e "8,18p"  \
+        -e "34,38p" -e "45,61p" \
+         tl11/scripts/unpack.sh > tl11/unpack.sh
+                       
+ sed -i.bak 's|^# \(zpatch\)|\1|' tl11/unpack.sh
+ chmod +x                         tl11/unpack.sh
+ pushd tl11 &&    FLG_PMPOST=TRUE    ./unpack.sh
  popd
+
+ gzcat pmpost-makeconf-tl11.diff.gz | patch -p1 -d texlive
  #####
 
  echo "f  kanjix.map" >> texlive/texk/dvipdfmx/dvipdfmx-20*/data/dvipdfmx.cfg
@@ -228,7 +232,6 @@ echo "Creating a TEXMFCONFIG tree ..."
  %i/bin/mktexlsr %i/etc/texmf-config
 
 echo "Removing files that are supplied in the texlive-texmf package ..."
-#mv -f  %i/share/texmf-dist/scripts/luaotfload %i/share/texmf/scripts
  mv -f  %i/share/texmf-dist texmf-dist.conflict
 
 if [ "%type_raw[-nox]" == "." ]; then

@@ -193,7 +193,7 @@ diff -Naur texlive-20100720-source.orig/texk/tetex/fmtutil.cnf texlive-20100720-
  }
   
 --- texlive-20110705-source.orig/texk/web2c/luatexdir/image/pdftoepdf.cc	2011-04-14 15:45:02.000000000 +0900
-+++ texlive-20110705-source.orig/texk/web2c/luatexdir/image/pdftoepdf.cc	2011-04-12 23:17:47.000000000 +0900
++++ texlive-20110705-source/texk/web2c/luatexdir/image/pdftoepdf.cc	2011-04-12 23:17:47.000000000 +0900
 @@ -25,6 +25,7 @@
  // define DEBUG
  
