@@ -49,7 +49,7 @@ BuildDependsOnly: false
 UseMaxBuildJobs: true
 
 PatchFile: %n.patch
-PatchFile-MD5: 32613113a695bba5a3ff6e71eb5cd4ad
+PatchFile-MD5: c7f58f6db846bb8ab4fde81291dd3da7
 PatchScript: <<
 	#!/bin/sh -ev
 	# relocated a few auxiliary directories where they are expected
@@ -113,16 +113,8 @@ PatchScript: <<
 <<
 CompileScript: <<
 	#!/bin/sh -ev
-	case "%m" in
-	x86_64)
-	CMAKE_OPTIONS="-DLLVM_BUILD_32_BITS:BOOL=OFF -DLLVM_TARGETS_TO_BUILD=X86"
-	;;
-	powerpc)
+	# just always build these archs
 	CMAKE_OPTIONS="-DLLVM_TARGETS_TO_BUILD=X86;PowerPC;ARM"
-	;;
-	*)
-	CMAKE_OPTIONS="-DLLVM_BUILD_32_BITS:BOOL=ON -DLLVM_TARGETS_TO_BUILD=X86"
-	esac
 
 	# gcc-4.0.1 FAILS on darwin9
 	darwin_vers=`uname -r | cut -d. -f1`
@@ -335,4 +327,9 @@ Original package maintained by
 	Benjamin Reed <llvm@fink.raccoonfink.com>
 with contributions from
 	Jack Howarth <howarth@bromo.med.uc.edu>
+PatchFile contains:
+*	workarounds for C++ accessibility bugs in g++-4.0.x
+*	r147657 from trunk (3.1), which fixes PCH issues on PowerPC.
+		tools/clang/lib/Serialization/ASTReaderInternals.h
+		tools/clang/lib/Serialization/ASTReader.cpp
 <<

@@ -42,21 +42,38 @@
  
      unsigned Paren, Brace, Square, Less, LLLess;
      unsigned& get(tok::TokenKind t) {
---- llvm-3.0.src-orig/tools/clang/lib/Serialization/ASTWriter.cpp	2011-10-06 23:10:15.000000000 -0700
-+++ llvm-3.0.src/tools/clang/lib/Serialization/ASTWriter.cpp	2011-12-18 15:13:25.000000000 -0800
-@@ -2483,9 +2495,14 @@ class ASTDeclContextNameLookupTrait {
-   void EmitData(raw_ostream& Out, key_type_ref,
-                 data_type Lookup, unsigned DataLen) {
-     uint64_t Start = Out.tell(); (void)Start;
-     clang::io::Emit16(Out, Lookup.second - Lookup.first);
-     for (; Lookup.first != Lookup.second; ++Lookup.first)
--      clang::io::Emit32(Out, Writer.GetDeclRef(*Lookup.first));
-+    {
-+      const uint32_t ref = Writer.GetDeclRef(*Lookup.first);
-+//    byte-swap fixes tons of PCH failures on powerpc-darwin8
-+      clang::io::Emit32(Out, llvm::ByteSwap_32(ref));
-+//      clang::io::Emit32(Out, ref);
-+    }
+diff --git clang-svn-orig/tools/clang/lib/Serialization/ASTReader.cpp clang-svn/tools/clang/lib/Serialization/ASTReader.cpp
+index 440474b..352678f 100644
+--- clang-svn-orig/tools/clang/lib/Serialization/ASTReader.cpp
++++ clang-svn/tools/clang/lib/Serialization/ASTReader.cpp
+@@ -747,7 +747,7 @@ ASTDeclContextNameLookupTrait::ReadData(internal_key_type,
+                                       unsigned DataLen) {
+   using namespace clang::io;
+   unsigned NumDecls = ReadUnalignedLE16(d);
+-  DeclID *Start = (DeclID *)d;
++  LE32DeclID *Start = (LE32DeclID *)d;
+   return std::make_pair(Start, Start + NumDecls);
+ }
  
-     assert(Out.tell() - Start == DataLen && "Data length is wrong");
-   }
+diff --git clang-svn-orig/tools/clang/lib/Serialization/ASTReaderInternals.h clang-svn/tools/clang/lib/Serialization/ASTReaderInternals.h
+index fb6c830..635f95f 100644
+--- clang-svn-orig/tools/clang/lib/Serialization/ASTReaderInternals.h
++++ clang-svn/tools/clang/lib/Serialization/ASTReaderInternals.h
+@@ -15,6 +15,7 @@
+ 
+ #include "clang/Basic/OnDiskHashTable.h"
+ #include "clang/AST/DeclarationName.h"
++#include "llvm/Support/Endian.h"
+ #include <utility>
+ #include <sys/stat.h>
+ 
+@@ -41,7 +42,8 @@ public:
+   ///
+   /// Note that these declaration IDs are local to the module that contains this
+   /// particular lookup t
+-  typedef std::pair<DeclID *, DeclID *> data_type;
++  typedef llvm::support::ulittle32_t LE32DeclID;
++  typedef std::pair<LE32DeclID *, LE32DeclID *> data_type;
+ 
+   /// \brief Special internal key for declaration names.
+   /// The hash table creates keys for comparison; we do not create
