@@ -62,9 +62,19 @@ PatchScript: <<
 	popd
 	# point hard-coded paths to system g++-4.0.1's C++ includes
 	# remove references to g++-4.2.1, never existed in Xcode 2.5
-	sed -i.orig -e 's|darwin10|darwin8|g' \
-		-e '/GnuCPlusPlusInclude.*4\.2\.1/,/);/d' \
+	darwin_vers=`uname -r | cut -d. -f1`
+	if test "$darwin_vers" != 10
+	then sed -i.orig -e "s|darwin10|darwin$darwin_vers|g" \
 		tools/clang/lib/Frontend/InitHeaderSearch.cpp
+	fi
+	if test ! -d /usr/include/c++/4.0.0
+	then sed -i.orig2 -e '/GnuCPlusPlusInclude.*4\.0\.0/,/);/d' \
+		tools/clang/lib/Frontend/InitHeaderSearch.cpp
+	fi
+	if test ! -d /usr/include/c++/4.2.1
+	then sed -i.orig2 -e '/GnuCPlusPlusInclude.*4\.2\.1/,/);/d' \
+		tools/clang/lib/Frontend/InitHeaderSearch.cpp
+	fi
 	# some libs failed to explicitly list their dependencies, so we append
 	cp utils/unittest/CMakeLists.txt{,.orig}
 	{ echo "add_llvm_library_dependencies(gtest LLVMSupport)" ; \
@@ -116,37 +126,46 @@ CompileScript: <<
 	# just always build these archs
 	CMAKE_OPTIONS="-DLLVM_TARGETS_TO_BUILD=X86;PowerPC;ARM"
 
+	mkdir ../opt-bin
+	pushd ../opt-bin
+	{ echo "#!/bin/sh" ; echo 'exec ccache gcc "$@"' ; } > ccgcc
+	{ echo "#!/bin/sh" ; echo 'exec ccache g++ "$@"' ; } > ccg++
+	{ echo "#!/bin/sh" ; echo 'exec ccache gcc-4.2 "$@"' ; } > ccgcc-4.2
+	{ echo "#!/bin/sh" ; echo 'exec ccache g++-4.2 "$@"' ; } > ccg++-4.2
+	{ echo "#!/bin/sh" ; echo 'exec ccache gcc-fsf-4.6 "$@"' ; } > ccgcc-4.6
+	{ echo "#!/bin/sh" ; echo 'exec ccache g++-fsf-4.6 "$@"' ; } > ccg++-4.6
+	chmod +x ccg*
+	export PATH=`pwd`:$PATH
+	popd
+
+	CMAKE_OPTIONS="$CMAKE_OPTIONS -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_C_FLAGS=-fno-common -DCMAKE_CXX_FLAGS=-fno-common"
+
 	# gcc-4.0.1 FAILS on darwin9
 	darwin_vers=`uname -r | cut -d. -f1`
 	case "$darwin_vers" in
 	8)
-	  mkdir ../opt-bin
-	  pushd ../opt-bin
-	  { echo "#!/bin/sh" ; echo 'exec ccache gcc "$@"' ; } > ccgcc
-	  { echo "#!/bin/sh" ; echo 'exec ccache g++ "$@"' ; } > ccg++
-	  { echo "#!/bin/sh" ; echo 'exec ccache gcc-fsf-4.6 "$@"' ; } > ccgcc-4.6
-	  { echo "#!/bin/sh" ; echo 'exec ccache g++-fsf-4.6 "$@"' ; } > ccg++-4.6
-	  chmod +x ccg*
-	  export PATH=`pwd`:$PATH
-	  popd
 	  export CC=ccgcc
 	  export CXX=ccg++
 #	  export CC=ccgcc-4.6
 #	  export CXX=ccg++-4.6
-	  CMAKE_OPTIONS="$CMAKE_OPTIONS -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_C_FLAGS=-fno-common -DCMAKE_CXX_FLAGS=-fno-common"
 	  ;;
-	9)
-	  export CC=gcc-4.2
-	  export CXX=g++-4.2
+	9|10)
+	  # *should* work with either 4.0 or 4.2
+	  export CC=ccgcc
+	  export CXX=ccg++
+#	  export CC=ccgcc-4.2
+#	  export CXX=ccg++-4.2
 	  ;;
 	*) : ;;
 	esac
+
+	CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_INSTALL_PREFIX=%p/opt/llvm-%v -DLLVM_ENABLE_ASSERTIONS=OFF -DCMAKE_BUILD_TYPE=Release"
 
 #	the --max-time option applies to aggregate test time, not individual :(
 #	CMAKE_OPTIONS="$CMAKE_OPTIONS -DLLVM_LIT_ARGS="-s -v --max-time=14400"
 	mkdir ../build
 	pushd ../build
-	cmake $CMAKE_OPTIONS -DCMAKE_INSTALL_PREFIX=%p/opt/llvm-%v -DLLVM_ENABLE_ASSERTIONS=OFF -DCMAKE_BUILD_TYPE=Release ../llvm-%v.src
+	cmake $CMAKE_OPTIONS ../llvm-%v.src
 	make -k || :
 	# hack away some Makefiles: clangSerialization folded into clangFrontend
 	pushd ../llvm-%v.src
