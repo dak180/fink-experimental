@@ -5,7 +5,7 @@ Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
 
-# need bash because /bin/sh 2.0 is missing support for pipefail
+# need bash because /bin/sh 2.0 on darwin8 is missing support for pipefail
 # ccache is only temporary, for accelerating rebuilds
 BuildDepends: cmake (>= 2.8.2-1), fink (>= 0.28), bash, ccache
 # gcc46-compiler
@@ -28,7 +28,7 @@ InfoTest: <<
 #	../../../llvm-%v.src/projects/test-suite/configure --with-built-clang
 #	make -k TEST=simple report report.html
 	<<
-	TestSuiteSize: large
+	TestSuiteSize: medium
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.tar.gz
@@ -97,15 +97,11 @@ PatchScript: <<
 	sed -i.orig -e '/clangSerialization/d' \
 		-e "s|Warnings\.cpp|& $ser_files|" CMakeLists.txt
 	popd
-# keep these for some generated includes
-#	for d in tools/clang/{lib,include/clang}
-#	do sed -i.orig -e '/Serialization/d' $d/CMakeLists.txt
-#	done
 	# purge refs to clangSerialization (that already have clangFrontend)
 	for d in tools/clang/{tools/{driver,libclang},examples/{wpa,clang-interpreter}}
 	do sed -i.orig -e '/clangSerialization/d' $d/CMakeLists.txt
 	done
-# needed for gcc-4.6
+# needed for gcc-4.6 only
 #	sed -i.orig2 -e 's|compatibility_version|dylib_&|' tools/clang/tools/libclang/CMakeLists.txt
 	# JIT needs CodeGen, duh.
 	sed -i.orig -e 's|LLVMCore|LLVMCodeGen &|' lib/ExecutionEngine/JIT/CMakeLists.txt
@@ -126,6 +122,8 @@ CompileScript: <<
 	# just always build these archs
 	CMAKE_OPTIONS="-DLLVM_TARGETS_TO_BUILD=X86;PowerPC;ARM"
 
+	# set up some possible bootstrapping compilers
+	# wrap ccache into single cmd b/c cmake can't handle "ccache g++"
 	mkdir ../opt-bin
 	pushd ../opt-bin
 	{ echo "#!/bin/sh" ; echo 'exec ccache gcc "$@"' ; } > ccgcc
@@ -149,12 +147,12 @@ CompileScript: <<
 #	  export CC=ccgcc-4.6
 #	  export CXX=ccg++-4.6
 	  ;;
-	9|10)
-	  # *should* work with either 4.0 or 4.2
+	9)
+	  export CC=ccgcc-4.2
+	  export CXX=ccg++-4.2
+	10)
 	  export CC=ccgcc
 	  export CXX=ccg++
-#	  export CC=ccgcc-4.2
-#	  export CXX=ccg++-4.2
 	  ;;
 	*) : ;;
 	esac
@@ -166,6 +164,7 @@ CompileScript: <<
 	mkdir ../build
 	pushd ../build
 	cmake $CMAKE_OPTIONS ../llvm-%v.src
+	# this will fail, but we have to run it first and then fix some deps
 	make -k || :
 	# hack away some Makefiles: clangSerialization folded into clangFrontend
 	pushd ../llvm-%v.src
@@ -190,7 +189,6 @@ CompileScript: <<
 #	pushd ../libcxx
 #	cd lib
 #	env MACOSX_DEPLOYMENT_TARGET=10.6 TRIPLE=-apple- ./buildit
-# currently fails assembly
 #	popd
 <<
 
@@ -236,15 +234,6 @@ InstallScript: <<
 		fi
 	done
 	popd
-
-	if false
-	then
-	install_name_tool -id "%p/opt/llvm-%v/lib/liblibclang.%v.dylib" "%i/opt/llvm-%v/lib/liblibclang.%v.dylib"
-	install_name_tool -id "%p/opt/llvm-%v/lib/BugpointPasses.dylib" "%i/opt/llvm-%v/lib/BugpointPasses.dylib"
-	install_name_tool -id "%p/opt/llvm-%v/lib/LLVMHello.dylib" "%i/opt/llvm-%v/lib/LLVMHello.dylib"
-	install_name_tool -id "%p/opt/llvm-%v/lib/libLTO.dylib" "%i/opt/llvm-%v/lib/libLTO.dylib"
-	install_name_tool -id "%p/opt/llvm-%v/lib/profile_rt.dylib" "%i/opt/llvm-%v/lib/profile_rt.dylib"
-	fi
 
 	# documentation
 	docdir=%p/opt/llvm-%v/share/doc
@@ -339,6 +328,9 @@ The LLVM Project is a collection of modular and reusable compiler and
 toolchain technologies.  Despite its name, LLVM has little to do with
 traditional virtual machines, though it does provide helpful libraries
 that can be used to build them.
+
+The goal of the Clang project is to create a new C, C++, Objective C 
+and Objective C++ front-end for the LLVM compiler.
 <<
 DescPort: <<
 fangism contributed this port for PowerPC-Darwin8.
