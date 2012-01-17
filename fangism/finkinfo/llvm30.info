@@ -150,6 +150,7 @@ CompileScript: <<
 	9)
 	  export CC=ccgcc-4.2
 	  export CXX=ccg++-4.2
+	  ;;
 	10)
 	  export CC=ccgcc
 	  export CXX=ccg++
