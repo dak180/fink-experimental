@@ -1,71 +1,48 @@
 Info3: <<
-Package: gdal%type_pkg[pgsql]%type_pkg[mysql]
-Type: pgsql (. -pgsql), mysql (. -mysql)
-Version: 1.7.2
-Revision: 3.1
-Description: Raster/Vector Geospatial Format Translator
-License: BSD
-Homepage: http://www.gdal.org
-Maintainer: Kurt Schwehr <goatbar@users.sourceforge.net>
-DescDetail: <<
-GDAL is a translator library for raster geospatial data formats. As a library,
-it presents a single abstract data model to the calling application for all
-supported formats.
 
-Current translators include GeoTIFF (read/write), Erdas Imagine (read),
-ESRI .BIL (read/write), .aux labelled raw (read/write), DTED (read),
-SDTS DEM (read), CEOS (read), JPEG (read/write), PNG (read/write),
-Geosoft GXF (read), Arc/Info Binary Grid (read), FITS (read/write),
-netCDF (limited read/write), and GIF (read/write).
+# FIX: bring back mysql when packaged
+# FIX: add libkml support... package libkml
+# FIX: Can we add any of these?  LIBLZMA, xerces-c, GEORASTER, EPSILON, PCRaster, NAS, DODS, DWG, Poppler, OpenCL
 
-The current version of GDAL come with the related OGR library (which lives 
-within the GDAL source tree) provides a similar capability for simple features 
-vector data.
-
-The OGR Simple Features Library is a C++ open source library (and commandline 
-tools) providing read (and sometimes write) access to a variety of vector file 
-formats including ESRI Shapefiles, S-57, SDTS, PostGIS, Oracle Spatial, and 
-Mapinfo mid/mif and TAB formats.
-<<
-DescUsage: <<
-Packages that need GDAL/OGR libraries should builddepend on gdal-dev and 
-depend on gdal-shlibs.  Make sure that configure finds the gdal-config 
-script in %p/bin, which tells that the headers are 
-in %p/include/gdal1/ and the libraries are in %p/lib/.
-<<
+Package: gdal%type_pkg[pgsql]
+#Package: gdal%type_pkg[pgsql]%type_pkg[mysql]
+Type: pgsql (. -pgsql)
+#Type: pgsql (. -pgsql), mysql (. -mysql)
+Version: 1.9.0
+Revision: 1
 
 # Dependencies.
 Depends: <<
 	%n-shlibs (= %v-%r)
 <<
-Suggests: gdal-py26, gdal-grass
-Conflicts: gdal, gdal-pgsql, gdal-mysql, gdal-pgsql-mysql
-Replaces: gdal, gdal-pgsql, gdal-mysql, gdal-pgsql-mysql
+Suggests: gdal-py27
+Conflicts: gdal, gdal-pgsql
+Replaces: gdal, gdal-pgsql
+
+#Conflicts: gdal, gdal-pgsql, gdal-mysql, gdal-pgsql-mysql
+#Replaces: gdal, gdal-pgsql, gdal-mysql, gdal-pgsql-mysql
+
 BuildDepends: <<
-	libjpeg8, libjasper.1, giflib | libungif, libpng14, libtiff,
+	libjpeg8, libjasper.1, libpng15, libtiff,
+        giflib,
 	szip, libiconv-dev, cfitsio, 
-	netcdf, netcdf-bin,
-	unixodbc2 | unixodbc2-nox,
+	netcdf7, netcdf7-bin,
 	libdap9,
 	proj,
 	libogdi3,
-	hdf5, 
-	libgeos3.2.2 (>= 3.2.2-1),
+	hdf5.7, 
+	libgeos3.3.1,
         sqlite3-dev,
         libspatialite1 (>= 2.3.1-4),
-	(%type_raw[mysql] = -mysql) mysql-unified-dev,
-	(%type_raw[pgsql] = -pgsql) postgresql84-dev,
+	unixodbc2 | unixodbc2-nox,
+	(%type_raw[pgsql] = -pgsql) postgresql90-dev,
 <<
-BuildConflicts: hdf
-# 	python26 - Why was python in here?
-# xerces-c is broken for x86_64
-#	xerces-c-dev, 
 
-
-# Unpack Phase.
+# FIX: add these back in when available
+	# (%type_raw[mysql] = -mysql) mysql-unified-dev,
 
 Source: http://download.osgeo.org/gdal/gdal-%v.tar.gz
-Source-MD5: 05351f8cb61761ae579667e24a297fe6
+Source-MD5: 1853f3d8eb5232ae030abe007840cade
 
 SetCPPFLAGS: -Os -I%p/include
 #SetCPPFLAGS: -Os -I%b/port -I%b/gcore -I%b/alg -I%b/ogr -I%b/ogr/ogrsf_frmts -I%b/ogr/ogrsf_frmts/gtiff -I%p/include
@@ -73,8 +50,10 @@ SetLDFLAGS:
 
 # WARNING: Watch out for the geos dependency!
 
-ConfigureParams: --mandir='${prefix}/share/man' --with-local=%p --with-libz=%p --with-grass=no --with-cfitsio=%p --with-pcraster=no --with-netcdf=%p --with-png=%p --with-libtiff=%p --with-geotiff=internal --with-jpeg=%p --with-gif=%p --with-ogdi=%p --with-fme=no  --with-jasper=yes --with-ecw=no --with-kakadu=no --with-mrsid=no --with-bsb --with-ogr --with-xerces=yes --with-xerces-inc=%p/include --with-xerces-lib='-L%p/lib -lxerces-c -lpthread'  --with-hdf5=%p --with-hdf4=no --with-odbc=%p --with-oci=no --with-dods-root=no --with-geos=%p/opt/libgeos3.2.2/bin/geos-config --with-static-proj4=%p  (%type_raw[pgsql] = .) --without-pg  (%type_raw[pgsql] = -pgsql) --with-pg=%p/bin/pg_config (%type_raw[mysql] = .) --with-mysql=no (%type_raw[mysql] = -mysql) --with-mysql=yes --with-perl --without-php --without-ruby --without-python --libdir=%p/lib --includedir=%p/include/gdal1 --without-perl --with-sqlite3=%p --with-spatialite=%p
+ConfigureParams: --mandir='${prefix}/share/man' --with-local=%p --with-libz=%p --with-grass=no --with-cfitsio=%p --with-pcraster=no --with-netcdf=%p/opt/netcdf7 --with-png=%p --with-libtiff=%p --with-geotiff=internal --with-jpeg=%p --with-ogdi=%p --with-fme=no  --with-jasper=yes --with-ecw=no --with-kakadu=no --with-mrsid=no --with-bsb --with-ogr --with-xerces=yes --with-xerces-inc=%p/include --with-xerces-lib='-L%p/lib -lxerces-c -lpthread'  --with-hdf5=%p --with-hdf4=no --with-oci=no --with-dods-root=no --with-geos=%p/opt/libgeos3.3.1/bin/geos-config --with-static-proj4=%p  (%type_raw[pgsql] = .) --without-pg  (%type_raw[pgsql] = -pgsql) --with-pg=%p/bin/pg_config --with-perl --without-php --without-ruby --without-python --libdir=%p/lib --includedir=%p/include/gdal1 --without-perl --with-sqlite3=%p --with-spatialite=%p --with-gif=%p --with-odbc=%p 
 
+# FIX: add these back when ready
+# (%type_raw[mysql] = .) --with-mysql=no (%type_raw[mysql] = -mysql) --with-mysql=yes
 # --with-dods=%p
 
 
@@ -108,24 +87,29 @@ SplitOff: <<
   Conflicts: gdal-shlibs, gdal-pgsql-shlibs, gdal-mysql-shlibs, gdal-pgsql-mysql-shlibs
   Replaces: gdal-shlibs, gdal-pgsql-shlibs, gdal-mysql-shlibs, gdal-pgsql-mysql-shlibs
   Depends: << 
-    libjpeg8-shlibs, libjasper.1-shlibs, giflib-shlibs | libungif-shlibs, libpng14-shlibs, libtiff-shlibs (>= 3.6.0), 
+    libjpeg8-shlibs, libjasper.1-shlibs, libpng15-shlibs, libtiff-shlibs (>= 3.6.0), 
+    giflib-shlibs,
     szip-shlibs, libiconv,
-    netcdf-shlibs, 
-    hdf5-shlibs, 
-    unixodbc2-shlibs | unixodbc2-nox-shlibs, 
+    netcdf7-shlibs, 
+    hdf5.7-shlibs, 
     libdap9-shlibs,
     proj-shlibs, 
     libogdi3-shlibs,
-    libgeos3.2.2-shlibs (= 3.2.2-1),
+    libgeos3.3.1-shlibs,
     sqlite3-shlibs,
     libspatialite1-shlibs (>= 2.3.1-4),
-    (%type_raw[mysql] = -mysql) mysql-unified,
-    (%type_raw[mysql] = -mysql) mysql-unified-shlibs,
-    (%type_raw[pgsql] = -pgsql) postgis84,
-    (%type_raw[pgsql] = -pgsql) postgresql84-shlibs,
+    (%type_raw[pgsql] = -pgsql) postgis90,
+    (%type_raw[pgsql] = -pgsql) postgresql90-shlibs,
   <<
+
+# FIX: add back when ready
+# giflib | libungif, 
+#     unixodbc2-shlibs | unixodbc2-nox-shlibs, 
+#    (%type_raw[mysql] = -mysql) mysql-unified,
+#    (%type_raw[mysql] = -mysql) mysql-unified-shlibs,
+
   Files: lib/libgdal.*.dylib
-  Shlibs: %p/lib/libgdal.1.dylib 16.0.0 %n (>= 1.7.0-1)
+  Shlibs: %p/lib/libgdal.1.dylib 18.0.0 %n (>= 1.9.0-1)
   DocFiles: LICENSE.TXT
 <<
 
@@ -154,6 +138,38 @@ See http://wiki.finkproject.org/index.php?title=Fink:Packaging:GIS
 
 DescPort: <<
 <<
+
+Description: Raster/Vector Geospatial Format Translator
+License: BSD
+Homepage: http://www.gdal.org
+Maintainer: Kurt Schwehr <goatbar@users.sourceforge.net>
+DescDetail: <<
+GDAL is a translator library for raster geospatial data formats. As a library,
+it presents a single abstract data model to the calling application for all
+supported formats.
+
+Current translators include GeoTIFF (read/write), Erdas Imagine (read),
+ESRI .BIL (read/write), .aux labelled raw (read/write), DTED (read),
+SDTS DEM (read), CEOS (read), JPEG (read/write), PNG (read/write),
+Geosoft GXF (read), Arc/Info Binary Grid (read), FITS (read/write),
+netCDF (limited read/write), and GIF (read/write).
+
+The current version of GDAL come with the related OGR library (which lives 
+within the GDAL source tree) provides a similar capability for simple features 
+vector data.
+
+The OGR Simple Features Library is a C++ open source library (and commandline 
+tools) providing read (and sometimes write) access to a variety of vector file 
+formats including ESRI Shapefiles, S-57, SDTS, PostGIS, Oracle Spatial, and 
+Mapinfo mid/mif and TAB formats.
+<<
+DescUsage: <<
+Packages that need GDAL/OGR libraries should builddepend on gdal-dev and 
+depend on gdal-shlibs.  Make sure that configure finds the gdal-config 
+script in %p/bin, which tells that the headers are 
+in %p/include/gdal1/ and the libraries are in %p/lib/.
+<<
+
 
 # End of Info3
 <<
