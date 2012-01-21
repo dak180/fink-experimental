@@ -1,12 +1,12 @@
 Package: r-cran-rgdal
-Version: 0.7-1
-Revision: 0.1
+Version: 0.7-8
+Revision: 1
 Description: GNU R Bindings for GDAL
 Homepage: http://sourceforge.net/projects/rgdal/
 License: GPL
 Maintainer:  BABA Yoshihiko <babayoshihiko@mac.com>
 Source: http://cran.r-project.org/src/contrib/rgdal_%v.tar.gz
-Source-MD5: a51dcd59cbc4ca5008beb7ee4fb5e5d8
+Source-MD5: 3039c6b70695ba9c929d29a2e71ca756
 SourceDirectory: rgdal
 Depends: r-base, r-cran-sp, gdal-shlibs, libspatialite1-shlibs (>=2.3.1-14)
 BuildDepends: r-base, gdal-dev, r-cran-sp-dev
