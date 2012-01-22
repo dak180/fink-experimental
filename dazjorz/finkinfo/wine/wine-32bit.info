@@ -46,10 +46,10 @@ BuildConflicts: <<
  flex (<= 1:2.5.33-1)
 <<
 Conflicts: <<
- wine-stable, libpng15-x86
+ wine-stable, wine-x86
 <<
 Replaces: <<
- wine-stable, libpng15-x86
+ wine-stable, wine-x86
 <<
 Source: mirror:sourceforge:wine/wine-%v.tar.bz2
 Source-MD5: dfcefe48a9aae82f7f1aa4d2c6617961
