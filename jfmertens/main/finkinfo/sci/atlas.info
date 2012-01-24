@@ -1,5 +1,5 @@
 Package: atlas
-Version: 3.9.32
+Version: 3.9.63
 Revision: 1
 Description: Portable optimal linear algebra software
 DescDetail: <<
@@ -30,51 +30,52 @@ Order is important when linking! Use:
 -L%p/lib -llapack -lcblas -lf77blas -latlas
 <<
 Source: mirror:sourceforge:math-atlas/files/%n%v.tar.bz2
-Source-MD5: 54417c95f88e4f2368ab8bd90de3b8d4
-# src2 still needed for the html documentation _ still html doc to find...
-Source2: http://www.netlib.org/lapack/lapack-3.1.1.tgz
-Source2-MD5: 00b21551a899bcfbaa7b8443e1faeef9
-# this is version 3.3.0, to be used for the build:
-Source3: http://www.netlib.org/lapack/lapack.tgz
-Source3-MD5: 84213fca70936cc5f1b59a7b1bf71697
-# the rename to avoid easily conceivable name-clashes in %/src
-Source4: http://www.netlib.org/lapack/manpages.tgz
-Source4-MD5: 145007cab915504caec382289462a166
-Source4Rename: lapack_manpages.tgz
+Source-MD5: 468c81b9ae36234778b62402e9efb8fa
+Source2: http://www.netlib.org/lapack/lapack-3.4.0.tgz
+Source2-MD5: 02d5706ec03ba885fc246e5fa10d8c70
 
 SourceDirectory: ATLAS 
 License: BSD
+
+NoSetMAKEFLAGS: true
+SetMAKEFLAGS: -j1
 BuildDependsOnly: true
-BuildDepends: gcc45-compiler
+BuildDepends: gcc46-compiler, doxygen
 
 # The whole previous patchscript is in the srcs for %v 3.9.4
 PatchScript: <<
 #!/bin/sh -ev
-## put different srcs in logical dirs, lapack-version independent
+## put srcs in logical dirs, version independent
 cd ..
 if [ -e LAPACK ] ; then mv LAPACK LAPACK-strange; fi
-mv lapack-3.3.0 LAPACK
+mv lapack-3.4.0 LAPACK
 # first need the tarball of lapack (and no % will give the path to the original;
 # not worth to check the user's fink.conf for a FetchAltDir entry etc)
 tar -czf lapack.tgz LAPACK
-mv lapack-3.2.0/manpages LAPACK
-rm -fR lapack-3.2.0
-mv lapack-3.1.1/html LAPACK
-rm -fR lapack-3.1.1
 cd -
 
 ##
 #        -e '/f77blas\.dylib *:/,/lapack\.dylib *:/s, \$(LIBS),,' \
 sed -i.bak -e 's,libtool -dynamic,\$(LIBTOOL) -dynamic,' -e 's,_version %v,_version \$(VER),g' \
 	-e 's,-compatibility_version \$(VER) ,,' \
+	-e '/^dylib :/,/^ptdylib :/s,[(]LIBS[)],& $(F77SYSLIB),' \
 	-e '/lapack\.dylib *:/,/clapack\.dylib *:/s,\$(LIBS),-lgcc_s.1 &,' makes/Make.lib
 sed -i.bak -e 's,LIBTOOL",LIBTOOL -single_module -dead_strip -x",' configure
+# use correct fink prefix
+sed -i.bak -e 's,/sw,%p,' CONFIG/src/{config,probe_comp}.c
+
+## remove leftover object files
+tar -zxf CONFIG/ARCHS/lapack_test.tar.gz
+find LAPACK_TEST -name '*.o' -exec rm -f \{\} \;
+tar -zcf CONFIG/ARCHS/lapack_test.tar.gz LAPACK_TEST 
 
 cd ..
 cd LAPACK
-sed -e 's,\.\./\.\./blas\$(PLAT)\.a,%b/../bld/lib/libf77blas.a %b/../bld/lib/libcblas.a %b/../bld/lib/libatlas.a,' \
-    -e 's,lapack\$(PLAT)\.a,../bld/lib/liblapack.a,' \
-    -e 's,^TIMER,\#TIMER,' -e '/INT_ETIME/s,^\# *,,' < make.inc.example > make.inc
+sed -e 's,\.\./.\./librefblas\.a,%b/../bld/lib/libf77blas.a %b/../bld/lib/libcblas.a %b/../bld/lib/libatlas.a,' \
+    -e 's,lapack\.a,%b/../bld/lib/liblapack.a,' \
+    -e 's,libtmglib.a,%b/../bld/src/lapack/reference/libtmglib.a,' < make.inc.example > make.inc
+path=`which perl`
+sed -ri -e "s,/s./bin/perl,$path," DOCS/Doxyfile*
 <<
 
 # -Si omp 2 -Si antthr 2 -Si lapackref ? -Ss flapack %b/../LAPACK/SRC ?
@@ -96,27 +97,19 @@ CompileScript: <<
  iflags="-fPIC"
  lflags="$iflags"
  cd ../LAPACK
- sed -i.bak -e "/^OPTS /s;=;= $mflags;" -e 's, -g$,,' make.inc
-# make lapacklib
+ sed -i.bak -e "/^OPTS /s;=;= $mflags;" -e 's, -g$,,' -e '/LOADOPTS/s,=,= $(OPTS),' make.inc
  cd ..
- ln -s %p/lib/gcc4.5/bin/gcc-4 gcc
-# if test -f /usr/bin/gcc-4.2; then ln -s /usr/bin/gcc-4.2 gcc; fi
- export PATH=`pwd`:%p/lib/gcc4.5/bin:$PATH
+ ln -s %p/lib/gcc4.6/bin/gcc-4 gcc
+ GCCADDR=`pwd`
+ export PATH=$GCCADDR:%p/lib/gcc4.6/bin:$PATH
  mkdir -p bld
  cd bld
- ../ATLAS/configure %c -F alg "$mflags" $confflags
-# first fix wrong F77SYSLIB; else gets set to %p/lib/gcc4.3/bin/../lib/gcc/powerpc-apple-darwin8/4.3.3
-# instead of following "path" : %p/lib/gcc4.3/bin/../lib/gcc/powerpc-apple-darwin8/4.3.3/../../.. (= %p/lib/gcc4.3/lib)
- path=`gfortran -print-file-name=libgfortran.dylib|sed -e 's,/[^/]*$,,'`
- path=`cd $path 2>/dev/null && pwd || :`
- sed -i.bak -e "s,F77SYSLIB =.*,F77SYSLIB = -L$path -lgfortran," Make.inc
- #
+
+ ../ATLAS/configure %c -C ac $GCCADDR/gcc -C if gfortran-fsf-4.6 -F alg "$mflags" $confflags
  make
-# cd src/lapack
-# make ATL_ilaenv.o
-# cd -
+
+### LIBS
  cd lib
-# ar -r liblapack.a ../../bld/src/lapack/ATL_ilaenv.o
  ranlib *.a
  # Apparently on some machines (=monoprocessors ?) the threaded libs are not made;
  # we first make atlas 'look the same' to all other pkgs, independently of the machine
@@ -125,21 +118,29 @@ CompileScript: <<
 		mv lib${C}blas.a lib${C}blas_unthreaded.a
 		ln -s libpt${C}blas.a lib${C}blas.a
 	     done
+		mv liblapack.a liblapack_unthreaded.a
+		ln -s libptlapack.a liblapack.a
 	else for C in c f77; do
 		ln -s lib${C}blas.a lib${C}blas_unthreaded.a
 	     done
+		ln -s liblapack.a liblapack_unthreaded.a
  fi
-
-make dylib
+### make dylib
  # We now make shared libs (experimental); easier to just write the commands here than to fix lib/Makefile ...
- # We link 'manually', with ld, to avoid having unnecessary libs like lgcc_s among the load commands.
+ # We link 'manually', with ld, to try avoid having unnecessary libs like lgcc_s among the load commands.
  # This way the libs can be safely used in linking with any compiler: they will not bring themselves
  # the wrong lgcc_s in the search list.
-# ld="ld -dynamic -dylib -single_module -dead_strip -x -all_load -L. -L%p/lib/gcc4.3/lib -ldylib1.o -dylib_install_name"
-# $ld %p/lib/libatlas.dylib libatlas.a -o libatlas.dylib -lSystem
-# $ld %p/lib/libcblas.dylib libcblas.a -o libcblas.dylib -latlas -lSystem
-# $ld %p/lib/libf77blas.dylib libf77blas.a -o libf77blas.dylib -lgfortran -latlas -lSystem
-# $ld %p/lib/liblapack.dylib liblapack.a -o liblapack.dylib -lf77blas -lgfortran -lcblas -latlas -lgcc_s.1 -lSystem
+ mkdir -p tmp
+ ld="ld -arch `sed -e 's,powerpc,ppc,' <<<'%m'` -dynamic -dylib -single_module -dead_strip_dylibs -dead_strip -x tmp/*.o -L. -L%p/lib/gcc4.6/lib -ldylib1.o -dylib_install_name"
+ cd tmp; rm -f *; ar x ../libatlas.a; cd -
+ $ld %p/lib/libatlas.dylib libatlas.a -o libatlas.dylib -lSystem
+ cd tmp; rm -f *; ar x ../libcblas.a; cd -
+ $ld %p/lib/libcblas.dylib libcblas.a -o libcblas.dylib -latlas -lSystem
+ cd tmp; rm -f *; ar x ../libf77blas.a; cd -
+ $ld %p/lib/libf77blas.dylib libf77blas.a -o libf77blas.dylib -lgfortran -latlas -lSystem
+ cd tmp; rm -f *; ar x ../liblapack.a; cd -
+ $ld %p/lib/liblapack.dylib liblapack.a -o liblapack.dylib -lf77blas -lgfortran -lcblas -latlas -lgcc_s.1 -lSystem
+ rm -fR tmp
  ## the next 4 lines are optional _ no idea of a correct exported symbols list for libatlas...
  ## probably to be removed for a commit _ it gains an enormous decrease in the # of symbols exported by the lib,
  ## but size goes down only from ~ 2.8M to 2.3M
@@ -147,6 +148,11 @@ make dylib
  # install_name_tool -id %p/lib/libatlas_full.dylib libatlas.dylib
  # mv libatlas.dylib libatlas_full.dylib
  # $ld %p/lib/libatlas.dylib libatlas.a -o libatlas.dylib -ldylib1.o -lSystem -exported_symbols_list lst
+ cd ..
+
+### LAPACK-DOCS
+ cd ../LAPACK
+ make man html
 <<
 InfoTest: <<
 TestSuiteSize: large
@@ -160,7 +166,7 @@ TestScript: <<
 # to get timing uncluttered by compilation times, we'll repeat the tests at the end of the log:
  rm BLAS/*.out
  cd ../bld
- make -k full_test_nh || :
+ make -k full_test || :
  if test -f lib/libptcblas.a
 	then make -k lapack_test_al_pt || :; make -k ptcheck time || :
 	else make -k lapack_test_al_ab || :; make -k check time || :
@@ -177,21 +183,22 @@ InstallScript: <<
  mkdir -p %i/share/doc/%n/LAPACK
  cp doc/* INSTALL.txt README %i/share/doc/%n
  head -n29 bin/atlas_tee.c > %i/share/doc/%n/LICENSE
- cp -pPR ../LAPACK/manpages/{blas/,}man %i/share
- cp -pPR ../LAPACK/{LICENSE,README,INSTALL/lawn81.tex} %i/share/doc/%n/LAPACK
- cp -pPR ../LAPACK/html %i/share/doc/%n/LAPACK
- ln -s html/index.html %i/share/doc/%n/LAPACK
+ cp -pPR ../LAPACK/DOCS/man %i/share
+ cp -pPR ../LAPACK/DOCS/{org2.ps,lapacke.pdf,lawn81.tex} %i/share/doc/%n/LAPACK
+ cp -pPR ../LAPACK/{LICENSE,README} %i/share/doc/%n/LAPACK
+ cp -pPR ../LAPACK/DOCS/explore-html %i/share/doc/%n/LAPACK/html
+ ln -s html/index.html %i/share/doc/%n/LAPACK/lapack.html
  cd ../bld
  make install DESTDIR=%i
  cp -pPR lib/*.{a,dylib} %i/lib
- rm -f %i/lib/libtstatlas.a
+ rm -f %i/lib/libtstatlas.a %i/lib/libf77refblas.a
  find %i/lib -type f -name '*.a' -exec ranlib \{\} \;
  chmod -R a-x %i/lib/*
  chmod -R a+rX %i/share
 <<
 Splitoff: <<
 	Package: %N-shlibs
-	Depends: gcc44-shlibs
+	Depends: gcc46-shlibs
 	Files: lib/*.dylib
 	InstallScript: mkdir -p %i/share/doc; ln -s %N %i/share/doc/%n
 	Shlibs: <<
