@@ -22,7 +22,7 @@ T=`sed -e 's,\.,,g' <<<"$t"`
 ## no strict-aliasing for the lib, since it gives a warning in lp_matrix.c 2357-2358)
   sed -i'' -e "{
 	/fpic/d
-	s;-shared.*;*.o -dynamiclib -Wl,-x -dead_strip -exported_symbols_list ../exp_sym -compatibility_version $comp_v -current_version $curr_v -o lib${N}.$v.dylib -install_name $p/lib/lib${N}.$t.dylib;
+	s;-shared.*;*.o -dynamiclib -single_module -Wl,-x -dead_strip -exported_symbols_list ../exp_sym -compatibility_version $comp_v -current_version $curr_v -o lib${N}.$v.dylib -install_name $p/lib/lib${N}.$t.dylib;
 	/^ar /c ar rc lib${N}.$v.a *.o
 	s,$T,.$v,
 	}" ${N}$T/ccc

@@ -6,7 +6,7 @@ Revision: 1
 # rev-up and adapt next line at version-increases of lpsolve or glpk
 Type: glpk (4.44), maj (5.5)
 
-BuildDepends: lpsolve%type_raw[maj]-dev (>= %v-1), glpk (>= %type_raw[glpk]-1), bison, flex, sed | ssed, fink (>= 0.24.12)
+BuildDepends: lpsolve%type_raw[maj]-dev (>= %v-1), glpk (>= %type_raw[glpk]-1), bison, flex-devel, sed | ssed, fink (>= 0.24.12)
 Depends: lpsolve%type_raw[maj]-shlibs (>= %type_raw[maj].0.0-1)
 
 # we need the lp_solve source again, for yacc_read.c lp_Hash.c lp_utils.c shared/{commonlib,myblas}.c and colamd/colamd.c
@@ -40,7 +40,7 @@ Source11-MD5: f2ac7013bc0420d730d052e7ba24bdb1
 SourceDirectory: lp_solve_%type_raw[maj]
 
 PatchFile: lpsolve.patch
-PatchFile-MD5: f27f7a5dbd1d2411e2b83ac7db502bf9
+PatchFile-MD5: 5f39de620f43ea3c4e8911c28cf494d8
 PatchScript: <<
 #!/bin/sh -ev
 N=lpsolve

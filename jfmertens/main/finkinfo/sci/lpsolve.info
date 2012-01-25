@@ -3,7 +3,7 @@ Package: lpsolve
 Description: Mixed Integer Linear Programming (ILP) solver
 Type: maj (5.5)
 Version: 5.5.2.0 
-Revision: 1
+Revision: 2
 
 BuildDepends: sed | ssed, bison, flex-devel, fink (>= 0.24.12)
 Depends: %N%type_raw[maj]-shlibs (= %v-%r)
@@ -14,7 +14,7 @@ Source-MD5: 167c0fb4ab178e0b7ab50bf0a635a836
 SourceDirectory: lp_solve_%type_raw[maj]
 
 PatchFile: %{Ni}.patch
-PatchFile-MD5: f27f7a5dbd1d2411e2b83ac7db502bf9
+PatchFile-MD5: 5f39de620f43ea3c4e8911c28cf494d8
 PatchScript: <<
 #!/bin/sh -ev
 N=%N
