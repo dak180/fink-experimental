@@ -132,7 +132,7 @@ CompileScript: <<
  # the wrong lgcc_s in the search list.
  mkdir -p tmp
  flag=''
- if [ `uname -r | cut -d. -f1` -lt 9 ] ; then flag=-dead_strip_dylibs ; fi
+ if [ `uname -r | cut -d. -f1` -ge 9 ] ; then flag=-dead_strip_dylibs ; fi
  ld="ld -arch `sed -e 's,powerpc,ppc,' <<<'%m'` -dynamic -dylib -single_module $flag -dead_strip -x tmp/*.o -L. -L%p/lib/gcc4.6/lib -ldylib1.o -dylib_install_name"
  cd tmp; rm -f *; ar x ../libatlas.a; cd -
  $ld %p/lib/libatlas.dylib libatlas.a -o libatlas.dylib -lSystem
