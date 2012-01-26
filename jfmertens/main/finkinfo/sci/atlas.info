@@ -9,17 +9,17 @@ with machine-specific tuned libraries.
 Installs also LAPACK's docs and manpages.
 Headers: cblas.h clapack.h, plus the atlas headers
 Libraries installed:
-liblapack.a		: The LAPACK routines provided by ATLAS,
+lib(pt)lapack.a		: The LAPACK routines provided by ATLAS,
 			plus the rest of LAPACK from netlib.org.
-libcblas_unthreaded.a	: The ANSI C interface to the BLAS.
-libf77blas_unthreaded.a	: The Fortran77 interface to the BLAS.
+lib(pt)cblas.a		: The ANSI C interface to the BLAS.
+lib(pt)f77blas.a	: The Fortran77 interface to the BLAS.
 libatlas.a		: The main ATLAS library,
 			providing low-level routines for all interface libs.
-  Plus on multiprocessor machines the threaded variants libptcblas.a and
-libptf77blas.a.
-  libcblas.a and libf77blas.a are symlinks pointing to the threaded versions
-if available, else to the unthreaded versions.
-  The dylibs for latlas lcblas lf77bas and llapack are also installed
+On monoprocessor machines, the "threaded"  versions
+(those with "pt" in parentheses) are just symlinks to the unthreaded ones.
+The main use of the serial interface is for parallel packages
+that handle the parallelism on their own, and need serial blas/lapack.
+  The corresponding dylibs are also installed.
 <<
 DescPort: <<
 The optimized subset of LAPACK provided by ATLAS is merged
@@ -27,7 +27,10 @@ with the full LAPACK from http://www.netlib.org/lapack.
 <<
 DescUsage: <<
 Order is important when linking! Use:
--L%p/lib -llapack -lcblas -lf77blas -latlas
+-L%p/lib -lptlapack -lptcblas -lptf77blas -latlas
+(or the analogue without "pt" in pkgs that handle parallelism on their own).
+
+Also decide carefully whether you want to link to static or to shared libs.
 <<
 Source: mirror:sourceforge:math-atlas/files/%n%v.tar.bz2
 Source-MD5: 468c81b9ae36234778b62402e9efb8fa
@@ -39,6 +42,7 @@ License: BSD
 
 NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
+UseMaxBuildJobs: false
 BuildDependsOnly: true
 BuildDepends: gcc46-compiler, doxygen
 
@@ -113,17 +117,10 @@ CompileScript: <<
  ranlib *.a
  # Apparently on some machines (=monoprocessors ?) the threaded libs are not made;
  # we first make atlas 'look the same' to all other pkgs, independently of the machine
- if test -f libptcblas.a
-	then for C in c f77; do
-		mv lib${C}blas.a lib${C}blas_unthreaded.a
-		ln -s libpt${C}blas.a lib${C}blas.a
-	     done
-		mv liblapack.a liblapack_unthreaded.a
-		ln -s libptlapack.a liblapack.a
-	else for C in c f77; do
-		ln -s lib${C}blas.a lib${C}blas_unthreaded.a
-	     done
-		ln -s liblapack.a liblapack_unthreaded.a
+ if [ ! -f libptcblas.a ] ; then mono=Y; else mono=N; fi
+ if [ $mono = Y ] ; then for C in c f77
+		do ln -s lib${C}blas.a libpt${C}blas.a ; done
+		ln -s liblapack.a libptlapack.a
  fi
 ### make dylib
  # We now make shared libs (experimental); easier to just write the commands here than to fix lib/Makefile ...
@@ -131,17 +128,25 @@ CompileScript: <<
  # This way the libs can be safely used in linking with any compiler: they will not bring themselves
  # the wrong lgcc_s in the search list.
  mkdir -p tmp
- flag=''
- if [ `uname -r | cut -d. -f1` -ge 9 ] ; then flag=-dead_strip_dylibs ; fi
+ if [ `uname -r | cut -d. -f1` -ge 9 ] ; then flag=-dead_strip_dylibs ; else flag='' ; fi
  ld="ld -arch `sed -e 's,powerpc,ppc,' <<<'%m'` -dynamic -dylib -single_module $flag -dead_strip -x tmp/*.o -L. -L%p/lib/gcc4.6/lib -ldylib1.o -dylib_install_name"
- cd tmp; rm -f *; ar x ../libatlas.a; cd -
- $ld %p/lib/libatlas.dylib libatlas.a -o libatlas.dylib -lSystem
- cd tmp; rm -f *; ar x ../libcblas.a; cd -
- $ld %p/lib/libcblas.dylib libcblas.a -o libcblas.dylib -latlas -lSystem
- cd tmp; rm -f *; ar x ../libf77blas.a; cd -
- $ld %p/lib/libf77blas.dylib libf77blas.a -o libf77blas.dylib -lgfortran -latlas -lSystem
- cd tmp; rm -f *; ar x ../liblapack.a; cd -
- $ld %p/lib/liblapack.dylib liblapack.a -o liblapack.dylib -lf77blas -lgfortran -lcblas -latlas -lgcc_s.1 -lSystem
+ lnk () {
+	cd tmp; rm -f *; ar x ../lib$1.a; cd -
+	$ld %p/lib/lib$1.dylib -o lib$1.dylib $2 -lSystem
+	}
+ lnk atlas ''
+ lnk cblas -latlas
+ lnk f77blas '-lgfortran -latlas'
+ lnk lapack "-lf77blas -lgfortran -lcblas -latlas -lgcc_s.1"
+ if [ $mono = Y ]
+	then
+		for name in blas f77blas lapack
+		do ln -s lib$name.dylib libpt$name.dylib ; done
+	else
+		lnk ptcblas -latlas
+		lnk ptf77blas "-lgfortran -latlas"
+		lnk ptlapack "-lptf77blas -lgfortran -lptcblas -latlas -lgcc_s.1"
+ fi
  rm -fR tmp
  ## the next 4 lines are optional _ no idea of a correct exported symbols list for libatlas...
  ## probably to be removed for a commit _ it gains an enormous decrease in the # of symbols exported by the lib,
@@ -204,10 +209,13 @@ Splitoff: <<
 	Files: lib/*.dylib
 	InstallScript: mkdir -p %i/share/doc; ln -s %N %i/share/doc/%n
 	Shlibs: <<
-	%p/lib/liblapack.dylib	0.0.0	%n	(>= 3.8.0-6)
-	%p/lib/libcblas.dylib	0.0.0	%n	(>= 3.8.0-6)
-	%p/lib/libf77blas.dylib	0.0.0	%n	(>= 3.8.0-6)
-	%p/lib/libatlas.dylib	0.0.0	%n	(>= 3.8.0-6)
+	%p/lib/liblapack.dylib		0.0.0	%n	(>= 3.8.0-6)
+	%p/lib/libptlapack.dylib	0.0.0	%n	(>= 3.9.63-1)
+	%p/lib/libf77blas.dylib		0.0.0	%n	(>= 3.8.0-6)
+	%p/lib/libptf77blas.dylib	0.0.0	%n	(>= 3.9.63-1)
+	%p/lib/libcblas.dylib		0.0.0	%n	(>= 3.8.0-6)
+        %p/lib/libptcblas.dylib		0.0.0	%n	(>= 3.9.63-1)
+	%p/lib/libatlas.dylib		0.0.0	%n	(>= 3.8.0-6)
 	<<
 <<
 SplitOff2: <<
