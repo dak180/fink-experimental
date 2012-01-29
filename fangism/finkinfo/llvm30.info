@@ -1,6 +1,6 @@
 Package: llvm30
 Version: 3.0
-Revision: 0.2
+Revision: 0.3
 Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
@@ -18,7 +18,7 @@ InfoTest: <<
 #	TestDepends: dejagnu, expect
  	TestScript: <<
 	#!/bin/sh -ev
-	cd ../build
+	cd ../build/last
 #	echo "******** Running included LLVM and clang tests ... ********"
 	make -k check-all || :
 	echo "Expect 2 additional test failures due to i386 on powerpc target"
@@ -132,7 +132,14 @@ CompileScript: <<
 	{ echo "#!/bin/sh" ; echo 'exec ccache g++-4.2 "$@"' ; } > ccg++-4.2
 	{ echo "#!/bin/sh" ; echo 'exec ccache gcc-fsf-4.6 "$@"' ; } > ccgcc-4.6
 	{ echo "#!/bin/sh" ; echo 'exec ccache g++-fsf-4.6 "$@"' ; } > ccg++-4.6
-	chmod +x ccg*
+	# also setup bootstrap stage compilers
+	# yes, ccache 3.1 supports compiler binary hashing
+	{ echo "#!/bin/sh" ; echo 'exec ccache st1-clang "$@"' ; } > cc-st1-clang
+	{ echo "#!/bin/sh" ; echo 'exec ccache st1-clang++ "$@"' ; } > cc-st1-clang++
+	{ echo "#!/bin/sh" ; echo 'exec ccache st2-clang "$@"' ; } > cc-st2-clang
+	{ echo "#!/bin/sh" ; echo 'exec ccache st2-clang++ "$@"' ; } > cc-st2-clang++
+
+	chmod +x cc*
 	export PATH=`pwd`:$PATH
 	popd
 
@@ -162,13 +169,10 @@ CompileScript: <<
 
 #	the --max-time option applies to aggregate test time, not individual :(
 #	CMAKE_OPTIONS="$CMAKE_OPTIONS -DLLVM_LIT_ARGS="-s -v --max-time=14400"
-	mkdir ../build
-	pushd ../build
-	cmake $CMAKE_OPTIONS ../llvm-%v.src
-	# this will fail, but we have to run it first and then fix some deps
-	make -k || :
+
+	build_workaround () {
 	# hack away some Makefiles: clangSerialization folded into clangFrontend
-	pushd ../llvm-%v.src
+	pushd ../../llvm-%v.src
 	for d in tools/clang/{lib,include/clang}
 		do sed -i.orig -e '/Serialization/d' $d/CMakeLists.txt
 	done
@@ -176,14 +180,83 @@ CompileScript: <<
 	# bypass a cyclic dependency check
 	if test ! -f tools/llvm-config/FinalLibDeps.txt
 	then
-	echo "ALERT: ignoring cyclic dependency checker..."
+		echo "ALERT: ignoring cyclic dependency checker..."
 		pushd tools/llvm-config
 		ln -s FinalLibDeps.txt{.tmp,}
 		popd
 	fi
-	make || make VERBOSE=1 || exit 1
+	}
+
+	echo "######## START of BOOTSTRAP STAGE 1: building llvm/clang with the system compiler"
+	mkdir -p ../build/stage1
+	pushd ../build/stage1
+	# Technically, we only need the native back-end...
+	cmake $CMAKE_OPTIONS ../llvm-%v.src
+	# this will fail, but we have to run it first and then fix some deps
+	make -k || :
+	build_workaround
+	make || make VERBOSE=1
+	cd ..
+	ln -s -f stage1 last
+	popd
+	# link stage1 compilers into opt-bin for next stage
+	pushd ../opt-bin
+	ln -s ../build/stage1/bin/clang st1-clang
+	ln -s ../build/stage1/bin/clang++ st1-clang++
+	popd
+	echo "######## END of BOOTSTRAP STAGE 1: built llvm/clang with the system compiler"
+
+	echo "######## START of BOOTSTRAP STAGE 2: building llvm/clang with stage 1 clang"
+	export CCACHE_COMPILERCHECK=content
+	export CC=cc-st1-clang
+	export CXX=cc-st1-clang++
+	pushd ../llvm-%v.src
+	# undo our hack from before...
+	for d in tools/clang/{lib,include/clang}
+		do mv -f $d/CMakeLists.txt{.orig,}
+	done
+	popd
+	mkdir -p ../build/stage2
+	pushd ../build/stage2
+	cmake $CMAKE_OPTIONS ../llvm-%v.src
+	make -k || :
+	build_workaround
+	make || make VERBOSE=1
+	cd ..
+	ln -s -f stage2 last
+	popd
+	pushd ../opt-bin
+	ln -s ../build/stage2/bin/clang st2-clang
+	ln -s ../build/stage2/bin/clang++ st2-clang++
+	popd
+	echo "######## END of BOOTSTRAP STAGE 2: built llvm/clang with stage 1 clang"
+	echo "######## START of BOOTSTRAP STAGE 3: building llvm/clang with stage 2 clang"
+	export CC=cc-st2-clang
+	export CXX=cc-st2-clang++
+	pushd ../llvm-%v.src
+	# undo our hack from before...
+	for d in tools/clang/{lib,include/clang}
+		do mv -f $d/CMakeLists.txt{.orig,}
+	done
+	popd
+	mkdir -p ../build/stage3
+	pushd ../build/stage3
+	cmake $CMAKE_OPTIONS ../llvm-%v.src
+	make -k || :
+	build_workaround
+	make || make VERBOSE=1
+	cd ..
+	ln -s -f stage3 last
+	popd
+	echo "######## END of BOOTSTRAP STAGE 3: built llvm/clang with stage 2 clang"
+	# comparison!
+	pushd ../build
+	diff -r stage{2,3}/lib
+	diff -r stage{2,3}/bin
+	echo "######## 3-STAGE BOOTSTRAP of llvm/clang PASSED!"
+
 	# add our newly built tools to our path
-#	cd bin
+#	cd ../build/final/bin
 #	export PATH=`pwd`:$PATH
 #	popd
 #	echo "******** Building libc++ ********"
@@ -194,30 +267,32 @@ CompileScript: <<
 <<
 
 InstallScript: <<
-#!/bin/sh -ev
-	pushd ../build
+	#!/bin/sh -ev
+	iprefix=%i/opt/llvm-%v
+	prefix=%p/opt/llvm-%v
+	pushd ../build/last
 		make -j1 install/fast DESTDIR="%d"
 	popd
 
-	pushd %i/opt/llvm-%v/lib
+	pushd $iprefix/lib
 	for f in *.dylib
 	do
 		if test ! -L $f
 		then
-		install_name_tool -id "%p/opt/llvm-%v/lib/$f" "$f"
+		install_name_tool -id "$prefix/lib/$f" "$f"
 		deplibs=`otool -L $f | sed 1,2d | awk '{print $1;}' | tr '\n' ' '`
 		for d in $deplibs
 		do
 		# prefix absolute paths to llvm/clang's lib installation
 		case $d in
 		/*) ;;
-		*) install_name_tool -change "$d" "%p/opt/llvm-%v/lib/$d" $f ;;
+		*) install_name_tool -change "$d" "$prefix/lib/$d" $f ;;
 		esac
 		done
 		fi
 	done
 	popd
-	pushd %i/opt/llvm-%v/bin
+	pushd $iprefix/bin
 	for f in *
 	do
 		if test ! -L $f
@@ -229,7 +304,7 @@ InstallScript: <<
 		case $d in
 		/*) ;;
 		@*) ;;
-		*) install_name_tool -change "$d" "%p/opt/llvm-%v/lib/$d" $f ;;
+		*) install_name_tool -change "$d" "$prefix/lib/$d" $f ;;
 		esac
 		done
 		fi
@@ -237,13 +312,13 @@ InstallScript: <<
 	popd
 
 	# documentation
-	docdir=%p/opt/llvm-%v/share/doc
-	idocdir=%i/opt/llvm-%v/share/doc
+	docdir=$prefix/share/doc
+	idocdir=$iprefix/share/doc
 	mkdir -p $idocdir
 	cp -R docs $idocdir/llvm
 	cp -R tools/clang/docs $idocdir/clang
-	mkdir -p %i/share/doc/%n
-	pushd %i/share/doc/%n
+	mkdir -p $idocdir/%n
+	pushd $idocdir/%n
 	ln -s $docdir/llvm .
 	ln -s $docdir/clang .
 	popd
@@ -332,6 +407,15 @@ that can be used to build them.
 
 The goal of the Clang project is to create a new C, C++, Objective C 
 and Objective C++ front-end for the LLVM compiler.
+<<
+DescPackaging: <<
+Built with shared-libraries to reduce the binary size.
+Enabled targets X86, PowerPC, ARM
+I suspect the following shlibs are actually plug-ins, and should
+(conventionally) be suffixed .so:
+	profile_rt.dylib
+	BugpointPasses.dylib
+	LLVMHello.dylib
 <<
 DescPort: <<
 fangism contributed this port for PowerPC-Darwin8.
