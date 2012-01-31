@@ -43,6 +43,8 @@ done
 sed -i.orig '/SCM_ARRAY_ELEMENT_TYPE_LAST/s|,$||' libguile/array-handle.h
 # fix typedef for function pointer
 sed -i.orig 's|void.*scm_t_subr|void (*scm_t_subr)()|' libguile/__scm.h
+# fix framework flag for CoreFoundation (defined in aclocal.m4)
+sed -i.orig 's|-Wl,-framework -Wl,CoreFoundation|-Wl,-framework,CoreFoundation|g' configure
 {
 echo '#!/bin/sh'
 echo 'export GUILE=guile-2.0'
