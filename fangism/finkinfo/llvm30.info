@@ -53,7 +53,9 @@ PatchFile-MD5: c7f58f6db846bb8ab4fde81291dd3da7
 PatchScript: <<
 	#!/bin/sh -ev
 	# relocated a few auxiliary directories where they are expected
-	mv ../clang-%v.src tools/clang
+	pushd tools
+	ln -s ../../clang-%v.src ./clang
+	popd
 #	mv ../test-suite-%v.src projects/test-suite
 	%{default_script}
 	pushd ..
@@ -171,6 +173,7 @@ CompileScript: <<
 #	CMAKE_OPTIONS="$CMAKE_OPTIONS -DLLVM_LIT_ARGS="-s -v --max-time=14400"
 
 	build_workaround () {
+	# pwd: builddir
 	# hack away some Makefiles: clangSerialization folded into clangFrontend
 	pushd ../../llvm-%v.src
 	for d in tools/clang/{lib,include/clang}
@@ -187,67 +190,74 @@ CompileScript: <<
 	fi
 	}
 
+	build_workaround_undo() {
+	# pwd: builddir
+	# undo our hack from before...
+	for d in tools/clang/{lib,include/clang}
+		do mv -f $d/CMakeLists.txt{.orig,}
+	done
+	}
+
 	echo "######## START of BOOTSTRAP STAGE 1: building llvm/clang with the system compiler"
+	# wd: %b
 	mkdir -p ../build/stage1
 	pushd ../build/stage1
 	# Technically, we only need the native back-end...
-	cmake $CMAKE_OPTIONS ../llvm-%v.src
+	cmake $CMAKE_OPTIONS ../../llvm-%v.src
 	# this will fail, but we have to run it first and then fix some deps
 	make -k || :
 	build_workaround
 	make || make VERBOSE=1
 	cd ..
-	ln -s -f stage1 last
+	ln -s stage1 last
 	popd
+	# wd: %b
 	# link stage1 compilers into opt-bin for next stage
 	pushd ../opt-bin
 	ln -s ../build/stage1/bin/clang st1-clang
 	ln -s ../build/stage1/bin/clang++ st1-clang++
 	popd
+	# wd: %b
 	echo "######## END of BOOTSTRAP STAGE 1: built llvm/clang with the system compiler"
 
 	echo "######## START of BOOTSTRAP STAGE 2: building llvm/clang with stage 1 clang"
 	export CCACHE_COMPILERCHECK=content
 	export CC=cc-st1-clang
 	export CXX=cc-st1-clang++
-	pushd ../llvm-%v.src
-	# undo our hack from before...
-	for d in tools/clang/{lib,include/clang}
-		do mv -f $d/CMakeLists.txt{.orig,}
-	done
-	popd
+	build_workaround_undo
 	mkdir -p ../build/stage2
 	pushd ../build/stage2
-	cmake $CMAKE_OPTIONS ../llvm-%v.src
+	cmake $CMAKE_OPTIONS ../../llvm-%v.src
 	make -k || :
 	build_workaround
 	make || make VERBOSE=1
 	cd ..
-	ln -s -f stage2 last
+	rm -f last
+	ln -s stage2 last
 	popd
+	# wd: %b
 	pushd ../opt-bin
 	ln -s ../build/stage2/bin/clang st2-clang
 	ln -s ../build/stage2/bin/clang++ st2-clang++
 	popd
+	# wd: %b
 	echo "######## END of BOOTSTRAP STAGE 2: built llvm/clang with stage 1 clang"
 	echo "######## START of BOOTSTRAP STAGE 3: building llvm/clang with stage 2 clang"
 	export CC=cc-st2-clang
 	export CXX=cc-st2-clang++
-	pushd ../llvm-%v.src
-	# undo our hack from before...
-	for d in tools/clang/{lib,include/clang}
-		do mv -f $d/CMakeLists.txt{.orig,}
-	done
-	popd
+	export CCACHE_DISABLE=1
+	build_workaround_undo
 	mkdir -p ../build/stage3
 	pushd ../build/stage3
-	cmake $CMAKE_OPTIONS ../llvm-%v.src
+	cmake $CMAKE_OPTIONS ../../llvm-%v.src
 	make -k || :
 	build_workaround
 	make || make VERBOSE=1
 	cd ..
-	ln -s -f stage3 last
+	rm -f last
+	ln -s stage3 last
 	popd
+	# wd: %b
 	echo "######## END of BOOTSTRAP STAGE 3: built llvm/clang with stage 2 clang"
 	# comparison!
 	pushd ../build
