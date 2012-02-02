@@ -44,8 +44,8 @@ BuildDepends: <<
 	system-openssl-dev,
 	system-sdk-10.4
 <<
-Conflicts: tenfourfox, tenfourfox5, tenfourfox6, tenfourfox7, tenfourfox8, tenfourfox9, tenfourfox11, tenfourfox12, tenfourfox13, tenfourfox14, tenfourfox15, tenfourfox16, tenfourfox17, tenfourfox18, tenfourfox19
-Replaces: tenfourfox, tenfourfox5, tenfourfox6, tenfourfox7, tenfourfox8, tenfourfox9, tenfourfox11, tenfourfox12, tenfourfox13, tenfourfox14, tenfourfox15, tenfourfox16, tenfourfox17, tenfourfox18, tenfourfox19
+Conflicts: tenfourfox, tenfourfox5, tenfourfox6, tenfourfox7, tenfourfox8, tenfourfox9, tenfourfox11, tenfourfox12, tenfourfox13, tenfourfox14, tenfourfox15, tenfourfox16, tenfourfox17, tenfourfox18, tenfourfox19, tenfourfox20
+Replaces: tenfourfox, tenfourfox5, tenfourfox6, tenfourfox7, tenfourfox8, tenfourfox9, tenfourfox11, tenfourfox12, tenfourfox13, tenfourfox14, tenfourfox15, tenfourfox16, tenfourfox17, tenfourfox18, tenfourfox19, tenfourfox20
 Source: ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/%v/source/firefox-%v.source.tar.bz2
 SourceDirectory: mozilla-release
 Source-MD5: 13c61203ccfa583e5a54b4dc22f41233
