@@ -70,10 +70,9 @@
 diff -ruN mozilla-release-orig/browser/locales/generic/profile/bookmarks.html.in mozilla-release/browser/locales/generic/profile/bookmarks.html.in
 --- mozilla-release-orig/browser/locales/generic/profile/bookmarks.html.in	2009-04-23 21:46:37.000000000 -0400
 +++ mozilla-release/browser/locales/generic/profile/bookmarks.html.in	2009-04-27 16:56:30.000000000 -0400
-@@ -15,4 +15,6 @@
+@@ -15,4 +15,5 @@
      <DL><p>
          <DT><A HREF="http://www.mozilla.com/@AB_CD@/firefox/central/" ID="rdf:#$GvPhC3">@getting_started@</A>
-+        <DT><A HREF="http://fxfeeds.mozilla.com/@AB_CD@/firefox/livebookmarks/" FEEDURL="http://fxfeeds.mozilla.com/@AB_CD@/firefox/headlines.xml" ID="rdf:#$HvPhC3">@latest_headlines@</A>
 +        <DT><A HREF="http://www.finkproject.org/" ICON_URI="http://www.finkproject.org/favicon.ico" ICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA+0lEQVQ4jWNgGDLg/6sTqv9OVe75uzv43J+TpUv/MzAwEqfxfEfU3y3O///u9P//d5v7/7/HCir/vz8n//9ir9+fffF+eDX/O5yxCqLR4///28u0GRgYGP6uN/sPN/zNBWlMG9+e4Pt7tq0bbutO//9/t3v9///qFQ9e2/7uCZ3/b3fwvX9HMg//PZpz7e9O//9/9ye8+Lc34ubf7V7/f1+e4Irdj3dWVf//f5UNzn91VeLvzoD/f0+U1OK1EadLtrr8/3+uoYcszf+PZHX/OxB/jizNDAwMDP92BX0hW/P/o1k7ydbMwMDA8P98D/ZQJkrz+6sJFNk+oAAAPwyICxl3w8YAAAAASUVORK5CYII=">Fink - Home</A>
      </DL><p>
      <DT><H3 ID="rdf:#$ZvPhC3">@firefox_heading@</H3>

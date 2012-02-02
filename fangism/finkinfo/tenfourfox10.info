@@ -56,7 +56,7 @@ Source3-MD5: 849c5bc88f06387bbd2040cf804204e7
 Source4: http://tenfourfox.googlecode.com/files/tenfourfox-quicktime-enabler-alpha114.xpi
 Source4-MD5: 4ca05fce34f71ce0cd39e45532421752
 PatchFile: %n.patch
-PatchFile-MD5: 90dab76466383dd80157d2e01aacd678
+PatchFile-MD5: a4b65dc556a61edb6f859485ccfa794a
 PatchScript: <<
   #!/bin/sh -ev
   # apply patchset from TenFourFox:
