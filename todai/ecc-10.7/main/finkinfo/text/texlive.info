@@ -8,7 +8,7 @@ Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
 BuildDepends: <<
  libkpathsea6 (>= 6.0.1-0), ptexenc1 (>= 1.2.0-0),
- t1lib5-nox, libpng15, libncurses5 (>= 5.4-20041023-1006), fink (>= 0.24.12),
+ t1lib5-nox, libpng15, libncurses5 (>= 5.4-20041023-1006), fink (>= 0.32),
  libjpeg8, libiconv-dev, zziplib13-dev, teckit-dev, libpaper1-dev,
  system-perl (>= 5.8.8-1) | perl588,
  xz, freetype219 (>= 2.2.1-4),
@@ -36,10 +36,12 @@ Recommends: psutils, tex4ht, t1utils, lcdf-typetools, lacheck, ps2eps
 Suggests: latex2html, foiltex
 Source: mirror:ctan:systems/texlive/Source/texlive-20110705-source.tar.xz
 Source-MD5: 968d238949e8a34a1fd74c374ddfe6f1
+TarFilesRename: texlive-20110705-source:texlive
 Source2: http://tutimura.ath.cx/~nob/tex/ptexlive/ptexlive-20100711.tar.gz
 Source2-MD5: 2dbd0ab5290bf6dfb0b2b04a813df89f
 Tar2FilesRename: ptexlive-20100711:ptexlive
 Source3: http://sourceforge.jp/projects/eptex/wiki/TeX_Live_2011/attach/tl11supp-111101.tar.xz
+#Tar3FilesRename: tl11supp-111101:tl11
 Source3-MD5: 5faa742af438292971415bc088580353
 Source4: http://fink.sodan.ecc.u-tokyo.ac.jp/pkgdists/xdvik-20090903-texlive2009_2011.patch.gz
 Source4-MD5: 2177965a735d9fff0f206b5b8a309258
@@ -51,8 +53,6 @@ PatchFile: texlive.patch
 PatchFile-MD5: d06b3f633b64223544ebff713b663456
 PatchScript: <<
 #!/bin/bash -ev
- xz -dc texlive-????????-source.tar.xz | tar xf -
- mv     texlive-????????-source texlive
  sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -d texlive -p1
 
  # Change the directory to be installed
@@ -125,7 +125,6 @@ fi
                                                ./ptex-cmap.sh
 
  ##### Apply patches taken from upstream svn
- xz -dc tl11supp-??????.tar.xz | tar xf -
  
  sed -i.bak -e "s|\(TLSRCDIR=\)/opt/home-supp/tl11|\1`pwd`/tl11|" \
             -e "s|\(TMPDIR=\)/tmp|\1`pwd`|" \
