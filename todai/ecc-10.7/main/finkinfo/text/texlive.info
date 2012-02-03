@@ -2,7 +2,7 @@ Info2: <<
 Package: texlive%type_pkg[-nox]
 Type: -nox (boolean)
 Version: 0.20110705
-Revision: 0test4
+Revision: 0test5
 GCC: 4.0
 Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
@@ -140,6 +140,24 @@ fi
  popd
 
  gzcat pmpost-makeconf-tl11.diff.gz | patch -p1 -d texlive
+ perl -pi.bak -e 's|(#include <errno.h>)|#include <kpathsea/kpathsea.h>\n\1|' \
+                         texlive/texk/web2c/pmplibdir/jmp.ch
+ perl -pi.bak1 -e 's|const char\*s|string s|' \
+                         texlive/texk/web2c/pmplibdir/jmppsw.ch
+ perl -pi.bak -e 's|const char \*s|string s|' \
+                         texlive/texk/web2c/pmplibdir/jmppsw.ch
+ perl -pi.bak -e 's|(char kanjioption)|#include <ptexenc/ptexenc.h>\n\1|' \
+                         texlive/texk/web2c/pmplibdir/pmpost.ch
+ mv                      texlive/texk/web2c/pmplibdir/psvgout.ch{,.bak}
+ echo '@x'                           >> texlive/texk/web2c/pmplibdir/psvgout.ch
+ echo '#include <stdio.h>'           >> texlive/texk/web2c/pmplibdir/psvgout.ch
+ echo '@y'                           >> texlive/texk/web2c/pmplibdir/psvgout.ch
+ echo '#include <ptexenc/ptexenc.h>' >> texlive/texk/web2c/pmplibdir/psvgout.ch
+ echo '#include <stdio.h>'           >> texlive/texk/web2c/pmplibdir/psvgout.ch
+ echo '@z'                           >> texlive/texk/web2c/pmplibdir/psvgout.ch
+ echo ''                             >> texlive/texk/web2c/pmplibdir/psvgout.ch
+ cat texlive/texk/web2c/pmplibdir/psvgout.ch.bak \
+                                     >> texlive/texk/web2c/pmplibdir/psvgout.ch
  #####
 
  echo "f  kanjix.map" >> texlive/texk/dvipdfmx/dvipdfmx-20*/data/dvipdfmx.cfg
