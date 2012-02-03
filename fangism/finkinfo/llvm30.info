@@ -206,6 +206,7 @@ CompileScript: <<
 	# wd: %b
 	mkdir -p ../build/stage1
 	pushd ../build/stage1
+	echo "CMAKE_OPTIONS=$CMAKE_OPTIONS"
 	# Technically, we only need the native back-end...
 	cmake $CMAKE_OPTIONS ../../llvm-%v.src
 	# this will fail, but we have to run it first and then fix some deps
