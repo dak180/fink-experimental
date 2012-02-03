@@ -7,15 +7,10 @@ Maintainer: David Fang <fangism@users.sourceforge.net>
 
 # need bash because /bin/sh 2.0 on darwin8 is missing support for pipefail
 # ccache is only temporary, for accelerating rebuilds
-BuildDepends: cmake (>= 2.8.2-1), fink (>= 0.28), bash, ccache
-# gcc46-compiler
-# libcxxabi
-# Depends: gcc46-shlibs
-# libcxxabi-shlibs
+BuildDepends: cmake (>= 2.8.2-1), fink (>= 0.28), bash
 InfoTest: <<
 # coreutils for gtimeout for tests
 	TestDepends: coreutils
-#	TestDepends: dejagnu, expect
  	TestScript: <<
 	#!/bin/sh -ev
 	# need path to bootstrapping compiler
@@ -25,12 +20,6 @@ InfoTest: <<
 	cd ../build/last
 #	echo "******** Running included LLVM and clang tests ... ********"
 	make -k TESTARGS=-v check-all || :
-	echo "Expect 2 additional test failures due to i386 on powerpc target"
-#	echo "******** Now running more comprehensive tests ... ********"
-#	mkdir -p projects/test-suite
-#	cd projects/test-suite
-#	../../../llvm-%v.src/projects/test-suite/configure --with-built-clang
-#	make -k TEST=simple report report.html
 	<<
 	TestSuiteSize: medium
 <<
@@ -39,12 +28,7 @@ Source: http://llvm.org/releases/%v/llvm-%v.tar.gz
 Source-MD5: a8e5f5f1c1adebae7b4a654c376a6005
 Source2: http://llvm.org/releases/%v/clang-%v.tar.gz
 Source2-MD5: 43350706ae6cf05d0068885792ea0591
-# Source3: http://www.csl.cornell.edu/~fang/sw/libcxx-r146430.tar.bz2
-# Source3-MD5: f6fad56cbdc479caeb9567688ea7a237
-# libcxxabi is not recommended
-# want libcxxabi source for its tests?
-# Source4: http://www.csl.cornell.edu/~fang/sw/libcxxabi-r146430.tar.bz2
-# Source4-MD5: b04ae43bf7496d3e1e71c3e8c343c317
+# libcxxabi is not recommended, lib++ is not ready yet
 # SourceN: http://llvm.org/releases/%v/test-suite-%v.tar.gz
 # SourceN-MD5: 36f72e2a932727fb86338e5939da5eaf
 
@@ -63,8 +47,6 @@ PatchScript: <<
 #	mv ../test-suite-%v.src projects/test-suite
 	%{default_script}
 	pushd ..
-#	ln -s libcxxabi-r* libcxxabi
-#	ln -s libcxx-r* libcxx
 	popd
 	# point hard-coded paths to system g++-4.0.1's C++ includes
 	# remove references to g++-4.2.1, never existed in Xcode 2.5
@@ -115,7 +97,11 @@ PatchScript: <<
 	sed -i.orig -e '/LLVM_USED_LIBS/s|)| clangAnalysis clangStaticAnalyzerCore)|' tools/clang/lib/StaticAnalyzer/Checkers/CMakeLists.txt
 	sed -i.orig -e '/LLVM_USED_LIBS/s|)| clangStaticAnalyzerCheckers clangStaticAnalyzerCore)|' tools/clang/lib/StaticAnalyzer/Frontend/CMakeLists.txt
 	# test suite requires newer bash than /bin/bash 2.0 for pipefail
+	# test the pipefail option of this shell first
+	set -o pipefail || {
 	sed -i.orig -e "/bashPath = None/s|None|'%p/bin/bash'|" utils/lit/lit/LitConfig.py
+	test -x %p/bin/bash || { echo "Error: Fink-built bash >= 3.0 required!" ; exit 1; }
+	}
 	# force time limit per test (prefix each command-line)
 	sed -i.orig -e "/script\.append/s|ln|'gtimeout 5m '+&|" utils/lit/lit/TestRunner.py
 	# projects/test-suite expects built llvm/clang to have been configured
@@ -128,22 +114,26 @@ CompileScript: <<
 	# just always build these archs
 	CMAKE_OPTIONS="-DLLVM_TARGETS_TO_BUILD=X86;PowerPC;ARM"
 
+	# automatically use ccache if detected
+	# comment-out if ccache is not desired
+	test -x $p/bin/ccache && ccache=ccache || ccache=
+
 	# set up some possible bootstrapping compilers
 	# wrap ccache into single cmd b/c cmake can't handle "ccache g++"
 	mkdir ../opt-bin
 	pushd ../opt-bin
-	{ echo "#!/bin/sh" ; echo 'exec ccache gcc "$@"' ; } > ccgcc
-	{ echo "#!/bin/sh" ; echo 'exec ccache g++ "$@"' ; } > ccg++
-	{ echo "#!/bin/sh" ; echo 'exec ccache gcc-4.2 "$@"' ; } > ccgcc-4.2
-	{ echo "#!/bin/sh" ; echo 'exec ccache g++-4.2 "$@"' ; } > ccg++-4.2
-	{ echo "#!/bin/sh" ; echo 'exec ccache gcc-fsf-4.6 "$@"' ; } > ccgcc-4.6
-	{ echo "#!/bin/sh" ; echo 'exec ccache g++-fsf-4.6 "$@"' ; } > ccg++-4.6
+	{ echo "#!/bin/sh" ; echo 'exec $ccache gcc "$@"' ; } > ccgcc
+	{ echo "#!/bin/sh" ; echo 'exec $ccache g++ "$@"' ; } > ccg++
+	{ echo "#!/bin/sh" ; echo 'exec $ccache gcc-4.2 "$@"' ; } > ccgcc-4.2
+	{ echo "#!/bin/sh" ; echo 'exec $ccache g++-4.2 "$@"' ; } > ccg++-4.2
+#	{ echo "#!/bin/sh" ; echo 'exec $ccache gcc-fsf-4.6 "$@"' ; } > ccgcc-4.6
+#	{ echo "#!/bin/sh" ; echo 'exec $ccache g++-fsf-4.6 "$@"' ; } > ccg++-4.6
 	# also setup bootstrap stage compilers
 	# yes, ccache 3.1 supports compiler binary hashing
-	{ echo "#!/bin/sh" ; echo 'exec ccache st1-clang "$@"' ; } > cc-st1-clang
-	{ echo "#!/bin/sh" ; echo 'exec ccache st1-clang++ "$@"' ; } > cc-st1-clang++
-	{ echo "#!/bin/sh" ; echo 'exec ccache st2-clang "$@"' ; } > cc-st2-clang
-	{ echo "#!/bin/sh" ; echo 'exec ccache st2-clang++ "$@"' ; } > cc-st2-clang++
+	{ echo "#!/bin/sh" ; echo 'exec $ccache st1-clang "$@"' ; } > cc-st1-clang
+	{ echo "#!/bin/sh" ; echo 'exec $ccache st1-clang++ "$@"' ; } > cc-st1-clang++
+	{ echo "#!/bin/sh" ; echo 'exec $ccache st2-clang "$@"' ; } > cc-st2-clang
+	{ echo "#!/bin/sh" ; echo 'exec $ccache st2-clang++ "$@"' ; } > cc-st2-clang++
 
 	chmod +x cc*
 	export PATH=`pwd`:$PATH
@@ -282,15 +272,6 @@ CompileScript: <<
 	echo "######## 3-STAGE BOOTSTRAP of llvm/clang PASSED!"
 	popd
 
-	# add our newly built tools to our path
-#	cd ../build/final/bin
-#	export PATH=`pwd`:$PATH
-#	popd
-#	echo "******** Building libc++ ********"
-#	pushd ../libcxx
-#	cd lib
-#	env MACOSX_DEPLOYMENT_TARGET=10.6 TRIPLE=-apple- ./buildit
-#	popd
 <<
 
 InstallScript: <<
