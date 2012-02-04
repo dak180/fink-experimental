@@ -8,7 +8,7 @@ Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
 BuildDepends: <<
  libkpathsea6 (>= 6.0.1-0), ptexenc1 (>= 1.2.0-0),
- t1lib5-nox, libpng15, libncurses5 (>= 5.4-20041023-1006), fink (>= 0.32),
+ t1lib5-nox, libpng15, libncurses5 (>= 5.4-20041023-1006), fink (>= 0.32.2),
  libjpeg8, libiconv-dev, zziplib13-dev, teckit-dev, libpaper1-dev,
  system-perl (>= 5.8.8-1) | perl588,
  xz, freetype219 (>= 2.2.1-4),
@@ -41,7 +41,6 @@ Source2: http://tutimura.ath.cx/~nob/tex/ptexlive/ptexlive-20100711.tar.gz
 Source2-MD5: 2dbd0ab5290bf6dfb0b2b04a813df89f
 Tar2FilesRename: ptexlive-20100711:ptexlive
 Source3: http://sourceforge.jp/projects/eptex/wiki/TeX_Live_2011/attach/tl11supp-111101.tar.xz
-#Tar3FilesRename: tl11supp-111101:tl11
 Source3-MD5: 5faa742af438292971415bc088580353
 Source4: http://fink.sodan.ecc.u-tokyo.ac.jp/pkgdists/xdvik-20090903-texlive2009_2011.patch.gz
 Source4-MD5: 2177965a735d9fff0f206b5b8a309258
