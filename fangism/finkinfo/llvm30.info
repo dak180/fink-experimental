@@ -1,6 +1,6 @@
 Package: llvm30
 Version: 3.0
-Revision: 0.3
+Revision: 1
 Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
@@ -293,7 +293,7 @@ CompileScript: <<
 	done
 	}
 
-	diff_obj_dir stage2 stage3
+	diff_obj_dir stage2 stage3 | grep -v basename
 	err=
 	echo "Objects that differ:"
 	for f in $diffs
@@ -463,6 +463,10 @@ I suspect the following shlibs are actually plug-ins, and should
 <<
 DescPort: <<
 fangism contributed this port for PowerPC-Darwin8.
+	*** LLVM/Clang-3.0 still has serious codegen issues for PowerPC
+	*** It is NOT considered production quality for PowerPC
+	*** HELP WANTED: in stabilizing and fixing PowerPC CodeGen
+	*** on llvm/clang svn trunk.
 Original package maintained by 
 	Benjamin Reed <llvm@fink.raccoonfink.com>
 with contributions from
