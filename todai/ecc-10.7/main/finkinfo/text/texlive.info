@@ -55,7 +55,7 @@ PatchScript: <<
  sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -d texlive -p1
 
  # Change the directory to be installed
- for file in `find texlive -name Makefile.in`; do
+ for file in `find texlive -name Makefile.in`; do \
   sed -i.bak -e 's|/texmf/|/share/texmf/|' \
              -e 's|\(texmfdir = \)${prefix}|\1${datadir}|' \
              -e 's|/texmf-dist/|/share/texmf-dist/|' ${file} ; done
