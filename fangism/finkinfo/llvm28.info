@@ -1,0 +1,194 @@
+Package: llvm28
+Version: 2.8
+Revision: 2
+Description: Modular and reusable compiler
+License: BSD
+Maintainer: Benjamin Reed <llvm@fink.raccoonfink.com>
+
+BuildDepends: cmake (>= 2.8.2-1)
+InfoTest: 	TestScript: cd ../build && make check || exit 1
+
+Source: http://llvm.org/releases/%v/llvm-%v.tgz
+Source-MD5: 220d361b4d17051ff4bb21c64abe05ba
+Source2: http://llvm.org/releases/%v/clang-%v.tgz
+Source2-MD5: 10e14c901fc3728eecbd5b829e011b59
+
+UseMaxBuildJobs: true
+PatchScript: <<
+	#!/bin/sh -ev
+	pushd tools
+	ln -s ../../clang-%v clang
+	popd
+
+	# point hard-coded paths to system g++-4.0.1's C++ includes
+	# remove references to g++-4.2.1, never existed in Xcode 2.5
+	darwin_vers=`uname -r | cut -d. -f1`
+	if test "$darwin_vers" != 10
+	then sed -i.orig -e "s|darwin10|darwin$darwin_vers|g" \
+		tools/clang/lib/Frontend/InitHeaderSearch.cpp
+	fi
+	if test ! -d /usr/include/c++/4.0.0
+	then sed -i.orig2 -e '/GnuCPlusPlusInclude.*4\.0\.0/,/);/d' \
+		tools/clang/lib/Frontend/InitHeaderSearch.cpp
+	fi
+	if test ! -d /usr/include/c++/4.2.1
+	then sed -i.orig2 -e '/GnuCPlusPlusInclude.*4\.2\.1/,/);/d' \
+		tools/clang/lib/Frontend/InitHeaderSearch.cpp
+	fi
+	# cmake files missing library deps
+	echo "target_link_libraries (LLVMCore LLVMSupport)" >> lib/VMCore/CMakeLists.txt
+	echo "target_link_libraries (LLVMTarget LLVMCore LLVMMC)" >> lib/Target/CMakeLists.txt
+	echo "target_link_libraries (LLVMBitReader LLVMCore)" >> lib/Bitcode/Reader/CMakeLists.txt
+	echo "target_link_libraries (LLVMBitWriter LLVMCore)" >> lib/Bitcode/Writer/CMakeLists.txt
+	echo "target_link_libraries (LLVMMC LLVMSupport)" >> lib/MC/CMakeLists.txt
+	echo "target_link_libraries (LLVMMCParser LLVMMC)" >> lib/MC/MCParser/CMakeLists.txt
+	{ echo "target_link_libraries (LLVMMCDisassembler LLVMMCParser)" 
+	echo 'foreach(t ${LLVM_TARGETS_TO_BUILD})'
+	echo '  set(td ${LLVM_MAIN_SRC_DIR}/lib/Target/${t})'
+	echo '  if(EXISTS ${td}/TargetInfo/CMakeLists.txt)'
+	echo '    target_link_libraries(LLVMMCDisassembler "LLVM${t}Info")'
+	echo '  endif()'
+	echo '  if(EXISTS ${td}/MCTargetDesc/CMakeLists.txt)'
+	echo '    target_link_libraries(LLVMMCDisassembler "LLVM${t}Desc")'
+	echo '  endif()'
+	echo '  if(EXISTS ${td}/AsmParser/CMakeLists.txt)'
+	echo '    target_link_libraries(LLVMMCDisassembler "LLVM${t}AsmParser")'
+	echo '  endif()'
+	echo '  if(EXISTS ${td}/Disassembler/CMakeLists.txt)'
+	echo '    target_link_libraries(LLVMMCDisassembler "LLVM${t}Disassembler")'
+	echo '  endif()'
+	echo 'endforeach(t)'
+	} >> lib/MC/MCDisassembler/CMakeLists.txt
+	sed -i.orig -e '/target_link_libraries/s|)| LLVMAnalysis LLVMipa)|' lib/Transforms/Utils/CMakeLists.txt
+	sed -i.orig -e '/target_link_libraries/s|)| LLVMCore)|' lib/Analysis/CMakeLists.txt
+	echo "target_link_libraries (LLVMInstrumentation LLVMTransformUtils LLVMAnalysis)" >> lib/Transforms/Instrumentation/CMakeLists.txt
+	echo "target_link_libraries (LLVMLinker LLVMArchive LLVMBitReader LLVMTransformUtils)" >> lib/Linker/CMakeLists.txt
+	echo "target_link_libraries (LLVMipa LLVMAnalysis)" >> lib/Analysis/IPA/CMakeLists.txt
+	echo "target_link_libraries (LLVMExecutionEngine LLVMTarget)" >> lib/ExecutionEngine/CMakeLists.txt
+	echo "target_link_libraries (LLVMInterpreter LLVMExecutionEngine LLVMCodeGen)" >> lib/ExecutionEngine/Interpreter/CMakeLists.txt
+	echo "target_link_libraries (LLVMJIT LLVMExecutionEngine LLVMCodeGen)" >> lib/ExecutionEngine/JIT/CMakeLists.txt
+	echo "target_link_libraries (LLVMAsmParser LLVMCore)" >> lib/AsmParser/CMakeLists.txt
+	echo "target_link_libraries (LLVMArchive LLVMBitReader)" >> lib/Archive/CMakeLists.txt
+	sed -i.orig -e "/target_link_libraries/s|)| LLVMInstCombine)|" >> lib/Transforms/Scalar/CMakeLists.txt
+	sed -i.orig -e "/target_link_libraries/s|)| LLVMAnalysis LLVMCodeGen)|" >> lib/CodeGen/AsmPrinter/CMakeLists.txt
+	echo "target_link_libraries (LLVMX86CodeGen LLVMAnalysis LLVMCodeGen LLVMSelectionDAG )" >> lib/Target/X86/CMakeLists.txt
+	# LLVMX86CodeGen wants LLVMX86AsmPrinter though, creates some cyclic dep?
+	echo "target_link_libraries (LLVMX86AsmPrinter LLVMMC LLVMX86Utils)" >> lib/Target/X86/AsmPrinter/CMakeLists.txt
+<<
+CompileScript: <<
+	#!/bin/sh -ev
+
+	# automatically use ccache if detected
+	# comment-out if ccache is not desired
+	test -x $p/bin/ccache && ccache=ccache || ccache=
+	# set up some possible bootstrapping compilers
+	# wrap ccache into single cmd b/c cmake can't handle "ccache g++"
+	mkdir ../opt-bin
+	pushd ../opt-bin
+	{ echo "#!/bin/sh" ; echo 'exec $ccache gcc "$@"' ; } > ccgcc
+	{ echo "#!/bin/sh" ; echo 'exec $ccache g++ "$@"' ; } > ccg++
+	{ echo "#!/bin/sh" ; echo 'exec $ccache gcc-4.2 "$@"' ; } > ccgcc-4.2
+	{ echo "#!/bin/sh" ; echo 'exec $ccache g++-4.2 "$@"' ; } > ccg++-4.2
+	# also setup bootstrap stage compilers
+	# yes, ccache 3.1 supports compiler binary hashing
+	{ echo "#!/bin/sh" ; echo 'exec $ccache st1-clang "$@"' ; } > cc-st1-clang
+	{ echo "#!/bin/sh" ; echo 'exec $ccache st1-clang++ "$@"' ; } > cc-st1-clang++
+	{ echo "#!/bin/sh" ; echo 'exec $ccache st2-clang "$@"' ; } > cc-st2-clang
+	{ echo "#!/bin/sh" ; echo 'exec $ccache st2-clang++ "$@"' ; } > cc-st2-clang++
+
+	chmod +x cc*
+	export PATH=`pwd`:$PATH
+	popd
+	
+	# select just a few targets:
+	# ARM target contains dylib cyclic dependency, so we omit it
+	CMAKE_OPTIONS="-DLLVM_TARGETS_TO_BUILD=X86;PowerPC"
+#	case "%m" in
+#	x86_64)
+#	CMAKE_OPTIONS="-DLLVM_BUILD_32_BITS:BOOL=OFF"
+#	;;
+#	*)
+#	CMAKE_OPTIONS="-DLLVM_BUILD_32_BITS:BOOL=ON"
+#	;;
+#	esac
+	
+	export CC=ccgcc
+	export CXX=ccg++
+	CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_INSTALL_PREFIX=%p/opt/llvm-%v -DLLVM_ENABLE_ASSERTIONS=OFF -DCMAKE_BUILD_TYPE=Release"
+	CMAKE_OPTIONS="$CMAKE_OPTIONS -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_C_FLAGS=-fno-common -DCMAKE_CXX_FLAGS=-fno-common"
+	mkdir ../build
+	pushd ../build
+	cmake $CMAKE_OPTIONS ../llvm-%v
+	make || make VERBOSE=1
+	popd
+<<
+
+InstallScript: <<
+	#!/bin/sh -ev
+	pushd ../build
+		make -j1 install/fast DESTDIR="%d"
+	popd
+
+	iprefix=%i/opt/llvm-%v
+	prefix=%p/opt/llvm-%v
+
+	pushd $iprefix/lib
+	for f in *.dylib
+	do
+		if test ! -L $f
+		then
+		install_name_tool -id "$prefix/lib/$f" "$f"
+		deplibs=`otool -L $f | sed 1,2d | awk '{print $1;}' | tr '\n' ' '`
+		for d in $deplibs
+		do
+		# prefix absolute paths to llvm/clang's lib installation
+		case $d in
+		/*) ;;
+		*) install_name_tool -change "$d" "$prefix/lib/$d" $f ;;
+		esac
+		done
+		fi
+	done
+	popd
+	pushd $iprefix/bin
+	for f in *
+	do
+		if test ! -L $f
+		then
+		deplibs=`otool -L $f | sed 1d | awk '{print $1;}' | tr '\n' ' '`
+		for d in $deplibs
+		do
+		# consider substituting with relative @executable_path/../lib ?
+		case $d in
+		/*) ;;
+		@*) ;;
+		*) install_name_tool -change "$d" "$prefix/lib/$d" $f ;;
+		esac
+		done
+		fi
+	done
+	popd
+
+	# documentation
+	docdir=$prefix/share/doc
+	idocdir=$iprefix/share/doc
+	mkdir -p $idocdir
+	cp -R docs $idocdir/llvm
+	cp -R tools/clang/docs $idocdir/clang
+	mkdir -p $idocdir/%n
+	pushd $idocdir/%n
+	ln -s $docdir/llvm .
+	ln -s $docdir/clang .
+	popd
+<<
+DocFiles: *.TXT README.txt
+Shlibs: 	%p/opt/llvm-%v/lib/liblibclang.dylib 1.0.0 %n (>= 2.8-1)
+
+Homepage: http://llvm.org/
+DescDetail: <<
+The LLVM Project is a collection of modular and reusable compiler and
+toolchain technologies.  Despite its name, LLVM has little to do with
+traditional virtual machines, though it does provide helpful libraries
+that can be used to build them.
+<<
+
