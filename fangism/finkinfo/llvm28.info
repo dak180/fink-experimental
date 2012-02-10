@@ -5,8 +5,16 @@ Description: Modular and reusable compiler
 License: BSD
 Maintainer: Benjamin Reed <llvm@fink.raccoonfink.com>
 
-BuildDepends: cmake (>= 2.8.2-1)
-InfoTest: 	TestScript: cd ../build && make check || exit 1
+BuildDepends: cmake (>= 2.8.2-1), bash
+# need bash because /bin/sh 2.0 on darwin8 is missing support for pipefail
+# ccache
+InfoTest: <<
+TestScript: <<
+	#!/bin/sh -ev
+	cd ../build
+	make check || exit 1
+<<
+<<
 
 Source: http://llvm.org/releases/%v/llvm-%v.tgz
 Source-MD5: 220d361b4d17051ff4bb21c64abe05ba
@@ -69,11 +77,18 @@ PatchScript: <<
 	echo "target_link_libraries (LLVMJIT LLVMExecutionEngine LLVMCodeGen)" >> lib/ExecutionEngine/JIT/CMakeLists.txt
 	echo "target_link_libraries (LLVMAsmParser LLVMCore)" >> lib/AsmParser/CMakeLists.txt
 	echo "target_link_libraries (LLVMArchive LLVMBitReader)" >> lib/Archive/CMakeLists.txt
-	sed -i.orig -e "/target_link_libraries/s|)| LLVMInstCombine)|" >> lib/Transforms/Scalar/CMakeLists.txt
-	sed -i.orig -e "/target_link_libraries/s|)| LLVMAnalysis LLVMCodeGen)|" >> lib/CodeGen/AsmPrinter/CMakeLists.txt
+	sed -i.orig -e "/target_link_libraries/s|)| LLVMInstCombine)|" lib/Transforms/Scalar/CMakeLists.txt
+	sed -i.orig -e "/target_link_libraries/s|)| LLVMAnalysis LLVMCodeGen)|" lib/CodeGen/AsmPrinter/CMakeLists.txt
 	echo "target_link_libraries (LLVMX86CodeGen LLVMAnalysis LLVMCodeGen LLVMSelectionDAG )" >> lib/Target/X86/CMakeLists.txt
 	# LLVMX86CodeGen wants LLVMX86AsmPrinter though, creates some cyclic dep?
-	echo "target_link_libraries (LLVMX86AsmPrinter LLVMMC LLVMX86Utils)" >> lib/Target/X86/AsmPrinter/CMakeLists.txt
+#	echo "target_link_libraries (LLVMX86AsmPrinter LLVMMC LLVMX86Utils)" >> lib/Target/X86/AsmPrinter/CMakeLists.txt
+
+	# test suite requires newer bash than /bin/bash 2.0 for pipefail
+	# test the pipefail option of this shell first
+	set -o pipefail || {
+	sed -i.orig -e "/bashPath = None/s|None|'%p/bin/bash'|" utils/lit/lit/LitConfig.py
+	test -x %p/bin/bash || { echo "Error: Fink-built bash >= 3.0 required!" ; exit 1; }
+	}
 <<
 CompileScript: <<
 	#!/bin/sh -ev
@@ -115,7 +130,8 @@ CompileScript: <<
 	export CC=ccgcc
 	export CXX=ccg++
 	CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_INSTALL_PREFIX=%p/opt/llvm-%v -DLLVM_ENABLE_ASSERTIONS=OFF -DCMAKE_BUILD_TYPE=Release"
-	CMAKE_OPTIONS="$CMAKE_OPTIONS -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_C_FLAGS=-fno-common -DCMAKE_CXX_FLAGS=-fno-common"
+#	for shared libraries:
+#	CMAKE_OPTIONS="$CMAKE_OPTIONS -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_C_FLAGS=-fno-common -DCMAKE_CXX_FLAGS=-fno-common"
 	mkdir ../build
 	pushd ../build
 	cmake $CMAKE_OPTIONS ../llvm-%v
