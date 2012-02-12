@@ -1,5 +1,5 @@
 Package: atlas
-Version: 3.9.63
+Version: 3.9.65
 Revision: 1
 Description: Portable optimal linear algebra software
 DescDetail: <<
@@ -36,7 +36,7 @@ Order is important when linking! Use:
 Also decide carefully whether you want to link to static or to shared libs.
 <<
 Source: mirror:sourceforge:math-atlas/files/%n%v.tar.bz2
-Source-MD5: 468c81b9ae36234778b62402e9efb8fa
+Source-MD5: 1b9121dc702f0ed87ac749df1399cbe3
 Source2: http://www.netlib.org/lapack/lapack-3.4.0.tgz
 Source2-MD5: 02d5706ec03ba885fc246e5fa10d8c70
 
@@ -70,11 +70,6 @@ sed -i.bak -e 's,libtool -dynamic,\$(LIBTOOL) -dynamic,' -e 's,_version %v,_vers
 sed -i.bak -e 's,LIBTOOL",LIBTOOL -single_module -dead_strip -x",' configure
 # use correct fink prefix
 sed -i.bak -e 's,/sw,%p,' CONFIG/src/{config,probe_comp}.c
-
-## remove leftover object files
-tar -zxf CONFIG/ARCHS/lapack_test.tar.gz
-find LAPACK_TEST -name '*.o' -exec rm -f \{\} \;
-tar -zcf CONFIG/ARCHS/lapack_test.tar.gz LAPACK_TEST 
 
 cd ..
 cd LAPACK
