@@ -66,8 +66,8 @@ SplitOff: <<
 SplitOff2: <<
 	Package: %N-dev
 	Depends: %N-shlibs (= %v-%r)
-	Conflicts: libwpd-1-dev
-	Replaces: libwpd-1-dev
+	Conflicts: libwpd-1-dev, libwpd-0.8-dev
+	Replaces: libwpd-1-dev, libwpd-0.8-dev
 	BuildDependsOnly: true
 	DocFiles: ChangeLog COPYING INSTALL README TODO CREDITS HACKING
 	Files: <<

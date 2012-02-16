@@ -39,6 +39,8 @@ SplitOff2: <<
 	Package: %N-dev
 	Description: Development headers and libs for libwpg
 	Depends: %N-shlibs (= %v-%r)
+	Conflicts: libwpg-dev
+	Replaces: libwpg-dev
 	BuildDependsOnly: true
 	Files: include lib share/doc/%N
 <<
