@@ -1,0 +1,123 @@
+Package: libreoffice
+Version: 3.5.0.3
+Revision: 0
+Homepage: http://http://www.libreoffice.org/
+License: LGPL
+Maintainer: David Fang <fangism@users.sourceforge.net>
+Description: Productivity suite
+Source: http://download.documentfoundation.org/%n/src/3.5.0/%n-core-%v.tar.xz
+Source-MD5: 209bbbc369b36963d25334c3ef7933e8
+# because xz support in fink is too new
+NoSourceDirectory: true
+BuildDepends: <<
+	xz,
+	fink-package-precedence,
+	fontconfig2-dev,
+	boost1.46.1.cmake,
+	cppunit1.10.2,
+	db51-aes,
+	digest-sha-pm586 | digest-sha-pm588 | digest-sha-pm5100,
+	expat1,
+	gperf,
+	libcmis-dev,
+	libxslt,
+	libxslt-bin,
+	libxml2,
+	libcurl4 (>= 7.13.1),
+	libnss.1d,
+	libwpd-0.9-dev,
+	libwpg-0.2-dev,
+	libwps-dev,
+	neon27,
+	postgresql91-dev,
+	system-openssl-dev,
+	libhunspell,
+	libjpeg8,
+	gtk+2-dev,
+	dbus1.3-dev,
+	libpng15,
+	gstreamer-0.10-dev,
+	poppler4,
+	librsvg2,
+	libvisio,
+	vigra,
+	cairo
+<<
+# build auto-detects ccache!
+# configure also checks for:
+#	sha1sum -- perlmod provides shasum.  same thing?
+#	dmake -- will build
+# pygobject2
+Depends: <<
+	fontconfig2-shlibs,
+	boost1.46.1.cmake-shlibs,
+	cppunit1.10.2-shlibs,
+	db51-aes-shlibs,
+	expat1-shlibs,
+	libcmis-shlibs,
+	libxslt-shlibs,
+	libxml2-shlibs,
+	libcurl4-shlibs (>= 7.13.1),
+	libnss.1d-shlibs,
+	libwpd-0.9-shlibs,
+	libwpg-0.2-shlibs,
+	libwps-shlibs,
+	neon27-shlibs,
+	postgresql91-shlibs,
+	libhunspell-shlibs,
+	libjpeg8-shlibs,
+	gtk+2-shlibs,
+	dbus1.3-shlibs,
+	libpng15shlibs,
+	gstreamer-0.10-shlibs,
+	poppler4-shlibs,
+	librsvg2-shlibs,
+	libvisio-shlibs,
+	vigra-shlibs,
+	cairo-shlibs
+<<
+PatchScript: <<
+	#!/bin/sh -ev
+	xz -dc %n-%v.tar.xz | tar xf -
+	cd %n-%v
+	sed -i.orig -e 's|sha1sum|shasum|g' configure
+<<
+SetCPPFLAGS: -I%p/include
+SetLDFLAGS: -L%p/opt/postgresql-9.1/lib -L%p/lib
+# configure doesn't order LDFLAGS for postgresql conftest properly,
+# hence redundant with --with-libpq-path
+ConfigureParams: <<
+	--enable-ext-google-docs \
+	--disable-mozilla \
+	--enable-librsvg \
+	--disable-kde \
+	--disable-kde4 \
+	--with-system-libs \
+	--with-system-headers \
+	--with-macosx-sdk=$osvers \
+	--with-libpq-path=%p/opt/postgresql-9.1 \
+	-C
+<<
+CompileScript: <<
+	#!/bin/sh -ev
+	mkdir build
+	cd build
+	osvers=`sw_vers -productVersion | cut -d. -f1-2`
+	../%n-%v/configure %c
+	make
+	fink-package-precedence .
+<<
+InstallScript: <<
+	#!/bin/sh -ev
+	cd build
+	make DESTDIR=%d install
+<<
+DescDetail: <<
+LibreOffice is the power-packed free, libre and open source personal 
+productivity suite for Windows, Macintosh and GNU/Linux, that gives 
+you six feature-rich applications for all your document production 
+and data processing needs: Writer, Calc, Impress, Draw, Math and Base. 
+Support and documentation is free from our large, dedicated community 
+of users, contributors and developers. You, too, can get involved!
+<<
+DescPackaging:
