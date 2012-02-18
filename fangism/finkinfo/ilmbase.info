@@ -39,7 +39,10 @@ InstallScript: <<
 		# replace symlink with versioned lib
 		rm -f lib$f.6.dylib
 		mv lib$f.6.0.0.dylib lib$f.6.dylib
+		ln -f -s lib$f.6.dylib lib$f.dylib
+		sed -i.orig -e '/^library_names=/s|lib.*\.0\.0\.dylib ||g' lib$f.la
 	done
+		rm -f *.la.orig
 	popd
 <<
 DocFiles: AUTHORS ChangeLog COPYING LICENSE NEWS README README.OSX
