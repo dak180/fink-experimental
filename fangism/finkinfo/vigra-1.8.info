@@ -1,0 +1,98 @@
+Info3: <<
+Package: vigra-1.8
+Version: 1.8.0
+Revision: 1
+GCC: 4.0
+Depends: %N-shlibs (= %v-%r)
+# , %N-bin
+Conflicts: vigra
+Replaces: vigra
+BuildDepends: <<
+#	fink-package-precedence,
+#	boost1.46.1.cmake,
+#	boost1.46.python27,
+	cmake,
+	doxygen,
+	hdf5.7,
+	libjpeg8,
+	libtiff,
+	libpng15,
+	fftw3,
+	szip,
+	openexr-1.7-dev,
+	numpy-py27
+<<
+BuildDependsOnly: True
+Source: http://hci.iwr.uni-heidelberg.de/vigra/vigra-%v-src.tar.gz
+Source-MD5: 15c5544448e529ee60020758ab6be264
+SourceDirectory: vigra-%v
+CompileScript: <<
+	#!/bin/sh -ev
+	mkdir -p ../build
+	cd ../build
+	cmake -DCMAKE_INSTALL_PREFIX=%p ../vigra-%v
+	make
+#	fink-package-precedence .
+<<
+# InfoTest: TestScript: make -k check || exit 2
+InstallScript: <<
+	#!/bin/sh -ev
+	cd ../build
+	make DESTDIR=%d install
+	pushd %i/lib
+	for f in *.*.*.dylib
+	do
+		install_name_tool -id "%p/lib/$f" "$f"
+	done
+	popd
+	mkdir -p %i/share/doc
+	mv %i/doc/vigra %i/share/doc/
+	mv %i/doc/vigranumpy %i/share/doc/
+	rmdir %i/doc
+<<
+DocFiles: LICENSE.txt README.txt
+SplitOff: <<
+  Package: %N-doc
+  Files: share/doc/vigra share/doc/vigranumpy
+  Description: Documentation for vigra libraries
+<<
+SplitOff2: <<
+  Package: %N-shlibs
+#  Suggests: %N-bin
+  Depends: <<
+#	boost1.46.1.cmake-shlibs,
+#	boost1.46.python27-shlibs,
+	hdf5.7-shlibs,
+	libjpeg8-shlibs,
+	libtiff-shlibs,
+	libpng15-shlibs,
+	szip-shlibs,
+	fftw3-shlibs,
+	openexr-1.7-shlibs
+  <<
+  Files: lib/libvigraimpex.4.180.dylib
+  Shlibs: %p/lib/libvigraimpex.4.180.dylib 4.0.0 %n (>= 1.8.0-1)
+  Description: Shared libraries for vigra package
+<<
+Description: Computer Vision Library
+DescPort: <<
+  Uses "$INSTALL -d" for creating directory hierarchies, so disable
+  use of -p in $INSTALL since -p and -d are mutually exclusive.
+<<
+DescDetail: <<
+VIGRA stands for "Vision with Generic Algorithms". It's a novel computer
+vision library that puts its main emphasize on customizable algorithms
+and data structures. By using template techniques similar to those in
+the C++  Standard Template Library, you can easily adapt any VIGRA
+component to the needs of your application, without thereby giving up
+execution speed.
+<<
+DescPackaging: <<
+  Shared libraries disabled until they update their libtool.
+  If anyone wants to figure out the libtool fix for this one, feel free,
+  its a monster - they used an old alpha CXX libtool branch.
+<<
+License: OSI-Approved
+Homepage: http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/
+Maintainer: Ben Hines <benh57@users.sourceforge.net>
+<<
