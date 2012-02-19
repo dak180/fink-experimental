@@ -9,6 +9,7 @@ Source: http://download.documentfoundation.org/%n/src/3.5.0/%n-core-%v.tar.xz
 Source-MD5: 209bbbc369b36963d25334c3ef7933e8
 # because xz support in fink is too new
 NoSourceDirectory: true
+GCC: 4.0
 BuildDepends: <<
 	xz,
 	fink-package-precedence,
@@ -24,11 +25,12 @@ BuildDepends: <<
 	libxslt-bin,
 	libxml2,
 	libcurl4 (>= 7.13.1),
-	libnss.1d,
+	libnss.1d (>= 3.9.3),
 	libwpd-0.9-dev,
 	libwpg-0.2-dev,
 	libwps-dev,
 	neon27,
+	unixodbc2,
 	postgresql91-dev,
 	system-openssl-dev,
 	libhunspell,
@@ -40,7 +42,7 @@ BuildDepends: <<
 	poppler4,
 	librsvg2,
 	libvisio,
-	vigra,
+	vigra-1.8,
 	cairo
 <<
 # build auto-detects ccache!
@@ -58,11 +60,12 @@ Depends: <<
 	libxslt-shlibs,
 	libxml2-shlibs,
 	libcurl4-shlibs (>= 7.13.1),
-	libnss.1d-shlibs,
+	libnss.1d-shlibs (>= 3.9.3),
 	libwpd-0.9-shlibs,
 	libwpg-0.2-shlibs,
 	libwps-shlibs,
 	neon27-shlibs,
+	unixodbc2-shlibs,
 	postgresql91-shlibs,
 	libhunspell-shlibs,
 	libjpeg8-shlibs,
@@ -73,7 +76,7 @@ Depends: <<
 	poppler4-shlibs,
 	librsvg2-shlibs,
 	libvisio-shlibs,
-	vigra-shlibs,
+	vigra-1.8-shlibs,
 	cairo-shlibs
 <<
 PatchScript: <<
@@ -120,4 +123,7 @@ and data processing needs: Writer, Calc, Impress, Draw, Math and Base.
 Support and documentation is free from our large, dedicated community 
 of users, contributors and developers. You, too, can get involved!
 <<
-DescPackaging:
+DescPackaging: <<
+	Working on deps:
+	npapi.h from npapi-sdk [http://code.google.com/p/npapi-sdk/]
+<<
