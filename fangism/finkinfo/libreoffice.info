@@ -30,8 +30,10 @@ BuildDepends: <<
 	libwpg-0.2-dev,
 	libwps-dev,
 	neon27,
+	npapi-sdk,
 	unixodbc2,
 	postgresql91-dev,
+	system-java-dev,
 	system-openssl-dev,
 	libhunspell,
 	libjpeg8,
@@ -41,6 +43,7 @@ BuildDepends: <<
 	gstreamer-0.10-dev,
 	poppler4,
 	librsvg2,
+	sane-backends-dev,
 	libvisio,
 	vigra-1.8,
 	cairo
@@ -75,6 +78,7 @@ Depends: <<
 	gstreamer-0.10-shlibs,
 	poppler4-shlibs,
 	librsvg2-shlibs,
+	sane-backends-shlibs,
 	libvisio-shlibs,
 	vigra-1.8-shlibs,
 	cairo-shlibs
@@ -125,5 +129,8 @@ of users, contributors and developers. You, too, can get involved!
 <<
 DescPackaging: <<
 	Working on deps:
-	npapi.h from npapi-sdk [http://code.google.com/p/npapi-sdk/]
+checking which icu to use... external
+checking for unicode/rbbi.h... checked.
+checking for icu-config... /sw/bin/icu-config
+checking ICU version... configure: error: not suitable, only >= 4.0 supported currently
 <<
