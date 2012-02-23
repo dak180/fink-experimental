@@ -1,6 +1,6 @@
 Package: openexr-1.7
 Version: 1.7.0
-Revision: 1
+Revision: 2
 Description: Example programs using OpenEXR
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
@@ -9,9 +9,11 @@ Maintainer: David Fang <fangism@users.sourceforge.net>
 Depends: %N-shlibs (= %v-%r)
 BuildDepends: <<
 	fink (>= 0.24.12-1),
+	flag-sort,
 	fink-package-precedence,
 	ilmbase
 <<
+# InheritedBuildDepends: ilmbase
 GCC: 4.0
 
 Source: http://download.savannah.nongnu.org/releases/openexr/openexr-%v.tar.gz
@@ -20,7 +22,9 @@ SourceDirectory: openexr-%v
 PatchScript: <<
  perl -pi -e "s|-Wno-long-double||g" configure
 <<
-
+# flag-sort to prevent compiling/linking against own installed library
+SetCC: flag-sort -r gcc
+SetCXX: flag-sort -r g++
 ConfigureParams: <<
 	--enable-shared \
 	--disable-static \
@@ -31,7 +35,7 @@ ConfigureParams: <<
 CompileScript: <<
 	#!/bin/sh -ev
 	%{default_script}
-	fink-package-precedence --prohibit-bdep=openexr-dev .
+	fink-package-precedence --prohibit-bdep=openexr-dev,%n-dev .
 <<
 InfoTest: TestScript: make -k check || exit 2
 InstallScript: <<
@@ -44,7 +48,9 @@ InstallScript: <<
 		rm -f lib$f.6.dylib
 		mv lib$f.6.0.0.dylib lib$f.6.dylib
 		ln -f -s lib$f.6.dylib lib$f.dylib
-		sed -i.orig -e '/^library_names=/s|lib.*\.0\.0\.dylib ||g' lib$f.la
+		sed -i.orig -e '/^library_names=/s|libIlm.*.6\.0\.0\.dylib ||g' lib$f.la
+		# cat lib$f.la
+		# diff -u lib$f.la{.orig,} || :
 	done
 		rm -f *.la.orig
 	popd
