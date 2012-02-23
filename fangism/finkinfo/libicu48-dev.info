@@ -5,9 +5,6 @@ Revision: 0
 Source: http://download.icu-project.org/files/icu4c/%v/icu4c-4_8_1_1-src.tgz
 Source-MD5: ea93970a0275be6b42f56953cd332c17
 SourceDirectory: icu
-# PatchFile: %n.patch
-# PatchFile-MD5: d9dc550219e45caa94b884824165d833
-# PatchScript: sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
 
 Conflicts: libicu28, libicu28-dev, libicu30, libicu30-dev, libicu31, libicu31-dev, libicu32-dev, libicu36-dev
 Replaces: libicu28, libicu28-dev, libicu30, libicu30-dev, libicu31, libicu31-dev, libicu32-dev, libicu36-dev
@@ -15,10 +12,15 @@ Replaces: libicu28, libicu28-dev, libicu30, libicu30-dev, libicu31, libicu31-dev
 BuildDepends: fink (>= 0.24.12-1), fink-package-precedence, flag-sort
 BuildDependsOnly: true
 
+PatchFile: %n.patch
+PatchFile-MD5: 8b2ae59a1457736d30ed63ae9901cccd
+PatchScript: %{default_script}
+# PatchScript: sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
+
 # NoSetMAKEFLAGS: true
 # SetMAKEFLAGS: -j1
-SetCC: flag-sort gcc
-SetCXX: flag-sort g++
+SetCC: flag-sort -r gcc
+SetCXX: flag-sort -r g++
 ConfigureParams: --enable-shared --disable-static
 CompileScript: <<
 	#!/bin/sh -ev
@@ -26,8 +28,10 @@ CompileScript: <<
 	cd build
 	../source/configure %c
 	make
-	fink-package-precedence --prohibit-bdep=libicu36-dev,libicu32-dev .
+	fink-package-precedence --depfile-ext=.d --headers --libs \
+		--prohibit-bdep=libicu36-dev,libicu32-dev,%n .
 <<
+InfoTest: TestScript: cd build && make -k check || exit 2
 InstallScript: <<
 #!/bin/sh -ex
 	cd build
@@ -78,4 +82,5 @@ Please note that this package is NOT based on the ICU source provided by Apple.
 DescPackaging: <<
 flag-sort is needed because Makefiles order in-source dirs 
 after passed CPPFLAGS.
+Patch is needed to re-order linker flags to have -L../stubdata before -L../lib
 <<
