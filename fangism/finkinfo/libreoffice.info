@@ -21,6 +21,7 @@ BuildDepends: <<
 	expat1,
 	gperf,
 	libcmis-dev,
+	libicu48-dev (>= 4.0),
 	libxslt,
 	libxslt-bin,
 	libxml2,
@@ -60,6 +61,7 @@ Depends: <<
 	db51-aes-shlibs,
 	expat1-shlibs,
 	libcmis-shlibs,
+	libicu48-shlibs (>= 4.0),
 	libxslt-shlibs,
 	libxml2-shlibs,
 	libcurl4-shlibs (>= 7.13.1),
@@ -129,8 +131,14 @@ of users, contributors and developers. You, too, can get involved!
 <<
 DescPackaging: <<
 	Working on deps:
-checking which icu to use... external
-checking for unicode/rbbi.h... checked.
-checking for icu-config... /sw/bin/icu-config
-checking ICU version... configure: error: not suitable, only >= 4.0 supported currently
+checking for SAMPLEICC... configure: error: Package requirements (sampleicc) were not met:
+
+No package 'sampleicc' found
+
+Consider adjusting the PKG_CONFIG_PATH environment variable if you
+installed software in a non-standard prefix.
+
+Alternatively, you may set the environment variables SAMPLEICC_CFLAGS
+and SAMPLEICC_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details.
 <<
