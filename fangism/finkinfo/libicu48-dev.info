@@ -10,15 +10,13 @@ Conflicts: libicu28, libicu28-dev, libicu30, libicu30-dev, libicu31, libicu31-de
 Replaces: libicu28, libicu28-dev, libicu30, libicu30-dev, libicu31, libicu31-dev, libicu32-dev, libicu36-dev
 
 BuildDepends: fink (>= 0.24.12-1), fink-package-precedence, flag-sort
+Depends: libicu48-shlibs (= %v-%r)
 BuildDependsOnly: true
 
 PatchFile: %n.patch
 PatchFile-MD5: 8b2ae59a1457736d30ed63ae9901cccd
 PatchScript: %{default_script}
-# PatchScript: sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
 
-# NoSetMAKEFLAGS: true
-# SetMAKEFLAGS: -j1
 SetCC: flag-sort -r gcc
 SetCXX: flag-sort -r g++
 ConfigureParams: --enable-shared --disable-static
@@ -36,16 +34,66 @@ InstallScript: <<
 #!/bin/sh -ex
 	cd build
 	make DESTDIR="%d" install
-#	make -j1 \
-#		DESTDIR="%d" \
-#		DSTROOT="%d" \
-#		SRCROOT=`pwd` \
-#		PRIVATE_HDR_PREFIX="%p" \
-#		installhdrs
-#	install -d -m 755 %i/bin
-#	install -c -m 755 icu-config %i/bin/
-#	install -d -m 755 %i/share/doc/%N
+	# O Libtool, whither art thou?
+	prefix="%p"
+	iprefix="%i"
+	pushd $iprefix/lib
+	for f in libicu*.*.*.*.dylib
+	do
+		if test ! -L $f
+		then
+		install_name_tool -id "$prefix/lib/$f" "$f"
+		deplibs=`otool -L $f | sed 1,2d | awk '{print $1;}' | tr '\n' ' '`
+		for d in $deplibs
+		do 
+		# prefix absolute paths to installation
+		case $d in
+		/*) ;;
+		*) install_name_tool -change "$d" "$prefix/lib/$d" $f ;;
+		esac
+		done
+		fi
+	done
+	popd
+	for b in bin sbin
+	do
+	pushd $iprefix/$b
+	for f in *
+	do
+		if test ! -L $f
+		then
+		deplibs=`otool -L $f | sed 1d | awk '{print $1;}' | tr '\n' ' '`
+		for d in $deplibs
+		do
+		case $d in
+		/*) ;;
+		@*) ;;
+		*) install_name_tool -change "$d" "$prefix/lib/$d" $f ;;
+		esac
+		done
+		fi
+	done
+	popd
+	done
 <<
+DocFiles: *.css *.html *.txt
+SplitOff: <<
+Package: libicu48-shlibs
+Description: Shared libraries for ICU 4.8
+DocFiles: *.css *.html *.txt
+Files: lib/libicu*.48.*.dylib
+Shlibs: <<
+	%p/lib/libicudata.48.1.1.dylib	48.0.0  %n (>= 4.8-0)
+	%p/lib/libicui18n.48.1.1.dylib	48.0.0  %n (>= 4.8-0)
+	%p/lib/libicuio.48.1.1.dylib	48.0.0  %n (>= 4.8-0)
+	%p/lib/libicule.48.1.1.dylib	48.0.0  %n (>= 4.8-0)
+	%p/lib/libiculx.48.1.1.dylib	48.0.0  %n (>= 4.8-0)
+	%p/lib/libicutest.48.1.1.dylib	48.0.0  %n (>= 4.8-0)
+	%p/lib/libicutu.48.1.1.dylib	48.0.0  %n (>= 4.8-0)
+	%p/lib/libicuuc.48.1.1.dylib	48.0.0  %n (>= 4.8-0)
+<<
+<<
+# SplitOff2: -bin?
 License: BSD
 Description: Headers for ICU libraries
 Maintainer: David Fang <fangism@users.sourceforge.net>
