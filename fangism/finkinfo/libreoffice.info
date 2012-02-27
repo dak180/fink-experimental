@@ -44,9 +44,13 @@ BuildDepends: <<
 	gstreamer-0.10-dev,
 	poppler4,
 	librsvg2,
+	sampleicc,
 	sane-backends-dev,
 	libvisio,
 	vigra-1.8,
+	libraptor2-dev,
+	librasqal3-dev,
+	redland-dev (>= 1.0.15-1),
 	cairo
 <<
 # build auto-detects ccache!
@@ -80,9 +84,11 @@ Depends: <<
 	gstreamer-0.10-shlibs,
 	poppler4-shlibs,
 	librsvg2-shlibs,
+	sampleicc-shlibs,
 	sane-backends-shlibs,
 	libvisio-shlibs,
 	vigra-1.8-shlibs,
+	redland-shlibs (>= 1.0.15-1),
 	cairo-shlibs
 <<
 PatchScript: <<
@@ -131,14 +137,9 @@ of users, contributors and developers. You, too, can get involved!
 <<
 DescPackaging: <<
 	Working on deps:
-checking for SAMPLEICC... configure: error: Package requirements (sampleicc) were not met:
-
-No package 'sampleicc' found
-
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-
-Alternatively, you may set the environment variables SAMPLEICC_CFLAGS
-and SAMPLEICC_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
+checking which altlinuxhyph to use... external
+checking hyphen.h usability... no
+checking hyphen.h presence... no
+checking for hyphen.h... no
+configure: error: altlinuxhyph headers not found.
 <<
