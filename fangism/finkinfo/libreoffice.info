@@ -12,6 +12,8 @@ NoSourceDirectory: true
 GCC: 4.0
 BuildDepends: <<
 	xz,
+	flex,
+	bison,
 	fink-package-precedence,
 	fontconfig2-dev,
 	boost1.46.1.cmake,
@@ -55,7 +57,9 @@ BuildDepends: <<
 	redland-dev (>= 1.0.15-1),
 	lpsolve5.5-dev (>= 5.5.2.0-1b),
 	libexttextcat (>= 3.1.1-1),
-	cairo
+	cairo,
+	zip (>= 3.0) | zip-ssl (>= 3.0),
+	unzip
 <<
 # build auto-detects ccache!
 # configure also checks for:
@@ -85,7 +89,7 @@ Depends: <<
 	libjpeg8-shlibs,
 	gtk+2-shlibs,
 	dbus1.3-shlibs,
-	libpng15shlibs,
+	libpng15-shlibs,
 	gstreamer-0.10-shlibs,
 	poppler4-shlibs,
 	librsvg2-shlibs,
