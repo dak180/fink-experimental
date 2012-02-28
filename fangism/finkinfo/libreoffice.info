@@ -37,6 +37,8 @@ BuildDepends: <<
 	system-java-dev,
 	system-openssl-dev,
 	libhunspell,
+	hyphen,
+	mythes,
 	libjpeg8,
 	gtk+2-dev,
 	dbus1.3-dev,
@@ -51,6 +53,7 @@ BuildDepends: <<
 	libraptor2-dev,
 	librasqal3-dev,
 	redland-dev (>= 1.0.15-1),
+	lpsolve5.5-dev,
 	cairo
 <<
 # build auto-detects ccache!
@@ -77,6 +80,8 @@ Depends: <<
 	unixodbc2-shlibs,
 	postgresql91-shlibs,
 	libhunspell-shlibs,
+	hyphen-shlibs,
+	mythes-shlibs,
 	libjpeg8-shlibs,
 	gtk+2-shlibs,
 	dbus1.3-shlibs,
@@ -89,6 +94,7 @@ Depends: <<
 	libvisio-shlibs,
 	vigra-1.8-shlibs,
 	redland-shlibs (>= 1.0.15-1),
+	lpsolve5.5-shlibs,
 	cairo-shlibs
 <<
 PatchScript: <<
@@ -137,9 +143,11 @@ of users, contributors and developers. You, too, can get involved!
 <<
 DescPackaging: <<
 	Working on deps:
-checking which altlinuxhyph to use... external
-checking hyphen.h usability... no
-checking hyphen.h presence... no
-checking for hyphen.h... no
-configure: error: altlinuxhyph headers not found.
+checking lpsolve/lp_lib.h usability... yes
+checking lpsolve/lp_lib.h presence... yes
+checking for lpsolve/lp_lib.h... yes
+checking for floor in -lm... yes
+checking for dlopen in -ldl... yes
+checking for make_lp in -llpsolve55... no
+configure: error: lpsolve library not found or too old.
 <<
