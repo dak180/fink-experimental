@@ -53,12 +53,11 @@ BuildDepends: <<
 	libraptor2-dev,
 	librasqal3-dev,
 	redland-dev (>= 1.0.15-1),
-	lpsolve5.5-dev,
+	lpsolve5.5-dev (>= 5.5.2.0-1b),
 	cairo
 <<
 # build auto-detects ccache!
 # configure also checks for:
-#	sha1sum -- perlmod provides shasum.  same thing?
 #	dmake -- will build
 # pygobject2
 Depends: <<
@@ -101,6 +100,7 @@ PatchScript: <<
 	#!/bin/sh -ev
 	xz -dc %n-%v.tar.xz | tar xf -
 	cd %n-%v
+	# sha1sum missing on darwin8, provided by perlmod
 	sed -i.orig -e 's|sha1sum|shasum|g' configure
 <<
 SetCPPFLAGS: -I%p/include
@@ -142,12 +142,7 @@ Support and documentation is free from our large, dedicated community
 of users, contributors and developers. You, too, can get involved!
 <<
 DescPackaging: <<
-	Working on deps:
-checking lpsolve/lp_lib.h usability... yes
-checking lpsolve/lp_lib.h presence... yes
-checking for lpsolve/lp_lib.h... yes
-checking for floor in -lm... yes
-checking for dlopen in -ldl... yes
-checking for make_lp in -llpsolve55... no
-configure: error: lpsolve library not found or too old.
+Working on deps:
+checking which libexttextcat to use... external
+checking for LIBEXTTEXTCAT... configure: error: Package requirements (libexttextcat >= 3.1.1) were not met:
 <<
