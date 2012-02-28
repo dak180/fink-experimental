@@ -54,6 +54,7 @@ BuildDepends: <<
 	librasqal3-dev,
 	redland-dev (>= 1.0.15-1),
 	lpsolve5.5-dev (>= 5.5.2.0-1b),
+	libexttextcat (>= 3.1.1-1),
 	cairo
 <<
 # build auto-detects ccache!
@@ -94,6 +95,7 @@ Depends: <<
 	vigra-1.8-shlibs,
 	redland-shlibs (>= 1.0.15-1),
 	lpsolve5.5-shlibs,
+	libexttextcat-shlibs (>= 3.1.1-1),
 	cairo-shlibs
 <<
 PatchScript: <<
@@ -133,6 +135,7 @@ InstallScript: <<
 	cd build
 	make DESTDIR=%d install
 <<
+DocFiles: %n-%v/COPYING* %n-%v/ChangeLog %n-%v/README.*
 DescDetail: <<
 LibreOffice is the power-packed free, libre and open source personal 
 productivity suite for Windows, Macintosh and GNU/Linux, that gives 
@@ -143,6 +146,6 @@ of users, contributors and developers. You, too, can get involved!
 <<
 DescPackaging: <<
 Working on deps:
-checking which libexttextcat to use... external
-checking for LIBEXTTEXTCAT... configure: error: Package requirements (libexttextcat >= 3.1.1) were not met:
+checking for zip... /sw/bin/zip
+configure: error: Zip version 3.0 or newer is required to build, please install or use --with-zip-home
 <<
