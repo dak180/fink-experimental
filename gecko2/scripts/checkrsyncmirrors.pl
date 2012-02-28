@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-my $basepath = '/sw64';
+my $basepath = '/sw';
 
 my $mirror_FH;
 my $timestamp_FH;
@@ -17,7 +17,8 @@ my $file;
 my $mirrorname;
 my @mirrornameparts;
 
-open($mirror_FH, '<', "/sw/fink/mirror/rsync") || die "Could not open rsync mirrors file\n";
+print "Using: $basepath/lib/fink/mirror/rsync\n";
+open($mirror_FH, '<', "$basepath/lib/fink/mirror/rsync") || die "Could not open rsync mirrors file\n";
 while (<$mirror_FH>) {
 	if($_ =~ /(^...-..: |Primary: )(rsync:\/\/.*)/) {
 		$mirror = $2;
