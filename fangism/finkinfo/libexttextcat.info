@@ -37,4 +37,5 @@ Fundamentally an adaption of wiseguys libtextcat extended to be UTF-8 aware.
 DescPackaging: <<
 Language model (.lm) files put into shlibs b/c I think those are needed 
 for the library to work.
+The createfp program is included in the developer header splitoff for now.
 <<
