@@ -13,6 +13,7 @@ NoSourceDirectory: true
 GCC: 4.0
 BuildDepends: <<
 	xz,
+	autoconf,
 	ant-base (>= 1.6.0),
 #	junit (>= 4.0),
 	flex,
@@ -111,10 +112,11 @@ PatchScript: <<
 	xz -dc %n-%v.tar.xz | tar xf -
 	cd %n-%v
 	# sha1sum missing on darwin8, provided by perlmod
-	sed -i.orig -e 's|sha1sum|shasum|g' \
-		-e '/^eval.*langlist/s|solenv|${srcdir}/&|' \
-		-e '/^chmod.*config\.guess/s|\./|$srcdir/|' \
-		-e '/^autoconf post/s|post_download\.in|$srcdir/&|' configure
+	sed -i.orig -e 's|sha1sum|shasum|g' configure.in
+	# actually calls autoconf, and only srcdir build supported
+#	sed -i.orig2 -e '/^eval.*langlist/s|solenv|${srcdir}/&|' \
+#		-e '/^chmod.*config\.guess/s|\./|$srcdir/|' \
+#		-e '/^autoconf post/s|post_download\.in|$srcdir/&|' configure.in
 <<
 SetCPPFLAGS: -I%p/include
 SetLDFLAGS: -L%p/opt/postgresql-9.1/lib -L%p/lib
@@ -132,21 +134,25 @@ ConfigureParams: <<
 	--with-libpq-path=%p/opt/postgresql-9.1 \
 	--with-ant-home=%p/lib/ant \
 	--without-junit \
+	--disable-fetch-external \
 	-C
 <<
 # --with-junit=%p/share/java/junit/junit.jar
 CompileScript: <<
 	#!/bin/sh -ev
-	mkdir build
-	cd build
+# VPATH building not supported
+#	mkdir build
+#	cd build
 	osvers=`sw_vers -productVersion | cut -d. -f1-2`
-	../%n-%v/configure %c
+# unconventional configure...
+#	../%n-%v/configure %c
+	./autogen.sh %c
 	make
 	fink-package-precedence .
 <<
 InstallScript: <<
 	#!/bin/sh -ev
-	cd build
+#	cd build
 	make DESTDIR=%d install
 <<
 DocFiles: %n-%v/COPYING* %n-%v/ChangeLog %n-%v/README.*
