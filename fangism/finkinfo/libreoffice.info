@@ -1,3 +1,4 @@
+Info3: <<
 Package: libreoffice
 Version: 3.5.0.3
 Revision: 0
@@ -12,6 +13,8 @@ NoSourceDirectory: true
 GCC: 4.0
 BuildDepends: <<
 	xz,
+	ant-base (>= 1.6.0),
+#	junit (>= 4.0),
 	flex,
 	bison,
 	fink-package-precedence,
@@ -46,7 +49,7 @@ BuildDepends: <<
 	dbus1.3-dev,
 	libpng15,
 	gstreamer-0.10-dev,
-	poppler4,
+	poppler8 (>= 0.15.0),
 	librsvg2,
 	sampleicc,
 	sane-backends-dev,
@@ -91,7 +94,7 @@ Depends: <<
 	dbus1.3-shlibs,
 	libpng15-shlibs,
 	gstreamer-0.10-shlibs,
-	poppler4-shlibs,
+	poppler8-shlibs (>= 0.15.0),
 	librsvg2-shlibs,
 	sampleicc-shlibs,
 	sane-backends-shlibs,
@@ -100,14 +103,18 @@ Depends: <<
 	redland-shlibs (>= 1.0.15-1),
 	lpsolve5.5-shlibs,
 	libexttextcat-shlibs (>= 3.1.1-1),
-	cairo-shlibs
+	cairo-shlibs,
+	zenity
 <<
 PatchScript: <<
 	#!/bin/sh -ev
 	xz -dc %n-%v.tar.xz | tar xf -
 	cd %n-%v
 	# sha1sum missing on darwin8, provided by perlmod
-	sed -i.orig -e 's|sha1sum|shasum|g' configure
+	sed -i.orig -e 's|sha1sum|shasum|g' \
+		-e '/^eval.*langlist/s|solenv|${srcdir}/&|' \
+		-e '/^chmod.*config\.guess/s|\./|$srcdir/|' \
+		-e '/^autoconf post/s|post_download\.in|$srcdir/&|' configure
 <<
 SetCPPFLAGS: -I%p/include
 SetLDFLAGS: -L%p/opt/postgresql-9.1/lib -L%p/lib
@@ -123,8 +130,11 @@ ConfigureParams: <<
 	--with-system-headers \
 	--with-macosx-sdk=$osvers \
 	--with-libpq-path=%p/opt/postgresql-9.1 \
+	--with-ant-home=%p/lib/ant \
+	--without-junit \
 	-C
 <<
+# --with-junit=%p/share/java/junit/junit.jar
 CompileScript: <<
 	#!/bin/sh -ev
 	mkdir build
@@ -150,6 +160,15 @@ of users, contributors and developers. You, too, can get involved!
 <<
 DescPackaging: <<
 Working on deps:
-checking for zip... /sw/bin/zip
-configure: error: Zip version 3.0 or newer is required to build, please install or use --with-zip-home
+Wants poppler8, which depends on cairo-1.10 (missing).
+Specifically wants cpp interface to poppler (poppler8-cpp).
+poppler8-0.15.0 (from Snaggle's experimental)
+is the last version that requiresd cairo-1.8.
+Packaging for poppler8 may split out poppler8-cpp separately, so track that.
+
+checks for J Unit >= 4, but current fink junit is 3.8.1, so disable.
+
+configure detects: zenity, not sure how it is used
+
+<<
 <<
