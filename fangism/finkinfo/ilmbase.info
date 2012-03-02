@@ -1,6 +1,6 @@
 Package: ilmbase
 Version: 1.0.2
-Revision: 1
+Revision: 2
 Maintainer: David Fang <fangism@users.sourceforge.net>
 Homepage: http://openexr.com/
 Description: ILM base math library
@@ -40,7 +40,7 @@ InstallScript: <<
 		rm -f lib$f.6.dylib
 		mv lib$f.6.0.0.dylib lib$f.6.dylib
 		ln -f -s lib$f.6.dylib lib$f.dylib
-		sed -i.orig -e '/^library_names=/s|lib.*\.0\.0\.dylib ||g' lib$f.la
+		sed -i.orig -e '/^library_names=/s|lib[HI].*\.0\.0\.dylib ||g' lib$f.la
 	done
 		rm -f *.la.orig
 	popd
