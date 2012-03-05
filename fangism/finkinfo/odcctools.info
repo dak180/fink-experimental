@@ -1,0 +1,31 @@
+Package: odcctools
+Version: 20090808
+Revision: 1
+Description: Darwin compiler toolchain (as, ld)
+Maintainer: David Fang <fangism@users.sourceforge.net>
+License: OSI-Approved
+Source: http://svn.macosforge.org/repository/%n/release/%n-%v.tar.bz2
+Source-MD5: cb8ce536e204fc2399fc27079012c37b
+BuildDependsOnly: true
+ConfigureParams: --prefix=%p/lib/%n --libexecdir=%p/lib/%n/libexec
+CompileScript:
+# InfoTest: TestScript: make -k check || exit 2
+DocFiles: APPLE_LICENSE RelNotes/*
+InstallScript: <<
+	#!/bin/sh -ev
+	make DESTDIR=%d install
+	mkdir -p %i/bin
+	pushd %d
+	for f in %p/lib/%n/bin/*
+	do
+		b=`basename f`
+		ln -s /$f %i/bin/od$b
+	done
+<<
+DescUsage: <<
+Installed in prefix %p/lib/%n.
+Binaries symlinked to %p/bin prefixed with 'od'.
+<<
+DescPackaging: <<
+License: APSL-2.0
+<<
