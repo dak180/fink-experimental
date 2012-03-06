@@ -2,6 +2,7 @@
 
 # make-vcs-tarball.sh
 # Written by Daniel Johnson 15 Feb 2012
+# 6 Mar 2012 - Use case instead of if/else. Duh.
 # Released to the public domain.
 
 usage ()
@@ -33,7 +34,8 @@ url=${url:?"Must specify a repo URL."}
 tarball=${tarball:?"Must specify a tarball name minus the extension."}
 dir=`pwd`
 
-if [ $cmd = git ]; then
+case $cmd in
+git )
 	cd /tmp
 	echo "Cloning git repo $url."
 	git clone --no-checkout $url $tarball
@@ -41,9 +43,9 @@ if [ $cmd = git ]; then
 	echo "Making tarball at ${dir}/${tarball}.tar.bz2"
 	git archive --format=tar --prefix=${tarball}/ ${revision:=HEAD} | bzip2 >${dir}/${tarball}.tar.bz2
 	cd ..
-	rm -rf /tmp/${tarball}
+	rm -rf /tmp/${tarball};;
 	
-elif [ $cmd = hg ]; then
+hg )
 	cd /tmp
 	echo "Cloning hg repo $url."
 	hg clone --noupdate $url $tarball
@@ -51,25 +53,25 @@ elif [ $cmd = hg ]; then
 	echo "Making tarball at ${dir}/${tarball}.tar.bz2"
 	hg archive --prefix=${tarball} ${revision:+--rev=$revision} ${dir}/${tarball}.tar.bz2
 	cd ..
-	rm -rf /tmp/${tarball}
+	rm -rf /tmp/${tarball};;
 	
-elif [ $cmd = bzr ]; then
+bzr )
 	echo "Making tarball at ${dir}/${tarball}.tar.bz2 from bzr repo $url"
-	bzr export ${tarball}.tar.bz2 $url --root=${tarball} ${revision:+--revision=$revision}
+	bzr export ${tarball}.tar.bz2 $url --root=${tarball} ${revision:+--revision=$revision};;
 	
-elif [ $cmd = svn ]; then
+svn )
 	cd /tmp
 	echo "Exporting svn repo $url."
 	svn export ${revision:+--revision=$revision} $url $tarball
 	echo "Making tarball at ${dir}/${tarball}.tar.bz2"
 	tar -cjf ${dir}/${tarball}.tar.bz2 $tarball
-	rm -rf /tmp/${tarball}
+	rm -rf /tmp/${tarball};;
 
-else
+* )
 	echo "VCS '$cmd' not supported."
 	echo "Supported VCSes are git, hg, bzr and svn."
 	exit 1
-fi
+esac
 
 md5 ${dir}/${tarball}.tar.bz2
 
