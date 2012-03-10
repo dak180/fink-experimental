@@ -5,12 +5,12 @@ Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
 
-# need bash because /bin/sh 2.0 on darwin8 is missing support for pipefail
 # ccache is only temporary, for accelerating rebuilds
-BuildDepends: cmake (>= 2.8.2-1), fink (>= 0.28), bash
+BuildDepends: cmake (>= 2.8.2-1), fink (>= 0.28)
 InfoTest: <<
+# need bash because /bin/sh 2.0 on darwin8 is missing support for pipefail
 # coreutils for gtimeout for tests
-	TestDepends: coreutils
+	TestDepends: python2.7, bash, coreutils
  	TestScript: <<
 	#!/bin/sh -ev
 	# need path to bootstrapping compiler
