@@ -1,7 +1,7 @@
 Info2: <<
 Package: gcc47
 Version: 4.7.0
-Revision: 0.rc1
+Revision: 0.rc1.1
 Source: ftp://gcc.gnu.org/pub/gcc/snapshots/%v-RC-20120302/gcc-%v-RC-20120302.tar.bz2
 Source-MD5: 4e179c2f1a50664abf57764430edb48f
 Source2: ftp://sourceware.org/pub/java/ecj-4.5.jar
@@ -19,6 +19,15 @@ Replaces: gcc42, gcc43, gcc44, gcc45, gcc46, gcc48
 Depends: %N-compiler (= %v-%r)
 BuildDepends: gmp5, libmpfr4, libiconv-dev, gettext-tools, libgettext8-dev, ppl9 (>= 0.11.2), cloog-org (>= 0.16.2), libmpc2 (>= 0.9), xcode (>= 2.5), fink (>= 0.30.0)
 ConfigureParams: <<
+ AS=odas \
+ AS_FOR_TARGET=odas \
+ NM_FOR_TARGET=odnm \
+ LD_FOR_TARGET=odld \
+ AR_FOR_TARGET=odar \
+ LIPO_FOR_TARGET=odlipo \
+ OBJDUMP_FOR_TARGET=odobjdump \
+ RANLIB_FOR_TARGET=odranlib \
+ STRIP_FOR_TARGET=odstrip \
  --prefix=%p/lib/gcc4.7 --mandir=%p/share/man --infodir=%p/lib/gcc4.7/info --enable-languages=c,c++,fortran,lto,objc,obj-c++,java \
  --with-gmp=%p --with-libiconv-prefix=%p --with-ppl=%p --with-cloog=%p --with-mpc=%p --with-system-zlib \
  --x-includes=/usr/X11R6/include --x-libraries=/usr/X11R6/lib --program-suffix=-fsf-4.7 --enable-cloog-backend=isl --with-dwarf2
@@ -44,6 +53,7 @@ CompileScript: <<
  mv ../ecj-4.5.jar ecj.jar
  mkdir ../darwin_objdir
  cd ../darwin_objdir
+ # newer as from odcctools (odas) needed for libitm/config/powerpc/sjlj.S
  if [ "%m" = "powerpc" ]; then
    ../gcc-%v-RC-20120302/configure %c --disable-libjava-multilib --disable-libquadmath
  else
@@ -182,7 +192,7 @@ SplitOff: <<
 <<
 SplitOff2: <<
   Package: %N-compiler
-  Depends: gmp5-shlibs, libgmpxx5-shlibs, libmpfr4-shlibs, %N-shlibs (= %v-%r), libiconv, libgettext8-shlibs, ppl9-shlibs (>= 0.11.2), cloog-org-shlibs (>= 0.16.2), libmpc2-shlibs (>= 0.9), xcode (>= 2.5)
+  Depends: gmp5-shlibs, libgmpxx5-shlibs, libmpfr4-shlibs, %N-shlibs (= %v-%r), libiconv, libgettext8-shlibs, ppl9-shlibs (>= 0.11.2), cloog-org-shlibs (>= 0.16.2), libmpc2-shlibs (>= 0.9), xcode (>= 2.5), odcctools (>= 20090808)
   BuildDependsOnly: False
   Description: Compiler Binaries for gcc47.
   DocFiles: gcc/COPYING gcc/COPYING.LIB
