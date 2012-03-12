@@ -1,5 +1,5 @@
 Package: atlas
-Version: 3.9.68
+Version: 3.9.69
 Revision: 1
 Description: Portable optimal linear algebra software
 DescDetail: <<
@@ -36,7 +36,7 @@ Order is important when linking! Use:
 Also decide carefully whether you want to link to static or to shared libs.
 <<
 Source: mirror:sourceforge:math-atlas/files/%n%v.tar.bz2
-Source-MD5: bb6ee378d4f277c2e91ed28a8c8afed2
+Source-MD5: 60a64c70bed1087d5bb9ab629659ebae
 Source2: http://www.netlib.org/lapack/lapack-3.4.0.tgz
 Source2-MD5: 02d5706ec03ba885fc246e5fa10d8c70
 
@@ -218,6 +218,7 @@ InstallScript: <<
  # rm empty headers
  cd %i/include/atlas; ls -1s|grep '^[[:space:]]*0[[:space:]]'|sed -e 's,.* ,,'|xargs rm -f; cd -
  cp -pPR lib/*.a ../SHAR_bld/lib/*.dylib %i/lib
+ chmod +x %i/lib/*.dylib
  rm -f %i/lib/libtstatlas.a %i/lib/libf77refblas.a %i/lib/lapack_matgen.a
  find %i/lib -type f -name '*.a' -exec ranlib \{\} \;
  chmod -R a-x %i/lib/*
