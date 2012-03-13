@@ -47,7 +47,7 @@ NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 UseMaxBuildJobs: false
 BuildDependsOnly: true
-BuildDepends: gcc46-compiler, doxygen
+BuildDepends: gcc46-compiler, doxygen, graphviz | graphviz-nox
 # prevent ATLAS from detecting other cross-compilers in %p/bin
 BuildConflicts: avr-gcc
 
