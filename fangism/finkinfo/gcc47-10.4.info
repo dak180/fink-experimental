@@ -1,9 +1,9 @@
 Info2: <<
 Package: gcc47
 Version: 4.7.0
-Revision: 0.rc1.1
-Source: ftp://gcc.gnu.org/pub/gcc/snapshots/%v-RC-20120302/gcc-%v-RC-20120302.tar.bz2
-Source-MD5: 4e179c2f1a50664abf57764430edb48f
+Revision: 0.rc2
+Source: ftp://gcc.gnu.org/pub/gcc/snapshots/%v-RC-20120314/gcc-%v-RC-20120314.tar.bz2
+Source-MD5: c70a473b4cecdc63fd415aa21775db07
 Source2: ftp://sourceware.org/pub/java/ecj-4.5.jar
 Source2-MD5: d7cd6a27c8801e66cbaa964a039ecfdb
 PatchFile: %n.patch
