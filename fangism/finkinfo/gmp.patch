@@ -1,185 +1,22 @@
-diff -ur gmp-4.3.2/ChangeLog gmp-4.3-hg/ChangeLog
---- gmp-4.3.2/ChangeLog	2010-01-07 12:09:02.000000000 -0800
-+++ gmp-4.3-hg/ChangeLog	2010-05-09 17:45:55.000000000 -0700
-@@ -1,3 +1,17 @@
-+2010-02-08  Marco Bodrato  <bodrato@mail.dm.unipi.it>
-+
-+	* mpn/x86/atom/gmp-mparam.h: New file.
-+
-+	* acinclude.m4 (X86_64_PATTERN): New.
-+	* configure.in: Compiler options for atom-32, and use
-+	X86_64_PATTERN.
-+	* config.guess: Recognise many more Intel processors.
-+
-+2010-02-07  Torbjorn Granlund  <tege@gmplib.org>
-+
-+	* mpn/x86_64/aorrlsh_n.asm (cnt): Fix a typo.
-+	* mpn/x86_64/lshsub_n.asm: Likewise.
-+
- 2010-01-07  Torbjorn Granlund  <tege@gmplib.org>
+--- gmp-4.3.2/configure.orig	2012-03-18 15:42:05.000000000 -0400
++++ gmp-4.3.2/configure	2012-03-18 15:45:19.000000000 -0400
+@@ -30563,7 +30563,7 @@
+ esac
  
- 	* Version 4.3.2 released.
-diff -ur gmp-4.3.2/acinclude.m4 gmp-4.3-hg/acinclude.m4
---- gmp-4.3.2/acinclude.m4	2010-01-07 12:09:02.000000000 -0800
-+++ gmp-4.3-hg/acinclude.m4	2010-05-09 17:45:55.000000000 -0700
-@@ -44,8 +44,10 @@
- [[powerpc64-*-* | powerpc64le-*-* | powerpc620-*-* | powerpc630-*-* | powerpc970-*-* | power[3-9]-*-*]])
+ cat >conftest.c <<EOF
+-const int foo = 123;
++const int foo[] = {1,2,3};
+ EOF
+ echo "Test program:" >&5
+ cat conftest.c >&5
+--- gmp-4.3.2/acinclude.m4.orig	2012-03-18 15:40:17.000000000 -0400
++++ gmp-4.3.2/acinclude.m4	2012-03-18 15:45:34.000000000 -0400
+@@ -1942,7 +1942,7 @@
+ esac
  
- define(X86_PATTERN,
--[[i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-*]])
-+[[i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-* | atom-*-*]])
- 
-+define(X86_64_PATTERN,
-+[[athlon64-*-* | atom-*-* | core2-*-* | x86_64-*-* ]])
- 
- dnl  GMP_FAT_SUFFIX(DSTVAR, DIRECTORY)
- dnl  ---------------------------------
-diff -ur gmp-4.3.2/configure.in gmp-4.3-hg/configure.in
---- gmp-4.3.2/configure.in	2010-01-07 12:09:02.000000000 -0800
-+++ gmp-4.3-hg/configure.in	2010-05-09 17:45:56.000000000 -0700
-@@ -1281,7 +1281,7 @@
-   # mode, in case -m32 has failed not because it's an old gcc, but because
-   # it's a dual 32/64-bit gcc without a 32-bit libc, or whatever.
-   #
--  X86_PATTERN | athlon64-*-* | atom-*-* | core2-*-* | x86_64-*-*)
-+  X86_PATTERN | X86_64_PATTERN)
-     abilist="32"
-     cclist="gcc icc cc"
-     gcc_cflags="$gcc_cflags $fomit_frame_pointer"
-@@ -1409,6 +1409,10 @@
-         gcc_cflags_cpu="-mtune=core2 -mtune=k8"
-         gcc_cflags_arch="-march=core2 -march=core2~-mno-sse2 -march=k8 -march=k8~-mno-sse2"
-         ;;
-+      atom)
-+        gcc_cflags_cpu="-mtune=atom -mtune=pentium3"
-+        gcc_cflags_arch="-march=atom -march=pentium3"
-+        ;;
-       *)
-         gcc_cflags_cpu="-mtune=i486 -mcpu=i486 -m486"
-         gcc_cflags_arch="-march=i486"
-@@ -1434,6 +1438,7 @@
-       # VIA/Centaur processors, sold as CyrixIII and C3.
-       viac32)               path="x86/p6/p3mmx x86/p6/mmx x86/p6 x86";;
-       viac3*)               path="x86/pentium/mmx x86/pentium x86";;
-+      atom)                 path="x86/atom x86" ;;
-       *)                    path="x86" ;;
-     esac
- 
-@@ -2037,7 +2042,7 @@
- # enough assembler.
- #
- case $host in
--  X86_PATTERN | athlon64-*-* | atom-*-* | core2-*-* | x86_64-*-*)
-+  X86_PATTERN | X86_64_PATTERN)
-     if test "$ABI" = 32; then
-       case "$path $fat_path" in
-         *mmx*)   GMP_ASM_X86_MMX( , [GMP_STRIP_PATH(*mmx*)]) ;;
-@@ -3017,7 +3022,7 @@
-           ;;
-       esac
-       ;;
--    X86_PATTERN | athlon64-*-* | atom-*-* | core2-*-* | x86_64-*-*)
-+    X86_PATTERN | X86_64_PATTERN)
-       GMP_ASM_ALIGN_FILL_0x90
-       case $ABI in
-         32)
-diff -ur gmp-4.3.2/mpn/x86_64/aorrlsh_n.asm gmp-4.3-hg/mpn/x86_64/aorrlsh_n.asm
---- gmp-4.3.2/mpn/x86_64/aorrlsh_n.asm	2010-01-07 12:09:03.000000000 -0800
-+++ gmp-4.3-hg/mpn/x86_64/aorrlsh_n.asm	2010-05-09 17:46:01.000000000 -0700
-@@ -41,7 +41,7 @@
- define(`up',	`%rsi')
- define(`vp',	`%rdx')
- define(`n',	`%rcx')
--define(`cnt'	`%r8')
-+define(`cnt',	`%r8')
- 
- ifdef(`OPERATION_addlsh_n',`
-   define(ADDSUBC,       `adc')
-diff -ur gmp-4.3.2/mpn/x86_64/lshsub_n.asm gmp-4.3-hg/mpn/x86_64/lshsub_n.asm
---- gmp-4.3.2/mpn/x86_64/lshsub_n.asm	2010-01-07 12:09:03.000000000 -0800
-+++ gmp-4.3-hg/mpn/x86_64/lshsub_n.asm	2010-05-09 17:46:01.000000000 -0700
-@@ -39,7 +39,7 @@
- define(`up',	`%rsi')
- define(`vp',	`%rdx')
- define(`n',	`%rcx')
--define(`cnt'	`%r8')
-+define(`cnt',	`%r8')
- 
- ASM_START()
- 	TEXT
-diff -ur gmp-4.3.2/configure gmp-4.3-hg/configure
---- gmp-4.3.2/configure	2010-05-09 18:21:10.000000000 -0700
-+++ gmp-4.3-hg/configure	2010-05-09 18:04:51.000000000 -0700
-@@ -3935,7 +3937,7 @@
-   # mode, in case -m32 has failed not because it's an old gcc, but because
-   # it's a dual 32/64-bit gcc without a 32-bit libc, or whatever.
-   #
--  i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-* | athlon64-*-* | atom-*-* | core2-*-* | x86_64-*-*)
-+  i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-* | atom-*-* | athlon64-*-* | atom-*-* | core2-*-* | x86_64-*-* )
-     abilist="32"
-     cclist="gcc icc cc"
-     gcc_cflags="$gcc_cflags $fomit_frame_pointer"
-@@ -4063,6 +4065,10 @@
-         gcc_cflags_cpu="-mtune=core2 -mtune=k8"
-         gcc_cflags_arch="-march=core2 -march=core2~-mno-sse2 -march=k8 -march=k8~-mno-sse2"
-         ;;
-+      atom)
-+        gcc_cflags_cpu="-mtune=atom -mtune=pentium3"
-+        gcc_cflags_arch="-march=atom -march=pentium3"
-+        ;;
-       *)
-         gcc_cflags_cpu="-mtune=i486 -mcpu=i486 -m486"
-         gcc_cflags_arch="-march=i486"
-@@ -4088,6 +4094,7 @@
-       # VIA/Centaur processors, sold as CyrixIII and C3.
-       viac32)               path="x86/p6/p3mmx x86/p6/mmx x86/p6 x86";;
-       viac3*)               path="x86/pentium/mmx x86/pentium x86";;
-+      atom)                 path="x86/atom x86" ;;
-       *)                    path="x86" ;;
-     esac
- 
-@@ -5329,7 +5336,7 @@
- #
- if test "$gmp_prog_cc_works" = yes; then
-   case $host in
--    i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-*)
-+    i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-* | atom-*-*)
-       # this problem only arises in PIC code, so don't need to test when
-       # --disable-shared.  We don't necessarily have $enable_shared set to
-       # yes at this point, it will still be unset for the default (which is
-@@ -6838,7 +6845,7 @@
- #
- if test "$gmp_prog_cc_works" = yes; then
-   case $host in
--    i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-*)
-+    i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-* | atom-*-*)
-       # this problem only arises in PIC code, so don't need to test when
-       # --disable-shared.  We don't necessarily have $enable_shared set to
-       # yes at this point, it will still be unset for the default (which is
-@@ -9906,7 +9913,7 @@
- # enough assembler.
- #
- case $host in
--  i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-* | athlon64-*-* | atom-*-* | core2-*-* | x86_64-*-*)
-+  i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-* | atom-*-* | athlon64-*-* | atom-*-* | core2-*-* | x86_64-*-* )
-     if test "$ABI" = 32; then
-       case "$path $fat_path" in
-         *mmx*)   { echo "$as_me:$LINENO: checking if the assembler knows about MMX instructions" >&5
-@@ -30226,7 +30556,7 @@
- else
- 
- case $host in
--i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-* | x86_64-*-*)
-+i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-* | atom-*-* | x86_64-*-*)
-   gmp_cv_asm_rodata="$gmp_cv_asm_data" ;;
- *)
-   gmp_cv_asm_rodata="$gmp_cv_asm_text" ;;
-@@ -31067,7 +31397,7 @@
-           ;;
-       esac
-       ;;
--    i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-* | athlon64-*-* | atom-*-* | core2-*-* | x86_64-*-*)
-+    i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-* | atom-*-* | athlon64-*-* | atom-*-* | core2-*-* | x86_64-*-* )
- 
- { echo "$as_me:$LINENO: checking if the .align directive accepts an 0x90 fill in .text" >&5
- echo $ECHO_N "checking if the .align directive accepts an 0x90 fill in .text... $ECHO_C" >&6; }
+ cat >conftest.c <<EOF
+-const int foo = 123;
++const int foo[] = {1,2,3};
+ EOF
+ echo "Test program:" >&AC_FD_CC
+ cat conftest.c >&AC_FD_CC
