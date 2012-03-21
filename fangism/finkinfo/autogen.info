@@ -58,6 +58,7 @@ InstallScript: <<
 	make DESTDIR=%d install
 <<
 InfoTest: <<
+	TestConflicts: coreutils
 	TestScript: <<
 	#!/bin/sh -ev
 	if { echo "$MAKEFLAGS" | grep -e "-r" ;}
