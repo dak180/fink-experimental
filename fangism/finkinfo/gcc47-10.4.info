@@ -55,9 +55,9 @@ CompileScript: <<
  cd ../darwin_objdir
  # newer as from odcctools (odas) needed for libitm/config/powerpc/sjlj.S
  if [ "%m" = "powerpc" ]; then
-   ../gcc-%v-RC-20120302/configure %c --disable-libjava-multilib --disable-libquadmath
+   ../gcc-%v-RC-20120314/configure %c --disable-libjava-multilib --disable-libquadmath
  else
-   ../gcc-%v-RC-20120302/configure %c
+   ../gcc-%v-RC-20120314/configure %c
  fi
  make
  ##  make check requires autogen, dejagnu and expect, and should be run, in darwin_objdir, after install.
