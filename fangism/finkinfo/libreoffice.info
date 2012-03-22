@@ -150,6 +150,10 @@ CompileScript: <<
 #	../%n-core-%v/configure %c
 	cd srcdir
 	./autogen.sh %c
+	# because CPPFLAGS are not passed to modules that need boost
+	# These take effect *after* all -I and -L flags (suitable as fallback)
+	export CPLUS_INCLUDE_PATH=%p/include
+	export LIBRARY_PATH=%p/lib
 	make || make -j1 VERBOSE=1
 	fink-package-precedence .
 <<
