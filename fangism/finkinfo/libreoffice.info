@@ -27,6 +27,8 @@ BuildDepends: <<
 	expat1,
 	gperf,
 	libcmis-dev,
+	libgettext8-dev,
+	libiconv-dev,
 	libicu48-dev (>= 4.0),
 	libxslt,
 	libxslt-bin,
@@ -36,6 +38,7 @@ BuildDepends: <<
 	libwpd-0.9-dev,
 	libwpg-0.2-dev,
 	libwps-dev,
+	make (>= 3.81),
 	neon27,
 	npapi-sdk,
 	unixodbc2,
@@ -76,6 +79,8 @@ Depends: <<
 	db51-aes-shlibs,
 	expat1-shlibs,
 	libcmis-shlibs,
+	libgettext8-shlibs,
+	libiconv,
 	libicu48-shlibs (>= 4.0),
 	libxslt-shlibs,
 	libxml2-shlibs,
@@ -113,7 +118,11 @@ PatchScript: <<
 	ln -s %n-core-%v srcdir
 	cd srcdir
 	# sha1sum missing on darwin8, provided by perlmod
-	sed -i.orig -e 's|sha1sum|shasum|g' configure.in
+	# override system SDK's libxml2, libxslt w/ fink's from pkgconfig
+	sed -i.orig -e 's|sha1sum|shasum|g' \
+		-e '/which libxml/,/PKG_CHECK.*LIBXML/s|Darwin|&-SDK|' \
+		-e '/which libxslt/,/PKG_CHECK.*LIBXSLT/s|Darwin|&-SDK|' \
+		configure.in
 	# actually calls autoconf, and only srcdir build supported
 #	sed -i.orig2 -e '/^eval.*langlist/s|solenv|${srcdir}/&|' \
 #		-e '/^chmod.*config\.guess/s|\./|$srcdir/|' \
@@ -125,9 +134,11 @@ SetLDFLAGS: -L%p/opt/postgresql-9.1/lib -L%p/lib
 # configure doesn't order LDFLAGS for postgresql conftest properly,
 # hence redundant with --with-libpq-path
 ConfigureParams: <<
+	--enable-release-build \
 	--enable-ext-google-docs \
 	--disable-mozilla \
 	--enable-librsvg \
+	--disable-systray \
 	--disable-kde \
 	--disable-kde4 \
 	--with-system-libs \
@@ -146,15 +157,16 @@ CompileScript: <<
 #	mkdir build
 #	cd build
 	osvers=`sw_vers -productVersion | cut -d. -f1-2`
-# unconventional configure...
+# unconventional configure, using autogen.sh to invoke
 #	../%n-core-%v/configure %c
 	cd srcdir
 	./autogen.sh %c
-	# because CPPFLAGS are not passed to modules that need boost
+	# because CPPFLAGS are not forwarded to modules that need boost
 	# These take effect *after* all -I and -L flags (suitable as fallback)
+	# this trick is applicable gcc-only
 	export CPLUS_INCLUDE_PATH=%p/include
 	export LIBRARY_PATH=%p/lib
-	make || make -j1 VERBOSE=1
+	make -k || make -j1 VERBOSE=1
 	fink-package-precedence .
 <<
 InstallScript: <<
@@ -172,6 +184,9 @@ Support and documentation is free from our large, dedicated community
 of users, contributors and developers. You, too, can get involved!
 <<
 DescPackaging: <<
+Some instructions found:
+http://wiki.documentfoundation.org/Development/Install_Mac_OS_X_Dependencies
+
 Working on deps:
 Wants poppler8, which depends on cairo-1.10 (missing).
 Specifically wants cpp interface to poppler (poppler8-cpp).
@@ -183,5 +198,8 @@ checks for J Unit >= 4, but current fink junit is 3.8.1, so disable.
 
 configure detects: zenity, not sure how it is used
 
+config.status shows using /Developer/SDKs/... for libxml2 and libxslt
+upstream says should just be able to use system's versions of those,
+but let's just hack it to use fink's which is newer.
 <<
 <<
