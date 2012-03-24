@@ -123,6 +123,9 @@ PatchScript: <<
 		-e '/which libxml/,/PKG_CHECK.*LIBXML/s|Darwin|&-SDK|' \
 		-e '/which libxslt/,/PKG_CHECK.*LIBXSLT/s|Darwin|&-SDK|' \
 		configure.in
+	# strip out -syslibroot linker flag
+	sed -i.orig -e '/-syslibroot/s|^|# |' solenv/inc/unxmacx.mk
+	sed -i.orig -e '/-syslibroot/d' solenv/gbuild/platform/macosx.mk
 	# actually calls autoconf, and only srcdir build supported
 #	sed -i.orig2 -e '/^eval.*langlist/s|solenv|${srcdir}/&|' \
 #		-e '/^chmod.*config\.guess/s|\./|$srcdir/|' \
@@ -166,7 +169,7 @@ CompileScript: <<
 	# this trick is applicable gcc-only
 	export CPLUS_INCLUDE_PATH=%p/include
 	export LIBRARY_PATH=%p/lib
-	make -k || make -j1 VERBOSE=1
+	make -k || make -j1 -w VERBOSE=1
 	fink-package-precedence .
 <<
 InstallScript: <<
@@ -195,6 +198,7 @@ is the last version that requiresd cairo-1.8.
 Packaging for poppler8 may split out poppler8-cpp separately, so track that.
 
 checks for J Unit >= 4, but current fink junit is 3.8.1, so disable.
+checks for gconf, gnome-vfs...
 
 configure detects: zenity, not sure how it is used
 
