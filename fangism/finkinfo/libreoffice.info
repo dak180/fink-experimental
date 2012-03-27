@@ -137,10 +137,14 @@ SetLDFLAGS: -L%p/opt/postgresql-9.1/lib -L%p/lib
 # configure doesn't order LDFLAGS for postgresql conftest properly,
 # hence redundant with --with-libpq-path
 ConfigureParams: <<
+	--prefix=%p/opt/libreoffice \
+	--with-package-format=installed \
+	--with-vendor="Fink" \
+	--with-build-version="Fink %n-%v-%r" \
 	--enable-release-build \
 	--enable-ext-google-docs \
 	--disable-mozilla \
-	--enable-librsvg \
+	--enable-librsvg=system \
 	--disable-systray \
 	--disable-kde \
 	--disable-kde4 \
@@ -168,6 +172,8 @@ CompileScript: <<
 	# These take effect *after* all -I and -L flags (suitable as fallback)
 	# this trick is applicable gcc-only
 	export CPLUS_INCLUDE_PATH=%p/include
+	export OBJC_INCLUDE_PATH=%p/include
+	export OBJCPLUS_INCLUDE_PATH=%p/include
 	export LIBRARY_PATH=%p/lib
 	make -k || make -j1 -w VERBOSE=1
 	fink-package-precedence .
