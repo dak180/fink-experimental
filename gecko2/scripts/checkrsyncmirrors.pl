@@ -4,6 +4,8 @@ use strict;
 use warnings;
 
 my $basepath = '/sw';
+#my $basepath = '/home/f/fink/fink';
+my $rsyncfile = "$basepath/lib/fink/mirror/rsync";
 
 my $mirror_FH;
 my $timestamp_FH;
@@ -17,8 +19,8 @@ my $file;
 my $mirrorname;
 my @mirrornameparts;
 
-print "Using: $basepath/lib/fink/mirror/rsync\n";
-open($mirror_FH, '<', "$basepath/lib/fink/mirror/rsync") || die "Could not open rsync mirrors file\n";
+print "Using: $rsyncfile\n";
+open($mirror_FH, '<', "$rsyncfile") || die "Could not open rsync mirrors file\n";
 while (<$mirror_FH>) {
 	if($_ =~ /(^...-..: |Primary: )(rsync:\/\/.*)/) {
 		$mirror = $2;

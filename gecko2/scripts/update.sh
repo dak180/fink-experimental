@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id$
+# $Id: update.sh,v 1.1 2011/06/15 11:34:35 gecko2 Exp $
 
 OLDDIR="$PWD"
 CVSROOT="/srv/fink/cvs/fink"
@@ -20,7 +20,7 @@ cp -a ${TMPDIR}/xml ${WEBDIR}/xml
 grep -ZRl http://www.finkproject.org/ xml | xargs -0 perl -pi -e 's,http://www.finkproject.org/,http://fink.thetis.ig42.org/,g'
 cd xml
 #make -s --no-print-directory all
-find . -name hostlogo.inc -exec cp ~fink/public_html/hostlogo.inc {} \;
+find . -type f -name hostlogo.inc -exec cp ~fink/public_html/hostlogo.inc {} \;
 #cp -a /usr/share/php/XML ${WEBDIR}/xml/web/XML
 ~fink/scripts/ranger/rss-newpackages.pl
 cd $OLDDIR
