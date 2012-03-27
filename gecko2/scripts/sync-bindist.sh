@@ -1,10 +1,10 @@
 #!/bin/sh
-# $Id: sync-bindist.sh,v 1.2 2011/06/15 11:34:35 gecko2 Exp $
+# $Id: sync-bindist.sh,v 1.3 2012/03/27 15:18:12 gecko2 Exp $
 
 #RSYNCHOST="rsync://distfiles.master.finkmirrors.net"
 RSYNCHOST="rsync://distfiles.ams.nl.eu.finkmirrors.net"
 
-rsync -av --delete --delete-after $RSYNCHOST/finkbindist ~fink/finkbindist
+rsync -av --delete --delete-after $RSYNCHOST/finkbindist ~fink/bindist
 printf "\n\n"
 
 cp -av ~fink/public_html/hostlogo.inc ~fink/bindist/hostlogo.inc
