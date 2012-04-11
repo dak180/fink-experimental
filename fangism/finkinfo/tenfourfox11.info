@@ -86,6 +86,9 @@ PatchScript: <<
   # configure inputs were patched, hence regeneration
   export PATH=%p/lib/autoconf2.13/bin:$PATH
   autoconf
+  # lines like: for ac_prog in $VAR ... 
+  # are wrongly expanded if value is space-delimited words
+  sed -i.orig -e '/for ac_prog in/s|\$[^ ]*|"&"|g' configure
   # new Xcode 3 linker (2.5's does not suffice)
   mkdir -p opt-bin
   pushd opt-bin
