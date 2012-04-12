@@ -101,17 +101,19 @@ PatchScript: <<
     if test $this_dist = 10.5
     then
       realpy=`which python`
-      echo "#!/bin/sh -e" > python
-      echo "export MACOSX_DEPLOYMENT_TARGET=$this_dist" >> python
-      echo "exec $realpy \"\$@\"" >> python
+      { echo "#!/bin/sh -e"
+      echo "export MACOSX_DEPLOYMENT_TARGET=$this_dist"
+      echo "exec $realpy \"\$@\""
+      } > python
       chmod +x python
       echo "PYTHON=%b/opt-bin/python" >> ../.mozconfig
       # and then force python-wrapped gcc calls back to M_D_T=10.4
-      echo "#!/bin/sh -e" > MDT10.4
-      echo "export MACOSX_DEPLOYMENT_TARGET=10.4" >> MDT10.4
-      echo "exec \"\$@\"" >> MDT10.4
-      chmod +x MDT10.4
-      sed -i.orig -e '/^GCC_PREFIX=/s|flag-sort|MDT10.4 &|' ../.mozconfig
+      { echo "#!/bin/sh -e"
+      echo "export MACOSX_DEPLOYMENT_TARGET=10.4"
+      echo "exec flag-sort \"\$@\""
+      } > wrap-flag-sort
+      chmod +x wrap-flag-sort
+      sed -i.orig -e '/^GCC_PREFIX=/s|flag-sort|%b/opt-bin/wrap-&|' ../.mozconfig
     fi
   popd
   sed -e '/^#/!s|/usr/bin|%b/opt-bin|' SHIM.ld > opt-bin/ld
