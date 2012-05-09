@@ -1,5 +1,5 @@
 Package: atlas
-Version: 3.9.73
+Version: 3.9.74
 Revision: 1
 Description: Portable optimal linear algebra software
 DescDetail: <<
@@ -36,9 +36,9 @@ Order is important when linking! Use:
 Also decide carefully whether you want to link to static or to shared libs.
 <<
 Source: mirror:sourceforge:math-atlas/files/%n%v.tar.bz2
-Source-MD5: 8e23e2b3e55e5a865df21fb963150952
-Source2: http://www.netlib.org/lapack/lapack-3.4.0.tgz
-Source2-MD5: 02d5706ec03ba885fc246e5fa10d8c70
+Source-MD5: 7be4701e987e6a900609b4e5813bdca7
+Source2: http://www.netlib.org/lapack/lapack-3.4.1.tgz
+Source2-MD5: 44c3869c38c8335c2b9c2a8bb276eb55
 
 SourceDirectory: ATLAS 
 License: BSD
@@ -47,7 +47,7 @@ NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 UseMaxBuildJobs: false
 BuildDependsOnly: true
-BuildDepends: gcc46-compiler, doxygen, graphviz | graphviz-nox
+BuildDepends: gcc46-compiler, doxygen, graphviz | graphviz-nox, sed
 # prevent ATLAS from detecting other cross-compilers in %p/bin
 BuildConflicts: avr-gcc
 
@@ -81,6 +81,7 @@ sed -e 's,\.\./.\./librefblas\.a,%b/../bld/lib/libf77blas.a %b/../bld/lib/libcbl
     -e 's,libtmglib.a,%b/../bld/src/lapack/reference/libtmglib.a,' < make.inc.example > make.inc.proto
 path=`which perl`
 sed -ri -e "s,/s./bin/perl,$path," DOCS/Doxyfile*
+# need GNU sed for -r (extended regex)
 <<
 
 # -Si omp 2 -Si antthr 2 -Si lapackref ? -Ss flapack %b/../LAPACK/SRC ?
