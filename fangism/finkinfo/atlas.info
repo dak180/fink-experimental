@@ -47,7 +47,7 @@ NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 UseMaxBuildJobs: false
 BuildDependsOnly: true
-BuildDepends: gcc46-compiler, doxygen, graphviz | graphviz-nox, sed
+BuildDepends: gcc47-compiler, doxygen, graphviz | graphviz-nox, sed
 # prevent ATLAS from detecting other cross-compilers in %p/bin
 BuildConflicts: avr-gcc
 
@@ -57,7 +57,7 @@ PatchScript: <<
 ## put srcs in logical dirs, version independent
 cd ..
 if [ -e LAPACK ] ; then mv LAPACK LAPACK-strange; fi
-mv lapack-3.4.0 LAPACK
+mv lapack-3.4.1 LAPACK
 # first need the tarball of lapack (and no % will give the path to the original;
 # not worth to check the user's fink.conf for a FetchAltDir entry etc)
 tar -czf lapack.tgz LAPACK
@@ -90,9 +90,9 @@ CompileScript: <<
 #!/bin/sh -ev
 
  cd ..
- ln -s %p/lib/gcc4.6/bin/gcc-4 gcc
+ ln -s %p/lib/gcc4.7/bin/gcc-4 gcc
  GCCADDR=`pwd`
- export PATH=$GCCADDR:%p/lib/gcc4.6/bin:$PATH
+ export PATH=$GCCADDR:%p/lib/gcc4.7/bin:$PATH
 
 ### BUILDSCRIPT
 BLD () {
@@ -112,7 +112,7 @@ BLD () {
  sed -e "/^OPTS /s;=;= $mflags;" -e "s,ATLAS/../bld,$1,g" < LAPACK/make.inc.proto > LAPACK/make.inc
 
  cd $1
- ../ATLAS/configure %c -C ac $GCCADDR/gcc -C if gfortran-fsf-4.6 -F alg "$mflags" $confflags
+ ../ATLAS/configure %c -C ac $GCCADDR/gcc -C if gfortran -F alg "$mflags" $confflags
  make
 
 ### Static Libs
@@ -227,7 +227,7 @@ InstallScript: <<
 <<
 Splitoff: <<
 	Package: %N-shlibs
-	Depends: gcc46-shlibs
+	Depends: gcc47-shlibs
 	Files: lib/*.dylib
 	InstallScript: mkdir -p %i/share/doc; ln -s %N %i/share/doc/%n
 	Shlibs: <<
