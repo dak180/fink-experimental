@@ -64,8 +64,7 @@ ConfigureParams: --with-curses --with-freetype --with-freetype-includes=%p/lib/f
 
 CompileScript: <<
 #!/bin/bash -xe
-  darwin_vers=`uname -r | cut -d. -f1`
-  if test "$darwin_vers" = 11 ; then
+  if [[ $( sw_vers -productVersion ) > 10.7 ]]; then
     export CC=gcc-fsf-4.6
     export CXX=g++-fsf-4.6
   fi
@@ -118,7 +117,7 @@ InstallScript: <<
   	vedit I Iortho arraystats"
   for LIB in $LIBS;
     do
-      if [ -e %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_$LIB.dylib ]; then
+      if [ -e libgrass_$LIB.dylib ]; then
         install_name_tool -id %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_$LIB.dylib libgrass_$LIB.dylib
       fi
     done
