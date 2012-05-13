@@ -3,9 +3,9 @@ Package: saclib%type_pkg[-gcc4.7]
 Version: 2.2.5
 Revision: 3
 Architecture: i386, x86_64
-## Would be relativel to revive ppc too, if there was any genuine demand for it..
+## Would be relatively simple to revive ppc too, if there was any genuine demand for it..
 # But apparently currently abandoned upstream
-Source: http://www.usna.edu/Users/cs/qepcad/INSTALL/%{Ni}%v.tar.gz
+Source: http://www.usna.edu/cs/~qepcad/INSTALL/%{Ni}%v.tar.gz
 Source-MD5: 84bc4f972b1362d635edce8c1ba6bb30
 Type: -gcc4.7 (boolean)
 BuildDepends: fink (>= 0.24.12), (%type_pkg[-gcc4.7]) gcc47-compiler

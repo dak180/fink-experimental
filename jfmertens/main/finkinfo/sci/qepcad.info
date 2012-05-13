@@ -1,13 +1,13 @@
 Info2: <<
 Package: qepcad%type_pkg[-gcc4.7]
-Version: 1.65
+Version: 1.69
 Revision: 3
 Architecture: i386, x86_64
 # Arch-restriction inherited fom saclib
-Source: http://www.usna.edu/Users/cs/qepcad/INSTALL/%{Ni}-B.%v.tar.gz
-Source-MD5: a3e11db763dc9525de82ea1274ed224c
-Source2: http://www.usna.edu/Users/cs/qepcad/SLFQ/simplify-1.18.tar.gz
-Source2-MD5: 8b4ea6c64ddd54b8aed622420b3c1981
+Source: http://www.usna.edu/cs/~qepcad/INSTALL/%{Ni}-B.%v.tar.gz
+Source-MD5: 8eb38dcc186076896837c75f2f206bb8
+Source2: http://www.usna.edu/cs/~qepcad/SLFQ/simplify-1.20.tar.gz
+Source2-MD5: f9e96cdd51aeb71fd75857f70bf9ef60
 SourceDirectory: qesource
 Type: -gcc4.7 (boolean)
 BuildDepends: readline5, saclib%type_pkg[-gcc4.7] (>= 2.2.5-1), sed, flex-devel, (%type_pkg[-gcc4.7]) gcc47-compiler, freeglut
