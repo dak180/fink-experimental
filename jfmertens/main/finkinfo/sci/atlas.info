@@ -78,7 +78,7 @@ sed -e 's,\.\./.\./librefblas\.a,%b/../bld/lib/libf77blas.a %b/../bld/lib/libcbl
     -e 's, -g$,,' -e '/LOADOPTS/s,=,= $(OPTS),' \
     -e 's,libtmglib.a,%b/../bld/src/lapack/reference/libtmglib.a,' < make.inc.example > make.inc.proto
 path=`which perl`
-sed -ri -e "s,/s./bin/perl,$path," DOCS/Doxyfile*
+sed -i'' -e "s,/s./bin/perl,$path," DOCS/Doxyfile*
 <<
 
 # -Si omp 2 -Si antthr 2 -Si lapackref ? -Ss flapack %b/../LAPACK/SRC ?
@@ -145,7 +145,7 @@ BLD () {
  # the wrong lgcc_s in the search list.
  mkdir -p tmp
  if [ `uname -r | cut -d. -f1` -ge 9 ] ; then flag=-dead_strip_dylibs ; else flag='' ; fi
- ld="ld -arch `sed -e 's,powerpc,ppc,' <<<'%m'` -dynamic -dylib -single_module $flag -dead_strip -x tmp/*.o -L. -L%p/lib/gcc4.6/lib -ldylib1.o -dylib_install_name"
+ ld="ld -arch `sed -e 's,powerpc,ppc,' <<<'%m'` -dynamic -dylib -single_module $flag -dead_strip -x tmp/*.o -L. -L%p/lib/gcc4.7/lib -ldylib1.o -dylib_install_name"
  lnk () {
 	cd tmp; rm -f *; ar x ../lib$1.a; cd -
 	echo $ld %p/lib/lib$1.dylib -o lib$1.dylib $2 -lSystem
