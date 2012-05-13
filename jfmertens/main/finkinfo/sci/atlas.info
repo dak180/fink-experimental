@@ -47,7 +47,7 @@ NoSetMAKEFLAGS: true
 SetMAKEFLAGS: -j1
 UseMaxBuildJobs: false
 BuildDependsOnly: true
-BuildDepends: gcc47-compiler, doxygen, graphviz
+BuildDepends: gcc47-compiler, doxygen, graphviz | graphviz-nox
 
 # The whole previous patchscript is in the srcs for %v 3.9.4
 PatchScript: <<
