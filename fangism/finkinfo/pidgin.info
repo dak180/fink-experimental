@@ -28,7 +28,7 @@ BuildDepends: <<
 	gettext-bin,
 	gettext-tools,
 	glib2-dev (>= 2.14.0-1),
-#	glitz,
+	glitz,
 	gnutls26 (>= 2.2.2-3),
 	gstreamer-0.10-dev (>= 0.10.17-1),
 	gst-plugins-base-0.10-dev, 
@@ -413,6 +413,7 @@ TODO: split-off perl modules?
 	bump to gnutls28
 2.10.4-2: trimmed bdeps: xft2-dev, cleaned up PKGCONFIG paths
 farsight is replaced with farstream project, but still builds with farsight
+bdep:glitz is only for .pc file, needed by gtk+2, but not actually linked.
 <<
 DescUsage: <<
 'pidgin' launches the GUI client, 'finch' launches the text-console 
