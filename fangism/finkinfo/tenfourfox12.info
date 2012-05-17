@@ -1,7 +1,7 @@
 Info3: <<
 Package: tenfourfox12
 Version: 12.0
-Revision: 1
+Revision: 2
 Distribution: 10.4, 10.5
 Architecture: powerpc
 Description: Port of Firefox 12 to 10.4 and PowerPC
