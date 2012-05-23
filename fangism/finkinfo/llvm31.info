@@ -22,7 +22,7 @@ BuildDependsOnly: false
 UseMaxBuildJobs: true
 
 PatchFile: %n.patch
-PatchFile-MD5: 30e59ab8acb262c158be9c638f967060
+PatchFile-MD5: ed046d342e04fdbbba08b67fe31ec576
 PatchScript: <<
 	#!/bin/sh -ev
 	# relocated a few auxiliary directories where they are expected
@@ -31,9 +31,8 @@ PatchScript: <<
 	popd
 #	mv ../test-suite-%v.src projects/test-suite
 #	%{default_script}
-	patch -p0 < %{PatchFile}
-	pushd ..
-	popd
+	sed -e 's|@FINK_PREFIX@|%p|g' %{PatchFile} | patch -p0
+
 	# point hard-coded paths to system g++-4.0.1's C++ includes
 	# remove references to g++-4.2.1, never existed in Xcode 2.5
 	darwin_vers=`uname -r | cut -d. -f1`
@@ -80,6 +79,7 @@ CompileScript: <<
 	i386*) CMAKE_OPTIONS="-DLLVM_TARGETS_TO_BUILD=X86" ;;
 	x86*) CMAKE_OPTIONS="-DLLVM_TARGETS_TO_BUILD=X86" ;;
 	esac
+	echo "Target option: $CMAKE_OPTIONS"
 	# CMAKE_OPTIONS="-DLLVM_TARGETS_TO_BUILD=X86;PowerPC;ARM"
 
 	# automatically use ccache if detected
@@ -169,6 +169,9 @@ CompileScript: <<
 	if test "$darwin_vers" = 8
 	then exit
 	fi
+
+	# just 1-stage for now
+	exit
 
 	echo "######## START of BOOTSTRAP STAGE 2: building llvm/clang with stage 1 clang"
 	export CCACHE_COMPILERCHECK=content
@@ -325,13 +328,12 @@ InstallScript: <<
 <<
 DocFiles: *.TXT README.txt
 Shlibs: <<
-	 	%p/opt/llvm-%v/lib/liblibclang.3.0.dylib 1.0.0 %n (>= 3.0-1)
+	 	%p/opt/llvm-%v/lib/liblibclang.3.1.dylib 1.0.0 %n (>= 3.1-0)
 		!%p/opt/llvm-%v/lib/liblibclang.dylib
 		!%p/opt/llvm-%v/lib/libLTO.dylib
-		%p/opt/llvm-%v/lib/profile_rt.dylib 0.0.0  %n (>= 3.0-1)
-		%p/opt/llvm-%v/lib/BugpointPasses.dylib 0.0.0 %n (>= 3.0-1)
-		%p/opt/llvm-%v/lib/LLVMHello.dylib 0.0.0 %n (>= 3.0-1)
-		!%p/opt/llvm-%v/lib/libEnhancedDisassembly.dylib
+		%p/opt/llvm-%v/lib/profile_rt.dylib 0.0.0  %n (>= 3.1-0)
+		%p/opt/llvm-%v/lib/BugpointPasses.dylib 0.0.0 %n (>= 3.1-0)
+		%p/opt/llvm-%v/lib/LLVMHello.dylib 0.0.0 %n (>= 3.1-0)
 		!%p/opt/llvm-%v/lib/libLLVMAnalysis.dylib
 		!%p/opt/llvm-%v/lib/libLLVMArchive.dylib
 		!%p/opt/llvm-%v/lib/libLLVMAsmParser.dylib
@@ -363,6 +365,7 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/libLLVMTableGen.dylib
 		!%p/opt/llvm-%v/lib/libLLVMTarget.dylib
 		!%p/opt/llvm-%v/lib/libLLVMTransformUtils.dylib
+		!%p/opt/llvm-%v/lib/libLLVMVectorize.dylib
 		!%p/opt/llvm-%v/lib/libLLVMipa.dylib
 		!%p/opt/llvm-%v/lib/libLLVMipo.dylib
 		(%m != powerpc) !%p/opt/llvm-%v/lib/libLLVMX86AsmParser.dylib
@@ -378,16 +381,18 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/libclangBasic.dylib
 		!%p/opt/llvm-%v/lib/libclangCodeGen.dylib
 		!%p/opt/llvm-%v/lib/libclangDriver.dylib
+		!%p/opt/llvm-%v/lib/libclangEdit.dylib
 		!%p/opt/llvm-%v/lib/libclangFrontend.dylib
 		!%p/opt/llvm-%v/lib/libclangFrontendTool.dylib
-		!%p/opt/llvm-%v/lib/libclangIndex.dylib
 		!%p/opt/llvm-%v/lib/libclangLex.dylib
 		!%p/opt/llvm-%v/lib/libclangParse.dylib
 		!%p/opt/llvm-%v/lib/libclangRewrite.dylib
 		!%p/opt/llvm-%v/lib/libclangSema.dylib
+		!%p/opt/llvm-%v/lib/libclangSerialization.dylib
 		!%p/opt/llvm-%v/lib/libclangStaticAnalyzerCheckers.dylib
 		!%p/opt/llvm-%v/lib/libclangStaticAnalyzerCore.dylib
 		!%p/opt/llvm-%v/lib/libclangStaticAnalyzerFrontend.dylib
+		!%p/opt/llvm-%v/lib/libclangTooling.dylib
 		!%p/opt/llvm-%v/lib/libgtest.dylib
 		!%p/opt/llvm-%v/lib/libgtest_main.dylib
 		!%p/opt/llvm-%v/lib/libprofile_rt.dylib
@@ -423,8 +428,6 @@ Original package maintained by
 with contributions from
 	Jack Howarth <howarth@bromo.med.uc.edu>
 PatchFile contains:
+*	CMakeFile fixes, mostly missing dependencies
 *	workarounds for C++ accessibility bugs in g++-4.0.x
-*	r147657 from trunk (3.1), which fixes PCH issues on PowerPC.
-		tools/clang/lib/Serialization/ASTReaderInternals.h
-		tools/clang/lib/Serialization/ASTReader.cpp
 <<

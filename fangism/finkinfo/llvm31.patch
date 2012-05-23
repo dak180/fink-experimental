@@ -20,7 +20,7 @@ Index: utils/lit/lit/LitConfig.py
          self.isWindows = bool(isWindows)
          self.params = dict(params)
 -        self.bashPath = None
-+        self.bashPath = '/sw/bin/bash'
++        self.bashPath = '@FINK_PREFIX@/bin/bash'
  
          self.numErrors = 0
          self.numWarnings = 0
@@ -83,7 +83,7 @@ Index: lib/Support/Unix/Signals.inc
 ===================================================================
 --- lib/Support/Unix/Signals.inc	(revision 156555)
 +++ lib/Support/Unix/Signals.inc	(working copy)
-@@ -266,7 +266,7 @@
+@@ -266,6 +266,6 @@
  void llvm::sys::PrintStackTraceOnErrorSignal() {
    AddSignalHandler(PrintStackTrace, 0);
  
