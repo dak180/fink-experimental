@@ -9,12 +9,12 @@ Maintainer: David Fang <fangism@users.sourceforge.net>
 # some cyclic dependency checker script needs python
 BuildDepends: cmake (>= 2.8.2-1), python27, fink (>= 0.28), ccache
 
-Source: http://llvm.org/releases/%v/llvm-%v.tar.gz
-Source-MD5: a8e5f5f1c1adebae7b4a654c376a6005
-Source2: http://llvm.org/releases/%v/clang-%v.tar.gz
-Source2-MD5: 43350706ae6cf05d0068885792ea0591
+Source: http://llvm.org/releases/%v/llvm-%v.src.tar.gz
+Source-MD5: 16eaa7679f84113f65b12760fdfe4ee1
+Source2: http://llvm.org/releases/%v/clang-%v.src.tar.gz
+Source2-MD5: 59bf2d3120a3805f27cafda3823caaf8
 # libcxxabi is not recommended, lib++ is not ready yet
-# SourceN: http://llvm.org/releases/%v/test-suite-%v.tar.gz
+# SourceN: http://llvm.org/releases/%v/test-suite-%v.src.tar.gz
 # SourceN-MD5: 36f72e2a932727fb86338e5939da5eaf
 
 SourceDirectory: llvm-%v.src
