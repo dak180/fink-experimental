@@ -21,8 +21,8 @@ SourceDirectory: llvm-%v.src
 BuildDependsOnly: false
 UseMaxBuildJobs: true
 
-# PatchFile: %n.patch
-# PatchFile-MD5: c7f58f6db846bb8ab4fde81291dd3da7
+PatchFile: %n.patch
+PatchFile-MD5: 30e59ab8acb262c158be9c638f967060
 PatchScript: <<
 	#!/bin/sh -ev
 	# relocated a few auxiliary directories where they are expected
@@ -31,6 +31,7 @@ PatchScript: <<
 	popd
 #	mv ../test-suite-%v.src projects/test-suite
 #	%{default_script}
+	patch -p0 < %{PatchFile}
 	pushd ..
 	popd
 	# point hard-coded paths to system g++-4.0.1's C++ includes

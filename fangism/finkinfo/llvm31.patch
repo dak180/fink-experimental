@@ -1,0 +1,122 @@
+Index: utils/lit/lit/TestRunner.py
+===================================================================
+--- utils/lit/lit/TestRunner.py	(revision 156555)
++++ utils/lit/lit/TestRunner.py	(working copy)
+@@ -442,7 +442,7 @@
+             if script and script[-1][-1] == '\\':
+                 script[-1] = script[-1][:-1] + ln
+             else:
+-                script.append(ln)
++                script.append('gtimeout 5m ' +ln)
+         elif 'XFAIL:' in ln:
+             items = ln[ln.index('XFAIL:') + 6:].split(',')
+             xfails.extend([s.strip() for s in items])
+Index: utils/lit/lit/LitConfig.py
+===================================================================
+--- utils/lit/lit/LitConfig.py	(revision 156555)
++++ utils/lit/lit/LitConfig.py	(working copy)
+@@ -36,7 +36,7 @@
+         self.debug = debug
+         self.isWindows = bool(isWindows)
+         self.params = dict(params)
+-        self.bashPath = None
++        self.bashPath = '/sw/bin/bash'
+ 
+         self.numErrors = 0
+         self.numWarnings = 0
+Index: lib/ExecutionEngine/MCJIT/CMakeLists.txt
+===================================================================
+--- lib/ExecutionEngine/MCJIT/CMakeLists.txt	(revision 156555)
++++ lib/ExecutionEngine/MCJIT/CMakeLists.txt	(working copy)
+@@ -2,3 +2,4 @@
+   MCJIT.cpp
+   MCJITMemoryManager.cpp
+   )
++target_link_libraries( LLVMMCJIT LLVMJIT )
+Index: lib/MC/MCDisassembler/CMakeLists.txt
+===================================================================
+--- lib/MC/MCDisassembler/CMakeLists.txt	(revision 156555)
++++ lib/MC/MCDisassembler/CMakeLists.txt	(working copy)
+@@ -6,3 +6,27 @@
+   EDOperand.cpp
+   EDToken.cpp
+   )
++
++target_link_libraries(LLVMMCDisassembler
++  LLVMMC
++  LLVMMCParser
++  LLVMSupport
++  LLVMTarget
++  )
++
++foreach(t ${LLVM_TARGETS_TO_BUILD})
++  set(td ${LLVM_MAIN_SRC_DIR}/lib/Target/${t})
++  if(EXISTS ${td}/TargetInfo/CMakeLists.txt)
++    target_link_libraries(LLVMMCDisassembler "LLVM${t}Info")
++  endif()
++  if(EXISTS ${td}/MCTargetDesc/CMakeLists.txt)
++    target_link_libraries(LLVMMCDisassembler "LLVM${t}Desc")
++  endif()
++  if(EXISTS ${td}/AsmParser/CMakeLists.txt)
++    target_link_libraries(LLVMMCDisassembler "LLVM${t}AsmParser")
++  endif()
++  if(EXISTS ${td}/Disassembler/CMakeLists.txt)
++    target_link_libraries(LLVMMCDisassembler "LLVM${t}Disassembler")
++  endif()
++endforeach(t)
++
+Index: lib/Support/APFloat.cpp
+===================================================================
+--- lib/Support/APFloat.cpp	(revision 156555)
++++ lib/Support/APFloat.cpp	(working copy)
+@@ -61,7 +61,8 @@
+   // The PowerPC format consists of two doubles.  It does not map cleanly
+   // onto the usual format above.  For now only storage of constants of
+   // this type is supported, no arithmetic.
+-  const fltSemantics APFloat::PPCDoubleDouble = { 1023, -1022, 106, false };
++  const fltSemantics APFloat::PPCDoubleDouble = { 1023, -1022, 106, true };
++  // temporary patch from Hal Finkel to not-crash, but will be wrong, bug #11933
+ 
+   /* A tight upper bound on number of parts required to hold the value
+      pow(5, power) is
+Index: lib/Support/Unix/Signals.inc
+===================================================================
+--- lib/Support/Unix/Signals.inc	(revision 156555)
++++ lib/Support/Unix/Signals.inc	(working copy)
+@@ -266,7 +266,7 @@
+ void llvm::sys::PrintStackTraceOnErrorSignal() {
+   AddSignalHandler(PrintStackTrace, 0);
+ 
+-#if defined(__APPLE__)
++#if defined(__APPLE__) && defined(MACH_EXCEPTION_CODES) && defined(EXC_MASK_CRASH)
+   // Environment variable to disable any kind of crash dialog.
+   if (getenv("LLVM_DISABLE_CRASH_REPORT")) 
+Index: tools/clang/lib/AST/ExprConstant.cpp
+===================================================================
+--- tools/clang/lib/AST/ExprConstant.cpp	(revision 156555)
++++ tools/clang/lib/AST/ExprConstant.cpp	(working copy)
+@@ -2775,7 +2775,8 @@
+     if (E->isArrow()) {
+       if (!EvaluatePointer(E->getBase(), Result, this->Info))
+         return false;
+-      BaseTy = E->getBase()->getType()->getAs<PointerType>()->getPointeeType();
++      BaseTy = E->getBase()->getType()->template getAs<PointerType>()
++               ->getPointeeType();
+     } else if (E->getBase()->isRValue()) {
+       assert(E->getBase()->getType()->isRecordType());
+       if (!EvaluateTemporary(E->getBase(), Result, this->Info))
+Index: tools/clang/lib/Serialization/CMakeLists.txt
+===================================================================
+--- tools/clang/lib/Serialization/CMakeLists.txt	(revision 156555)
++++ tools/clang/lib/Serialization/CMakeLists.txt	(working copy)
+@@ -25,3 +25,10 @@
+   ClangDiagnosticSerialization
+   ClangDeclNodes
+   ClangStmtNodes)
++
++target_link_libraries(clangSerialization
++  clangAST
++  clangBasic
++  clangSema
++  LLVMSupport
++)
