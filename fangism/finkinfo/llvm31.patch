@@ -120,3 +120,15 @@ Index: tools/clang/lib/Serialization/CMakeLists.txt
 +  clangSema
 +  LLVMSupport
 +)
+--- tools/clang/include/clang/Frontend/FrontendActions.h	2012-05-24 14:48:30.000000000 -0700
++++ tools/clang/include/clang/Frontend/FrontendActions.h	2012-05-24 14:47:37.000000000 -0700
+@@ -123,6 +123,9 @@
+   virtual ASTConsumer *CreateASTConsumer(CompilerInstance &CI,
+                                          StringRef InFile);
+ public:
++  // fang: stage3 bootstrap unittest build wants inline virtual dtor
++  // (else undefined reference at link time)
++  virtual ~SyntaxOnlyAction() { }
+   virtual bool hasCodeCompletionSupport() const { return true; }
+ };
+ 

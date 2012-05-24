@@ -22,7 +22,7 @@ BuildDependsOnly: false
 UseMaxBuildJobs: true
 
 PatchFile: %n.patch
-PatchFile-MD5: ed046d342e04fdbbba08b67fe31ec576
+PatchFile-MD5: fc5ef44faf2885856afb7881dafd9da0
 PatchScript: <<
 	#!/bin/sh -ev
 	# relocated a few auxiliary directories where they are expected
@@ -169,9 +169,6 @@ CompileScript: <<
 	if test "$darwin_vers" = 8
 	then exit
 	fi
-
-	# just 1-stage for now
-	exit
 
 	echo "######## START of BOOTSTRAP STAGE 2: building llvm/clang with stage 1 clang"
 	export CCACHE_COMPILERCHECK=content
@@ -430,4 +427,5 @@ with contributions from
 PatchFile contains:
 *	CMakeFile fixes, mostly missing dependencies
 *	workarounds for C++ accessibility bugs in g++-4.0.x
+*	added inline virtual dtor to clang header to fix stage3 undefined ref.
 <<
