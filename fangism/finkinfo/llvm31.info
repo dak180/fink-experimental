@@ -53,6 +53,16 @@ PatchScript: <<
 	test "$darwin_vers" != 8 || \
 	sed -i.orig -e '/PRIO_DARWIN_THREAD/s|^|// |' tools/clang/tools/libclang/CIndex.cpp
 
+	# explicit template instantiation (needed for 10.7)
+	{ echo '#include "llvm/Analysis/Dominators.h"' ; \
+	grep -e namespace -e EXTERN_TEMPLATE \
+		include/llvm/Analysis/Dominators.h | \
+	sed -e 's/EXTERN_TEMPLATE_INSTANTIATION(/template /' -e 's/);/;/' ; \
+	} > lib/Analysis/Dominators.cpp
+	sed -i.orig -e '/DomPrinter/a\
+  Dominators.cpp\
+' lib/Analysis/CMakeLists.txt
+
 	# ld warning about binding of _abort and _raise symbols vs. libSystem's
 	# suggests -bind_at_load
 #	cp lib/Support/CMakeLists.txt{,.orig}
