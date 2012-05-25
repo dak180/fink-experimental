@@ -120,6 +120,39 @@ Index: tools/clang/lib/Serialization/CMakeLists.txt
 +  clangSema
 +  LLVMSupport
 +)
+Index: tools/clang/include/clang/Serialization/ASTReader.h
+===================================================================
+--- tools/clang/include/clang/Serialization/ASTReader.h	(revision 156555)
++++ tools/clang/include/clang/Serialization/ASTReader.h	(working copy)
+@@ -230,10 +230,12 @@
+   FileManager &FileMgr;
+   DiagnosticsEngine &Diags;
+ 
++public:	// workaround to grant access to classes nested within ASTDeclReader
+   /// \brief The semantic analysis object that will be processing the
+   /// AST files and the translation unit that uses it.
+   Sema *SemaObj;
+ 
++private:
+   /// \brief The preprocessor that will be loading the source file.
+   Preprocessor &PP;
+ 
+@@ -689,6 +691,7 @@
+   /// since the last time the declaration chains were linked.
+   llvm::SmallPtrSet<Decl *, 16> RedeclsDeserialized;
+   
++public:	// workaround to grant access to classes nested within ASTDeclReader
+   /// \brief The list of redeclaration chains that still need to be 
+   /// reconstructed.
+   ///
+@@ -700,6 +703,7 @@
+   /// \brief Keeps track of the elements added to PendingDeclChains.
+   llvm::SmallSet<serialization::DeclID, 16> PendingDeclChainsKnown;
+ 
++private:
+   /// \brief The set of Objective-C categories that have been deserialized
+   /// since the last time the declaration chains were linked.
+   llvm::SmallPtrSet<ObjCCategoryDecl *, 16> CategoriesDeserialized;
 --- tools/clang/include/clang/Frontend/FrontendActions.h	2012-05-24 14:48:30.000000000 -0700
 +++ tools/clang/include/clang/Frontend/FrontendActions.h	2012-05-24 14:47:37.000000000 -0700
 @@ -123,6 +123,9 @@

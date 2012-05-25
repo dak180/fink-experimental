@@ -22,7 +22,7 @@ BuildDependsOnly: false
 UseMaxBuildJobs: true
 
 PatchFile: %n.patch
-PatchFile-MD5: fc5ef44faf2885856afb7881dafd9da0
+PatchFile-MD5: 5a01a07c615e9b66ff128a393a438527
 PatchScript: <<
 	#!/bin/sh -ev
 	# relocated a few auxiliary directories where they are expected
@@ -48,6 +48,10 @@ PatchScript: <<
 	then sed -i.orig2 -e '/GnuCPlusPlusInclude.*4\.2\.1/,/);/d' \
 		tools/clang/lib/Frontend/InitHeaderSearch.cpp
 	fi
+
+	# darwin8 missing PRIO_DARWIN_BG constant
+	test "$darwin_vers" != 8 || \
+	sed -i.orig -e '/PRIO_DARWIN_THREAD/s|^|// |' tools/clang/tools/libclang/CIndex.cpp
 
 	# ld warning about binding of _abort and _raise symbols vs. libSystem's
 	# suggests -bind_at_load
@@ -129,8 +133,8 @@ CompileScript: <<
 	*) : ;;
 	esac
 
-	CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_INSTALL_PREFIX=%p/opt/llvm-%v -DCMAKE_BUILD_TYPE=Release -DLLVM_LIT_ARGS:STRING=-v"
-	# -DLLVM_ENABLE_ASSERTIONS=OFF
+	build_type=Release
+	CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_INSTALL_PREFIX=%p/opt/llvm-%v -DCMAKE_BUILD_TYPE=$build_type -DLLVM_LIT_ARGS:STRING=-v -DLLVM_ENABLE_ASSERTIONS=ON"
 
 #	the --max-time option applies to aggregate test time, not individual :(
 #	CMAKE_OPTIONS="$CMAKE_OPTIONS -DLLVM_LIT_ARGS="-s -v --max-time=14400"
