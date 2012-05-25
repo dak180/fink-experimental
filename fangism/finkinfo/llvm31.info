@@ -55,10 +55,12 @@ PatchScript: <<
 
 	# explicit template instantiation (needed for 10.7)
 	{ echo '#include "llvm/Analysis/Dominators.h"' ; \
+	echo '#include "llvm/Assembly/Writer.h"' ; \
 	grep -e namespace -e EXTERN_TEMPLATE \
 		include/llvm/Analysis/Dominators.h | \
 	sed -e 's/EXTERN_TEMPLATE_INSTANTIATION(/template /' -e 's/);/;/' ; \
 	} > lib/Analysis/Dominators.cpp
+	sed -i.orig -e '/EXTERN_TEMPLATE_INSTANTIATION/s|^|// |' include/llvm/Analysis/Dominators.h
 	sed -i.orig -e '/DomPrinter/a\
   Dominators.cpp\
 ' lib/Analysis/CMakeLists.txt
