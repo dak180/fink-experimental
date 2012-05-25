@@ -22,7 +22,7 @@ BuildDependsOnly: false
 UseMaxBuildJobs: true
 
 PatchFile: %n.patch
-PatchFile-MD5: 5a01a07c615e9b66ff128a393a438527
+PatchFile-MD5: 5c8403bbeb71387c6d8624f223d24e82
 PatchScript: <<
 	#!/bin/sh -ev
 	# relocated a few auxiliary directories where they are expected

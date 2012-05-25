@@ -1,16 +1,3 @@
-Index: utils/lit/lit/TestRunner.py
-===================================================================
---- utils/lit/lit/TestRunner.py	(revision 156555)
-+++ utils/lit/lit/TestRunner.py	(working copy)
-@@ -442,7 +442,7 @@
-             if script and script[-1][-1] == '\\':
-                 script[-1] = script[-1][:-1] + ln
-             else:
--                script.append(ln)
-+                script.append('gtimeout 5m ' +ln)
-         elif 'XFAIL:' in ln:
-             items = ln[ln.index('XFAIL:') + 6:].split(',')
-             xfails.extend([s.strip() for s in items])
 Index: utils/lit/lit/LitConfig.py
 ===================================================================
 --- utils/lit/lit/LitConfig.py	(revision 156555)
