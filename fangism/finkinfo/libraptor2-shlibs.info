@@ -1,23 +1,25 @@
 Package: libraptor2-shlibs
 Version: 2.0.6
-Revision: 1
+Revision: 2
 Description: RDF parser library
 License: GPL/LGPL
 # Maintainer: Benjamin Reed <libraptor1@fink.raccoonfink.com>
 Maintainer: David Fang <fangism@users.sourceforge.net>
 
 Depends: <<
-	libcurl4-shlibs (>= 7.19.4-2),
+	libcurl4-shlibs (>= 7.20.0-1),
 	libiconv,
-	libxml2-shlibs (>= 2.6.32-1),
+	libxml2-shlibs (>= 2.7.8-1),
 	libxslt-shlibs
 <<
 BuildDepends: <<
+	expat1,
 	fink-package-precedence (>= 0.7-1),
+	glib2-dev (>= 2.22.0-1),
 	gtk-doc (>= 1.13-5),
-	libcurl4 (>= 7.19.4-2),
+	libcurl4 (>= 7.20.0-1),
 	libiconv-dev,
-	libxml2 (>= 2.6.32-1),
+	libxml2 (>= 2.7.8-1),
 	libxslt,
 	pkgconfig (>= 0.23-1),
 	system-openssl-dev
@@ -31,7 +33,7 @@ PatchScript: 	perl -pi -e 's,(\@CPPFLAGS\@),-I%p/lib/system-openssl/include \1,'
 SetCPPFLAGS: -I%p/lib/system-openssl/include
 SetLDFLAGS: -L%p/lib/system-openssl/lib
 UseMaxBuildJobs: false
-ConfigureParams: --enable-dependency-tracking --disable-static --enable-gtk-doc
+ConfigureParams: --enable-dependency-tracking --disable-static --enable-gtk-doc ac_cv_header_libinn_h=no --without-yajl
 CompileScript: <<
 	%{default_script}
 	fink-package-precedence --prohibit-bdep=libraptor1-dev,libraptor2-dev .
