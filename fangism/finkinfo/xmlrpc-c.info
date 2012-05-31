@@ -30,8 +30,7 @@ BuildDepends: <<
 	libwww
 <<
 Depends: <<
-	libcurl4-shlibs,
-	libwww-shlibs
+	%N-shlibs
 <<
 CompileScript: <<
 	#!/bin/sh -ev
@@ -46,5 +45,55 @@ TestScript: make -k check || exit 2
 <<
 InstallScript: <<
 	#!/bin/sh -ev
-	%{default_script}
+	make DESTDIR=%d install
+	# shlibs need absolute paths
+	pushd %i/lib
+	prefix=%p
+	for f in libxmlrpc*.*.16.dylib
+	do
+		install_name_tool -id "$prefix/lib/$f" "$f"
+		deplibs=`otool -L $f | sed 1,2d | awk '{print $1;}' | tr '\n' ' '`
+		for d in $deplibs
+		do
+		# prefix absolute paths to lib installation
+		case $d in
+		/*) ;;
+		*) install_name_tool -change "$d" "$prefix/lib/$d" $f ;;
+		esac
+		done
+	done
+	popd
+<<
+BuildDependsOnly: true
+DocFiles: README doc/*
+SplitOff: <<
+Package: %N-shlibs
+Description: Shared libraries for XML-RPC C/C++ module
+DocFiles: README doc/*
+Depends: <<
+	libcurl4-shlibs,
+	libwww-shlibs
+<<
+Files: <<
+	lib/libxmlrpc*.*.16.dylib
+<<
+Shlibs: <<
+	%p/lib/libxmlrpc++.4.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc.3.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc_abyss.3.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc_client++.4.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc_client.3.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc_cpp.4.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc_packetsocket.4.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc_server++.4.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc_server.3.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc_server_abyss++.4.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc_server_abyss.3.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc_server_cgi++.4.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc_server_cgi.3.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc_server_pstream++.4.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc_util.3.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc_xmlparse.3.16.dylib	0.0.0	%n (>= 1.16.41-1)
+	%p/lib/libxmlrpc_xmltok.3.16.dylib	0.0.0	%n (>= 1.16.41-1)
+<<
 <<
