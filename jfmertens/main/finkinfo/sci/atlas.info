@@ -1,5 +1,5 @@
 Package: atlas
-Version: 3.9.74
+Version: 3.9.76
 Revision: 1
 Description: Portable optimal linear algebra software
 DescDetail: <<
@@ -36,7 +36,7 @@ Order is important when linking! Use:
 Also decide carefully whether you want to link to static or to shared libs.
 <<
 Source: mirror:sourceforge:math-atlas/files/%n%v.tar.bz2
-Source-MD5: 7be4701e987e6a900609b4e5813bdca7
+Source-MD5: 1d60c9b4d142e2bce87ff7a08c781fe1
 Source2: http://www.netlib.org/lapack/lapack-3.4.1.tgz
 Source2-MD5: 44c3869c38c8335c2b9c2a8bb276eb55
 
@@ -109,7 +109,7 @@ BLD () {
  sed -e "/^OPTS /s;=;= $mflags;" -e "s,ATLAS/../bld,$1,g" < LAPACK/make.inc.proto > LAPACK/make.inc
 
  cd $1
- ../ATLAS/configure %c -C ac $GCCADDR/gcc -C if gfortran -F alg "$mflags" $confflags
+ ../ATLAS/configure %c -C ac $GCCADDR/gcc -C if `which gfortran` -F alg "$mflags" $confflags
  make
 
 ### Static Libs
