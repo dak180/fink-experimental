@@ -36,6 +36,7 @@ PatchScript: <<
 	#!/bin/sh -ev
 	sed -i.orig -e '/-flat_namespace/s|space|& -install_name $(LIBINST_DIR)/$(SONAME)|' config.mk.in
 <<
+ConfigureParams: --disable-static
 CompileScript: <<
 	#!/bin/sh -ev
 	./configure %c
