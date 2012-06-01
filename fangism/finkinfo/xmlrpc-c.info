@@ -32,6 +32,10 @@ BuildDepends: <<
 Depends: <<
 	%N-shlibs
 <<
+PatchScript: <<
+	#!/bin/sh -ev
+	sed -i.orig -e '/-flat_namespace/s|space|& -install_name $(LIBINST_DIR)/$(SONAME)|' config.mk.in
+<<
 CompileScript: <<
 	#!/bin/sh -ev
 	./configure %c
@@ -46,23 +50,6 @@ TestScript: make -k check || exit 2
 InstallScript: <<
 	#!/bin/sh -ev
 	make DESTDIR=%d install
-	# shlibs need absolute paths
-	pushd %i/lib
-	prefix=%p
-	for f in libxmlrpc*.*.16.dylib
-	do
-		install_name_tool -id "$prefix/lib/$f" "$f"
-		deplibs=`otool -L $f | sed 1,2d | awk '{print $1;}' | tr '\n' ' '`
-		for d in $deplibs
-		do
-		# prefix absolute paths to lib installation
-		case $d in
-		/*) ;;
-		*) install_name_tool -change "$d" "$prefix/lib/$d" $f ;;
-		esac
-		done
-	done
-	popd
 <<
 BuildDependsOnly: true
 DocFiles: README doc/*
