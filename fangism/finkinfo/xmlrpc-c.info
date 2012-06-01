@@ -1,3 +1,4 @@
+Info3: <<
 Package: xmlrpc-c
 Version: 1.16.41
 Revision: 1
@@ -23,11 +24,12 @@ cases (but is not standard): packet stream XML-RPC.
 XML-RPC For C and C++ is designed for Unix and is most tested on unix. 
 As far as we know, it works on any reasonably standard unix. 
 <<
+# BuildConflicts: libwww, libwww-bin
 BuildDepends: <<
 	fink-package-precedence,
-	libcurl4,
-	libwww-bin,
-	libwww
+#	libwww-bin,
+#	libwww,
+	libcurl4
 <<
 Depends: <<
 	%N-shlibs
@@ -36,7 +38,7 @@ PatchScript: <<
 	#!/bin/sh -ev
 	sed -i.orig -e '/-flat_namespace/s|space|& -install_name $(LIBINST_DIR)/$(SONAME)|' config.mk.in
 <<
-ConfigureParams: --disable-static
+ConfigureParams: --disable-static --disable-libwww-client
 CompileScript: <<
 	#!/bin/sh -ev
 	./configure %c
@@ -59,8 +61,8 @@ Package: %N-shlibs
 Description: Shared libraries for XML-RPC C/C++ module
 DocFiles: README doc/*
 Depends: <<
-	libcurl4-shlibs,
-	libwww-shlibs
+#	libwww-shlibs,
+	libcurl4-shlibs
 <<
 Files: <<
 	lib/libxmlrpc*.*.16.dylib
@@ -83,5 +85,9 @@ Shlibs: <<
 	%p/lib/libxmlrpc_util.3.16.dylib	0.0.0	%n (>= 1.16.41-1)
 	%p/lib/libxmlrpc_xmlparse.3.16.dylib	0.0.0	%n (>= 1.16.41-1)
 	%p/lib/libxmlrpc_xmltok.3.16.dylib	0.0.0	%n (>= 1.16.41-1)
+<<
+<<
+DescPackaging: <<
+Disabling/conflicting libwww, as that seems to cause a test failure.
 <<
 <<
