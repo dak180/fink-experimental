@@ -17,7 +17,7 @@ Source-MD5: 238ae4a15cc3a5049b723daef5d17938
 ConfigureParams: --infodir='${prefix}/share/info' --enable-shared --disable-static
 DocFiles: AUTHORS COPYING BUGS COPYING.LESSER ChangeLog doc/FAQ.html NEWS README TODO VERSION PATCHES
 InfoDocs: mpfr.info
-# cumulative patch: 2011-11-03
+# cumulative patch: 2012-05-07
 PatchFile: %{Ni}.patch
 PatchFile-MD5: 776954381923739ef0e618d992188535
 BuildDependsOnly: True
