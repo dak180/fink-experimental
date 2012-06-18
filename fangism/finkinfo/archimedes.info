@@ -1,0 +1,67 @@
+Package: archimedes
+Version: 2.0.0
+Revision: 1
+Source: mirror:gnu:%n/%n-%v.tar.bz2
+Source-MD5: e991637752d0ab688f72a1cf7c75424a
+BuildDepends: fink-package-precedence
+# SetCFLAGS: -Os
+ConfigureParams: --mandir=%p/share/man
+# --disable-dependency-tracking
+CompileScript: <<
+	#!/bin/sh -ev
+	%{default_script}
+	fink-package-precedence .
+<<
+## want docs? let me know.
+InfoTest: TestScript: make -k check || exit 2
+InstallScript: make install DESTDIR=%d
+DocFiles: AUTHORS COPYING ChangeLog NEWS README THANKS
+License: GPL
+Homepage: http://www.gnu.org/software/archimedes
+Maintainer: Jack Fink <jackfink@users.sourceforge.net>
+Description: Semiconductor device development tool
+DescDetail: <<
+  This project is part of the GNU Project.
+  Archimedes is a tool for development of semiconductor
+  devices, incorporating some intensive mathematics.
+
+Archimedes is the GNU package for semiconductor device simulations that has 
+been released for the first time on 2005 under GPL. 
+It has been created by Jean Michel Sellier who is, since then, 
+the leader of the project and the main developer. 
+It is a Free software and thus it can be copied, modified and 
+redistributed under GPL. 
+This is the one of the big advantages of using Archimedes.
+
+Archimedes belongs to the well-known family of TCAD software, 
+i.e. tools utilized to assist the development of technologically 
+relevant products. In particular, this package assists engineers in 
+designing and simulating submicron and mesoscopic semiconductor devices. 
+In a next-future version Archimedes will also be able to simulate 
+nanodevices, using the Wigner formalism. 
+Today Archimedes is used in several big companies for simulation 
+and production purposes.
+
+Archimedes is also useful for teaching purposes since everybody can access 
+the sources, modify and test them. Today, it is used for teaching courses 
+in several hundreds universities all around the world. 
+Furthermore, a simplified version, developed for students, 
+is available on nanoHUB.org.
+
+The Ensemble Monte Carlo method is the method that Archimedes uses to 
+simulate and predict the behaviour of a devices. 
+Being the Monte Carlo very stable and reliable, Archimedes can be used to 
+know the characteritics of a device even before this last is built.
+
+The physics and geometry of a device is described simply by a script, 
+which makes, in this sense, Archimedes a powerful tool for the simulation 
+of quite general semiconductor devices.
+
+Archimedes is able to simulate a plenty of physics effects and transport 
+for electrons and heavy holes in Silicon, Germanium, GaAs, InSb, AlSb, 
+AlAs , AlxInxSb, AlxIn(1-x)Sb, AlP, AlSb, GaP, GaSb, InP and their 
+compounds (III-V semiconductor materials), along with Silicon Oxide, 
+the applied and/or self-consistent electrostatic and magnetic fields by 
+means of Poisson and Faraday equation. 
+It is, also, able to deal with heterostructures.
+<<
