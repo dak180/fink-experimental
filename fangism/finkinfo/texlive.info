@@ -339,6 +339,9 @@ SplitOff: <<
   fi
  <<
  PostInstScript: <<
+  # fangism: clobber locally modified environment for a clean configure
+  unset TEXINPUTS
+  unset TEXFONTS
 if [ -e %p/bin/xdvik ] ; then
   update-alternatives --install %p/bin/xdvi xdvi %p/bin/xdvik 30 --slave %p/share/man/man1/xdvi.1 xdvi.1 %p/share/man/man1/xdvik.1
 fi
