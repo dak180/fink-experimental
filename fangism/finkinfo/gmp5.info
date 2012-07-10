@@ -1,7 +1,7 @@
 Info4: <<
 Package: gmp5%type_pkg[-64bit]
 Version: 5.0.5
-Revision: 1
+Revision: 2
 GCC: 4.0
 Type: -64bit (boolean)
 Architecture: ( %type_raw[-64bit] = -64bit ) powerpc, ( %type_raw[-64bit] = -64bit ) i386
@@ -100,7 +100,7 @@ SplitOff: <<
     %p/%lib/gmp5/libgmp.10.dylib 11.0.0 %n (>= 5.0.1-2) %type_num[-64bit]
   <<
   Description: Shared library for gmp package
-  DocFiles: doc/* AUTHORS COPYING COPYING.LIB ChangeLog INSTALL NEWS README
+  DocFiles: doc/*.html doc/isa_abi* AUTHORS COPYING COPYING.LIB ChangeLog INSTALL NEWS README
 <<
 SplitOff2: <<
   Package: libgmpxx5%type_pkg[-64bit]-shlibs
@@ -110,7 +110,7 @@ SplitOff2: <<
     %p/%lib/gmp5/libgmpxx.4.dylib 7.0.0 %n (>= 5.0.1-2) %type_num[-64bit]
   <<
   Description: Shared C++ library for gmp package
-  DocFiles: doc/* AUTHORS COPYING COPYING.LIB ChangeLog INSTALL NEWS README
+  DocFiles: doc/*.html doc/isa_abi* AUTHORS COPYING COPYING.LIB ChangeLog INSTALL NEWS README
 <<
 License: LGPL
 Description: GNU multiple precision arithmetic library
