@@ -1,0 +1,24 @@
+diff -Nurd gst-plugins-base-0.10.36/docs/plugins/Makefile.am gst-plugins-base-0.10.36-patched/docs/plugins/Makefile.am
+--- gst-plugins-base-0.10.36/docs/plugins/Makefile.am	2011-12-30 14:29:10.000000000 +0100
++++ gst-plugins-base-0.10.36-patched/docs/plugins/Makefile.am	2012-06-02 00:59:54.000000000 +0200
+@@ -112,7 +112,7 @@
+ 
+ # CFLAGS and LDFLAGS for compiling scan program. Only needed if your app/lib
+ # contains GtkObjects/GObjects and you want to document signals and properties.
+-GTKDOC_CFLAGS = $(GST_BASE_CFLAGS) -I$(top_builddir) -I$(top_builddir)/gst-libs
++GTKDOC_CFLAGS = -I$(top_builddir) -I$(top_builddir)/gst-libs $(GST_BASE_CFLAGS)
+ GTKDOC_LIBS = $(GST_BASE_LIBS)
+ 
+ GTKDOC_CC=$(LIBTOOL) --tag=CC --mode=compile $(CC)
+diff -Nurd gst-plugins-base-0.10.36/gst/app/Makefile.am gst-plugins-base-0.10.36-patched/gst/app/Makefile.am
+--- gst-plugins-base-0.10.36/gst/app/Makefile.am	2011-12-11 19:47:08.000000000 +0100
++++ gst-plugins-base-0.10.36-patched/gst/app/Makefile.am	2012-06-02 01:01:38.000000000 +0200
+@@ -1,7 +1,7 @@
+ plugin_LTLIBRARIES = libgstapp.la
+ 
+ libgstapp_la_SOURCES = gstapp.c
+-libgstapp_la_CFLAGS = $(GST_CFLAGS) $(GST_BASE_CFLAGS) $(GST_PLUGINS_BASE_CFLAGS)
++libgstapp_la_CFLAGS = $(GST_PLUGINS_BASE_CFLAGS) $(GST_CFLAGS) $(GST_BASE_CFLAGS)
+ libgstapp_la_LIBADD = $(GST_BASE_LIBS) $(top_builddir)/gst-libs/gst/app/libgstapp-@GST_MAJORMINOR@.la
+ libgstapp_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
+ libgstapp_la_LIBTOOLFLAGS = --tag=disable-static
