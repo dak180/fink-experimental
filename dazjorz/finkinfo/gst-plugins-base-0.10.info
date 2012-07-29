@@ -107,19 +107,19 @@ SplitOff: <<
 		share/locale
 	<<
 	Shlibs: <<
-		%p/lib/libgstapp-0.10.0.dylib        26.0.0 %N-shlibs (>= 0.10.34-1)
-		%p/lib/libgstaudio-0.10.0.dylib      26.0.0 %N-shlibs (>= 0.10.34-1)
-		%p/lib/libgstcdda-0.10.0.dylib       26.0.0 %N-shlibs (>= 0.10.34-1)
-		%p/lib/libgstfft-0.10.0.dylib        26.0.0 %N-shlibs (>= 0.10.34-1)
-		%p/lib/libgstinterfaces-0.10.0.dylib 26.0.0 %N-shlibs (>= 0.10.34-1)
-		%p/lib/libgstnetbuffer-0.10.0.dylib  26.0.0 %N-shlibs (>= 0.10.34-1)
-		%p/lib/libgstpbutils-0.10.0.dylib    26.0.0 %N-shlibs (>= 0.10.34-1)
-		%p/lib/libgstriff-0.10.0.dylib       26.0.0 %N-shlibs (>= 0.10.34-1)
-		%p/lib/libgstrtp-0.10.0.dylib        26.0.0 %N-shlibs (>= 0.10.34-1)
-		%p/lib/libgstrtsp-0.10.0.dylib       26.0.0 %N-shlibs (>= 0.10.34-1)
-		%p/lib/libgstsdp-0.10.0.dylib        26.0.0 %N-shlibs (>= 0.10.34-1)
-		%p/lib/libgsttag-0.10.0.dylib        26.0.0 %N-shlibs (>= 0.10.34-1)
-		%p/lib/libgstvideo-0.10.0.dylib      26.0.0 %N-shlibs (>= 0.10.34-1)
+		%p/lib/libgstapp-0.10.0.dylib        26.0.0 %N-shlibs (>= 0.10.36-1)
+		%p/lib/libgstaudio-0.10.0.dylib      26.0.0 %N-shlibs (>= 0.10.36-1)
+		%p/lib/libgstcdda-0.10.0.dylib       26.0.0 %N-shlibs (>= 0.10.36-1)
+		%p/lib/libgstfft-0.10.0.dylib        26.0.0 %N-shlibs (>= 0.10.36-1)
+		%p/lib/libgstinterfaces-0.10.0.dylib 26.0.0 %N-shlibs (>= 0.10.36-1)
+		%p/lib/libgstnetbuffer-0.10.0.dylib  26.0.0 %N-shlibs (>= 0.10.36-1)
+		%p/lib/libgstpbutils-0.10.0.dylib    26.0.0 %N-shlibs (>= 0.10.36-1)
+		%p/lib/libgstriff-0.10.0.dylib       26.0.0 %N-shlibs (>= 0.10.36-1)
+		%p/lib/libgstrtp-0.10.0.dylib        26.0.0 %N-shlibs (>= 0.10.36-1)
+		%p/lib/libgstrtsp-0.10.0.dylib       26.0.0 %N-shlibs (>= 0.10.36-1)
+		%p/lib/libgstsdp-0.10.0.dylib        26.0.0 %N-shlibs (>= 0.10.36-1)
+		%p/lib/libgsttag-0.10.0.dylib        26.0.0 %N-shlibs (>= 0.10.36-1)
+		%p/lib/libgstvideo-0.10.0.dylib      26.0.0 %N-shlibs (>= 0.10.36-1)
 	<<
 <<
 SplitOff2: <<
