@@ -133,6 +133,8 @@ DescPackaging: <<
 DescPort: <<
  gmp5-5.0.2-2: includes patch for low probability division bug in
 	mpn/generic/dcpi1_bdiv_q.c
+ gmp5-5.0.5-3: includes patch for powerpc-asm
+	http://gmplib.org/list-archives/gmp-bugs/2012-July/002731.html
 
  Older notes:
 
