@@ -10,7 +10,7 @@ Source-MD5: 041487d25e9c230b0c42b106361055fe
 # Source2: http://www.csl.cornell.edu/~fang/sw/gmp-trunk-20110131-config.guess
 # Source2-MD5: d526c73bbb512808aa4e871937dd6fa4
 PatchFile: %{ni}.patch
-PatchFile-MD5: 9164502077cf44bd64c6656b7eabf9ca
+PatchFile-MD5: 32ad9f91ac27a8a53deea57306555428
 Depends: <<
   %N-shlibs (= %v-%r),
   libgmpxx5%type_pkg[-64bit]-shlibs (= %v-%r),
