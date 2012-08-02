@@ -16,11 +16,11 @@
      return ptr;
    }
  
---- libtorrent-0.12.9-orig/src/torrent/thread_base.h	2011-06-21 23:12:25.000000000 -0700
-+++ libtorrent-0.12.9/src/torrent/thread_base.h	2011-06-21 23:33:19.000000000 -0700
-@@ -37,6 +37,19 @@
- #ifndef LIBTORRENT_THREAD_BASE_H
- #define LIBTORRENT_THREAD_BASE_H
+--- libtorrent-0.12.9-orig/src/torrent/common.h	2011-06-21 23:12:25.000000000 -0700
++++ libtorrent-0.12.9/src/torrent/common.h	2011-06-21 23:33:19.000000000 -0700
+@@ -37,6 +37,24 @@
+ #ifndef LIBTORRENT_COMMON_H
+ #define LIBTORRENT_COMMON_H
  
 +#if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 2))
 +#if defined(__APPLE__)
@@ -30,14 +30,38 @@
 +
 +#ifdef	USE_DARWIN_ATOMICS
 +#include <libkern/OSAtomic.h>
-+#define	__sync_add_and_fetch(x, y)	OSAtomicIncrement32Barrier(x)
-+#define	__sync_sub_and_fetch(x, y)	OSAtomicDecrement32Barrier(x)
++#define	__sync_add_and_fetch(x, y)	OSAtomicAdd32Barrier(y, x)
++#define	__sync_sub_and_fetch(x, y)	OSAtomicAdd32Barrier(-(y), x)
++#define	__sync_and_and_fetch(x, y)	OSAtomicAnd32Barrier(y, x)
++#define	__sync_or_and_fetch(x, y)	OSAtomicOr32Barrier(y, x)
 +#define	__sync_lock_test_and_set(x, y)	OSAtomicTestAndSetBarrier(y, x)
++#define	__sync_bool_compare_and_swap(x, y, z)	OSAtomicCompareAndSwap32Barrier(y, z, x)
++#define	__sync_fetch_and_or(x, y)	( __sync_or_and_fetch(x, y), *x )
++#define	__sync_fetch_and_and(x, y)	( __sync_and_and_fetch(x, y), *x )
 +#endif
 +
- #include <pthread.h>
- #include <sys/types.h>
- #include <torrent/common.h>
+ #include <inttypes.h>
+ #include <cstddef.h>
+ 
+--- libtorrent-0.12.9-orig/src/torrent/utils/thread_base.h	2011-06-21 23:12:25.000000000 -0700
++++ libtorrent-0.12.9/src/torrent/utils/thread_base.h	2011-06-21 23:33:19.000000000 -0700
+@@ -102,7 +102,6 @@
+   virtual const char* name() const = 0;
+ 
+   Poll*               poll()            { return m_poll; }
+-  signal_type*        signal_bitfield() { return &m_signal_bitfield; }
+   pthread_t           pthread()         { return m_thread; }
+ 
+   virtual void        init_thread() = 0;
+@@ -150,6 +150,8 @@
+
+   slot_void           m_slot_do_work;
+   slot_timer          m_slot_next_timeout;
++public:
++  signal_type*        signal_bitfield() { return &m_signal_bitfield; }
+ };
+ 
+ inline void
 --- libtorrent-0.12.9-orig/src/net/socket_set.h	2011-06-26 21:28:11.000000000 -0700
 +++ libtorrent-0.12.9/src/net/socket_set.h	2011-06-26 21:28:56.000000000 -0700
 @@ -53,12 +53,12 @@
@@ -81,11 +105,80 @@
 --- libtorrent-0.13.0-orig/src/torrent/utils/log.cc	2011-12-10 17:05:09.000000000 -0800
 +++ libtorrent-0.13.0/src/torrent/utils/log.cc	2011-12-10 17:05:16.000000000 -0800
 @@ -232,7 +232,7 @@
- 
- void
  log_cleanup() {
+   pthread_mutex_lock(&log_mutex);
+ 
 -  log_groups.assign(log_group());
 +  std::fill(log_groups.begin(), log_groups.end(), log_group());
    log_outputs.clear();
    log_children.clear();
+ 
+--- libtorrent-0.13.2-orig/src/torrent/utils/signal_bitfield.cc	2012-07-31 17:33:38.000000000 -0700
++++ libtorrent-0.13.2/src/torrent/utils/signal_bitfield.cc	2012-07-31 17:38:56.000000000 -0700
+@@ -52,7 +52,7 @@
+     throw internal_error("signal_bitfield::add_signal(...): Cannot add empty slot.");
+ 
+   unsigned int index = m_size;
+-  __sync_add_and_fetch(&m_size, 1);
++  __sync_add_and_fetch((int32_t*)(&m_size), 1);
+ 
+   m_slots[index] = slot;
+   return index;
+@@ -62,7 +62,7 @@
+ signal_bitfield::work() {
+   bitfield_type bitfield;
+ 
+-  while (!__sync_bool_compare_and_swap(&m_bitfield, (bitfield = m_bitfield), 0))
++  while (!__sync_bool_compare_and_swap((int32_t*)(&m_bitfield), (bitfield = m_bitfield), 0))
+     ; // Do nothing.
+ 
+   unsigned int i = 0;
+--- libtorrent-0.13.2-orig/src/torrent/utils/thread_base.cc	2012-07-31 17:46:01.000000000 -0700
++++ libtorrent-0.13.2/src/torrent/utils/thread_base.cc	2012-08-01 13:00:55.000000000 -0700
+@@ -69,7 +69,7 @@
+ 
+ void
+ thread_base::stop_thread() {
+-  __sync_fetch_and_or(&m_flags, flag_do_shutdown);
++  __sync_fetch_and_or((uint32_t*)&m_flags, flag_do_shutdown);
+   interrupt();
+ }
+ 
+@@ -88,7 +88,7 @@
+ 
+ void
+ thread_base::interrupt() {
+-  __sync_fetch_and_or(&m_flags, flag_no_timeout);
++  __sync_fetch_and_or((uint32_t*)&m_flags, flag_no_timeout);
+ 
+   while (is_polling() && has_no_timeout()) {
+     pthread_kill(m_thread, SIGUSR1);
+@@ -115,7 +115,7 @@
+       thread->call_events();
+       thread->signal_bitfield()->work();
+ 
+-      __sync_fetch_and_or(&thread->m_flags, flag_polling);
++      __sync_fetch_and_or((uint32_t*)&thread->m_flags, flag_polling);
+ 
+       // Call again after setting flag_polling to ensure we process
+       // any events set while it was working.
+@@ -143,7 +143,7 @@
+         poll_flags = torrent::Poll::poll_worker_thread;
+ 
+       thread->m_poll->do_poll(next_timeout, poll_flags);
+-      __sync_fetch_and_and(&thread->m_flags, ~(flag_polling | flag_no_timeout));
++      __sync_fetch_and_and((uint32_t*)&thread->m_flags, ~(flag_polling | flag_no_timeout));
+     }
+ 
+   } catch (torrent::shutdown_exception& e) {
+--- libtorrent-0.13.2-orig/src/thread_disk.cc	2012-08-01 13:03:26.000000000 -0700
++++ libtorrent-0.13.2/src/thread_disk.cc	2012-08-01 13:03:45.000000000 -0700
+@@ -64,7 +64,7 @@
+     if ((m_flags & flag_did_shutdown))
+       throw internal_error("Already trigged shutdown.");
+ 
+-    __sync_or_and_fetch(&m_flags, flag_did_shutdown);
++    __sync_or_and_fetch((uint32_t*)&m_flags, flag_did_shutdown);
+     throw shutdown_exception();
+   }
  
