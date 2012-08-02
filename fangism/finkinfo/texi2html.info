@@ -1,5 +1,6 @@
 Package: texi2html
-Version: 5.0
+Version: 1.82
+# Version: 5.0
 Revision: 1
 BuildDepends: <<
 	libgettext8-dev,
@@ -19,9 +20,9 @@ PatchScript: <<
   #!/bin/sh -ev
   chmod +x *sh
   # patch sed -i calls with file suffix to not depend on GNU sed
-  for f in manage_i18n.pl.in test/many_input_files/tex_l2h.sh test/run_test.sh test/run_test_all.sh
-  do
-	sed -i.orig -e 's|sed -i|&.orig|g' $f
+  list=`grep -l -r 'sed -i' .`
+  for f in $list
+  do sed -i.orig -e 's|sed -i|&.orig|g' $f
   done
 <<
 ConfigureParams: --mandir=%p/share/man --infodir=%p/share/info
@@ -85,9 +86,10 @@ texi2html package should be left at version 1.64 until this is resolved.
 
 Previous versions by Christian Schaffner <chris01@users.sourceforge.net>
 
-fangism upgraded to 5.0.
+fangism and danielj tried to 5.0 -- too many test failures.
 <<
 License: GPL
 Homepage: http://www.mathematik.uni-kl.de/~obachman/Texi2html/
 Maintainer: None <fink-devel@lists.sourceforge.net>
-Source-MD5: f15ac876fcdc8be865b16535f480aa54
+Source-MD5: a8a9193c0ac1bec2f3ca7be40a5a82eb
+# Source-MD5: f15ac876fcdc8be865b16535f480aa54
