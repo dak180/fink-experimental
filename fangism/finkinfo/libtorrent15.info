@@ -39,7 +39,10 @@ make
 <<
 
 # tests currently fail linking
-InfoTest: TestScript: make -k check || exit 2
+InfoTest: <<
+	TestDepends: cppunit1.12.1
+	TestScript: make -k check || exit 2
+<<
 InstallScript: 
 
 DocFiles: <<
