@@ -1,4 +1,4 @@
-Package: libtorrent16
+Package: libtorrent15
 Version: 0.13.2
 Revision: 1
 License: GPL
@@ -9,14 +9,14 @@ Maintainer: David Fang <fangism@users.sourceforge.net>
 Depends: %n-shlibs (=%v-%r)
 BuildDepends: fink (>= 0.24.12), libsigc++2, system-openssl-dev, pkgconfig (>= 0.9-1)
 BuildConflicts: openssl097-dev, openssl098-dev
-Conflicts: libtorrent, libtorrent11, libtorrent12, libtorrent15
-Replaces: libtorrent, libtorrent11, libtorrent12, libtorrent15
+Conflicts: libtorrent, libtorrent11, libtorrent12
+Replaces: libtorrent, libtorrent11, libtorrent12
 
 Source: http://libtorrent.rakshasa.no/downloads/libtorrent-%v.tar.gz
 Source-MD5: 96c0b81501357df402ab592f59ecaeab
 
 PatchFile: %n.patch
-PatchFile-MD5: 5dd8d0a0e7f1db0f99311a8bb81070f0
+PatchFile-MD5: a16759ddc52896ec013537f761346560
 
 #PKG_CONFIG_PATH: %p/lib/system-openssl/lib/pkgconfig
 BuildDependsOnly: true
@@ -38,6 +38,8 @@ PKG_CONFIG_PATH=%p/lib/system-openssl/lib/pkgconfig ./configure %c
 make
 <<
 
+# tests currently fail linking
+InfoTest: TestScript: make -k check || exit 2
 InstallScript: 
 
 DocFiles: <<
