@@ -16,7 +16,8 @@ Source: http://libtorrent.rakshasa.no/downloads/libtorrent-%v.tar.gz
 Source-MD5: 96c0b81501357df402ab592f59ecaeab
 
 PatchFile: %n.patch
-PatchFile-MD5: a16759ddc52896ec013537f761346560
+PatchFile-MD5: 8651c44b858170b075829d60e28aeb70
+# PatchFile-MD5: a16759ddc52896ec013537f761346560
 
 #PKG_CONFIG_PATH: %p/lib/system-openssl/lib/pkgconfig
 BuildDependsOnly: true
