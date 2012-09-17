@@ -1,10 +1,9 @@
-Package: openexr-1.7
+Package: libopenexr6
 Version: 1.7.0
 Revision: 2
 Description: Example programs using OpenEXR
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
-# Maintainer: Benjamin Reed <openexr@fink.racoonfink.com>
 
 Depends: %N-shlibs (= %v-%r)
 BuildDepends: <<
@@ -14,6 +13,10 @@ BuildDepends: <<
 	ilmbase
 <<
 # InheritedBuildDepends: ilmbase
+Conflicts: openexr-dev
+Replaces: openexr-dev
+Depends: %N-shlibs
+BuildDependsOnly: true
 GCC: 4.0
 
 Source: http://download.savannah.nongnu.org/releases/openexr/openexr-%v.tar.gz
@@ -35,7 +38,7 @@ ConfigureParams: <<
 CompileScript: <<
 	#!/bin/sh -ev
 	%{default_script}
-	fink-package-precedence --prohibit-bdep=openexr-dev,%n-dev .
+	fink-package-precedence --prohibit-bdep=openexr-dev,%n .
 <<
 InfoTest: TestScript: make -k check || exit 2
 InstallScript: <<
@@ -59,7 +62,7 @@ InstallScript: <<
 	mv %i/share/doc/OpenEXR-%v/* %i/share/doc/%N/
 	rmdir %i/share/doc/OpenEXR-%v
 <<
-DocFiles: AUTHORS COPYING ChangeLog INSTALL LICENSE NEWS README*
+DocFiles: AUTHORS COPYING ChangeLog INSTALL LICENSE NEWS README* doc/*.pdf
 SplitOff: <<
 	Package: %N-shlibs
 	Description: Shared libraries for OpenEXR development
@@ -69,14 +72,11 @@ SplitOff: <<
 	Shlibs: %p/lib/libIlmImf.6.dylib 7.0.0 %n (>= 1.7.0-1)
 <<
 SplitOff2: <<
-	Package: %N-dev
+	Package: openexr
 	Description: High dynamic-range (HDR) image file tools
-	Conflicts: openexr-dev
-	Replaces: openexr-dev
-	BuildDependsOnly: true
 	Depends: %N-shlibs (= %v-%r)
-	Files: include lib share
-	DocFiles: AUTHORS COPYING ChangeLog INSTALL LICENSE NEWS README* doc/*.pdf
+	Files: bin
+	DocFiles: AUTHORS COPYING ChangeLog INSTALL LICENSE NEWS README*
 <<
 
 Homepage: http://www.openexr.com/
@@ -113,9 +113,9 @@ OpenEXR's features include:
   applications.
 <<
 DescPackaging: <<
-The main package splitoff contains sample programs that use OpenEXR.
-The development headers are in -dev.
-The shared libraries are in -shlibs.
+The development headers are in %N, the primary package.
+The shared libraries are in %N-shlibs.
+The program binaries are in openexr, including sample programs.
 
 Previous Maintainer: Benjamin Reed <openexr@fink.racoonfink.com>
 <<
