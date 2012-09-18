@@ -1,6 +1,6 @@
 Package: libopenexr6
 Version: 1.7.0
-Revision: 2
+Revision: 3
 Description: Example programs using OpenEXR
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
@@ -10,7 +10,8 @@ BuildDepends: <<
 	fink (>= 0.24.12-1),
 	flag-sort,
 	fink-package-precedence,
-	ilmbase
+	ilmbase,
+	x11-dev
 <<
 # InheritedBuildDepends: ilmbase
 Conflicts: openexr-dev
@@ -66,7 +67,7 @@ DocFiles: AUTHORS COPYING ChangeLog INSTALL LICENSE NEWS README* doc/*.pdf
 SplitOff: <<
 	Package: %N-shlibs
 	Description: Shared libraries for OpenEXR development
-	Depends: ilmbase-shlibs
+	Depends: ilmbase-shlibs, x11-shlibs
 	DocFiles: AUTHORS COPYING ChangeLog INSTALL LICENSE NEWS README*
 	Files: lib/libIlmImf.6.dylib
 	Shlibs: %p/lib/libIlmImf.6.dylib 7.0.0 %n (>= 1.7.0-1)
