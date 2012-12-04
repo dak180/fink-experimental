@@ -1,7 +1,9 @@
 Info2: <<
 
+# $Id$
+
 Package: qgis18-py%type_pkg[python]
-Type: python (2.7 2.6)
+Type: python (3.2 2.7 2.6)
 Architecture: powerpc, i386, x86_64
 Distribution: 10.5, 10.6, 10.7
 
@@ -35,24 +37,24 @@ in /Applications/Fink.
 <<
 
 # Dependencies.
-# Depends: qgis-plugin-installer
+Depends: qgis-plugin-installer, %n-shlibs (=%v-%r)
 BuildDepends: << 
-	fink (>= 0.28), cmake, bison (>= 2.3),
+	fink (>= 0.28), cmake, bison (>= 2.4),
 	gsl,
-	qt4-base-mac, 
-	sip-py%type_pkg[python]-bin, pyqt4-mac-py%type_pkg[python] , 
+	qt4-base-mac (>= 4.4), 
+	sip-py%type_pkg[python]-bin (>= 4.8), pyqt4-mac-py%type_pkg[python], 
 	xerces-c31-dev,
 	libiconv-dev, giflib, libtiff, libjpeg8, libogdi3 (>= 3.1.5-1), libpng15, netcdf (>= 3.6.0-1002), 
 	cfitsio,
 	unixodbc2-nox (>= 2.2.11-1010) | unixodbc2 (>= 2.2.11-1010), 
-	libgeos3.3.3,
-	gdal-dev | gdal-pgsql-dev, 
+	libgeos3.3.3 (>= 3.0),
+	gdal-dev (>= 1.4) | gdal-pgsql-dev (>= 1.4), 
 	postgresql90-dev, 
 	grass64-mac-dev | grass64-mac-dev,
-	proj (>=4),
-	qwt6-qt4-mac,
+	proj (>= 4.4),
+	qwt6-qt4-mac (>= 5.0),
 	libspatialindex2,
-	libspatialite5
+	libspatialite5 (>= 3.0)
 <<
 BuildConflicts: libspatialite1
 
@@ -71,7 +73,7 @@ CompileScript: <<
 
 	# Find Fink's PyQt4
 	PY_VER=%type_raw[python]
-	perl -pi -e 's|sys.path = \[\\\"\"|sys.path = \[\\\"%p/lib/qt4-mac/lib/python'${PY_VER}'/site-packages\\", \\"\"|' src/python/qgspythonutilsimpl.cpp
+	perl -pi -e 's|sys.path = |sys.path = \[\\\"%p/lib/qt4-mac/lib/python'${PY_VER}'/site-packages\\\", " + newpaths.join( "," ) + "] + sys.path" ); //|' src/python/qgspythonutilsimpl.cpp
 	perl -pi -e 's|\.app|-py%type_pkg[python]-%v.app|' CMakeLists.txt
 	
 	export QTDIR=%p/lib/qt4-mac
@@ -102,9 +104,6 @@ CompileScript: <<
 					-D SIP_BINARY_PATH=%p/bin
 					-D POSTGRES_CONFIG=%p/bin/pg_config
 					-D GRASS_PREFIX=%p/Applications/GRASS-6.4.app/Contents/MacOS"
-					# -DQ_WS_WIN:INTERNAL=${Q_WS_WIN} \
-					# -DQ_WS_X11:INTERNAL=${Q_WS_X11} \
-					# -DQ_WS_QWS:INTERNAL=${Q_WS_QWS} \
 	QGIS_VERSION_OPTIONS="-D CMAKE_BUILD_TYPE=Release
 					-D ENABLE_TESTS=FALSE
 					-D WITH_INTERNAL_SPATIALITE=FALSE
@@ -113,8 +112,6 @@ CompileScript: <<
   					-D QWT_INCLUDE_DIR=%p/lib/qt4-mac/lib/qwt.framework/Versions/6/Headers/
   					-D BISON_EXECUTABLE=%p/bin/bison
   					-D WITH_MAPSERVER=FALSE
-  					-D QTPREFIX=%p/$QGIS_DIR/Frameworks
-  					-D QGIS_MACAPP_DEV_PREFIX=%p/$QGIS_DIR/Frameworks
   					-D QGIS_FW_SUBDIR=%p/$QGIS_DIR/Frameworks
   					-D QGIS_MACAPP_BUNDLE=0"
   	# QTPREFIX, QGIS_*: to set install name, though they don't seem to be effective.
@@ -123,22 +120,17 @@ CompileScript: <<
 	#     is available in the system (OS X 10.5+)
 	# 1 = bundle Qt, PyQt and PyQwt
 	# 2 = additionally, bundle libraries, but not frameworks
-  	
-  	perl -pi -e "s|@executable_path|%p/$QGIS_DIR/MacOS|g" mac/extras/1-release-extra.sh
-  	
+  	  	
 	mkdir build
 	pushd build
 	cmake $QGIS_OPTIONS $QGIS_VERSION_OPTIONS ..
 	
 	# 1.8.0 Fix hardcoded application name
-	perl -pi -e "s|QGIS.app|QGIS-py%type_pkg[python]-%v.app|g" src/app/cmake_install.cmake
-	perl -pi -e "s|QGIS.app|QGIS-py%type_pkg[python]-%v.app|g" src/app/CMakeFiles/QGIS.dir/build.make
-	perl -pi -e "s|QGIS.app|QGIS-py%type_pkg[python]-%v.app|g" src/app/CMakeFiles/QGIS.dir/link.txt
-	perl -pi -e "s|QGIS.app|QGIS-py%type_pkg[python]-%v.app|g" src/app/CMakeFiles/QGIS.dir/cmake_clean.cmake
-	perl -pi -e "s|Qgis.app|QGIS-py%type_pkg[python]-%v.app|g" ../xcode/qgis_settings.xcconfig:QGIS_APP_NAME = Qgis.app
-	perl -pi -e "s|Qgis.app|QGIS-py%type_pkg[python]-%v.app|g" ../xcode/Qgis.xcodeproj/project.pbxproj
+	for filename in src/app/cmake_install.cmake src/app/CMakeFiles/QGIS.dir/build.make src/app/CMakeFiles/QGIS.dir/link.txt cmake_clean.cmake
+	do
+		perl -pi -e "s|QGIS.app|QGIS-py%type_pkg[python]-%v.app|g" $filename
+	done
 	mkdir -p output/bin/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS
-	ln -s output/bin/QGIS-py%type_pkg[python]-%v.app output/bin/QGIS.app
 	
 	# 1.8.0 Workaround from MacPorts
 	echo "install_name_tool -change @executable_path/../Frameworks/qgis_core.framework/Versions/1.8/qgis_core @executable_path/../lib/qgis_core.framework/Versions/1.8/qgis_core ../../output/bin/crssync"  >> src/crssync/CMakeFiles/crssync.dir/link.txt
@@ -151,37 +143,33 @@ CompileScript: <<
 	pushd $QGIS_DIR/MacOS
 	mv QGIS QGIS.exe
 	echo '#!/bin/sh' >QGIS
+	echo 'export PYTHONPATH=%p/lib/qt4-mac/lib/python$PY_VER/site-packages:$PYTHONPATH' >>QGIS
+	echo 'export PATH=%p/lib/qt4-mac/lib/python$PY_VER/bin:$PATH' >>QGIS
+	echo 'export QGIS_PLUGINPATH=%p/share/qgis/python/plugins' >>QGIS
 	echo ". %p/bin/init.sh && %p/$QGIS_DIR/MacOS/QGIS.exe" >>QGIS
 	chmod 555 QGIS
 		# 1.8.0
 		install_name_tool -id %p/$QGIS_DIR/MacOS/QGIS.exe QGIS.exe
-		for loader in qgis_analysis qgis_core qgis_gui qgis_networkanalysis qgisgrass qgissqlanyconnection
-		do
-			install_name_tool -change @executable_path/../Frameworks/$loader.framework/$loader %p/$QGIS_DIR/Frameworks/$loader.framework/$loader QGIS.exe
-		done
 	popd
 	
-	# 1.6.0 Plugins are now managed by their own package (e.g. qgis-plugin-ftools)
-	# rm -rf %b/$QGIS_DIR/Resources/python/plugins
-	# ln -s %p/share/qgis/python/plugins %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins
-	  
-	# 1.6.0 Workaround to SJIS problem
-	mkdir -p %b/$QGIS_DIR/PlugIns
-	ln -s %p/lib/qt4-mac/plugins/codecs %b/$QGIS_DIR/PlugIns/codecs
-
 	# 1.6.0 Recompile python scripts to fix path
 	%p/bin/python$PY_VER %p/lib/python$PY_VER/compileall.py -f -d %p/$QGIS_DIR/Resources/python/qgis %b/$QGIS_DIR/Resources/python/qgis
 	%p/bin/python$PY_VER -O %p/lib/python$PY_VER/compileall.py -f -d %p/$QGIS_DIR/Resources/python/qgis %b/$QGIS_DIR/Resources/python/qgis
 
+	
+	# 1.6.0 Plugins are now managed by their own package (e.g. qgis-plugin-ftools)
+	rm -rf %b/$QGIS_DIR/Resources/python/plugins
+	ln -s %p/share/qgis/python/plugins %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins
+	  
+	# 1.6.0 Workaround to SJIS problem
+	mkdir -p %b/$QGIS_DIR/PlugIns
+	ln -s %p/lib/qt4-mac/plugins/codecs %b/$QGIS_DIR/PlugIns/codecs
+	
 	# 1.8.0 Fix install name for Fink's policy
 	pushd $QGIS_DIR/MacOS/lib
 	for libname in libqgispython.1.8.0
 	do
 		install_name_tool -id %p/$QGIS_DIR/MacOS/lib/$libname.dylib $libname.dylib
-		for loader in QtCore QtGui QtMultimedia QtNetwork QtOpenGL QtSql QtSvg QtWebKit QtXml QtXmlPatterns qgis_core
-		do
-			install_name_tool -change @loader_path/../../Frameworks/$loader.framework/$loader %p/lib/qt4-mac/lib/$loader.framework/Versions/4/$loader $libname.dylib
-		done
 	done
 	popd
 	
@@ -204,6 +192,14 @@ CompileScript: <<
 	do
 		install_name_tool -id %p/$QGIS_DIR/Frameworks/$libname.framework/$libname $libname.framework/$libname 
 	done
+	popd
+	
+	# 1.8.0 Creates Info.plist
+	sed -e 's|\${QGIS_APP_NAME}|QGIS|g' \
+		-e 's|\${COMPLETE_VERSION}|%v|g' \
+		-e 's|\${RELEASE_NAME}|Lisboa|g' \
+		-e 's|\${REVISION}|Fink|g' \
+		mac/app.info.plist.in > $QGIS_DIR/Info.plist
 <<
 InstallScript: <<
 #!/bin/bash -ev
@@ -213,24 +209,46 @@ InstallScript: <<
 
 AppBundles: Applications/QGIS-py%type_pkg[python]-%v.app
 
-Depends: <<
-	qt4-base-mac-qtcore-shlibs, 
-	python%type_pkg[python], sip-py%type_pkg[python], pyqt4-mac-py%type_pkg[python], 
+SplitOff: <<
+  Package: %N-shlibs
+  Description: Shared libraries for QGIS
+  Depends: <<
+	qt4-base-mac-qtcore-shlibs (>= 4.4), 
+	python%type_pkg[python], sip-py%type_pkg[python] (>= 4.8), pyqt4-mac-py%type_pkg[python], 
 	gsl-shlibs,
 	xerces-c31-shlibs,
-	libgeos3.3.3-shlibs,
-	gdal-shlibs | gdal-pgsql-shlibs, 
+	libgeos3.3.3-shlibs (>= 3.0),
+	gdal-shlibs (>= 1.4) | gdal-pgsql-shlibs (>= 1.4), 
 	grass64-mac-shlibs | grass64-x11-shlibs,
 	libspatialite5-shlibs,
-	proj-shlibs (>=4),
-	qwt6-qt4-mac-shlibs,
-	libspatialindex2-shlibs
-<<
-
-Shlibs: <<
+	proj-shlibs (>= 4.4),
+	qwt6-qt4-mac-shlibs (>= 5.0),
+	libspatialindex2-shlibs,
+	libspatialite5-shlibs (>= 3.0)
+  <<
+  Files: <<
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.1.8.0.dylib
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.dylib
+  <<
+  Shlibs: <<
 	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.1.8.0.dylib	1.8.0 %n (>= 1.8.0-1)
 	!%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.dylib
+  <<
+# End of SplitOff
 <<
+
+SplitOff2: <<
+  Package: %N-dev
+  Description: Header files for QGIS
+  Files: <<
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/Current/Headers
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/Current/Headers
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/Current/Headers
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/Current/Headers
+  <<
+# End of SplitOff
+<<
+
 
 DescPackaging: <<
 	Since 1.7.0, 
@@ -244,7 +262,7 @@ the latest stable versions, e.g.:
 	  postgresql90,
 	  grass64,
 	  libgeos3.3.3,
-	  libjpeg8, libogdi3, libpng14
+	  libjpeg8, libogdi3, libpng15
 <<
 DescPort: <<
 	See INSTALL
