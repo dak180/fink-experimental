@@ -1,9 +1,7 @@
 Info2: <<
 
-# $Id$
-
 Package: qgis18-py%type_pkg[python]
-Type: python (3.2 2.7 2.6)
+Type: python (2.7 2.6)
 Architecture: powerpc, i386, x86_64
 Distribution: 10.5, 10.6, 10.7
 
@@ -150,6 +148,10 @@ CompileScript: <<
 	chmod 555 QGIS
 		# 1.8.0
 		install_name_tool -id %p/$QGIS_DIR/MacOS/QGIS.exe QGIS.exe
+		for loadable in qgis_analysis qgis_core qgis_gui
+		do
+			install_name_tool -change @executable_path/../Frameworks/$loadable.framework/$loadable %p/$QGIS_DIR/Frameworks/$loadable.framework/Versions/1.8/$loadable QGIS.exe
+		done
 	popd
 	
 	# 1.6.0 Recompile python scripts to fix path
@@ -167,33 +169,72 @@ CompileScript: <<
 	
 	# 1.8.0 Fix install name for Fink's policy
 	pushd $QGIS_DIR/MacOS/lib
-	for libname in libqgispython.1.8.0
+	for libname in libqgispython.1.8.0.dylib
 	do
-		install_name_tool -id %p/$QGIS_DIR/MacOS/lib/$libname.dylib $libname.dylib
+		install_name_tool -id %p/$QGIS_DIR/MacOS/lib/$libname $libname
+		for loadable in qgis_core
+		do
+			install_name_tool -change @loader_path/../../Frameworks/$loadable.framework/$loadable %p/$QGIS_DIR/Frameworks/$loadable.framework/Versions/1.8/$loadable $libname
+		done
 	done
 	popd
 	
 	pushd $QGIS_DIR/Frameworks
 	for libname in qgis_analysis qgis_core qgis_gui qgis_networkanalysis qgisgrass qgissqlanyconnection
 	do
-		install_name_tool -id %p/$QGIS_DIR/Frameworks/$libname.framework/$libname $libname.framework/$libname 
+		install_name_tool -id %p/$QGIS_DIR/Frameworks/$libname.framework/Versions/1.8/$libname $libname.framework/Versions/1.8/$libname
+		for loadable in qgis_analysis qgis_core qgis_gui
+		do
+			install_name_tool -change @loader_path/../../../$loadable.framework/$loadable %p/$QGIS_DIR/Frameworks/$loadable.framework/Versions/1.8/$loadable $libname.framework/Versions/1.8/$libname
+		done
 	done
 	popd
 	
-	pushd $QGIS_DIR/MacOS/bin/qbrowser.app/Contents/Frameworks/
-	for libname in qgis_analysis qgis_core qgis_gui qgis_networkanalysis qgisgrass qgissqlanyconnection
+	pushd $QGIS_DIR/Resources/python/qgis
+	for libname in analysis.so core.so gui.so
 	do
-		install_name_tool -id %p/$QGIS_DIR/Frameworks/$libname.framework/$libname $libname.framework/$libname 
+		install_name_tool -id %p/$QGIS_DIR/Resources/python/qgis/$libname $libname
+		for loadable in qgis_analysis qgis_core qgis_gui
+		do
+			install_name_tool -change @loader_path/../../../MacOS/../Frameworks/$loadable.framework/$loadable %p/$QGIS_DIR/Frameworks/$loadable.framework/Versions/1.8/$loadable $libname
+		done
 	done
 	popd
+	
+	
+	pushd $QGIS_DIR/MacOS/lib/qgis
+	install_name_tool -change @executable_path/../lib/qgis_core.framework/Versions/1.8/qgis_core %p/$QGIS_DIR/Frameworks/qgis_core.framework/Versions/1.8/qgis_core crssync
+	popd
+	
+	pushd $QGIS_DIR/MacOS/bin/qbrowser.app/Contents/MacOS 
+	install_name_tool -change @executable_path/../Frameworks/qgis_core.framework/qgis_core %p/$QGIS_DIR/Frameworks/qgis_core.framework/Versions/1.8/qgis_core qbrowser
+	install_name_tool -change @executable_path/../Frameworks/qgis_gui.framework/qgis_gui %p/$QGIS_DIR/Frameworks/qgis_core.framework/Versions/1.8/qgis_gui qbrowser
+	popd
+	
+	pushd $QGIS_DIR/MacOS/bin/qgis_help.app/Contents/MacOS 
+	install_name_tool -change @executable_path/../Frameworks/qgis_core.framework/qgis_core %p/$QGIS_DIR/Frameworks/qgis_core.framework/Versions/1.8/qgis_core qgis_help
+	popd
+	
+	pushd $QGIS_DIR/PlugIns/qgis
+	for libname in libcoordinatecaptureplugin.so  libgpsimporterplugin.so        libmssqlprovider.so            libspatialiteprovider.so \
+		libdelimitedtextplugin.so      libgpxprovider.so              libofflineeditingplugin.so     libspatialqueryplugin.so \
+		libdelimitedtextprovider.so    libgrassplugin.so              libogrprovider.so              libspitplugin.so \
+		libdiagramoverlay.so           libgrassprovider.so            liboracleplugin.so             libsqlanywhereplugin.so \
+		libdxf2shpconverterplugin.so   libgrassrasterprovider.so      libosmprovider.so              libsqlanywhereprovider.so \
+		libevis.so                     libheatmapplugin.so            libpostgresprovider.so         libwfsprovider.so \
+		libgdalprovider.so             libinterpolationplugin.so      librasterterrainplugin.so      libwmsprovider.so \
+		libgeorefplugin.so             libmemoryprovider.so           libroadgraphplugin.so          libzonalstatisticsplugin.so
+	do
+		install_name_tool -id %p/$QGIS_DIR/PlugIns/qgis/$libname $libname
+		for loadable in qgis_analysis qgis_core qgis_gui
+		do
+			install_name_tool -change @loader_path/../../MacOS/../Frameworks/$loadable.framework/$loadable %p/$QGIS_DIR/Frameworks/$loadable.framework/Versions/1.8/$loadable $libname
+		done
+	done
+	popd	
+	
+	
 
-	pushd $QGIS_DIR/MacOS/bin/qgis_help.app/Contents/Frameworks/
-	for libname in qgis_analysis qgis_core qgis_gui qgis_networkanalysis qgisgrass qgissqlanyconnection
-	do
-		install_name_tool -id %p/$QGIS_DIR/Frameworks/$libname.framework/$libname $libname.framework/$libname 
-	done
-	popd
-	
 	# 1.8.0 Creates Info.plist
 	sed -e 's|\${QGIS_APP_NAME}|QGIS|g' \
 		-e 's|\${COMPLETE_VERSION}|%v|g' \
@@ -227,12 +268,24 @@ SplitOff: <<
 	libspatialite5-shlibs (>= 3.0)
   <<
   Files: <<
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/1.8/qgis_analysis
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/1.8/qgis_core
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/1.8/qgis_gui
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/1.8/qgis_networkanalysis
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/Versions/1.8/qgisgrass
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/Versions/1.8/qgissqlanyconnection
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.1.8.0.dylib
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.dylib
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/qgis/crssync
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/PlugIns/qgis/*.so
   <<
   Shlibs: <<
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.1.8.0.dylib	1.8.0 %n (>= 1.8.0-1)
-	!%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.dylib
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/1.8/qgis_analysis 1.8.0 %n (>= 1.8.0-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/1.8/qgis_core 1.8.0 %n (>= 1.8.0-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/1.8/qgis_gui 1.8.0 %n (>= 1.8.0-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/1.8/qgis_networkanalysis 1.8.0 %n (>= 1.8.0-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/Versions/1.8/qgisgrass 1.8.0 %n (>= 1.8.0-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/Versions/1.8/qgissqlanyconnection 1.8.0 %n (>= 1.8.0-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.1.8.0.dylib 1.8.0 %n (>= 1.8.0-1)
   <<
 # End of SplitOff
 <<
@@ -241,10 +294,18 @@ SplitOff2: <<
   Package: %N-dev
   Description: Header files for QGIS
   Files: <<
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/Current/Headers
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/Current/Headers
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/Current/Headers
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/Current/Headers
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/Current
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/Current
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/Current
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/Current
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/Versions/Current
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/qgis_analysis
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/qgis_core
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/qgis_gui
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/qgis_networkanalysis
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/qgisgrass
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/qgissqlanyconnection
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.dylib
   <<
 # End of SplitOff
 <<

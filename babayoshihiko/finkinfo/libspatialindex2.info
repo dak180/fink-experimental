@@ -1,7 +1,5 @@
 Info2: <<
 
-# $Id$
-
 Package: libspatialindex2
 Architecture: powerpc, i386, x86_64
 Distribution: 10.5, 10.6, 10.7
