@@ -1,79 +1,41 @@
-diff -r 816c18dbd492 -r 829215e83ff1 ChangeLog
---- a/ChangeLog	Tue Jun 19 15:02:48 2012 +0200
-+++ b/ChangeLog	Sat Jul 21 19:19:11 2012 +0200
-@@ -1,3 +1,8 @@
-+2012-07-21  Torbjorn Granlund  <tege@gmplib.org>
-+
-+	* mpn/powerpc32/vmx/mod_34lsub1.asm: Fix r0 clobbering issue with
-+	"large" code affecting elf+darwin PIC.
-+
- 2012-05-06  Torbjorn Granlund  <tege@gmplib.org>
+--- gmp-5.1.0-RC2/mpn/x86_64/mod_34lsub1.asm.orig	2012-12-10 18:55:50.000000000 -0500
++++ gmp-5.1.0-RC2/mpn/x86_64/mod_34lsub1.asm	2012-12-10 18:56:07.000000000 -0500
+@@ -102,21 +102,23 @@
+ 	sub	$eval(UNROLL*3), %rsi
+ 	jnc	L(top)
  
- 	* Version 5.0.5 released.
-diff -r 816c18dbd492 -r 829215e83ff1 mpn/powerpc32/vmx/mod_34lsub1.asm
---- a/mpn/powerpc32/vmx/mod_34lsub1.asm	Tue Jun 19 15:02:48 2012 +0200
-+++ b/mpn/powerpc32/vmx/mod_34lsub1.asm	Sat Jul 21 19:19:11 2012 +0200
-@@ -1,6 +1,7 @@
- dnl  PowerPC-32 mpn_mod_34lsub1 -- mpn remainder mod 2^24-1.
+-L(end):	LEA(	L(tab), %r8)
+-	movslq	36(%r8,%rsi,4), %r10
+-	lea	(%r10, %r8), %r8
+-	jmp	*%r8
+-
+-	RODATA
+-L(tab):	.long	L(0)-L(tab)
+-	.long	L(1)-L(tab)
+-	.long	L(2)-L(tab)
+-	.long	L(3)-L(tab)
+-	.long	L(4)-L(tab)
+-	.long	L(5)-L(tab)
+-	.long	L(6)-L(tab)
+-	.long	L(7)-L(tab)
+-	.long	L(8)-L(tab)
++L(end):
++C Handle 0-8 remaining limbs.  The switch code here is zany in an attempt to
++C fit the tiny envelope of code that triggers no Apple bugs
++	lea	L(tab)(%rip), %r8
++	jmp	*72(%r8,%rsi,8)
++	
++	JUMPTABSECT
++	ALIGN(8)
++L(tab):	.quad	L(0)
++	.quad	L(1)
++	.quad	L(2)
++	.quad	L(3)
++	.quad	L(4)
++	.quad	L(5)
++	.quad	L(6)
++	.quad	L(7)
++	.quad	L(8)
  
--dnl  Copyright 2002, 2003, 2005, 2006, 2007 Free Software Foundation, Inc.
-+dnl  Copyright 2002, 2003, 2005, 2006, 2007, 2012 Free Software Foundation,
-+dnl  Inc.
- 
- dnl  This file is part of the GNU MP Library.
- 
-@@ -135,15 +136,15 @@
- 
- 	andi.	r7, up, 15
- 	vxor	a0, v0, v0
--	lis	r0, 0xaaaa
-+	lis	r9, 0xaaaa
- 	vxor	a1, v0, v0
--	ori	r0, r0, 0xaaab
-+	ori	r9, r9, 0xaaab
- 	vxor	a2, v0, v0
- 	li	r5, 16
- 	vxor	c0, v0, v0
- 	li	r6, 32
- 	vxor	c1, v0, v0
--	LEAL(	r11, cnsts)
-+	LEAL(	r11, cnsts)		C CAUTION clobbers r0 for elf, darwin
- 	vxor	c2, v0, v0
- 	vxor	z, v0, v0
- 
-@@ -158,7 +159,7 @@
- 	vsldoi	a2, z, a2, 12
- 
- 	addi	n, n, 9
--	mulhwu	r0, n, r0
-+	mulhwu	r0, n, r9
- 	srwi	r0, r0, 3		C r0 = floor(n/12)
- 	mtctr	r0
- 
-@@ -174,7 +175,7 @@
- 	vsldoi	a1, z, a1, 8
- 
- 	addi	n, n, 6
--	mulhwu	r0, n, r0
-+	mulhwu	r0, n, r9
- 	srwi	r0, r0, 3		C r0 = floor(n/12)
- 	mtctr	r0
- 
-@@ -188,7 +189,7 @@
- 	vsldoi	a0, z, a0, 4
- 
- 	addi	n, n, 3
--	mulhwu	r0, n, r0
-+	mulhwu	r0, n, r9
- 	srwi	r0, r0, 3		C r0 = floor(n/12)
- 	mtctr	r0
- 
-@@ -197,7 +198,7 @@
- 	b	L(0)
- 
- L(aligned16):
--	mulhwu	r0, n, r0
-+	mulhwu	r0, n, r9
- 	srwi	r0, r0, 3		C r0 = floor(n/12)
- 	mtctr	r0
- 
+ 	TEXT
+ L(6):	add	(ap), %rax
