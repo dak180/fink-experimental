@@ -293,11 +293,11 @@ InfoTest: <<
 	popd
 	cd ../build/last
 #	echo "******** Running included LLVM and clang tests ... ********"
-#	{ make -k TESTARGS=-v check-all || : ;} |& tee llvm-clang-%v-check.log
+#	{ make -k TESTARGS=-v check-all 2>&1 || : ;} | tee llvm-clang-%v-check.log
 	echo "******** Running included LLVM tests ... ********"
-	{ make -k TESTARGS=-v check || : ;} |& tee llvm-%v-check.log
+	{ make -k TESTARGS=-v check 2>&1 || : ;} | tee llvm-%v-check.log
 	echo "******** Running included clang tests ... ********"
-	{ make -k TESTARGS=-v check-clang || : ;} |& tee clang-%v-check.log
+	{ make -k TESTARGS=-v check-clang 2>&1 || : ;} | tee clang-%v-check.log
 	<<
 	TestSuiteSize: medium
 <<
