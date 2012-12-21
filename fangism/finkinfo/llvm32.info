@@ -362,10 +362,9 @@ InstallScript: <<
 <<
 DocFiles: *.TXT README.txt
 Shlibs: <<
-	 	%p/opt/llvm-%v/lib/liblibclang.3.2.dylib 1.0.0 %n (>= 3.2-0)
-		!%p/opt/llvm-%v/lib/liblibclang.dylib
+	 	%p/opt/llvm-%v/lib/libclang.3.2.dylib 1.0.0 %n (>= 3.2-0)
+		!%p/opt/llvm-%v/lib/libclang.dylib
 		!%p/opt/llvm-%v/lib/libLTO.dylib
-		%p/opt/llvm-%v/lib/profile_rt.dylib 0.0.0  %n (>= 3.2-0)
 		%p/opt/llvm-%v/lib/BugpointPasses.dylib 0.0.0 %n (>= 3.2-0)
 		%p/opt/llvm-%v/lib/LLVMHello.dylib 0.0.0 %n (>= 3.2-0)
 		!%p/opt/llvm-%v/lib/libLLVMAnalysis.dylib
@@ -412,6 +411,7 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/libclangAnalysis.dylib
 		!%p/opt/llvm-%v/lib/libclangARCMigrate.dylib
 		!%p/opt/llvm-%v/lib/libclangAST.dylib
+		!%p/opt/llvm-%v/lib/libclangASTMatchers.dylib
 		!%p/opt/llvm-%v/lib/libclangBasic.dylib
 		!%p/opt/llvm-%v/lib/libclangCodeGen.dylib
 		!%p/opt/llvm-%v/lib/libclangDriver.dylib
@@ -420,7 +420,8 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/libclangFrontendTool.dylib
 		!%p/opt/llvm-%v/lib/libclangLex.dylib
 		!%p/opt/llvm-%v/lib/libclangParse.dylib
-		!%p/opt/llvm-%v/lib/libclangRewrite.dylib
+		!%p/opt/llvm-%v/lib/libclangRewriteCore.dylib
+		!%p/opt/llvm-%v/lib/libclangRewriteFrontend.dylib
 		!%p/opt/llvm-%v/lib/libclangSema.dylib
 		!%p/opt/llvm-%v/lib/libclangSerialization.dylib
 		!%p/opt/llvm-%v/lib/libclangStaticAnalyzerCheckers.dylib
