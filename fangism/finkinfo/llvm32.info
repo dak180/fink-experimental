@@ -194,6 +194,9 @@ CompileScript: <<
 	then exit
 	fi
 
+#	If you do not wish to bootstrap, just uncomment the next line:
+#	exit
+
 	echo "######## START of BOOTSTRAP STAGE 2: building llvm/clang with stage 1 clang"
 	export CCACHE_COMPILERCHECK=content
 	export CC=cc-st1-clang
