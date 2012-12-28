@@ -1,6 +1,6 @@
 Package: llvm32
 Version: 3.2
-Revision: 1
+Revision: 2
 Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
@@ -26,7 +26,7 @@ BuildDependsOnly: false
 UseMaxBuildJobs: true
 
 PatchFile: %n.patch
-PatchFile-MD5: 3eafb5af0363cc2b3d75922608a9f175
+PatchFile-MD5: 003db34e0f74f624467981ca92418f10
 PatchScript: <<
 	#!/bin/sh -ev
 	# relocated a few auxiliary directories where they are expected

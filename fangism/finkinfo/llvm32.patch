@@ -52,6 +52,48 @@ Index: lib/MC/MCDisassembler/CMakeLists.txt
 +  endif()
 +endforeach(t)
 +
+Index: include/llvm/Support/Compiler.h
+===================================================================
+--- include/llvm/Support/Compiler.h     (revision 170308)
++++ include/llvm/Support/Compiler.h     (working copy)
+@@ -137,7 +137,10 @@
+ #define LLVM_READNONE
+ #endif
+
+-#ifdef __GNUC__  // aka 'PURE' but following LLVM Conventions.
++// this attribute may be buggy for older gcc-4.0.1 (apple)
++// removing this fixes bug #14244
++#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __CNUC_MINOR__ >= 2))
++// aka 'PURE' but following LLVM Conventions.
+ #define LLVM_READONLY __attribute__((__pure__))
+ #else
+ #define LLVM_READONLY
+Index: include/llvm/ADT/DenseMap.h
+===================================================================
+--- include/llvm/ADT/DenseMap.h (revision 170308)
++++ include/llvm/ADT/DenseMap.h (working copy)
+@@ -531,7 +531,7 @@
+     init(NumInitBuckets);
+   }
+
+-  DenseMap(const DenseMap &other) {
++  DenseMap(const DenseMap &other) : BaseT() {
+     init(0);
+     copyFrom(other);
+   }
+Index: lib/Support/Unix/Memory.inc
+===================================================================
+--- lib/Support/Unix/Memory.inc (revision 170308)
++++ lib/Support/Unix/Memory.inc (working copy)
+@@ -51,7 +51,7 @@
+         llvm::sys::Memory::MF_EXEC:
+     return PROT_READ | PROT_WRITE | PROT_EXEC;
+   case llvm::sys::Memory::MF_EXEC:
+-    return PROT_EXEC;
++    return PROT_EXEC | PROT_READ;      // patch from Roman Divacky, bug 14278
+   default:
+     llvm_unreachable("Illegal memory protection flag specified!");
+   }
 Index: lib/Support/Unix/Signals.inc
 ===================================================================
 --- lib/Support/Unix/Signals.inc	(revision 156555)
@@ -64,6 +106,39 @@ Index: lib/Support/Unix/Signals.inc
 +#if defined(__APPLE__) && defined(MACH_EXCEPTION_CODES) && defined(EXC_MASK_CRASH)
    // Environment variable to disable any kind of crash dialog.
    if (getenv("LLVM_DISABLE_CRASH_REPORT")) 
+Index: lib/Target/TargetInstrInfo.cpp
+===================================================================
+--- lib/Target/TargetInstrInfo.cpp      (revision 167609)
++++ lib/Target/TargetInstrInfo.cpp      (working copy)
+@@ -19,6 +19,28 @@
+ #include <cctype>
+ using namespace llvm;
+ 
++// HACK: fang copy-pasted this here from "lib/CodeGen/MachineInstr.cpp"
++// to avoid circular dependency.  Must be inline to avoid multiple defs.
++// to automate patch: sed -n '/MachineInstr::hasPropertyInBundle/,/^}/p' lib/CodeGen/MachineInstr.cpp
++inline
++bool MachineInstr::hasPropertyInBundle(unsigned Mask, QueryType Type) const {
++  const MachineBasicBlock *MBB = getParent();
++  MachineBasicBlock::const_instr_iterator MII = *this; ++MII;
++  while (MII != MBB->end() && MII->isInsideBundle()) {
++    if (MII->getDesc().getFlags() & Mask) {
++      if (Type == AnyInBundle)
++        return true;
++    } else {
++      if (Type == AllInBundle)
++        return false;
++    }
++    ++MII;
++  }
++
++  return Type == AllInBundle;
++}
++// END HACK: fang
++
+ //===----------------------------------------------------------------------===//
+ //  TargetInstrInfo
+ //
 Index: tools/clang/lib/AST/ExprConstant.cpp
 ===================================================================
 --- tools/clang/lib/AST/ExprConstant.cpp	(revision 156555)
