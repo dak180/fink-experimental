@@ -171,32 +171,40 @@ Index: tools/clang/include/clang/Serialization/ASTReader.h
 ===================================================================
 --- tools/clang/include/clang/Serialization/ASTReader.h	(revision 156555)
 +++ tools/clang/include/clang/Serialization/ASTReader.h	(working copy)
-@@ -230,10 +230,12 @@
+@@ -276,10 +276,16 @@
    FileManager &FileMgr;
    DiagnosticsEngine &Diags;
  
++#if defined(__GNUC__) && (__GNUC__ == 4 && __GNUC_MINOR__ < 2)
 +public:	// workaround to grant access to classes nested within ASTDeclReader
++#endif
    /// \brief The semantic analysis object that will be processing the
    /// AST files and the translation unit that uses it.
    Sema *SemaObj;
  
++#if defined(__GNUC__) && (__GNUC__ == 4 && __GNUC_MINOR__ < 2)
 +private:
++#endif
    /// \brief The preprocessor that will be loading the source file.
    Preprocessor &PP;
  
-@@ -689,6 +691,7 @@
+@@ -792,6 +798,9 @@
    /// since the last time the declaration chains were linked.
    llvm::SmallPtrSet<Decl *, 16> RedeclsDeserialized;
    
++#if defined(__GNUC__) && (__GNUC__ == 4 && __GNUC_MINOR__ < 2)
 +public:	// workaround to grant access to classes nested within ASTDeclReader
++#endif
    /// \brief The list of redeclaration chains that still need to be 
    /// reconstructed.
    ///
-@@ -700,6 +703,7 @@
+@@ -803,6 +812,9 @@
    /// \brief Keeps track of the elements added to PendingDeclChains.
    llvm::SmallSet<serialization::DeclID, 16> PendingDeclChainsKnown;
  
++#if defined(__GNUC__) && (__GNUC__ == 4 && __GNUC_MINOR__ < 2)
 +private:
++#endif
    /// \brief The set of Objective-C categories that have been deserialized
    /// since the last time the declaration chains were linked.
    llvm::SmallPtrSet<ObjCCategoryDecl *, 16> CategoriesDeserialized;
@@ -237,3 +245,41 @@ Index: tools/clang/include/clang/Serialization/ASTReader.h
    clangFrontend
 +  clangRewriteCore
    )
+Index: tools/clang/lib/Driver/Driver.cpp
+===================================================================
+--- tools/clang/lib/Driver/Driver.cpp       (revision 170308)
++++ tools/clang/lib/Driver/Driver.cpp       (working copy)
+@@ -1676,6 +1686,14 @@
+     case llvm::Triple::IOS:
+       if (Target.getArch() == llvm::Triple::x86 ||
+           Target.getArch() == llvm::Triple::x86_64 ||
++#if 1
++       // uncomment this to use DarwinClang driver for ppc family
++          Target.getArch() == llvm::Triple::ppc ||
++          Target.getArch() == llvm::Triple::ppc64 ||
++       // see bugs:
++       // http://llvm.org/bugs/show_bug.cgi?id=14387
++       // http://llvm.org/bugs/show_bug.cgi?id=14275
++#endif
+           Target.getArch() == llvm::Triple::arm ||
+           Target.getArch() == llvm::Triple::thumb)
+         TC = new toolchains::DarwinClang(*this, Target);
+Index: tools/clang/lib/Driver/Tools.cpp
+===================================================================
+--- tools/clang/lib/Driver/Tools.cpp        (revision 170308)
++++ tools/clang/lib/Driver/Tools.cpp        (working copy)
+@@ -3873,6 +3877,14 @@
+
+   // Derived from darwin_arch spec.
+   CmdArgs.push_back("-arch");
++#if 1
++// suggested patch from http://llvm.org/bugs/show_bug.cgi?id=3830
++  if (ArchName == "powerpc")
++    CmdArgs.push_back("ppc");
++  else if (ArchName == "powerpc64")
++    CmdArgs.push_back("ppc64");
++  else
++#endif
+   CmdArgs.push_back(Args.MakeArgString(ArchName));
+
+   // FIXME: Is this needed anymore?
