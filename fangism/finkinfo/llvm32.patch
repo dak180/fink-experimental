@@ -245,6 +245,41 @@ Index: tools/clang/include/clang/Serialization/ASTReader.h
    clangFrontend
 +  clangRewriteCore
    )
+--- tools/clang/lib/CodeGen/CGExpr.cpp	2012/11/13 01:03:15	167801
++++ tools/clang/lib/CodeGen/CGExpr.cpp	2012/11/13 02:05:15	167802
+@@ -935,8 +935,8 @@
+   llvm::APInt Min;
+   llvm::APInt End;
+   if (IsBool) {
+-    Min = llvm::APInt(8, 0);
+-    End = llvm::APInt(8, 2);
++    Min = llvm::APInt(getContext().getTypeSize(Ty), 0);
++    End = llvm::APInt(getContext().getTypeSize(Ty), 2);
+   } else {
+     const EnumDecl *ED = ET->getDecl();
+     llvm::Type *LTy = ConvertTypeForMem(ED->getIntegerType());
+@@ -1031,8 +1031,9 @@
+     // This should really always be an i1, but sometimes it's already
+     // an i8, and it's awkward to track those cases down.
+     if (Value->getType()->isIntegerTy(1))
+-      return Builder.CreateZExt(Value, Builder.getInt8Ty(), "frombool");
+-    assert(Value->getType()->isIntegerTy(8) && "value rep of bool not i1/i8");
++      return Builder.CreateZExt(Value, ConvertTypeForMem(Ty), "frombool");
++    assert(Value->getType()->isIntegerTy(getContext().getTypeSize(Ty)) &&
++           "wrong value rep of bool");
+   }
+ 
+   return Value;
+@@ -1041,7 +1042,8 @@
+ llvm::Value *CodeGenFunction::EmitFromMemory(llvm::Value *Value, QualType Ty) {
+   // Bool has a different representation in memory than in registers.
+   if (hasBooleanRepresentation(Ty)) {
+-    assert(Value->getType()->isIntegerTy(8) && "memory rep of bool not i8");
++    assert(Value->getType()->isIntegerTy(getContext().getTypeSize(Ty)) &&
++           "wrong value rep of bool");
+     return Builder.CreateTrunc(Value, Builder.getInt1Ty(), "tobool");
+   }
+ 
 Index: tools/clang/lib/Driver/Driver.cpp
 ===================================================================
 --- tools/clang/lib/Driver/Driver.cpp       (revision 170308)

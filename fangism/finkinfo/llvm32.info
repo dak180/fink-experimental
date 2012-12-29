@@ -26,7 +26,7 @@ BuildDependsOnly: false
 UseMaxBuildJobs: true
 
 PatchFile: %n.patch
-PatchFile-MD5: 289281606e65369bf88f09c7572f10b1
+PatchFile-MD5: 289674ee86606009ab3a6edd95d37b42
 PatchScript: <<
 	#!/bin/sh -ev
 	# relocated a few auxiliary directories where they are expected
@@ -485,4 +485,7 @@ PatchFile contains:
 *	workarounds for C++ accessibility bugs in g++-4.0.x
 *	added inline virtual dtor to clang header to fix stage3 undefined ref.
 *	backport of http://llvm.org/viewvc/llvm-project?view=rev&revision=168172
+*	backport of http://llvm.org/viewvc/llvm-project?view=rev&revision=167802
+		to fix bug 11777,14283
+*	workaround for bug 14244 (LLVM_READONLY, attribute pure)
 <<
