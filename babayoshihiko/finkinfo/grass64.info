@@ -3,7 +3,7 @@ Package: grass64%type_pkg[gui]
 Type: gui (-mac -x11)
 Distribution: (%type_raw[gui] = -mac) 10.7, (%type_raw[gui] = -mac) 10.6
 Version: 6.4.2
-Revision: 1
+Revision: 2
 Conflicts: grass64, grass64-mac, grass64-x11
 Replaces: grass64, grass64-mac, grass64-x11
 
@@ -52,7 +52,7 @@ Source-MD5: d3398d6b1e3a2ef19cfb6e39a5ae9919
 
 # Patch Phase.
 PatchFile: grass64.patch
-PatchFile-MD5: 35516257ae749eb87aff729d019bb71a
+PatchFile-MD5: a6699ed4c208d0cb6737d157d2908b72
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 
 # Compile Phase.
@@ -64,11 +64,7 @@ ConfigureParams: --with-curses --with-freetype --with-freetype-includes=%p/lib/f
 
 CompileScript: <<
 #!/bin/bash -xe
-  if [[ $( sw_vers -productVersion ) > 10.7 ]]; then
-    export CC=gcc-fsf-4.6
-    export CXX=g++-fsf-4.6
-  fi
-  
+
   PGSQLPARAM=" --with-postgres --with-postgres-includes=%p/opt/postgresql-9.0/include --with-postgres-libs=%p/opt/postgresql-9.0/lib "
   
   if [ "%type_raw[gui]" == "-mac" ]; then

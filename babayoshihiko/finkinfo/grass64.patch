@@ -1,456 +1,8 @@
-diff -ruN grass-6.4.2-old/Makefile.orig grass-6.4.2/Makefile.orig
---- grass-6.4.2-old/Makefile.orig	1970-01-01 09:00:00.000000000 +0900
-+++ grass-6.4.2/Makefile.orig	2012-05-08 19:28:42.000000000 +0900
-@@ -0,0 +1,391 @@
-+#############################################################################
-+#
-+# MODULE:   	GRASS Compilation
-+# AUTHOR(S):	Original author unknown - probably CERL
-+#   	    	Justin Hickey - Thailand - jhickey AT hpcc.nectec.or.th
-+#		Markus Neteler - Germany - neteler AT itc.it
-+#		Andreas Lange - Germany - Andreas.Lange AT Rhein-Main.de
-+#		Radim Blazek - Italy - blazek AT itc.it
-+# PURPOSE:  	It provides the commands necessary to compile, install,
-+#		clean, and uninstall GRASS
-+#		See INSTALL file for explanations.
-+# COPYRIGHT:    (C) 2002,2004 by the GRASS Development Team
-+#
-+#               This program is free software under the GNU General Public
-+#   	    	License (>=v2). Read the file COPYING that comes with GRASS
-+#   	    	for details.
-+#
-+#############################################################################
-+
-+MODULE_TOPDIR = .
-+
-+include $(MODULE_TOPDIR)/include/Make/Platform.make
-+include $(MODULE_TOPDIR)/include/Make/Grass.make
-+
-+# Install directories
-+exec_prefix=            ${prefix}
-+BINDIR=			${UNIX_BIN}
-+
-+# Shell commands
-+MAKE_DIR_CMD=		mkdir -p -m 755
-+
-+SUBDIRS = \
-+	lib \
-+	db \
-+	display \
-+	doc \
-+	general \
-+	gui \
-+	imagery \
-+	misc \
-+	ps \
-+	raster \
-+	raster3d \
-+	scripts \
-+	sites \
-+	tools \
-+	vector \
-+	visualization \
-+	man \
-+	macosx
-+
-+ifeq ($(strip $(MINGW)),)
-+	SUBDIRS += gem
-+endif
-+
-+ifneq ($(strip $(HAVE_NLS)),)
-+	LOCALE=1
-+else
-+	LOCALE=0
-+endif
-+
-+FILES = AUTHORS COPYING CHANGES REQUIREMENTS.html GPL.TXT contributors.csv  contributors_extra.csv  translators.csv
-+
-+BIN_DIST_FILES = $(FILES) \
-+	grass${GRASS_VERSION_MAJOR}${GRASS_VERSION_MINOR}.tmp \
-+	bin \
-+	bwidget \
-+	docs \
-+	driver \
-+	etc \
-+	fonts \
-+	include \
-+	lib \
-+	man \
-+	scripts \
-+	tools
-+
-+DOXNAME=grass
-+
-+include $(MODULE_TOPDIR)/include/Make/Docs.make
-+include $(MODULE_TOPDIR)/include/Make/Doxygen.make
-+
-+default: builddemolocation
-+	@echo "GRASS GIS compilation log"     > $(ERRORLOG)
-+	@echo "-------------------------"    >> $(ERRORLOG)
-+	@echo "Started compilation: `date`"  >> $(ERRORLOG)
-+	@echo "--"                           >> $(ERRORLOG)
-+	@echo "Errors in:"                   >> $(ERRORLOG)
-+	chmod 755 install-sh
-+	@list='$(SUBDIRS)'; \
-+	for subdir in $$list; do \
-+		$(MAKE) -C $$subdir; \
-+	done
-+	$(MAKE) manifests 
-+	if [ ${LOCALE} -eq 1 ] ; then $(MAKE) -C locale; fi
-+	-cp -f $(FILES) ${ARCH_DISTDIR}/
-+	-cp -f ${ARCH_BINDIR}/grass${GRASS_VERSION_MAJOR}${GRASS_VERSION_MINOR} ${ARCH_DISTDIR}/grass${GRASS_VERSION_MAJOR}${GRASS_VERSION_MINOR}.tmp
-+	@test -d ${ARCH_DISTDIR}/tools/ || mkdir -p ${ARCH_DISTDIR}/tools/
-+	-${INSTALL} tools/mkhtml.sh ${ARCH_DISTDIR}/tools/ 2>/dev/null
-+	@test -d ${ARCH_DISTDIR}/tools/g.html2man/ || mkdir -p ${ARCH_DISTDIR}/tools/g.html2man/
-+	-${INSTALL} tools/g.html2man/g.html2man ${ARCH_DISTDIR}/tools/g.html2man/ 2>/dev/null
-+	@(cd tools ; sh -c "./build_html_index.sh")
-+	@if [ `cat "$(ERRORLOG)" | wc -l` -gt 5 ] ; then \
-+		echo "--"     >> $(ERRORLOG) ; \
-+		echo "In case of errors please change into the directory with error and run 'make'." >> $(ERRORLOG) ; \
-+		echo "If you get multiple errors, you need to deal with them in the order they"      >> $(ERRORLOG) ; \
-+		echo "appear in the error log. If you get an error building a library, you will"     >> $(ERRORLOG) ; \
-+		echo "also get errors from anything which uses the library."  >> $(ERRORLOG) ; \
-+	else \
-+		echo "No errors detected." >> $(ERRORLOG) ; \
-+	fi
-+	@echo "--"  >> $(ERRORLOG)
-+	@echo "Finished compilation: `date`" >> $(ERRORLOG)
-+	@cat $(ERRORLOG)
-+	@if [ `cat "$(ERRORLOG)" | wc -l` -gt 8 ] ; then false ; else true ; fi
-+
-+manifests:
-+ifneq ($(strip $(MINGW)),)
-+	find $(ARCH_DISTDIR) -type f -name '*.exe' | \
-+	while read file ; do \
-+	    cmd=`basename "$$file" .exe` ; \
-+	    sed "s/@CMD@/$$cmd/" mswindows/generic.manifest > "$$file".manifest ; \
-+	done
-+endif
-+
-+LIBDIRS = \
-+	lib/external/shapelib \
-+	lib/datetime \
-+	lib/gis \
-+	lib/linkm \
-+	lib/db \
-+	lib/form \
-+	lib/vector \
-+	db/drivers
-+
-+# Compile libraries only
-+libs:
-+	make -C lib/ headers
-+	@list='$(LIBDIRS)'; \
-+	for subdir in $$list; do \
-+		$(MAKE) -C $$subdir; \
-+	done
-+	-cp -f $(FILES) ${ARCH_DISTDIR}/
-+	-cp -fr --parents include ${ARCH_DISTDIR}/
-+
-+#we leave this target for a while so that people can easily upgrade (11/2004):
-+mix:
-+	@echo "NOTE: 'make mix' is no longer needed (changed 9 Nov 2004)"
-+
-+mixclean:
-+	list='$(SUBDIRS)'; \
-+	find include -type l -exec rm {} \; 2>/dev/null; \
-+	for subdir in $$list; do \
-+		find $$subdir -type l -exec rm {} \; 2>/dev/null; \
-+	done
-+	-rm -f MIX 
-+
-+# Any target that has a dependency on this target will be forced to be made.
-+# If we switch to GNU Make then this feature can be replaced with .PHONY
-+FORCE:
-+
-+cleandistdirs: 
-+	-rm -rf ${ARCH_DISTDIR}/bin/         2>/dev/null
-+	-rm -rf ${ARCH_DISTDIR}/bwidget/     2>/dev/null
-+	-rm -rf ${ARCH_DISTDIR}/docs/        2>/dev/null
-+	-rm -rf ${ARCH_DISTDIR}/driver/      2>/dev/null
-+	-rm -rf ${ARCH_DISTDIR}/etc/         2>/dev/null
-+	-rm -rf ${ARCH_DISTDIR}/fonts/       2>/dev/null
-+	-rm -rf ${ARCH_DISTDIR}/include/     2>/dev/null
-+	-rm -rf ${ARCH_DISTDIR}/lib/         2>/dev/null
-+	-rm -rf ${ARCH_DISTDIR}/locale/      2>/dev/null
-+	-rm -rf ${ARCH_DISTDIR}/man/         2>/dev/null
-+	-rm -rf ${ARCH_DISTDIR}/scripts/     2>/dev/null
-+	-rm -rf ${ARCH_DISTDIR}/demolocation/ 2>/dev/null
-+	-rm -rf ${ARCH_DISTDIR}/tcltkgrass/  2>/dev/null
-+	-rm -rf ${ARCH_DISTDIR}/tools/       2>/dev/null
-+	-rm -f ${ARCH_DISTDIR}/AUTHORS ${ARCH_DISTDIR}/CHANGES ${ARCH_DISTDIR}/REQUIREMENTS.html ${ARCH_DISTDIR}/COPYING ${ARCH_DISTDIR}/GPL.TXT \
-+		${ARCH_DISTDIR}/contributors.csv ${ARCH_DISTDIR}/contributors_extra.csv  ${ARCH_DISTDIR}/translators.csv \
-+		${ARCH_DISTDIR}/grass${GRASS_VERSION_MAJOR}${GRASS_VERSION_MINOR}.tmp 2>/dev/null
-+	-rmdir ${ARCH_DISTDIR}
-+	-rm -f ${ARCH_BINDIR}/grass${GRASS_VERSION_MAJOR}${GRASS_VERSION_MINOR} 2>/dev/null
-+	-rm -f ${ARCH_BINDIR}/grass${GRASS_VERSION_MAJOR}${GRASS_VERSION_MINOR}.bat 2>/dev/null
-+	-rmdir ${ARCH_BINDIR}
-+
-+# Clean out the strings extracted from scripts for translation
-+cleanscriptstrings:
-+	rm -f locale/scriptstrings/*.c 2>/dev/null
-+
-+clean: cleandistdirs cleanscriptstrings cleandocs
-+	@list='$(SUBDIRS)'; \
-+	for subdir in $$list; do \
-+		$(MAKE) -C $$subdir clean; \
-+	done
-+
-+libsclean: cleandistdirs
-+	@list='$(LIBDIRS)'; \
-+	for subdir in $$list; do \
-+		$(MAKE) -C $$subdir clean; \
-+	done
-+
-+distclean: clean
-+	-rm -f config.cache config.log config.status config.status.${ARCH} 2>/dev/null
-+	-rm -f ChangeLog ChangeLog.bak $(ERRORLOG) grass.pc
-+	-rm -f include/config.h include/version.h include/winname.h include/Make/Grass.make 2>/dev/null
-+	-rm -f include/Make/Platform.make include/Make/Doxyfile_arch_html include/Make/Doxyfile_arch_latex 2>/dev/null
-+
-+strip: FORCE
-+	@ if [ ! -f ${ARCH_BINDIR}/grass${GRASS_VERSION_MAJOR}${GRASS_VERSION_MINOR} ] ; then \
-+		echo "ERROR: GRASS has not been compiled. Try \"make\" first."; \
-+		echo "  Strip aborted, exiting Make."; \
-+		exit; \
-+	fi; \
-+	cd ${ARCH_DISTDIR} ; find . -type f -perm +111 -exec strip {} \;
-+
-+install: FORCE
-+	@ # The following action MUST be a single action. That is, all lines
-+	@ # except the last line must have a backslash (\) at the end to
-+	@ # continue the statement. The reason for this is that Make does not
-+	@ # have an exit command thus, exit terminates the shell. However, 
-+	@ # Make creates a new shell for each action listed for a target.
-+	@ # Therefore, the only way exit will quit Make is if there is only
-+	@ # a single action for the target.
-+	@ # Check if grass has been compiled, if INST_DIR is writable, and if
-+	@ # grass is part of INST_DIR
-+	echo ${ARCH_BINDIR}/grass${GRASS_VERSION_MAJOR}${GRASS_VERSION_MINOR}
-+	@ if [ ! -f ${ARCH_BINDIR}/grass${GRASS_VERSION_MAJOR}${GRASS_VERSION_MINOR} ] ; then \
-+		echo "ERROR: GRASS has not been compiled. Try \"make\" first."; \
-+		echo "  Installation aborted, exiting Make."; \
-+		exit; \
-+	fi; \
-+	if [ "${MACOSX_APP}" = "1" ] ; then \
-+		${MAKE} install-macosx; \
-+		exit; \
-+	fi; \
-+	INST_PATH=`dirname ${INST_DIR}`; \
-+	while [ ! -d $$INST_PATH ]; do \
-+		INST_PATH=`dirname $$INST_PATH`; \
-+	done; \
-+	if [ ! -d "${INST_DIR}" -a ! -w "$$INST_PATH" ] ; then \
-+		echo "ERROR: Directory $$INST_PATH is a parent directory of your"; \
-+		echo "  install directory ${INST_DIR} and is not writable."; \
-+		echo "  Perhaps you need root access."; \
-+		echo "  Installation aborted, exiting Make."; \
-+		exit; \
-+	fi; \
-+	if [ -d ${INST_DIR} -a ! -w "${INST_DIR}" ] ; then \
-+		echo "ERROR: Your install directory ${INST_DIR} is not writable."; \
-+		echo "  Perhaps you need root access."; \
-+		echo "  Installation aborted, exiting Make."; \
-+		exit; \
-+	fi; \
-+	result=`echo "${INST_DIR}" | awk '{ if ($$1 ~ /grass/) print $$1 }'`; \
-+	if [ "$$result" = "" ] ; then \
-+		echo "WARNING: Your install directory ${INST_DIR}"; \
-+		echo "  does not contain the word 'grass'."; \
-+		echo "  It is highly recommended that the word 'grass' be part"; \
-+		echo "  of your install directory to avoid conflicts."; \
-+		echo "  Do you want to continue? [y/n]"; \
-+		read ans; \
-+		ans=`echo "$$ans" | tr A-Z a-z`; \
-+		if [ "$$ans" != "y" ] ; then \
-+			echo "Installation aborted, exiting Make."; \
-+			exit; \
-+		fi; \
-+	fi; \
-+	${MAKE} real-install
-+
-+real-install: FORCE
-+	test -d ${INST_DIR} || ${MAKE_DIR_CMD} ${INST_DIR}
-+	@##### test -d ${INST_DIR}/dev || ${MAKE_DIR_CMD} ${INST_DIR}/dev
-+	test -d ${BINDIR} || ${MAKE_DIR_CMD} ${BINDIR}
-+	-sed -e "s#GISBASE=.*#GISBASE=${INST_DIR}#" ${ARCH_BINDIR}/grass${GRASS_VERSION_MAJOR}${GRASS_VERSION_MINOR} > ${BINDIR}/grass${GRASS_VERSION_MAJOR}${GRASS_VERSION_MINOR}
-+	-chmod a+x ${BINDIR}/grass${GRASS_VERSION_MAJOR}${GRASS_VERSION_MINOR}
-+	-cd ${GISBASE} ; tar cBf - $(FILES) | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - bin | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - bwidget | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - docs | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - driver | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - etc | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - fonts | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
-+ifeq ($(strip $(MINGW)),)
-+	-cd ${GISBASE} ; tar cBf - man | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
-+endif
-+	-cd ${GISBASE} ; tar cBf - scripts | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - tools | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
-+	if [ ${LOCALE} -eq 1 ] ; then cd ${GISBASE} ; tar cBf - locale | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null ; fi
-+	@ # The man, include, and lib could go to ${PREFIX}/ BUT if this is
-+	@ # done, then the corresponding uninstall instructions must delete
-+	@ # the grass files BY FILENAME NOT DIRECTORY!! Otherwise there is a
-+	@ # high risk of deleteing system files since PREFIX is defined by
-+	@ # default to be /usr/local
-+	@##### -cd ${GISBASE} ; tar cBf - man | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
-+	-cd ${GISBASE} ; tar cBf - include | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
-+	-sed -e "s#^\(GRASS_HOME.[^=]*\).*#\1= ${INST_DIR}#" -e "s#^\(RUN_GISBASE.[^=]*\).*#\1= ${INST_DIR}#" ${GISBASE}/include/Make/Platform.make > ${INST_DIR}/include/Make/Platform.make
-+	-sed -e "s#^\(ARCH_DISTDIR.[^=]*\).*#\1= ${INST_DIR}#" -e "s#^\(ARCH_BINDIR.[^=]*\).*#\1= ${UNIX_BIN}#" ${GISBASE}/include/Make/Grass.make > ${INST_DIR}/include/Make/Grass.make
-+	-sed -e 's#/tools/g.html2man/g.html2man#/tools/g.html2man#' ${GISBASE}/include/Make/Man.make > ${INST_DIR}/include/Make/Man.make
-+	-cd ${GISBASE} ; tar cBf - lib | (cd ${INST_DIR} ; tar xBf - ) 2>/dev/null
-+	-sed 's#'${GISBASE}'#'${INST_DIR}'#g' ${GISBASE}/etc/monitorcap > ${INST_DIR}/etc/monitorcap
-+	-sed 's#'${GISBASE}'#'${INST_DIR}'#g' ${GISBASE}/etc/fontcap > ${INST_DIR}/etc/fontcap
-+	@##### -chmod -R 1777 ${INST_DIR}/locks 2>/dev/null
-+	-chmod -R a+rX ${INST_DIR} 2>/dev/null
-+ifeq ($(strip $(MINGW)),)
-+	@#GEM installation
-+	-tar cBf - gem/skeleton | (cd ${INST_DIR}/etc ; tar xBf - ) 2>/dev/null
-+	-${INSTALL} gem/gem$(GRASS_VERSION_MAJOR)$(GRASS_VERSION_MINOR) ${BINDIR} 2>/dev/null
-+endif
-+	@# enable OSX Help Viewer
-+	@if [ "`cat include/Make/Platform.make | grep -i '^ARCH.*darwin'`" ] ; then /bin/ln -sfh "${INST_DIR}/docs/html" /Library/Documentation/Help/GRASS-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR} ; fi
-+
-+
-+install-strip: FORCE
-+	${MAKE} strip
-+	${MAKE} install
-+
-+install-macosx: FORCE
-+	${MAKE} -C macosx install-macosx
-+
-+bindist:  
-+	if [ "${MACOSX_APP}" = "1" ] ; then \
-+		${MAKE} bindist-macosx; \
-+		exit; \
-+	fi; \
-+	${MAKE} real-bindist
-+
-+real-bindist:
-+	mkdir -p ${ARCH_DISTDIR}/etc/nad/src ; \
-+	    cp -f ${MODULE_TOPDIR}/lib/proj/*.lla ${ARCH_DISTDIR}/etc/nad/src ; true
-+	( date=`date '+%d_%m_%Y'`; cd ${ARCH_DISTDIR}; tar cBf - ${BIN_DIST_FILES} | gzip -fc > ../grass-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}-${ARCH}-$$date.tar.gz)
-+	-date=`date '+%d_%m_%Y'`; name=grass-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}-${ARCH}-$$date.tar.gz; \
-+            size=`ls -l $$name | awk '{print $$5}'`; \
-+	    sed -e "s/BIN_DIST_VERSION/${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}-${ARCH}-$$date/" \
-+	    -e "s/GRASSPRG_NAME/grass${GRASS_VERSION_MAJOR}${GRASS_VERSION_MINOR}/" \
-+	    -e "s/SIZE_TAR_FILE/$$size/" -e "s#BIN_DIST_DIR#'${INST_DIR}'#" \
-+	    -e "s/ARCHITECTURE/${ARCH}/" \
-+	    -e "s/LD_LIBRARY_PATH_VAR/${LD_LIBRARY_PATH_VAR}/" \
-+	    -e "s/TEST_STR=/TEST_STR=executable/" \
-+	    -e "s#IMPORTANT.*#Generated from the binaryInstall.src file using the command make bindist#" \
-+	    -e "s/# executable shell.*//" -e "s/# make bindist.*//" \
-+	    binaryInstall.src > grass-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}-${ARCH}-$$date-install.sh ; \
-+	    chmod a+x grass-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}-${ARCH}-$$date-install.sh 2>/dev/null
-+
-+bindist-macosx:
-+	${MAKE} -C macosx bindist-macosx
-+
-+# make a source package for distribution:
-+srcdist: FORCE distclean
-+	-${MAKE_DIR_CMD} ./grass-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+
-+	@ # needed to store code in package with grass-version path:
-+	-mv * ./grass-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+	@ # do not include the debian control files:
-+	-mv ./grass-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}/debian .
-+	@ #we use -h to get the linked files into as real files:
-+	tar cvfzh grass-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}.tar.gz ./grass-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}/* --exclude=CVS
-+	@ # restore src code location:
-+	-mv ./grass-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}/* .
-+	-rmdir ./grass-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+	@ echo "Distribution source package: grass-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}.tar.gz ready. Calculating MD5 sum..."
-+	md5sum grass-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}.tar.gz > grass-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}.md5sum
-+
-+# make a source package for library distribution:
-+srclibsdist: FORCE distclean
-+	-${MAKE_DIR_CMD} ./grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+
-+	@ # needed to store code in package with grass-version path:
-+	-cp -L * ./grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+	-cp -rL tools ./grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+	-cp -rL include ./grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+	-cp -rL --parents lib/external/shapelib ./grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+	-cp -rL --parents lib/datetime ./grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+	-cp -rL --parents lib/db ./grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+	-cp -rL --parents lib/gis ./grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+	-cp -rL --parents lib/linkm ./grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+	-cp -rL --parents lib/form ./grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+	-cp -rL --parents lib/vector ./grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+
-+	-cp -rL --parents db/drivers ./grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+
-+	tar chvfz grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}.tar.gz ./grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}/* --exclude=CVS
-+	-rm -r ./grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}
-+	@ echo "Distribution source package: grass-lib-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.${GRASS_VERSION_RELEASE}.tar.gz ready."
-+
-+builddemolocation:
-+	test -d ${ARCH_DISTDIR} || ${MAKE_DIR_CMD} ${ARCH_DISTDIR}
-+	-tar cBf - demolocation | (cd ${ARCH_DISTDIR}/ ; tar xBfo - ) 2>/dev/null
-+	@ echo "GISDBASE: ${RUN_GISBASE}" > ${RUN_GISRC}
-+	@ echo "LOCATION_NAME: demolocation" >> ${RUN_GISRC}
-+	@ echo "MAPSET: PERMANENT" >> ${RUN_GISRC}
-+	@ echo "GRASS_DB_ENCODING: utf-8" >> ${RUN_GISRC}
-+	@ echo "DEBUG: 0" >> ${RUN_GISRC}
-+	@ echo "GRASS_GUI: text" >> ${RUN_GISRC}
-diff -ruN grass-6.4.2-old/Makefile.rej grass-6.4.2/Makefile.rej
---- grass-6.4.2-old/Makefile.rej	1970-01-01 09:00:00.000000000 +0900
-+++ grass-6.4.2/Makefile.rej	2012-05-08 19:28:45.000000000 +0900
-@@ -0,0 +1,51 @@
-+***************
-+*** 9,15 ****
-+  	MACOSX_APP_NAME = GRASS-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.app
-+  endif
-+  MACOSX_APPDIR = ${MACOSX_APP_NAME}/Contents/MacOS
-+- INST_DIR_MACOSX = ${prefix}/${MACOSX_APPDIR}
-+  
-+  default: modbuild
-+  
-+--- 9,15 ----
-+  	MACOSX_APP_NAME = GRASS-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.app
-+  endif
-+  MACOSX_APPDIR = ${MACOSX_APP_NAME}/Contents/MacOS
-++ INST_DIR_MACOSX = ${INST_DIR}/Applications/${MACOSX_APPDIR}
-+  
-+  default: modbuild
-+  
-+***************
-+*** 19,25 ****
-+  	-cp -f ReadMe.rtf $(ARCH_DISTDIR)/modbuild/
-+  	mkdir -p $(ARCH_DISTDIR)/modbuild/dist.$(ARCH)
-+  	-cp -rf $(ARCH_DISTDIR)/demolocation $(ARCH_DISTDIR)/modbuild/dist.$(ARCH)/
-+- 	-sed -e 's,^GISDBASE.*,GISDBASE = /Library/GRASS/$(GRASS_VERSION_MAJOR).$(GRASS_VERSION_MINOR)/modbuild/dist.$(ARCH),g' $(ARCH_DISTDIR)/demolocation/.grassrc$(GRASS_VERSION_MAJOR)$(GRASS_VERSION_MINOR) > $(ARCH_DISTDIR)/modbuild/dist.$(ARCH)/demolocation/.grassrc$(GRASS_VERSION_MAJOR)$(GRASS_VERSION_MINOR)
-+  	mkdir -p $(ARCH_DISTDIR)/modbuild/module
-+  	mkdir -p $(ARCH_DISTDIR)/modbuild/include/Make
-+  	-cp $(MODULE_TOPDIR)/include/Make/Dir.make $(ARCH_DISTDIR)/modbuild/include/Make/
-+--- 19,25 ----
-+  	-cp -f ReadMe.rtf $(ARCH_DISTDIR)/modbuild/
-+  	mkdir -p $(ARCH_DISTDIR)/modbuild/dist.$(ARCH)
-+  	-cp -rf $(ARCH_DISTDIR)/demolocation $(ARCH_DISTDIR)/modbuild/dist.$(ARCH)/
-++ 	-sed -e 's,^GISDBASE.*,GISDBASE = @PREFIX@/lib/GRASS/$(GRASS_VERSION_MAJOR).$(GRASS_VERSION_MINOR)/modbuild/dist.$(ARCH),g' $(ARCH_DISTDIR)/demolocation/.grassrc$(GRASS_VERSION_MAJOR)$(GRASS_VERSION_MINOR) > $(ARCH_DISTDIR)/modbuild/dist.$(ARCH)/demolocation/.grassrc$(GRASS_VERSION_MAJOR)$(GRASS_VERSION_MINOR)
-+  	mkdir -p $(ARCH_DISTDIR)/modbuild/module
-+  	mkdir -p $(ARCH_DISTDIR)/modbuild/include/Make
-+  	-cp $(MODULE_TOPDIR)/include/Make/Dir.make $(ARCH_DISTDIR)/modbuild/include/Make/
-+***************
-+*** 44,50 ****
-+  	@#GISBASE = $(INST_DIR_MACOSX)\
-+  	@#endif#g'
-+  	@# html.make needs a little change
-+- 	sed -e 's,GISRC=$$(RUN_GISBASE),GISRC=/Library/GRASS/$(GRASS_VERSION_MAJOR).$(GRASS_VERSION_MINOR)/modbuild/dist.$$(ARCH),g' $(MODULE_TOPDIR)/include/Make/Html.make > $(ARCH_DISTDIR)/modbuild/include/Make/Html.make
-+  	-cp $(MODULE_TOPDIR)/include/Make/Lib.make $(ARCH_DISTDIR)/modbuild/include/Make/
-+  	-cp $(MODULE_TOPDIR)/include/Make/Man.make $(ARCH_DISTDIR)/modbuild/include/Make/
-+  	sed -e 's,$$(DEPENDENCIES),,g' $(MODULE_TOPDIR)/include/Make/Module.make > $(ARCH_DISTDIR)/modbuild/include/Make/Module.make
-+--- 44,50 ----
-+  	@#GISBASE = $(INST_DIR_MACOSX)\
-+  	@#endif#g'
-+  	@# html.make needs a little change
-++ 	sed -e 's,GISRC=$$(RUN_GISBASE),GISRC=@PREFIX@/lib/GRASS/$(GRASS_VERSION_MAJOR).$(GRASS_VERSION_MINOR)/modbuild/dist.$$(ARCH),g' $(MODULE_TOPDIR)/include/Make/Html.make > $(ARCH_DISTDIR)/modbuild/include/Make/Html.make
-+  	-cp $(MODULE_TOPDIR)/include/Make/Lib.make $(ARCH_DISTDIR)/modbuild/include/Make/
-+  	-cp $(MODULE_TOPDIR)/include/Make/Man.make $(ARCH_DISTDIR)/modbuild/include/Make/
-+  	sed -e 's,$$(DEPENDENCIES),,g' $(MODULE_TOPDIR)/include/Make/Module.make > $(ARCH_DISTDIR)/modbuild/include/Make/Module.make
-diff -ruN grass-6.4.2-old/include/iostream/ami_stream.h grass-6.4.2/include/iostream/ami_stream.h
---- grass-6.4.2-old/include/iostream/ami_stream.h	2012-05-08 19:28:12.000000000 +0900
-+++ grass-6.4.2/include/iostream/ami_stream.h	2012-05-08 19:28:50.000000000 +0900
+Binary files grass-6.4.2-orig/.DS_Store and grass-6.4.2/.DS_Store differ
+Binary files grass-6.4.2-orig/include/iostream/.DS_Store and grass-6.4.2/include/iostream/.DS_Store differ
+diff -ruN grass-6.4.2-orig/include/iostream/ami_stream.h grass-6.4.2/include/iostream/ami_stream.h
+--- grass-6.4.2-orig/include/iostream/ami_stream.h	2012-12-30 11:19:00.000000000 +0900
++++ grass-6.4.2/include/iostream/ami_stream.h	2012-12-30 11:22:53.000000000 +0900
 @@ -140,7 +140,7 @@
    AMI_STREAM();
    
@@ -505,673 +57,9 @@ diff -ruN grass-6.4.2-old/include/iostream/ami_stream.h grass-6.4.2/include/iost
    size_t nobj;
    assert(fp);
    
-diff -ruN grass-6.4.2-old/include/iostream/ami_stream.h.orig grass-6.4.2/include/iostream/ami_stream.h.orig
---- grass-6.4.2-old/include/iostream/ami_stream.h.orig	1970-01-01 09:00:00.000000000 +0900
-+++ grass-6.4.2/include/iostream/ami_stream.h.orig	2011-12-19 13:45:29.000000000 +0900
-@@ -0,0 +1,660 @@
-+/****************************************************************************
-+ * 
-+ *  MODULE:	iostream
-+ *
-+ *  COPYRIGHT (C) 2007 Laura Toma
-+ *   
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *****************************************************************************/
-+
-+
-+#ifndef _AMI_STREAM_H
-+#define _AMI_STREAM_H
-+
-+
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <assert.h>
-+#include <fcntl.h>
-+#include <errno.h>
-+#include <unistd.h>
-+
-+#include <cstring>
-+#include <iostream>
-+using namespace std;
-+
-+#include <grass/config.h>
-+
-+#define MAX_STREAMS_OPEN 200
-+
-+#include "mm.h" // Get the memory manager.
-+
-+#define DEBUG_DELETE if(0)
-+#define DEBUG_ASSERT if(0)
-+
-+// The name of the environment variable which keeps the name of the
-+// directory where streams are stored
-+#define STREAM_TMPDIR "STREAM_DIR"
-+
-+// All streams will be names STREAM_*****
-+#define BASE_NAME "STREAM"
-+
-+#define STREAM_BUFFER_SIZE (1<<18)
-+
-+
-+//
-+// AMI error codes are returned using the AMI_err type.
-+//
-+enum AMI_err {
-+  AMI_ERROR_NO_ERROR = 0,
-+  AMI_ERROR_IO_ERROR,
-+  AMI_ERROR_END_OF_STREAM,
-+  AMI_ERROR_OUT_OF_RANGE,
-+  AMI_ERROR_READ_ONLY,
-+  AMI_ERROR_OS_ERROR,
-+  AMI_ERROR_MM_ERROR,
-+  AMI_ERROR_OBJECT_INITIALIZATION,
-+  AMI_ERROR_PERMISSION_DENIED,
-+  AMI_ERROR_INSUFFICIENT_MAIN_MEMORY,
-+  AMI_ERROR_INSUFFICIENT_AVAILABLE_STREAMS,
-+  AMI_ERROR_ENV_UNDEFINED,
-+  AMI_ERROR_NO_MAIN_MEMORY_OPERATION,
-+};
-+
-+extern char *ami_str_error[];
-+
-+//
-+// AMI stream types passed to constructors
-+//
-+enum AMI_stream_type {
-+    AMI_READ_STREAM = 1,	// Open existing stream for reading
-+    AMI_WRITE_STREAM,		// Open for writing.  Create if non-existent
-+    AMI_APPEND_STREAM,		// Open for writing at end.  Create if needed.
-+    AMI_READ_WRITE_STREAM,	// Open to read and write.
-+    AMI_APPEND_WRITE_STREAM     // Open for writing at end (write only mode).
-+};
-+
-+
-+
-+
-+enum persistence {
-+    // Delete the stream from the disk when it is destructed.
-+  PERSIST_DELETE = 0,
-+  // Do not delete the stream from the disk when it is destructed.
-+  PERSIST_PERSISTENT,
-+  // Delete each block of data from the disk as it is read.
-+  PERSIST_READ_ONCE
-+};
-+
-+/* an un-templated version makes for easier debugging */
-+class UntypedStream {
-+protected:
-+  FILE * fp;
-+  int fildes;	//descriptor of file
-+  AMI_stream_type  access_mode;
-+  char path[BUFSIZ];
-+  persistence per;
-+
-+  //0 for streams, positive for substreams
-+  unsigned int substream_level;
-+  
-+  // If this stream is actually a substream, these will be set to
-+  // indicate the portion of the file that is part of this stream.  If
-+  // the stream is the whole file, they will be set to -1. Both are in
-+  // T units.
-+  off_t logical_bos;
-+  off_t logical_eos;
-+
-+  //stream buffer passed in the call to setvbuf when file is opened
-+  char* buf;
-+  int eof_reached;
-+
-+ public:
-+  static unsigned int get_block_length()  {
-+    return STREAM_BUFFER_SIZE;
-+    //return getpagesize();
-+  };
-+
-+};
-+
-+template<class T> 
-+class AMI_STREAM : public UntypedStream {
-+
-+protected:
-+
-+  T read_tmp;					/* this is ugly... RW */
-+
-+public:
-+  // An AMI_stream with default name
-+  AMI_STREAM();
-+  
-+  // An AMI stream based on a specific path name.
-+  AMI_STREAM(const char *path_name, AMI_stream_type st);
-+
-+  // convenience function with split path_name
-+  //AMI_STREAM(const char *dir_name, const char *file_name, AMI_stream_type st);
-+  
-+  
-+  // A psuedo-constructor for substreams.
-+  AMI_err new_substream(AMI_stream_type st, off_t sub_begin, off_t sub_end,
-+			AMI_STREAM<T> **sub_stream);
-+
-+  // Destructor
-+  ~AMI_STREAM(void);
-+  
-+  // Read and write elements.
-+  AMI_err read_item(T **elt);
-+  AMI_err write_item(const T &elt);
-+  AMI_err read_array(T *data, off_t len, off_t *lenp);
-+  AMI_err write_array(const T *data, off_t len);
-+  
-+  // Return the number of items in the stream.
-+  off_t stream_len(void);
-+  
-+  // Return the path name of this stream.
-+  AMI_err name(char **stream_name);
-+  const char* name() const;
-+  
-+  // Move to a specific item in the stream.
-+  AMI_err seek(off_t offset);
-+
-+  // Query memory usage
-+  static AMI_err main_memory_usage(size_t *usage,
-+			    //MM_stream_usage usage_type= MM_STREAM_USAGE_OVERHEAD);
-+			    MM_stream_usage usage_type);
-+  
-+  void persist(persistence p);
-+  
-+  char *sprint();
-+
-+  // have we hit the end of the stream
-+  int eof();
-+};
-+
-+
-+/**********************************************************************/
-+
-+
-+/**********************************************************************/
-+/* creates a random file name, opens the file for reading and writing
-+   and and returns a file descriptor */
-+/* int ami_single_temp_name(char *base, char* tmp_path); */
-+/* fix from Andy Danner */
-+int ami_single_temp_name(const std::string& base, char* tmp_path); 
-+
-+
-+/**********************************************************************/
-+/* given fd=fide descriptor, associates with it a stream aopened in
-+   access_mode and returns it */
-+FILE*  open_stream(int fd, AMI_stream_type st);
-+
-+
-+/**********************************************************************/
-+/* open the file whose name is pathname in access mode */
-+FILE* open_stream(char* pathname, AMI_stream_type st);
-+
-+
-+
-+
-+/********************************************************************/
-+//  An  AMI stream with default name.
-+template<class T>
-+AMI_STREAM<T>::AMI_STREAM() {
-+  
-+  access_mode = AMI_READ_WRITE_STREAM;
-+  int fd = ami_single_temp_name(BASE_NAME, path);
-+  fildes = fd;
-+  fp = open_stream(fd, access_mode);
-+  
-+  /* a stream is by default buffered with a buffer of size BUFSIZ=1K */
-+  buf = new char[STREAM_BUFFER_SIZE];
-+  if (setvbuf(fp, buf, _IOFBF, STREAM_BUFFER_SIZE) != 0) {
-+    cerr << "ERROR: setvbuf failed (stream " << path << ") with: "
-+         << strerror(errno) << endl;
-+    exit(1);
-+  }
-+  
-+  // By default, all streams are deleted at destruction time.
-+  per = PERSIST_DELETE;
-+
-+   // Not a substream.
-+  substream_level  = 0;
-+  logical_bos = logical_eos = -1;
-+
-+  // why is this here in the first place?? -RW
-+  seek(0);
-+
-+  eof_reached = 0;
-+
-+  // Register memory usage before returning.
-+  //size_t usage; 
-+  //main_memory_usage(&usage,  MM_STREAM_USAGE_CURRENT);
-+  //MM_manager.register_allocation(usage);
-+}
-+
-+
-+
-+/**********************************************************************/
-+// An AMI stream based on a specific path name.
-+template<class T>
-+AMI_STREAM<T>::AMI_STREAM(const char *path_name,
-+			  AMI_stream_type st = AMI_READ_WRITE_STREAM) {
-+
-+  access_mode = st;
-+
-+  if(path_name == NULL) {
-+	int fd = ami_single_temp_name(BASE_NAME, path);
-+	fildes = fd;
-+	fp = open_stream(fd, access_mode);
-+  } else {
-+	strcpy(path, path_name);
-+	fp = open_stream(path, st);  
-+	fildes = -1;
-+  }
-+
-+  /* a stream is by default buffered with a buffer of size BUFSIZ=1K */
-+  buf = new char[STREAM_BUFFER_SIZE];
-+  if (setvbuf(fp, buf, _IOFBF, STREAM_BUFFER_SIZE) != 0) {
-+    cerr << "ERROR: setvbuf failed (stream " << path << ") with: "
-+         << strerror(errno) << endl;
-+    exit(1);
-+  }
-+
-+  eof_reached = 0;
-+
-+  // By default, all streams are deleted at destruction time.
-+  if(st == AMI_READ_STREAM) {
-+	per = PERSIST_PERSISTENT;
-+  } else {
-+	per = PERSIST_DELETE;
-+  }
-+
-+  // Not a substream.
-+  substream_level  = 0;
-+  logical_bos = logical_eos = -1;
-+  
-+  seek(0);
-+
-+  // Register memory usage before returning.
-+  //size_t usage; 
-+  //main_memory_usage(&usage,  MM_STREAM_USAGE_CURRENT);
-+  //MM_manager.register_allocation(usage);
-+};
-+
-+
-+
-+/**********************************************************************/
-+ // A psuedo-constructor for substreams.
-+template<class T>
-+AMI_err AMI_STREAM<T>::new_substream(AMI_stream_type st,
-+				     off_t sub_begin,
-+				     off_t sub_end,
-+				     AMI_STREAM<T> **sub_stream) {
-+
-+  //assume this for now
-+  assert(st == AMI_READ_STREAM);
-+
-+#ifdef __MINGW32__
-+  /* MINGW32: reopen file here for stream_len() below */
-+  //reopen the file 
-+  AMI_STREAM<T> *substr = new AMI_STREAM<T>(path, st);
-+#endif
-+
-+  //check range
-+  if (substream_level) {
-+     if( (sub_begin >= (logical_eos - logical_bos)) ||
-+	 (sub_end >= (logical_eos - logical_bos)) ) {
-+       
-+       return AMI_ERROR_OUT_OF_RANGE;
-+     }
-+  }  else {
-+    off_t len = stream_len();
-+    if (sub_begin > len || sub_end > len) {
-+
-+      return AMI_ERROR_OUT_OF_RANGE;
-+    }
-+  }
-+
-+#ifndef __MINGW32__
-+  //reopen the file 
-+  AMI_STREAM<T> *substr = new AMI_STREAM<T>(path, st);
-+#endif
-+
-+  // Set up the beginning and end positions.
-+  if (substream_level) {
-+    substr->logical_bos = logical_bos + sub_begin;
-+    substr->logical_eos = logical_bos + sub_end + 1;
-+  } else {
-+    substr->logical_bos = sub_begin;
-+    substr->logical_eos = sub_end + 1;
-+  }
-+  
-+  // Set the current position.
-+  substr->seek(0);
-+
-+  substr->eof_reached = 0;
-+
-+  //set substream level
-+  substr->substream_level = substream_level + 1;
-+
-+  substr->per = per;   //set persistence
-+
-+  //*sub_stream = (AMI_base_stream < T > *)substr;
-+  *sub_stream = substr;
-+  return  AMI_ERROR_NO_ERROR;
-+};
-+
-+
-+
-+/**********************************************************************/
-+// Return the number of items in the stream.
-+template<class T>
-+off_t AMI_STREAM<T>::stream_len(void) {
-+
-+  fflush(fp);
-+
-+#ifdef __MINGW32__
-+  //stat() fails on MS Windows if the file is open, so try ftell() instead.
-+  //FIXME: not 64bit safe, but WinGrass isn't either right now.
-+  //try something with #ifdef HAVE_LARGEFILES ? (see fseeko() elsewhere in this file)
-+  long posn_save, st_size;
-+
-+  posn_save = ftell(fp);
-+  if(posn_save == -1) {
-+     perror("ERROR: AMI_STREAM::stream_len(): ftell(fp) failed ");
-+     perror(path);
-+     exit(1);
-+  }
-+
-+  fseek(fp, 0, SEEK_END);
-+  st_size = ftell(fp);
-+  if(st_size == -1) {
-+     perror("ERROR: AMI_STREAM::stream_len(): ftell[SEEK_END] failed ");
-+     perror(path);
-+     exit(1);
-+  }
-+
-+  fseek(fp, posn_save, SEEK_SET);
-+  return (st_size / sizeof(T));
-+
-+#else
-+  struct stat buf;
-+  if (stat(path, &buf) == -1) {
-+    perror("ERROR: AMI_STREAM::stream_len(): fstat failed ");
-+    DEBUG_ASSERT assert(0);
-+    exit(1);
-+  }
-+  return (buf.st_size / sizeof(T));
-+#endif
-+};
-+
-+
-+
-+/**********************************************************************/
-+// Return the path name of this stream.
-+template<class T>
-+AMI_err AMI_STREAM<T>::name(char **stream_name)  {
-+  
-+  *stream_name = new char [strlen(path) + 1];
-+  strcpy(*stream_name, path);
-+  
-+  return AMI_ERROR_NO_ERROR;
-+};
-+
-+// Return the path name of this stream.
-+template<class T>
-+const char *
-+AMI_STREAM<T>::name() const {
-+  return path;
-+};
-+
-+
-+
-+/**********************************************************************/
-+// Move to a specific offset within the (sub)stream.
-+template<class T>
-+AMI_err AMI_STREAM<T>::seek(off_t offset) {
-+
-+  off_t seek_offset;
-+  
-+  if (substream_level) {    //substream
-+    if (offset  > (unsigned) (logical_eos - logical_bos)) {
-+      //offset out of range
-+      cerr << "ERROR: AMI_STREAM::seek bos=" << logical_bos << ", eos="
-+           << logical_eos << ", offset " << offset << " out of range.\n";
-+      DEBUG_ASSERT assert(0);
-+      exit(1);
-+    } else {
-+      //offset in range 
-+      seek_offset = (logical_bos + offset) * sizeof(T);
-+    }
-+
-+
-+  } else {
-+    //not a substream
-+    seek_offset = offset * sizeof(T);
-+  }
-+
-+#ifdef HAVE_LARGEFILES
-+  if (fseeko(fp, seek_offset, SEEK_SET) == -1) {
-+#else
-+  if (fseek(fp, seek_offset, SEEK_SET) == -1) {
-+#endif     
-+    cerr << "ERROR: AMI_STREAM::seek offset=" << seek_offset << " failed.\n";
-+    DEBUG_ASSERT assert(0);
-+    exit(1);
-+  }
-+  
-+  return AMI_ERROR_NO_ERROR;
-+}
-+
-+
-+
-+
-+/**********************************************************************/
-+// Query memory usage
-+template<class T>
-+AMI_err
-+AMI_STREAM<T>::main_memory_usage(size_t *usage,
-+								 MM_stream_usage usage_type= MM_STREAM_USAGE_OVERHEAD) {
-+  
-+   switch (usage_type) {
-+   case MM_STREAM_USAGE_OVERHEAD:
-+     *usage = sizeof (AMI_STREAM<T>);
-+     break;
-+   case MM_STREAM_USAGE_BUFFER:
-+     // *usage = get_block_length();
-+     *usage = STREAM_BUFFER_SIZE*sizeof(char);
-+     break;
-+   case MM_STREAM_USAGE_CURRENT:
-+   case MM_STREAM_USAGE_MAXIMUM:
-+     // *usage = sizeof (*this) + get_block_length();
-+     *usage = sizeof (AMI_STREAM<T>) + STREAM_BUFFER_SIZE*sizeof(char);
-+     break;
-+   }
-+   return AMI_ERROR_NO_ERROR;
-+};
-+
-+
-+
-+/**********************************************************************/
-+template<class T>
-+AMI_STREAM<T>::~AMI_STREAM(void)  {
-+  
-+  DEBUG_DELETE cerr << "~AMI_STREAM: " << path << "(" << this << ")\n";
-+  assert(fp);
-+  fclose(fp);
-+  delete buf;
-+  
-+  // Get rid of the file if not persistent and if not substream.
-+  if ((per != PERSIST_PERSISTENT) && (substream_level == 0)) {
-+    if (unlink(path) == -1) {
-+      cerr << "ERROR: AMI_STREAM: failed to unlink " << path << endl;
-+      perror("cannot unlink: ");
-+      DEBUG_ASSERT assert(0);
-+      exit(1);
-+    }
-+  }
-+  // Register memory deallocation before returning.
-+  //size_t usage; 
-+  //main_memory_usage(&usage,  MM_STREAM_USAGE_CURRENT);
-+  //MM_manager.register_deallocation(usage);
-+ };
-+
-+
-+
-+/**********************************************************************/
-+template<class T>
-+AMI_err AMI_STREAM<T>::read_item(T **elt)  {
-+
-+  assert(fp);
-+
-+  //if we go past substream range
-+  if ((logical_eos >= 0) && ftell(fp) >= sizeof(T) * logical_eos) {
-+    return AMI_ERROR_END_OF_STREAM;
-+  
-+  } else {
-+    if (fread((char *) (&read_tmp), sizeof(T), 1, fp) < 1) {
-+      if(feof(fp)) {
-+	eof_reached = 1;
-+	return AMI_ERROR_END_OF_STREAM;
-+      } else {
-+	cerr << "ERROR: file=" << path << ":";
-+	perror("cannot read!");    
-+	return AMI_ERROR_IO_ERROR;
-+      }
-+    }
-+    
-+    *elt = &read_tmp;
-+    return AMI_ERROR_NO_ERROR; 
-+  }
-+};
-+
-+
-+
-+
-+/**********************************************************************/
-+template<class T>
-+AMI_err AMI_STREAM<T>::read_array(T *data, off_t len, off_t *lenp=NULL) {
-+  size_t nobj;
-+  assert(fp);
-+  
-+  //if we go past substream range
-+  if ((logical_eos >= 0) && ftell(fp) >= sizeof(T) * logical_eos) {
-+	eof_reached = 1;
-+    return AMI_ERROR_END_OF_STREAM;
-+    
-+  } else {
-+    nobj = fread((void*)data, sizeof(T), len, fp);
-+
-+    if (nobj < len) {		/* some kind of error */
-+      if(feof(fp)) {
-+	if(lenp) *lenp = nobj;
-+	eof_reached = 1;
-+	return AMI_ERROR_END_OF_STREAM;
-+      } else {
-+	cerr << "ERROR: file=" << path << ":";
-+	perror("cannot read!");    
-+	return AMI_ERROR_IO_ERROR;
-+      }
-+    }
-+    if(lenp) *lenp = nobj;
-+    return AMI_ERROR_NO_ERROR; 
-+  }
-+};
-+
-+
-+
-+
-+/**********************************************************************/
-+template<class T>
-+AMI_err AMI_STREAM<T>::write_item(const T &elt) {
-+
-+  assert(fp);
-+  //if we go past substream range
-+  if ((logical_eos >= 0) && ftell(fp) >= sizeof(T) * logical_eos) {
-+    return AMI_ERROR_END_OF_STREAM;
-+  
-+  } else {
-+    if (fwrite((char*)(&elt), sizeof(T), 1,fp) < 1) {
-+      cerr << "ERROR: AMI_STREAM::write_item failed.\n";
-+      if (path && *path)
-+	perror(path);
-+      else
-+	perror("AMI_STREAM::write_item: ");
-+      DEBUG_ASSERT assert(0);
-+      exit(1);
-+    }
-+
-+    return AMI_ERROR_NO_ERROR;
-+  }
-+};
-+
-+
-+/**********************************************************************/
-+template<class T>
-+AMI_err AMI_STREAM<T>::write_array(const T *data, off_t len) {
-+  size_t nobj;
-+
-+  assert(fp);
-+  //if we go past substream range
-+  if ((logical_eos >= 0) && ftell(fp) >= sizeof(T) * logical_eos) {
-+    return AMI_ERROR_END_OF_STREAM;
-+    
-+  } else {
-+    nobj = fwrite(data, sizeof(T), len, fp);
-+    if (nobj  < len) {
-+      cerr << "ERROR: AMI_STREAM::write_array failed.\n";
-+      if (path && *path)
-+	perror(path);
-+      else
-+	perror("AMI_STREAM::write_array: ");
-+      DEBUG_ASSERT assert(0);
-+      exit(1);
-+    }
-+   return AMI_ERROR_NO_ERROR;
-+  }
-+};
-+        
-+
-+/**********************************************************************/
-+template<class T>
-+void AMI_STREAM<T>::persist(persistence p)  {
-+  per = p;
-+};
-+
-+
-+
-+/**********************************************************************/
-+// sprint()
-+// Return a string describing the stream
-+//
-+// This function gives easy access to the file name, length.
-+// It is not reentrant, but this should not be too much of a problem 
-+// if you are careful.
-+template<class T>
-+char *AMI_STREAM<T>::sprint()  {
-+  static char buf[BUFSIZ];
-+  sprintf(buf, "[AMI_STREAM %s %ld]", path, (long)stream_len());
-+  return buf;
-+};
-+
-+/**********************************************************************/
-+template<class T>
-+int AMI_STREAM<T>::eof()  {
-+  return eof_reached;
-+};
-+
-+
-+#endif // _AMI_STREAM_H 
-diff -ruN grass-6.4.2-old/include/iostream/embuffer.h grass-6.4.2/include/iostream/embuffer.h
---- grass-6.4.2-old/include/iostream/embuffer.h	2012-05-08 19:28:12.000000000 +0900
-+++ grass-6.4.2/include/iostream/embuffer.h	2012-05-08 19:28:50.000000000 +0900
+diff -ruN grass-6.4.2-orig/include/iostream/embuffer.h grass-6.4.2/include/iostream/embuffer.h
+--- grass-6.4.2-orig/include/iostream/embuffer.h	2012-12-30 11:19:00.000000000 +0900
++++ grass-6.4.2/include/iostream/embuffer.h	2012-12-30 11:22:53.000000000 +0900
 @@ -364,7 +364,7 @@
    // return the number of items actually inserted 
    long insert(AMI_STREAM<T>* str, 
@@ -1190,9 +78,29 @@ diff -ruN grass-6.4.2-old/include/iostream/embuffer.h grass-6.4.2/include/iostre
  
    assert(str);
    
-diff -ruN grass-6.4.2-old/include/iostream/minmaxheap.h grass-6.4.2/include/iostream/minmaxheap.h
---- grass-6.4.2-old/include/iostream/minmaxheap.h	2012-05-08 19:28:12.000000000 +0900
-+++ grass-6.4.2/include/iostream/minmaxheap.h	2012-05-08 19:28:50.000000000 +0900
+diff -ruN grass-6.4.2-orig/include/iostream/empq_impl.h grass-6.4.2/include/iostream/empq_impl.h
+--- grass-6.4.2-orig/include/iostream/empq_impl.h	2012-12-30 11:19:00.000000000 +0900
++++ grass-6.4.2/include/iostream/empq_impl.h	2012-12-30 11:31:39.000000000 +0900
+@@ -21,6 +21,7 @@
+ #define __EMPQ_IMPL_H
+ 
+ #include <ostream>
++#include <vector>
+ using namespace std;
+ 
+ #include "empq.h"
+@@ -1357,7 +1358,7 @@
+   assert(arity> 1);
+     
+   //Pointers to current leading elements of streams
+-  ExtendedEltMergeType<T,Key> in_objects[arity];
++  std::vector<ExtendedEltMergeType<T,Key> > in_objects(arity);
+ 
+   AMI_err ami_err;
+   //unsigned int i;
+diff -ruN grass-6.4.2-orig/include/iostream/minmaxheap.h grass-6.4.2/include/iostream/minmaxheap.h
+--- grass-6.4.2-orig/include/iostream/minmaxheap.h	2012-12-30 11:19:00.000000000 +0900
++++ grass-6.4.2/include/iostream/minmaxheap.h	2012-12-30 11:58:29.000000000 +0900
 @@ -491,7 +491,7 @@
    T a, b;
    min(a);
@@ -1211,9 +119,25 @@ diff -ruN grass-6.4.2-old/include/iostream/minmaxheap.h grass-6.4.2/include/iost
    }
    if (i < n) {
      assert(i == this->maxsize);
-diff -ruN grass-6.4.2-old/lib/init/init.sh grass-6.4.2/lib/init/init.sh
---- grass-6.4.2-old/lib/init/init.sh	2012-05-08 19:28:12.000000000 +0900
-+++ grass-6.4.2/lib/init/init.sh	2012-05-08 19:28:50.000000000 +0900
+@@ -777,13 +777,13 @@
+ 
+   if(old) {
+ 	HeapIndex n = this->size();
+-	this->A = allocateHeap(this->maxsize);	/* allocate a new array */
++	this->A = this->allocateHeap(this->maxsize);	/* allocate a new array */
+ 	/* copy over the old values */
+ 	assert(this->maxsize > n);
+ 	for(HeapIndex i=0; i<=n; i++) {	/* why extra value? -RW */
+ 	  this->A[i] = old[i];
+ 	}	
+-	freeHeap(old);				/* free up old storage */
++	this->freeHeap(old);				/* free up old storage */
+   }
+ 
+ }
+diff -ruN grass-6.4.2-orig/lib/init/init.sh grass-6.4.2/lib/init/init.sh
+--- grass-6.4.2-orig/lib/init/init.sh	2012-12-30 11:19:00.000000000 +0900
++++ grass-6.4.2/lib/init/init.sh	2012-12-30 11:22:53.000000000 +0900
 @@ -25,7 +25,8 @@
  trap "echo 'User break!' ; exit" 2 3 15
  
@@ -1288,9 +212,9 @@ diff -ruN grass-6.4.2-old/lib/init/init.sh grass-6.4.2/lib/init/init.sh
  echo "Cleaning up temporary files ..."
  
  "$ETC/clean_temp" > /dev/null
-diff -ruN grass-6.4.2-old/lib/init/init.sh.orig grass-6.4.2/lib/init/init.sh.orig
---- grass-6.4.2-old/lib/init/init.sh.orig	1970-01-01 09:00:00.000000000 +0900
-+++ grass-6.4.2/lib/init/init.sh.orig	2012-01-04 18:55:50.000000000 +0900
+diff -ruN grass-6.4.2-orig/lib/init/init.sh.orig grass-6.4.2/lib/init/init.sh.orig
+--- grass-6.4.2-orig/lib/init/init.sh.orig	1970-01-01 09:00:00.000000000 +0900
++++ grass-6.4.2/lib/init/init.sh.orig	2012-12-30 11:22:53.000000000 +0900
 @@ -0,0 +1,1066 @@
 +#!/bin/sh
 +#############################################################################
@@ -2358,9 +1282,9 @@ diff -ruN grass-6.4.2-old/lib/init/init.sh.orig grass-6.4.2/lib/init/init.sh.ori
 +   echo
 +fi
 +
-diff -ruN grass-6.4.2-old/macosx/Makefile grass-6.4.2/macosx/Makefile
---- grass-6.4.2-old/macosx/Makefile	2012-05-08 19:28:13.000000000 +0900
-+++ grass-6.4.2/macosx/Makefile	2012-05-08 19:28:50.000000000 +0900
+diff -ruN grass-6.4.2-orig/macosx/Makefile grass-6.4.2/macosx/Makefile
+--- grass-6.4.2-orig/macosx/Makefile	2012-12-30 11:19:00.000000000 +0900
++++ grass-6.4.2/macosx/Makefile	2012-12-30 11:22:53.000000000 +0900
 @@ -4,8 +4,8 @@
  
  MACOSX_APP_NAME = GRASS-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.app
@@ -2410,9 +1334,9 @@ diff -ruN grass-6.4.2-old/macosx/Makefile grass-6.4.2/macosx/Makefile
  
  macosx-support-dir:
  	${MAKE_DIR_CMD} ${MACOSX_SUPPDIR}
-diff -ruN grass-6.4.2-old/macosx/Makefile.orig grass-6.4.2/macosx/Makefile.orig
---- grass-6.4.2-old/macosx/Makefile.orig	1970-01-01 09:00:00.000000000 +0900
-+++ grass-6.4.2/macosx/Makefile.orig	2011-05-11 13:21:55.000000000 +0900
+diff -ruN grass-6.4.2-orig/macosx/Makefile.orig grass-6.4.2/macosx/Makefile.orig
+--- grass-6.4.2-orig/macosx/Makefile.orig	1970-01-01 09:00:00.000000000 +0900
++++ grass-6.4.2/macosx/Makefile.orig	2012-12-30 11:22:53.000000000 +0900
 @@ -0,0 +1,117 @@
 +MODULE_TOPDIR = ..
 +
@@ -2531,9 +1455,9 @@ diff -ruN grass-6.4.2-old/macosx/Makefile.orig grass-6.4.2/macosx/Makefile.orig
 +clean: cleansubdirs
 +	-rm -rf ${ARCH_DISTDIR}/${MACOSX_APP_NAME}/ 2>/dev/null
 +	-rm -rf ${ARCH_DISTDIR}/modbuild/ 2>/dev/null
-diff -ruN grass-6.4.2-old/macosx/app/build_gui_user_menu.sh grass-6.4.2/macosx/app/build_gui_user_menu.sh
---- grass-6.4.2-old/macosx/app/build_gui_user_menu.sh	2012-05-08 19:28:13.000000000 +0900
-+++ grass-6.4.2/macosx/app/build_gui_user_menu.sh	2012-05-08 19:28:50.000000000 +0900
+diff -ruN grass-6.4.2-orig/macosx/app/build_gui_user_menu.sh grass-6.4.2/macosx/app/build_gui_user_menu.sh
+--- grass-6.4.2-orig/macosx/app/build_gui_user_menu.sh	2012-12-30 11:19:00.000000000 +0900
++++ grass-6.4.2/macosx/app/build_gui_user_menu.sh	2012-12-30 11:22:53.000000000 +0900
 @@ -13,7 +13,7 @@
  
  GRASS_MMVER=`cut -d . -f 1-2 "$GISBASE/etc/VERSIONNUMBER"`
@@ -2543,9 +1467,9 @@ diff -ruN grass-6.4.2-old/macosx/app/build_gui_user_menu.sh grass-6.4.2/macosx/a
  MENUDIR="$HOME/Library/GRASS/$GRASS_MMVER/Modules/etc"
  
  echo "Rebuilding Addon menu..."
-diff -ruN grass-6.4.2-old/macosx/app/build_html_user_index.sh grass-6.4.2/macosx/app/build_html_user_index.sh
---- grass-6.4.2-old/macosx/app/build_html_user_index.sh	2012-05-08 19:28:13.000000000 +0900
-+++ grass-6.4.2/macosx/app/build_html_user_index.sh	2012-05-08 19:28:50.000000000 +0900
+diff -ruN grass-6.4.2-orig/macosx/app/build_html_user_index.sh grass-6.4.2/macosx/app/build_html_user_index.sh
+--- grass-6.4.2-orig/macosx/app/build_html_user_index.sh	2012-12-30 11:19:00.000000000 +0900
++++ grass-6.4.2/macosx/app/build_html_user_index.sh	2012-12-30 11:22:53.000000000 +0900
 @@ -19,13 +19,13 @@
  GRASS_MMVER=`cut -d . -f 1-2 "$GISBASE/etc/VERSIONNUMBER"`
  GRASSVERSION=`cat "$GISBASE/etc/VERSIONNUMBER"`
@@ -2562,9 +1486,9 @@ diff -ruN grass-6.4.2-old/macosx/app/build_html_user_index.sh grass-6.4.2/macosx
  fi
  
  write_html_header()
-diff -ruN grass-6.4.2-old/macosx/app/grass.sh.in grass-6.4.2/macosx/app/grass.sh.in
---- grass-6.4.2-old/macosx/app/grass.sh.in	2012-05-08 19:28:13.000000000 +0900
-+++ grass-6.4.2/macosx/app/grass.sh.in	2012-05-08 19:28:50.000000000 +0900
+diff -ruN grass-6.4.2-orig/macosx/app/grass.sh.in grass-6.4.2/macosx/app/grass.sh.in
+--- grass-6.4.2-orig/macosx/app/grass.sh.in	2012-12-30 11:19:00.000000000 +0900
++++ grass-6.4.2/macosx/app/grass.sh.in	2012-12-30 11:22:53.000000000 +0900
 @@ -32,7 +32,7 @@
  grass_ver=`cut -d . -f 1-2 "$GISBASE/etc/VERSIONNUMBER"`
  
@@ -2707,9 +1631,9 @@ diff -ruN grass-6.4.2-old/macosx/app/grass.sh.in grass-6.4.2/macosx/app/grass.sh
  	fi
  fi
  if [ "$GRASS_GUI" = "text" ] && [ "$x11" = "tig" ] ; then
-diff -ruN grass-6.4.2-old/macosx/app/python_wrapper grass-6.4.2/macosx/app/python_wrapper
---- grass-6.4.2-old/macosx/app/python_wrapper	2012-05-08 19:28:13.000000000 +0900
-+++ grass-6.4.2/macosx/app/python_wrapper	2012-05-08 19:28:50.000000000 +0900
+diff -ruN grass-6.4.2-orig/macosx/app/python_wrapper grass-6.4.2/macosx/app/python_wrapper
+--- grass-6.4.2-orig/macosx/app/python_wrapper	2012-12-30 11:19:00.000000000 +0900
++++ grass-6.4.2/macosx/app/python_wrapper	2012-12-30 11:22:53.000000000 +0900
 @@ -29,9 +29,7 @@
  SYSARCH=`uname -p`
  SYSVER=`uname -r | cut -d . -f 1`
@@ -2721,9 +1645,9 @@ diff -ruN grass-6.4.2-old/macosx/app/python_wrapper grass-6.4.2/macosx/app/pytho
  # can't run python 64bit if wx not 64bit, assume OSX 10.5+  possible 64bit
  if [ $(($SYSVER)) -gt 5 ] && [ "$GRASS_WX64BIT" = "0" ] ; then
  	case $SYSARCH in
-diff -ruN grass-6.4.2-old/macosx/modbuild/Makefile grass-6.4.2/macosx/modbuild/Makefile
---- grass-6.4.2-old/macosx/modbuild/Makefile	2012-05-08 19:28:13.000000000 +0900
-+++ grass-6.4.2/macosx/modbuild/Makefile	2012-05-08 19:28:50.000000000 +0900
+diff -ruN grass-6.4.2-orig/macosx/modbuild/Makefile grass-6.4.2/macosx/modbuild/Makefile
+--- grass-6.4.2-orig/macosx/modbuild/Makefile	2012-12-30 11:19:00.000000000 +0900
++++ grass-6.4.2/macosx/modbuild/Makefile	2012-12-30 11:22:53.000000000 +0900
 @@ -9,7 +9,7 @@
  	MACOSX_APP_NAME = GRASS-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.app
  endif
