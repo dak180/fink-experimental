@@ -3,11 +3,11 @@ Info2: <<
 Package: qgis17-py%type_pkg[python]
 Type: python (2.7 2.6)
 Architecture: powerpc, i386, x86_64
-Distribution: 10.4, 10.5, 10.6, 10.7
+Distribution: 10.5, 10.6, 10.7
 
 
-Version: 1.7.1
-Revision: 0.1
+Version: 1.7.4
+Revision: 1.1
 Description: User friendly Open Source GIS
 License: GPL
 Homepage: http://qgis.org
@@ -36,7 +36,7 @@ in /Applications/Fink.
 <<
 
 # Dependencies.
-Depends: %n-shlibs (=%v-%r), qgis-plugin-installer
+Depends: %n-shlibs (=%v-%r), qgis-plugin-installer-py%type_pkg[python]
 BuildDepends: << 
   fink (>= 0.28), cmake, bison (>= 2.3),
   gsl,
@@ -44,18 +44,18 @@ BuildDepends: <<
   sip-py%type_pkg[python]-bin, pyqt4-mac-py%type_pkg[python] , 
   xerces-c31-dev,
   libiconv-dev, giflib, libtiff, libjpeg8, libogdi3 (>= 3.1.5-1), libpng15, netcdf (>= 3.6.0-1002), 
-  libgeos3.3.0,
+  cfitsio,
+  unixodbc2-nox (>= 2.2.11-1010) | unixodbc2 (>= 2.2.11-1010), 
+  libgeos3.3.1,
   gdal-dev | gdal-pgsql-dev | gdal-mysql-dev| gdal-pgsql-mysql-dev, 
   postgresql90-dev, 
   proj (>=4),
   qwt-qt4-mac
 <<
-# cfitsio,
-# unixodbc2-nox (>= 2.2.11-1010) | unixodbc2 (>= 2.2.11-1010), 
 
 # Unpack Phase.
 Source: http://qgis.org/downloads/qgis-%v.tar.bz2
-Source-MD5: 677dcb9d0d53cc7c2a6451590a362477
+Source-MD5: ad6e2bd8c5eb0c486939c420af5d8c44
 SourceDirectory: qgis-%v
 
 # Patch Phase.
@@ -85,21 +85,17 @@ CompileScript: <<
                 -DCMAKE_INSTALL_PREFIX=%b/Applications
                 -DCMAKE_BUILD_TYPE=Release
                 -DGDAL_INCLUDE_DIR=%p/include/gdal1
-                -DGEOS_CONFIG=%p/opt/libgeos3.3.0/bin/geos-config
+                -DGEOS_CONFIG=%p/opt/libgeos3.3.1/bin/geos-config
                 -DQT_BINARY_DIR=%p/lib/qt4-mac/bin
                 -DQT_INCLUDE_DIR=%p/lib/qt4-mac/include
                 -DQT_QMAKE_EXECUTABLE=%p/lib/qt4-mac/bin/qmake
-                -DPYTHON_DEBUG_LIBRARY=%p/lib/python$PY_VER/config/libpython$PY_VER.dylib
                 -DPYTHON_INCLUDE_PATH=%p/include/python$PY_VER
                 -DPYTHON_LIBRARY=%p/lib/python$PY_VER/config/libpython$PY_VER.dylib
                 -DPYTHON_EXECUTABLE=%p/bin/python$PY_VER
                 -DPYUIC4_PROGRAM=%p/lib/qt4-mac/lib/python$PY_VER/bin/pyuic4
                 -DSIP_INCLUDE_DIR=%p/include/python$PY_VER
                 -DSIP_BINARY_PATH=%p/bin
-                -DPOSTGRESQL_PREFIX=%p
                 -DPOSTGRES_CONFIG=%p/bin/pg_config
-                -DSQLITE3_INCLUDE_DIR=
-                -DSQLITE3_LIBRARY=
                 -DQWT_LIBRARY=%p/lib/qt4-mac/lib/libqwt.5.dylib
                 -DQWT_INCLUDE_DIR=%p/lib/qt4-mac/include/qwt/"
   QGIS_DIR=Applications/QGIS-py%type_pkg[python]-%v.app/Contents
@@ -136,7 +132,7 @@ CompileScript: <<
   popd
   
   # Plugins are now managed by their own package (e.g. qgis-plugin-ftools)
-  rm -rf %b/$QGIS_DIR/Resources/python/plugins
+  rm -rf %b/$QGIS_DIR/Resources/python%type_pkg[python]/plugins
     
   # Workaround to SJIS problem
   mkdir -p %b/$QGIS_DIR/PlugIns
@@ -160,13 +156,12 @@ SplitOff: <<
     python%type_pkg[python], sip-py%type_pkg[python], pyqt4-mac-py%type_pkg[python] , 
     gsl-shlibs,
     xerces-c31-shlibs,
-    libgeos3.3.0-shlibs,
+    libgeos3.3.1-shlibs,
     gdal-shlibs | gdal-pgsql-shlibs | gdal-mysql-shlibs| gdal-pgsql-mysql-shlibs, 
     libspatialite1-shlibs | libspatialite1-64bit-shlibs,
     proj-shlibs (>=4),
     qwt-qt4-mac-shlibs
   <<
-  # gdal-py%type_pkg[python],
   Files: <<
     Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgis_analysis.%v.dylib
     Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgis_core.%v.dylib
@@ -176,12 +171,12 @@ SplitOff: <<
     Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.%v.dylib
   <<
   Shlibs: <<
-    %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgis_analysis.%v.dylib         1.7.0 %n (>= 1.7.0-1)
-    %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgis_core.%v.dylib             1.7.0 %n (>= 1.7.0-1)
-    %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgis_gui.%v.dylib              1.7.0 %n (>= 1.7.0-1)
-    %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgissqlanyconnection.%v.dylib  1.7.0 %n (>= 1.7.0-1)
-    %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgisgrass.%v.dylib             1.7.0 %n (>= 1.7.0-1)
-    %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.%v.dylib            1.7.0 %n (>= 1.7.0-1)
+    %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgis_analysis.%v.dylib               1.7.4 %n (>= 1.7.4-1)
+    %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgis_core.%v.dylib                     1.7.4 %n (>= 1.7.4-1)
+    %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgis_gui.%v.dylib                        1.7.4 %n (>= 1.7.4-1)
+    %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgissqlanyconnection.%v.dylib  1.7.4 %n (>= 1.7.4-1)
+    %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgisgrass.%v.dylib                       1.7.4 %n (>= 1.7.4-1)
+    %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.%v.dylib                    1.7.4 %n (>= 1.7.4-1)
   <<
 #End of SplitOff
 <<
@@ -204,7 +199,7 @@ DescPackaging: <<
 the latest stable versions, e.g.:
     postgresql90,
     grass64,
-    libgeos3.3.0,
+    libgeos3.3.1,
     libjpeg8, libogdi3, libpng14
 <<
 DescPort: <<

@@ -3,10 +3,9 @@ Info2: <<
 Package: qgis18-py%type_pkg[python]
 Type: python (2.7 2.6)
 Architecture: powerpc, i386, x86_64
-Distribution: 10.5, 10.6, 10.7
 
 Version: 1.8.0
-Revision: 1
+Revision: 1.1
 Description: User friendly Open Source GIS
 License: GPL
 Homepage: http://qgis.org
@@ -35,7 +34,7 @@ in /Applications/Fink.
 <<
 
 # Dependencies.
-Depends: qgis-plugin-installer, %n-shlibs (=%v-%r)
+Depends: qgis-plugin-installer-py%type_pkg[python], %n-shlibs (=%v-%r)
 BuildDepends: << 
 	fink (>= 0.28), cmake, bison (>= 2.4),
 	gsl,
@@ -85,7 +84,8 @@ CompileScript: <<
 	  export CC=gcc-fsf-4.6
 	fi
 	
-	QGIS_OPTIONS="-D QGIS_APP_NAME=QGIS-py%type_pkg[python]-%v
+	QGIS_OPTIONS="	-D CMAKE_C_COMPILER=gcc
+					-D QGIS_APP_NAME=QGIS-py-%v
 					-D CMAKE_PREFIX_PATH=%p
 					-D EXECUTABLE_OUTPUT_PATH=%b/build/src/mac/Contents/MacOS
 					-D CMAKE_INSTALL_PREFIX=%b/Applications
@@ -161,7 +161,7 @@ CompileScript: <<
 	
 	# 1.6.0 Plugins are now managed by their own package (e.g. qgis-plugin-ftools)
 	rm -rf %b/$QGIS_DIR/Resources/python/plugins
-	ln -s %p/share/qgis/python/plugins %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins
+	ln -s %p/share/qgis/python%type_pkg[python]/plugins %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins
 	  
 	# 1.6.0 Workaround to SJIS problem
 	mkdir -p %b/$QGIS_DIR/PlugIns
