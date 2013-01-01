@@ -1,5 +1,5 @@
-PInfo2: <<
-ackage: qgis-plugin-installer-py%type_pkg[python]
+Info2: <<
+Package: qgis-plugin-installer-py%type_pkg[python]
 Type: python (2.7 2.6)
 Architecture: powerpc, i386, x86_64
 Version: 1.2.1

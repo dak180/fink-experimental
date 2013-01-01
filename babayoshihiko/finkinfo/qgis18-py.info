@@ -44,10 +44,10 @@ BuildDepends: <<
 	libiconv-dev, giflib, libtiff, libjpeg8, libogdi3 (>= 3.1.5-1), libpng15, netcdf (>= 3.6.0-1002), 
 	cfitsio,
 	unixodbc2-nox (>= 2.2.11-1010) | unixodbc2 (>= 2.2.11-1010), 
-	libgeos3.3.3 (>= 3.0),
+	libgeos3.3.1 (>= 3.0),
 	gdal-dev (>= 1.4) | gdal-pgsql-dev (>= 1.4), 
 	postgresql90-dev, 
-	grass64-mac-dev | grass64-mac-dev,
+	grass64-x11-dev | grass64-mac-dev,
 	proj (>= 4.4),
 	qwt6-qt4-mac (>= 5.0),
 	libspatialindex2,
@@ -90,7 +90,7 @@ CompileScript: <<
 					-D EXECUTABLE_OUTPUT_PATH=%b/build/src/mac/Contents/MacOS
 					-D CMAKE_INSTALL_PREFIX=%b/Applications
 					-D GDAL_INCLUDE_DIR=%p/include/gdal1
-					-D GEOS_CONFIG=%p/opt/libgeos3.3.3/bin/geos-config
+					-D GEOS_CONFIG=%p/opt/libgeos3.3.1/bin/geos-config
 					-D QT_BINARY_DIR=%p/lib/qt4-mac/bin
 					-D QT_INCLUDE_DIR=%p/lib/qt4-mac/include
 					-D QT_QMAKE_EXECUTABLE=%p/lib/qt4-mac/bin/qmake
@@ -258,9 +258,9 @@ SplitOff: <<
 	python%type_pkg[python], sip-py%type_pkg[python] (>= 4.8), pyqt4-mac-py%type_pkg[python], 
 	gsl-shlibs,
 	xerces-c31-shlibs,
-	libgeos3.3.3-shlibs (>= 3.0),
+	libgeos3.3.1-shlibs (>= 3.0),
 	gdal-shlibs (>= 1.4) | gdal-pgsql-shlibs (>= 1.4), 
-	grass64-mac-shlibs | grass64-x11-shlibs,
+	grass64-x11-shlibs | grass64-mac-shlibs,
 	libspatialite5-shlibs,
 	proj-shlibs (>= 4.4),
 	qwt6-qt4-mac-shlibs (>= 5.0),
@@ -322,7 +322,7 @@ DescPackaging: <<
 the latest stable versions, e.g.:
 	  postgresql90,
 	  grass64,
-	  libgeos3.3.3,
+	  libgeos3.3.1,
 	  libjpeg8, libogdi3, libpng15
 <<
 DescPort: <<
