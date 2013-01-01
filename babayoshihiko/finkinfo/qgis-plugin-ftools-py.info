@@ -22,7 +22,7 @@ BuildDepends: <<
 	libgeos3.3.3 (>= 3.0),
 	gdal-dev (>= 1.4) | gdal-pgsql-dev (>= 1.4), 
 	postgresql90-dev, 
-	grass64-mac-dev | grass64-mac-dev,
+	grass64-x11-dev | grass64-mac-dev,
 	proj (>= 4.4),
 	qwt6-qt4-mac (>= 5.0),
 	libspatialindex2,
