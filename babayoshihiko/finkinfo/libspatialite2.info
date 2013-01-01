@@ -31,9 +31,10 @@ BuildDependsOnly: True
 Source: http://www.gaia-gis.it/gaia-sins/libspatialite-sources/libspatialite-%v.tar.gz
 Source-MD5: 450d1a0d9da1bd9f770b7db3f2509f69
 
-SetCFLAGS: -I%p/opt/libgeos3.3.3/include
+SetCFLAGS: -I%p/opt/libgeos3.3.3/include 
 SetCPPFLAGS: -Os
 SetLDFLAGS: -lcharset -L%p/opt/libgeos3.3.3/lib
+
 ConfigureParams: <<
 	--target=macosx
 <<
@@ -42,11 +43,12 @@ CompileScript: <<
 #!/bin/sh -xe
   # Set up Libraries
   ./configure %c
+
+  perl -pi -e "s|SUBDIRS = src test examples|SUBDIRS = src test|" Makefile
   
   # 4.0.0
   # perl -pi -e "s|SUBDIRS = src test examples|SUBDIRS = src test|g" Makefile
   # perl -pi -e "s|CPPFLAGS = -Os -I%p/include|CPPFLAGS = -Os -I%p/include -I%p/opt/libgeos3.3.3/include|g" examples/Makefile
-  
   make
 <<
 
