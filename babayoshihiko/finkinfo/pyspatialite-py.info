@@ -17,9 +17,9 @@ Depends: python%type_pkg[python], libspatialite2-shlibs, libgeos3.3.3-shlibs, pr
 
 # Patch Phase.
 PatchFile: pyspatialite-py.patch
-PatchFile-MD5: 93c49f09c3ae60de4ba20b280c3cbb35
+PatchFile-MD5: 816c3409a05bba8c3e4fff8a00425fff
 PatchScript: <<
-  sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+  sed -e 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
   perl -pi -e 's,%% LOCALBASE,%% "%p",' setup.py
   perl -pi -e 's,#define HAVE_LOAD_EXTENSION,#undef HAVE_LOAD_EXTENSION,' src/connection.c
 <<
@@ -29,6 +29,8 @@ SetCPPFLAGS: -Os
 SetLDFLAGS: -lcharset -liconv -L%p/opt/libgeos3.3.3/lib -lspatialite -L%p
 
 CompileScript: <<
+  ln -s ../sqlite-autoconf-3071300 sqlite
+  ln -s ../libspatialite-3.0.1/src/spatialite spatialite
   %p/bin/python%type_raw[python] setup.py build
 <<
 InstallScript: <<
