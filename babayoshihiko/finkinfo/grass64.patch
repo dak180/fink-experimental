@@ -1,8 +1,6 @@
-Binary files grass-6.4.2-orig/.DS_Store and grass-6.4.2/.DS_Store differ
-Binary files grass-6.4.2-orig/include/iostream/.DS_Store and grass-6.4.2/include/iostream/.DS_Store differ
 diff -ruN grass-6.4.2-orig/include/iostream/ami_stream.h grass-6.4.2/include/iostream/ami_stream.h
 --- grass-6.4.2-orig/include/iostream/ami_stream.h	2012-12-30 11:19:00.000000000 +0900
-+++ grass-6.4.2/include/iostream/ami_stream.h	2012-12-30 11:22:53.000000000 +0900
++++ grass-6.4.2/include/iostream/ami_stream.h	2013-01-03 08:37:30.000000000 +0900
 @@ -140,7 +140,7 @@
    AMI_STREAM();
    
@@ -17,7 +15,7 @@ diff -ruN grass-6.4.2-orig/include/iostream/ami_stream.h grass-6.4.2/include/ios
    AMI_err read_item(T **elt);
    AMI_err write_item(const T &elt);
 -  AMI_err read_array(T *data, off_t len, off_t *lenp);
-+  AMI_err read_array(T *data, off_t len, off_t *lenp=NULL);
++  AMI_err read_array(T *data, off_t len, off_t *lenp = NULL);
    AMI_err write_array(const T *data, off_t len);
    
    // Return the number of items in the stream.
@@ -59,17 +57,18 @@ diff -ruN grass-6.4.2-orig/include/iostream/ami_stream.h grass-6.4.2/include/ios
    
 diff -ruN grass-6.4.2-orig/include/iostream/embuffer.h grass-6.4.2/include/iostream/embuffer.h
 --- grass-6.4.2-orig/include/iostream/embuffer.h	2012-12-30 11:19:00.000000000 +0900
-+++ grass-6.4.2/include/iostream/embuffer.h	2012-12-30 11:22:53.000000000 +0900
-@@ -364,7 +364,7 @@
++++ grass-6.4.2/include/iostream/embuffer.h	2013-01-03 08:38:38.000000000 +0900
+@@ -363,8 +363,7 @@
+      
    // return the number of items actually inserted 
    long insert(AMI_STREAM<T>* str, 
- 	      //long bos=0); 
+-	      //long bos=0); 
 -	      long bos); 
 +	      long bos=0); 
    
    //print range of elements in buffer
    void print_range();
-@@ -1120,7 +1120,7 @@
+@@ -1120,7 +1119,7 @@
     
     return the number of items actually inserted */
  template<class T, class Key>
@@ -80,27 +79,41 @@ diff -ruN grass-6.4.2-orig/include/iostream/embuffer.h grass-6.4.2/include/iostr
    
 diff -ruN grass-6.4.2-orig/include/iostream/empq_impl.h grass-6.4.2/include/iostream/empq_impl.h
 --- grass-6.4.2-orig/include/iostream/empq_impl.h	2012-12-30 11:19:00.000000000 +0900
-+++ grass-6.4.2/include/iostream/empq_impl.h	2012-12-30 11:31:39.000000000 +0900
-@@ -21,6 +21,7 @@
++++ grass-6.4.2/include/iostream/empq_impl.h	2013-01-03 08:52:44.000000000 +0900
+@@ -21,6 +21,8 @@
  #define __EMPQ_IMPL_H
  
  #include <ostream>
-+#include <vector>
++#include <vector> 
++
  using namespace std;
  
  #include "empq.h"
-@@ -1357,7 +1358,7 @@
+@@ -1357,7 +1359,7 @@
    assert(arity> 1);
      
    //Pointers to current leading elements of streams
 -  ExtendedEltMergeType<T,Key> in_objects[arity];
-+  std::vector<ExtendedEltMergeType<T,Key> > in_objects(arity);
++  std::vector<ExtendedEltMergeType<T,Key> > in_objects(arity); 
  
    AMI_err ami_err;
    //unsigned int i;
+diff -ruN grass-6.4.2-orig/include/iostream/imbuffer.h grass-6.4.2/include/iostream/imbuffer.h
+--- grass-6.4.2-orig/include/iostream/imbuffer.h	2012-12-30 11:19:00.000000000 +0900
++++ grass-6.4.2/include/iostream/imbuffer.h	2013-01-03 08:55:48.000000000 +0900
+@@ -22,6 +22,9 @@
+ 
+ 
+ #include <stdio.h>
++
++#include <vector> 
++
+ #include <assert.h>
+ #include <stdlib.h>
+ 
 diff -ruN grass-6.4.2-orig/include/iostream/minmaxheap.h grass-6.4.2/include/iostream/minmaxheap.h
 --- grass-6.4.2-orig/include/iostream/minmaxheap.h	2012-12-30 11:19:00.000000000 +0900
-+++ grass-6.4.2/include/iostream/minmaxheap.h	2012-12-30 11:58:29.000000000 +0900
++++ grass-6.4.2/include/iostream/minmaxheap.h	2013-01-03 08:41:09.000000000 +0900
 @@ -491,7 +491,7 @@
    T a, b;
    min(a);
@@ -137,7 +150,7 @@ diff -ruN grass-6.4.2-orig/include/iostream/minmaxheap.h grass-6.4.2/include/ios
  }
 diff -ruN grass-6.4.2-orig/lib/init/init.sh grass-6.4.2/lib/init/init.sh
 --- grass-6.4.2-orig/lib/init/init.sh	2012-12-30 11:19:00.000000000 +0900
-+++ grass-6.4.2/lib/init/init.sh	2012-12-30 11:22:53.000000000 +0900
++++ grass-6.4.2/lib/init/init.sh	2013-01-03 08:30:22.000000000 +0900
 @@ -25,7 +25,8 @@
  trap "echo 'User break!' ; exit" 2 3 15
  
@@ -214,7 +227,7 @@ diff -ruN grass-6.4.2-orig/lib/init/init.sh grass-6.4.2/lib/init/init.sh
  "$ETC/clean_temp" > /dev/null
 diff -ruN grass-6.4.2-orig/lib/init/init.sh.orig grass-6.4.2/lib/init/init.sh.orig
 --- grass-6.4.2-orig/lib/init/init.sh.orig	1970-01-01 09:00:00.000000000 +0900
-+++ grass-6.4.2/lib/init/init.sh.orig	2012-12-30 11:22:53.000000000 +0900
++++ grass-6.4.2/lib/init/init.sh.orig	2013-01-03 08:28:09.000000000 +0900
 @@ -0,0 +1,1066 @@
 +#!/bin/sh
 +#############################################################################
@@ -1284,7 +1297,7 @@ diff -ruN grass-6.4.2-orig/lib/init/init.sh.orig grass-6.4.2/lib/init/init.sh.or
 +
 diff -ruN grass-6.4.2-orig/macosx/Makefile grass-6.4.2/macosx/Makefile
 --- grass-6.4.2-orig/macosx/Makefile	2012-12-30 11:19:00.000000000 +0900
-+++ grass-6.4.2/macosx/Makefile	2012-12-30 11:22:53.000000000 +0900
++++ grass-6.4.2/macosx/Makefile	2013-01-03 08:30:22.000000000 +0900
 @@ -4,8 +4,8 @@
  
  MACOSX_APP_NAME = GRASS-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.app
@@ -1336,7 +1349,7 @@ diff -ruN grass-6.4.2-orig/macosx/Makefile grass-6.4.2/macosx/Makefile
  	${MAKE_DIR_CMD} ${MACOSX_SUPPDIR}
 diff -ruN grass-6.4.2-orig/macosx/Makefile.orig grass-6.4.2/macosx/Makefile.orig
 --- grass-6.4.2-orig/macosx/Makefile.orig	1970-01-01 09:00:00.000000000 +0900
-+++ grass-6.4.2/macosx/Makefile.orig	2012-12-30 11:22:53.000000000 +0900
++++ grass-6.4.2/macosx/Makefile.orig	2013-01-03 08:28:10.000000000 +0900
 @@ -0,0 +1,117 @@
 +MODULE_TOPDIR = ..
 +
@@ -1457,7 +1470,7 @@ diff -ruN grass-6.4.2-orig/macosx/Makefile.orig grass-6.4.2/macosx/Makefile.orig
 +	-rm -rf ${ARCH_DISTDIR}/modbuild/ 2>/dev/null
 diff -ruN grass-6.4.2-orig/macosx/app/build_gui_user_menu.sh grass-6.4.2/macosx/app/build_gui_user_menu.sh
 --- grass-6.4.2-orig/macosx/app/build_gui_user_menu.sh	2012-12-30 11:19:00.000000000 +0900
-+++ grass-6.4.2/macosx/app/build_gui_user_menu.sh	2012-12-30 11:22:53.000000000 +0900
++++ grass-6.4.2/macosx/app/build_gui_user_menu.sh	2013-01-03 08:30:22.000000000 +0900
 @@ -13,7 +13,7 @@
  
  GRASS_MMVER=`cut -d . -f 1-2 "$GISBASE/etc/VERSIONNUMBER"`
@@ -1469,7 +1482,7 @@ diff -ruN grass-6.4.2-orig/macosx/app/build_gui_user_menu.sh grass-6.4.2/macosx/
  echo "Rebuilding Addon menu..."
 diff -ruN grass-6.4.2-orig/macosx/app/build_html_user_index.sh grass-6.4.2/macosx/app/build_html_user_index.sh
 --- grass-6.4.2-orig/macosx/app/build_html_user_index.sh	2012-12-30 11:19:00.000000000 +0900
-+++ grass-6.4.2/macosx/app/build_html_user_index.sh	2012-12-30 11:22:53.000000000 +0900
++++ grass-6.4.2/macosx/app/build_html_user_index.sh	2013-01-03 08:30:22.000000000 +0900
 @@ -19,13 +19,13 @@
  GRASS_MMVER=`cut -d . -f 1-2 "$GISBASE/etc/VERSIONNUMBER"`
  GRASSVERSION=`cat "$GISBASE/etc/VERSIONNUMBER"`
@@ -1486,9 +1499,217 @@ diff -ruN grass-6.4.2-orig/macosx/app/build_html_user_index.sh grass-6.4.2/macos
  fi
  
  write_html_header()
+diff -ruN grass-6.4.2-orig/macosx/app/build_html_user_index.sh.orig grass-6.4.2/macosx/app/build_html_user_index.sh.orig
+--- grass-6.4.2-orig/macosx/app/build_html_user_index.sh.orig	1970-01-01 09:00:00.000000000 +0900
++++ grass-6.4.2/macosx/app/build_html_user_index.sh.orig	2013-01-03 08:28:10.000000000 +0900
+@@ -0,0 +1,188 @@
++#!/bin/sh
++
++#generates user addon HTML man pages docs/html/index.html
++# Markus Neteler, 2003, 2004, 2005, 2006
++
++# William Kyngesburye:
++#    This one builds the addon index, from both the global
++#    /Library/GRASS/$GRASS_MMVER/Modules and the user's
++#    $HOME/Library/$GRASS_MMVER/GRASS/Modules
++#    Each is in their own section, in the same index file.
++# 
++#    global help pages are symlinked to the user dir, so user doesn't need perms
++#    to write there for redirects.
++#    main and section indexes from GRASS.app are redirected from user dir, not
++#    symlinked, so relative paths stay valid.
++
++############# nothing to configure below ############
++
++GRASS_MMVER=`cut -d . -f 1-2 "$GISBASE/etc/VERSIONNUMBER"`
++GRASSVERSION=`cat "$GISBASE/etc/VERSIONNUMBER"`
++HTMLDIR="$HOME/Library/GRASS/$GRASS_MMVER/Modules/docs/html"
++HTMLDIRG="/Library/GRASS/$GRASS_MMVER/Modules/docs/html"
++
++# $1 is current path to GRASS.app/Contents/MacOS, defaults to /Applications
++if [ "$1" != "" ] ; then
++	GISBASE=$1
++else
++	GISBASE="/Applications/GRASS-$GRASS_MMVER.app/Contents/MacOS"
++fi
++
++write_html_header()
++{
++# $1: filename
++# $2: page title
++# $3: is it main index
++
++echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">
++<html>
++<head>
++ <title>$2</title>
++ <meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">
++ <meta name=\"Author\" content=\"GRASS Development Team\">" > $1
++if [ "$3" ] ; then
++	echo " <meta name=\"AppleTitle\" content=\"$2\">
++ <meta name=\"AppleIcon\" content=\"GRASS-$GRASS_MMVER/grass_icon.png\">
++ <meta name=\"robots\" content=\"anchors\">" >> $1
++fi
++echo " <link rel=\"stylesheet\" href=\"grassdocs.css\" type=\"text/css\">
++</head>
++<body bgcolor=\"#FFFFFF\">
++
++<img src=\"grass_logo.png\" alt=\"GRASS logo\"><hr align=center size=6 noshade>
++
++<h2>GRASS GIS $GRASSVERSION Reference Manual</h2>
++
++<p>Geographic Resources Analysis Support System, commonly referred to as
++<a href=\"http://grass.osgeo.org\">GRASS</a>, 
++is a Geographic Information System (GIS) used for geospatial data management
++and analysis, image processing, graphics/maps production, spatial modeling,
++and visualization. GRASS is currently used in academic and commercial settings
++around the world, as well as by many governmental agencies and environmental
++consulting companies.</p>
++
++<p>This reference manual details the use of modules distributed with
++Geographic Resources Analysis Support System (GRASS), an open source (GNU
++GPL'ed), image processing and geographic information system (GIS).</p>
++
++" >> $1
++}
++
++write_html_footer()
++{
++# $1: filename
++echo "<hr>" >> $1
++echo "<p><a href=\"$GISBASE/docs/html/index.html\">Help Index</a> | <a href=\"$GISBASE/docs/html/full_index.html\">Full Index</a> | <a href=\"$HTMLDIR/addon_index.html\">Addon Index</a><br>" >> $1
++echo "&copy; 2003-2008 <a href=\"http://grass.osgeo.org\">GRASS Development Team</a></p>" >> $1
++echo "</body>" >> $1   
++echo "</html>" >> $1
++}
++
++FULLINDEX=addon_index.html
++
++################
++echo "Rebuilding Addon HTML manual pages index..."
++
++#copy over CSS:
++cp -f "$GISBASE/docs/html/grassdocs.css" "$HTMLDIR/"
++#copy over GRASS logo:
++cp -f "$GISBASE/docs/html/grass_logo.png" "$HTMLDIR/"
++cp -f "$GISBASE/docs/html/grass_icon.png" "$HTMLDIR/"
++
++#process all global HTML pages:
++if [ -d "$HTMLDIRG" ] ; then
++cd "$HTMLDIRG"
++
++#get list of available GRASS modules:
++CMDLISTG=`ls -1 *.*.html 2> /dev/null | grep -v index.html | cut -d'.' -f1 | sort -u`
++else
++CMDLISTG=""
++fi
++
++#process all user HTML pages:
++cd "$HTMLDIR"
++
++# don't really need to delete these, as removed global modules won't get indexed,
++# though old symlinks will accumulate.  I'm just worried about wildcard deletes.
++#rm -f global_*.html
++
++#get list of available GRASS modules:
++CMDLIST=`ls -1 *.*.html 2> /dev/null | grep -v index.html | cut -d'.' -f1 | sort -u`
++
++#write main index:
++#echo "Generating HTML manual pages index (help system)..."
++write_html_header $FULLINDEX "GRASS GIS $GRASSVERSION Addon Reference Manual" 1
++echo "<p>Command guide:</p>" >> $FULLINDEX
++echo "<table border=0>" >> $FULLINDEX
++echo "<tr><td>&nbsp;&nbsp;d.*  </td><td>display commands</td><td>&nbsp;&nbsp;ps.* </td><td>postscript commands</td></tr>" >> $FULLINDEX
++echo "<tr><td>&nbsp;&nbsp;db.* </td><td>database commands</td><td>&nbsp;&nbsp;r.*  </td><td>raster commands</td></tr>" >> $FULLINDEX
++echo "<tr><td>&nbsp;&nbsp;g.*  </td><td>general commands</td><td>&nbsp;&nbsp;r3.* </td><td>raster3D commands</td></tr>" >> $FULLINDEX
++echo "<tr><td>&nbsp;&nbsp;i.*  </td><td>imagery commands</td><td>&nbsp;&nbsp;v.*  </td><td>vector commands</td></tr>" >> $FULLINDEX
++echo "<tr><td>&nbsp;&nbsp;m.*  </td><td>miscellaneous commands</td></tr>" >> $FULLINDEX
++echo "</table>" >> $FULLINDEX
++
++# global commands:
++echo "<h3>Global addon command index:</h3>" >> $FULLINDEX
++echo "<table>" >> $FULLINDEX
++if [ "$CMDLISTG" = "" ] ; then
++  echo "<tr><td valign=\"top\"><td>[There are no global addon help pages.]</td></tr>" >> $FULLINDEX
++else
++  for i in $CMDLISTG
++  do
++    cd "$HTMLDIRG"
++    CMDLISTI="`ls -1 $i.*.html`"
++    cd "$HTMLDIR"
++    for i in $CMDLISTI
++    do
++      BASENAME=`basename $i .html`
++      SHORTDESC="`cat "$HTMLDIRG/$i" | awk '/NAME/,/SYNOPSIS/' | grep '<em>' | cut -d'-' -f2- | sed 's+^ ++g' | grep -vi 'SYNOPSIS' | head -n 1`"
++#      echo "<tr><td valign=\"top\"><a href=\"$HTMLDIRG/$i\">$BASENAME</a></td> <td>$SHORTDESC</td></tr>" >> $FULLINDEX
++      # make them local to user to simplify page links
++      echo "<tr><td valign=\"top\"><a href=\"global_$i\">$BASENAME</a></td> <td>$SHORTDESC</td></tr>" >> $FULLINDEX
++      ln -sf "$HTMLDIRG/$i" global_$i
++    done
++  done
++fi
++echo "</table>" >> $FULLINDEX
++
++# user commands:
++echo "<h3>User addon command index:</h3>" >> $FULLINDEX
++echo "<table>" >> $FULLINDEX
++if [ "$CMDLIST" = "" ] ; then
++  echo "<tr><td valign=\"top\"><td>[There are no user addon help pages.]</td></tr>" >> $FULLINDEX
++else
++  for i in $CMDLIST
++  do 
++    for i in `ls -1 $i.*.html`
++    do
++      BASENAME=`basename $i .html`
++      SHORTDESC="`cat $i | awk '/NAME/,/SYNOPSIS/' | grep '<em>' | cut -d'-' -f2- | sed 's+^ ++g' | grep -vi 'SYNOPSIS' | head -n 1`"
++      echo "<tr><td valign="top"><a href=\"$i\">$BASENAME</a></td> <td>$SHORTDESC</td></tr>" >> $FULLINDEX
++    done
++  done
++fi
++echo "</table>" >> $FULLINDEX
++
++write_html_footer $FULLINDEX
++# done full index
++
++# user redirects to app dir for main index files
++
++for i in index full_index display database general imagery misc postscript raster raster3D vector
++do
++echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">
++<html>
++<head>
++ <title></title>
++ <meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">
++ <meta http-equiv=\"Refresh\" content=\"0; $GISBASE/docs/html/$i.html\">
++</head>
++<body>
++</body>
++</html>" > $i.html
++done
++
++# add Help Viewer link in user docs folder
++
++mkdir -p $HOME/Library/Documentation/Help/
++ln -sfh ../../GRASS/$GRASS_MMVER/Modules/docs/html $HOME/Library/Documentation/Help/GRASS-$GRASS_MMVER
+diff -ruN grass-6.4.2-orig/macosx/app/build_html_user_index.sh.rej grass-6.4.2/macosx/app/build_html_user_index.sh.rej
+--- grass-6.4.2-orig/macosx/app/build_html_user_index.sh.rej	1970-01-01 09:00:00.000000000 +0900
++++ grass-6.4.2/macosx/app/build_html_user_index.sh.rej	2013-01-03 08:30:22.000000000 +0900
+@@ -0,0 +1,12 @@
++***************
++*** 184,187 ****
++  
++  # add Help Viewer link in user docs folder
++  
++  ln -sfh ../../GRASS/$GRASS_MMVER/Modules/docs/html $HOME/Library/Documentation/Help/GRASS-$GRASS_MMVER
++--- 184,188 ----
++  
++  # add Help Viewer link in user docs folder
++  
+++ mkdir -p $HOME/Library/Documentation/Help/GRASS-$GRASS_MMVER
++  ln -sfh ../../GRASS/$GRASS_MMVER/Modules/docs/html $HOME/Library/Documentation/Help/GRASS-$GRASS_MMVER
 diff -ruN grass-6.4.2-orig/macosx/app/grass.sh.in grass-6.4.2/macosx/app/grass.sh.in
 --- grass-6.4.2-orig/macosx/app/grass.sh.in	2012-12-30 11:19:00.000000000 +0900
-+++ grass-6.4.2/macosx/app/grass.sh.in	2012-12-30 11:22:53.000000000 +0900
++++ grass-6.4.2/macosx/app/grass.sh.in	2013-01-03 08:30:22.000000000 +0900
 @@ -32,7 +32,7 @@
  grass_ver=`cut -d . -f 1-2 "$GISBASE/etc/VERSIONNUMBER"`
  
@@ -1633,7 +1854,7 @@ diff -ruN grass-6.4.2-orig/macosx/app/grass.sh.in grass-6.4.2/macosx/app/grass.s
  if [ "$GRASS_GUI" = "text" ] && [ "$x11" = "tig" ] ; then
 diff -ruN grass-6.4.2-orig/macosx/app/python_wrapper grass-6.4.2/macosx/app/python_wrapper
 --- grass-6.4.2-orig/macosx/app/python_wrapper	2012-12-30 11:19:00.000000000 +0900
-+++ grass-6.4.2/macosx/app/python_wrapper	2012-12-30 11:22:53.000000000 +0900
++++ grass-6.4.2/macosx/app/python_wrapper	2013-01-03 08:30:22.000000000 +0900
 @@ -29,9 +29,7 @@
  SYSARCH=`uname -p`
  SYSVER=`uname -r | cut -d . -f 1`
@@ -1647,7 +1868,7 @@ diff -ruN grass-6.4.2-orig/macosx/app/python_wrapper grass-6.4.2/macosx/app/pyth
  	case $SYSARCH in
 diff -ruN grass-6.4.2-orig/macosx/modbuild/Makefile grass-6.4.2/macosx/modbuild/Makefile
 --- grass-6.4.2-orig/macosx/modbuild/Makefile	2012-12-30 11:19:00.000000000 +0900
-+++ grass-6.4.2/macosx/modbuild/Makefile	2012-12-30 11:22:53.000000000 +0900
++++ grass-6.4.2/macosx/modbuild/Makefile	2013-01-03 08:30:22.000000000 +0900
 @@ -9,7 +9,7 @@
  	MACOSX_APP_NAME = GRASS-${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}.app
  endif
@@ -1666,9 +1887,20 @@ diff -ruN grass-6.4.2-orig/macosx/modbuild/Makefile grass-6.4.2/macosx/modbuild/
  	mkdir -p $(ARCH_DISTDIR)/modbuild/module
  	mkdir -p $(ARCH_DISTDIR)/modbuild/include/Make
  	-cp $(MODULE_TOPDIR)/include/Make/Dir.make $(ARCH_DISTDIR)/modbuild/include/Make/
-@@ -44,7 +44,7 @@
- 	@#GISBASE = $(INST_DIR_MACOSX)\
- 	@#endif#g'
+@@ -38,13 +38,13 @@
+ 	$(MODULE_TOPDIR)/include/Make/Grass.make.in > $(ARCH_DISTDIR)/modbuild/include/Make/Grass.make
+ 	@# until I figure out how to get sed to replace with multiple lines in a
+ 	@# makefile, GRASS_APP required for modbuild, ie no default to /Applications
+-	@#-e 's#^GISBASE.*#ifdef GRASS_APP\
+-	@#GISBASE = $$(GRASS_APP)/Contents/MacOS\
+-	@#else\
+-	@#GISBASE = $(INST_DIR_MACOSX)\
+-	@#endif#g'
++#	-e 's#^GISBASE.*#ifdef GRASS_APP\
++#	GISBASE = $$(GRASS_APP)/Contents/MacOS\
++#	else\
++#	GISBASE = $(INST_DIR_MACOSX)\
++#	endif#g'
  	@# html.make needs a little change
 -	sed -e 's,GISRC=$$(RUN_GISBASE),GISRC=/Library/GRASS/$(GRASS_VERSION_MAJOR).$(GRASS_VERSION_MINOR)/modbuild/dist.$$(ARCH),g' $(MODULE_TOPDIR)/include/Make/Html.make > $(ARCH_DISTDIR)/modbuild/include/Make/Html.make
 +	sed -e 's,GISRC=$$(RUN_GISBASE),GISRC=@PREFIX@/lib/GRASS/$(GRASS_VERSION_MAJOR).$(GRASS_VERSION_MINOR)/modbuild/dist.$$(ARCH),g' $(MODULE_TOPDIR)/include/Make/Html.make > $(ARCH_DISTDIR)/modbuild/include/Make/Html.make
