@@ -66,7 +66,7 @@ Source-MD5: d3398d6b1e3a2ef19cfb6e39a5ae9919
 
 # Patch Phase.
 PatchFile: grass64.patch
-PatchFile-MD5: ed318c92e82880b96cbe934832f2071e
+PatchFile-MD5: ae85a18e92088167b0df657240617946
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 
 # Compile Phase.
@@ -106,15 +106,30 @@ CompileScript: <<
 
   # Recompile python scripts to fix path (because 'make install' is
   # called with path to staging directory that masks runtime location)
-  %p/bin/python2.7    %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-6.4.app/Contents/MacOS/etc/wxpython %b/Applications/GRASS-6.4.app/Contents/MacOS/etc/wxpython/
-  %p/bin/python2.7 -O %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-6.4.app/Contents/MacOS/etc/wxpython %b/Applications/GRASS-6.4.app/Contents/MacOS/etc/wxpython/
-  %p/bin/python2.7    %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-6.4.app/Contents/MacOS/etc/python/grass %b/Applications/GRASS-6.4.app/Contents/MacOS/etc/python/grass/
-  %p/bin/python2.7 -O %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-6.4.app/Contents/MacOS/etc/python/grass %b/Applications/GRASS-6.4.app/Contents/MacOS/etc/python/grass/
-  %p/bin/python2.7    %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-6.4.app/Contents/MacOS/etc/python/grass/script %b/Applications/GRASS-6.4.app/Contents/MacOS/etc/python/grass/script/
-  %p/bin/python2.7 -O %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-6.4.app/Contents/MacOS/etc/python/grass/script %b/Applications/GRASS-6.4.app/Contents/MacOS/etc/python/grass/script/
-  %p/bin/python2.7    %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-6.4.app/Contents/MacOS/etc/python/grass/lib %b/Applications/GRASS-6.4.app/Contents/MacOS/etc/python/grass/lib/
-  %p/bin/python2.7 -O %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-6.4.app/Contents/MacOS/etc/python/grass/lib %b/Applications/GRASS-6.4.app/Contents/MacOS/etc/python/grass/lib/
-
+  for pydir in wxpython python/grass python/grass/script python/grass/lib
+  do
+    %p/bin/python2.7    %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-6.4.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-6.4.app/Contents/MacOS/etc/$pydir
+    %p/bin/python2.7 -O %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-6.4.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-6.4.app/Contents/MacOS/etc/$pydir
+  done
+  
+  for libname in I arraystats bitmap btree cdhc cluster datetime dbmibase dbmiclient dbmidriver dbstubs dgl dig2 display driver dspf edit form g3d gis gmath gpde gproj interpdata interpfl lidar linkm lrs neta pngdriver psdriver qtree raster rli rowio rtree segment shape sim sites sqlp stats symb trans vask vect vedit 
+  do
+    install_name_tool -id %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_${libname}.dylib %b/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_${libname}.dylib
+  done
+  
+  if [ "%type_raw[gui]" == "-x11" ]; then
+  for libname in Iortho
+  do
+    install_name_tool -id %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_${libname}.dylib %b/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_${libname}.dylib
+  done
+  fi
+  
+  if [ "%type_raw[gui]" == "-mac" ]; then
+  for libname in nviz ogsf
+  do
+    install_name_tool -id %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_${libname}.dylib %b/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_${libname}.dylib
+  done
+  fi
 <<
 
 
@@ -204,6 +219,7 @@ SplitOff2: <<
     !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_lidar.%v.dylib
     !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_linkm.%v.dylib
     !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_lrs.%v.dylib
+    !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_neta.%v.dylib
     (%type_raw[gui] = -mac) !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_nviz.%v.dylib
     (%type_raw[gui] = -mac) !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_ogsf.%v.dylib
     !%p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_pngdriver.%v.dylib
@@ -253,6 +269,7 @@ SplitOff2: <<
     %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_lidar.dylib 6.4.0 %n (>= 6.4.0-1)
     %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_linkm.dylib 6.4.0 %n (>= 6.4.0-1)
     %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_lrs.dylib 6.4.0 %n (>= 6.4.0-1)
+    %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_neta.dylib 6.4.0 %n (>= 6.4.0-1)
     (%type_raw[gui] = -mac) %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_nviz.dylib 6.4.0 %n (>= 6.4.0-1)
     (%type_raw[gui] = -mac) %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_ogsf.dylib 6.4.0 %n (>= 6.4.0-1)
     %p/Applications/GRASS-6.4.app/Contents/MacOS/lib/libgrass_pngdriver.dylib 6.4.0 %n (>= 6.4.0-1)
