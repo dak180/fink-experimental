@@ -3,11 +3,10 @@ Info2: <<
 Package: qgis17-py%type_pkg[python]
 Type: python (2.7 2.6)
 Architecture: powerpc, i386, x86_64
-Distribution: 10.5, 10.6, 10.7
 
 
 Version: 1.7.4
-Revision: 1.1
+Revision: 4
 Description: User friendly Open Source GIS
 License: GPL
 Homepage: http://qgis.org
@@ -41,7 +40,7 @@ BuildDepends: <<
   fink (>= 0.28), cmake, bison (>= 2.3),
   gsl,
   qt4-base-mac, 
-  sip-py%type_pkg[python]-bin, pyqt4-mac-py%type_pkg[python] , 
+  sip-py%type_pkg[python]-bin, 
   xerces-c31-dev,
   libiconv-dev, giflib, libtiff, libjpeg8, libogdi3 (>= 3.1.5-1), libpng15, netcdf (>= 3.6.0-1002), 
   cfitsio,
@@ -60,7 +59,7 @@ SourceDirectory: qgis-%v
 
 # Patch Phase.
 PatchFile: qgis17-py.patch
-PatchFile-MD5: 97141900c19d275e420fcccb88f9a3c0
+PatchFile-MD5: 3485c4a3084794c1a1a552b3744c407a
 
 # Compile Phase.
 GCC: 4.0
@@ -100,6 +99,7 @@ CompileScript: <<
                 -DQWT_INCLUDE_DIR=%p/lib/qt4-mac/include/qwt/"
   QGIS_DIR=Applications/QGIS-py%type_pkg[python]-%v.app/Contents
   
+  
   mkdir build
   pushd build
       cmake $QGIS_OPTIONS \
@@ -108,8 +108,7 @@ CompileScript: <<
                 -DQ_WS_X11:INTERNAL=${Q_WS_X11} \
                 -DQ_WS_QWS:INTERNAL=${Q_WS_QWS} \
                 ..
-    
-  make VERBOSE=0
+  make VERBOSE=1
   make install CMAKE_INSTALL_PREFIX=%b SIP_MAC_PATH=%p/bin
   popd
   
@@ -201,6 +200,8 @@ the latest stable versions, e.g.:
     grass64,
     libgeos3.3.1,
     libjpeg8, libogdi3, libpng14
+  
+  sip errors can usually be found in .sip files in python/core.
 <<
 DescPort: <<
   See http://wiki.qgis.org/qgiswiki/BuildingFromSource
