@@ -1,16 +1,3 @@
-Index: utils/lit/lit/LitConfig.py
-===================================================================
---- utils/lit/lit/LitConfig.py	(revision 156555)
-+++ utils/lit/lit/LitConfig.py	(working copy)
-@@ -36,7 +36,7 @@
-         self.debug = debug
-         self.isWindows = bool(isWindows)
-         self.params = dict(params)
--        self.bashPath = None
-+        self.bashPath = '@FINK_PREFIX@/bin/bash'
- 
-         self.numErrors = 0
-         self.numWarnings = 0
 Index: lib/ExecutionEngine/MCJIT/CMakeLists.txt
 ===================================================================
 --- lib/ExecutionEngine/MCJIT/CMakeLists.txt	(revision 156555)
