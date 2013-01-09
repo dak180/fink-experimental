@@ -436,7 +436,7 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/libLLVMipa.dylib
 		!%p/opt/llvm-%v/lib/libLLVMipo.dylib
 		!%p/opt/llvm-%v/lib/LLVMPolly.so
-		!%p/opt/llvm-%v/lib/libLLVMPollyJSON.dylib
+		!%p/opt/llvm-%v/lib/libPollyJSON.dylib
 		(%m != powerpc) !%p/opt/llvm-%v/lib/libLLVMX86AsmParser.dylib
 		(%m != powerpc) !%p/opt/llvm-%v/lib/libLLVMX86AsmPrinter.dylib
 		(%m != powerpc) !%p/opt/llvm-%v/lib/libLLVMX86CodeGen.dylib
