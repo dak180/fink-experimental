@@ -221,7 +221,7 @@ CompileScript: <<
 	fi
 
 #	If you do not wish to bootstrap, just uncomment the next line:
-	exit
+#	exit
 
 	echo "######## START of BOOTSTRAP STAGE 2: building llvm/clang with stage 1 clang"
 # TODO: if we want to use stage-1-built Polly in stage-2's build, 
