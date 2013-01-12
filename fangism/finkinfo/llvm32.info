@@ -1,7 +1,7 @@
 Info3: <<
 Package: llvm32
 Version: 3.2
-Revision: 4
+Revision: 5
 Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
@@ -316,7 +316,7 @@ InfoTest: <<
 # need bash because /bin/sh 2.0 on darwin8 is missing support for pipefail
 # coreutils for gtimeout for tests
 	TestDepends: <<
-		bash (>= 3.0),
+#		bash (>= 3.0),
 		coreutils
 	<<
  	TestScript: <<
@@ -388,6 +388,11 @@ InstallScript: <<
 		done
 		fi
 	done
+	popd
+
+	# need symlink /usr/bin/ld so libLTO.dylib can be found relative to @executable_path
+	pushd $iprefix/bin
+	test -x /usr/bin/ld && ln -s /usr/bin/ld .
 	popd
 
 	# documentation
