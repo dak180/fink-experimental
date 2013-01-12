@@ -316,7 +316,7 @@ InfoTest: <<
 # need bash because /bin/sh 2.0 on darwin8 is missing support for pipefail
 # coreutils for gtimeout for tests
 	TestDepends: <<
-#		bash (>= 3.0),
+		bash (>= 3.0),
 		coreutils
 	<<
  	TestScript: <<
