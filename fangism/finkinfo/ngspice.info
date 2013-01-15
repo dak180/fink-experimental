@@ -23,7 +23,7 @@ Source: mirror:sourceforge:%n/ng-spice-rework/25/%n-25.tar.gz
 # SourceDirectory: ngspice-25
 Source-MD5: 0a2c9f377c5da827f774c7b4f9248231
 PatchFile: %n.patch
-PatchFile-MD5: 85272cea2e04a1f334ebea16362ecb73
+PatchFile-MD5: 93639fcc90f4b0e942c5f2336b57963e
 
 PatchScript: <<
 	#!/bin/sh -ev

@@ -1,5 +1,5 @@
---- src/spicelib/devices/hisim2/hsm2eval.c.orig	2013-01-15 02:54:12.000000000 -0800
-+++ src/spicelib/devices/hisim2/hsm2eval.c	2013-01-15 02:56:20.000000000 -0800
+--- ngspice-25/src/spicelib/devices/hisim2/hsm2eval.c	2013-01-15 02:54:12.000000000 -0800
++++ ngspice-25/src/spicelib/devices/hisim2/hsm2eval.c	2013-01-15 02:56:20.000000000 -0800
 @@ -131,7 +131,9 @@
  #define C_IDD_MIN    1.0e-15
  
