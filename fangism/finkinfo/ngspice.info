@@ -1,3 +1,4 @@
+Info3: <<
 Package: ngspice
 Version: rework-25
 Revision: 1
@@ -10,39 +11,38 @@ BuildDepends: <<
 	fink (>= 0.24.12-1),
 	fink-package-precedence,
 	readline6,
+	libncurses5,
 	x11-dev,
 	automake1.11,
 	autoconf2.6,
-	libtool2,
-	texinfo
+	libtool2
+#	texinfo
 <<
 
 Source: mirror:sourceforge:%n/ng-spice-rework/25/%n-25.tar.gz
-# Source: mirror:sourceforge:ngspice/ngspice-25.tar.gz
-# Source: mirror:sourceforge:ngspice/ng-spice-%v.tar.gz
-# SourceDirectory: ngspice-25
 Source-MD5: 0a2c9f377c5da827f774c7b4f9248231
+Source2: http://%n.sourceforge.net/docs/ngspice25-manual.pdf
+Source2-MD5: 42a5a9f6614b9d3c7e4027cc0ce498ee
 PatchFile: %n.patch
 PatchFile-MD5: 93639fcc90f4b0e942c5f2336b57963e
 
 PatchScript: <<
 	#!/bin/sh -ev
 	%{default_script}
-	sed -i.orig -e '/STATIC/s|-static||g' \
-		-e '/man1\/Makefile/a\
-		doc/Makefile\
-' configure.ac
+	sed -i.orig -e '/STATIC/s|-static||g' configure.ac
+#	sed -i.orig -e '/STATIC/s|-static||g' \
+#		-e '/man1\/Makefile/a\
+#		doc/Makefile\
+# ' configure.ac
 	sed -i.orig -e '/AM_CFLAGS.*-static/s|^|# |' src/Makefile.am
-	sed -i.orig -e '/SUBDIRS/s|man|& doc|' Makefile.am
-	sed -i.orig -e '/TEXI2DVI/s|^|# |' doc/Makefile.am
+#	sed -i.orig -e '/SUBDIRS/s|man|& doc|' Makefile.am
+#	sed -i.orig -e '/TEXI2DVI/s|^|# |' doc/Makefile.am
 	pushd doc
 	ln -s ../AUTHORS .
 	popd
 	./autogen.sh
 <<
 
-SetCFLAGS: -g -O2 -DPIC -fno-common
-# Doesn't seem to work with --disable-dependency-tracking:
 ConfigureParams: <<
 	--infodir=%p/share/info \
 	--mandir=%p/share/man \
@@ -57,11 +57,16 @@ ConfigureParams: <<
 
 CompileScript: <<
 	#!/bin/sh -ev
-	%{default_script}
-	pushd doc
-	make || make V=1
-	make -j1 ngspice.{pdf,ps,html}
-	popd
+	mkdir build
+	env
+	cd build
+#	%{default_script}
+	../configure %c -C
+	make V=1
+#	pushd doc
+#	make || make V=1
+#	make -j1 ngspice.{pdf,ps,html}
+#	popd
 	fink-package-precedence .
 <<
 
@@ -72,14 +77,16 @@ TestScript: make -k check || exit 2
 # some tests may fail due to 0.0 != -0.0, consider using numdiff
 
 InstallScript: <<
-#!/bin/sh -ex
-   make install DESTDIR=%d
-   mkdir -p %i/share/doc/%n/xgraph
-   cp -pr xgraph/README.* %i/share/doc/%n/xgraph
-   cp -pr contrib %i/share/doc
+	#!/bin/sh -ev
+	pushd build
+	make install DESTDIR=%d
+	popd
+	mkdir -p %i/share/doc/%n/xgraph
+	cp -pr xgraph/README.* %i/share/doc/%n/xgraph
+	cp -pr contrib %i/share/doc
 <<
 
-InfoDocs: ngspice.info
+# InfoDocs: ngspice.info
 
 DocFiles: <<
   ANALYSES AUTHORS BUGS COPYING ChangeLog DEVICES FAQ Stuarts_Poly_Notes NEWS
@@ -87,8 +94,9 @@ DocFiles: <<
   src/spicelib/devices/adms/psp102/admsva/readme.txt:adms-psp102-readme.txt
   src/spicelib/devices/soi3/README:README.soi3
   src/frontend/numparam/readme.txt:README.numparam
-	doc/ngspice.pdf doc/ngspice.ps doc/ngspice.html
+  ../ngspice25-manual.pdf
 <<
+#	build/doc/ngspice.pdf build/doc/ngspice.ps build/doc/ngspice.html
 
 Description: Mixed-level/mixed-signal circuit simulator
 
@@ -120,9 +128,11 @@ suggestions and reports. What we will be able to do depends mostly on
 user interests, contributions and feedback. 
 
 Ngspice is part of the gEDA project.
+
+Previous Maintainer: Charles Lepple <clepple+fink@ghz.cc>
 <<
 
 License: BSD
 Homepage: http://ngspice.sourceforge.net/
-# Maintainer: Charles Lepple <clepple+fink@ghz.cc>
 Maintainer: David Fang <fangism@users.sourceforge.net>
+<<
