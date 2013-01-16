@@ -66,3 +66,42 @@
      TMF1 = 2.0 * ( x ) / ( add0 ) ; \
      TMF2 = 1.0 + TMF1 * ( (1.0/2) + TMF1 * ( (1.0/6) \
                 + TMF1 * ( (1.0/24) + TMF1 * ( (1.0/120) \
+--- ngspice-25/src/ngsconvert.c	2013-01-16 13:56:10.000000000 -0800
++++ ngspice-25/src/ngsconvert.c	2013-01-16 14:25:02.000000000 -0800
+@@ -18,14 +18,14 @@
+ #include "frontend/display.h"
+ #include "../misc/mktemp.h"
+ 
+-FILE *cp_in = NULL;
+-FILE *cp_out = NULL;
+-FILE *cp_err = NULL;
+-FILE *cp_curin = NULL;
+-FILE *cp_curout = NULL;
+-FILE *cp_curerr = NULL;
++extern FILE *cp_in;
++extern FILE *cp_out;
++extern FILE *cp_err;
++extern FILE *cp_curin;
++extern FILE *cp_curout;
++extern FILE *cp_curerr;
+ int cp_maxhistlength;
+-bool cp_debug = FALSE;
++extern bool cp_debug;
+ char cp_chars[128];
+ bool cp_nocc = TRUE;
+ bool ft_stricterror = FALSE;
+@@ -430,14 +430,11 @@
+ 
+ void cp_pushcontrol(void) { }
+ void cp_popcontrol(void) { }
+-void out_init(void) { }
+ void cp_doquit(void) { exit(0); }
+ void cp_usrvars(struct variable **v1, struct variable **v2) { *v1 = NULL; *v2 = NULL;  return; }
+ int cp_evloop(char *s) { NG_IGNORE(s); return (0); }
+ void cp_ccon(bool o) { NG_IGNORE(o); }
+ char*if_errstring(int c) { NG_IGNORE(c); return ("error"); }
+-void out_printf(char *fmt, ...) { NG_IGNORE(fmt); }
+-void out_send(char *string) { NG_IGNORE(string); }
+ struct variable * cp_enqvar(char *word) { NG_IGNORE(word); return (NULL); }
+ struct dvec *vec_get(const char *word) { NG_IGNORE(word); return (NULL); }
+ void cp_ccom(wordlist *w, char *b, bool e) {
