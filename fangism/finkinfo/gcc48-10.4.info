@@ -30,7 +30,7 @@ ConfigureParams: <<
  STRIP_FOR_TARGET=odstrip \
  --prefix=%p/lib/gcc4.8 --mandir=%p/share/man --infodir=%p/lib/gcc4.8/info --enable-languages=c,c++,fortran,lto,objc,obj-c++,java \
  --with-gmp=%p --with-libiconv-prefix=%p --with-isl=%p --with-cloog=%p --with-mpc=%p --with-system-zlib --enable-checking=release \
- --x-includes=/usr/X11R6/include --x-libraries=/usr/X11R6/lib --program-suffix=-fsf-4.8
+ --x-includes=/usr/X11R6/include --x-libraries=/usr/X11R6/lib --program-suffix=-fsf-4.8 --with-dwarf2
 <<
 InfoTest: <<
    TestDepends: autogen, dejagnu
@@ -59,8 +59,8 @@ CompileScript: <<
  else
    ../gcc-%v/configure %c
  fi
- # make
- make bootstrap-lean
+ make
+ # make bootstrap-lean
  fink-package-precedence --prohibit-bdep=%n .
  ##  make check requires autogen, dejagnu and expect, and should be run, in darwin_objdir, after install.
  ##  on 32-bit processors use
