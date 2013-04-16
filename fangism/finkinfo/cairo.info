@@ -169,7 +169,7 @@ SplitOff: <<
 		README
 	<<
 	Files: %p/lib/libcairo.2.dylib
-	Shlibs: %p/lib/libcairo.2.dylib 11203.0.0 %n (>= 1.11.0-1)
+	Shlibs: %p/lib/libcairo.2.dylib 11105.0.0 %n (>= 1.11.2-1)
 <<
 
 Homepage: http://www.cairographics.org/
