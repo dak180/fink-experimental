@@ -68,7 +68,8 @@ InstallScript: <<
   
   # Move site-library out of R
   pushd Library/Frameworks/R.framework/Resources/
-  ln -s %p/lib/R/2.15/site-library site-library
+  # ln -s %p/lib/R/2.15/site-library site-library
+  ln -s %p/lib/R/site-library site-library
   popd
   
   # Make more version specific symlink 
