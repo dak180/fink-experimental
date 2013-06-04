@@ -6,15 +6,20 @@ Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
 
-# ccache is only temporary, for accelerating rebuilds
 BuildDepends: <<
 	fink (>= 0.28), 
 	cmake (>= 2.8.2-1), 
+# ccache is optional, for accelerating rebuilds
 #	ccache,
+# polly plug-in needs isl,cloog,gmp
 	isl (>=0.11.1), 
 	cloog-org2 (>= 0.18), 
 	gmp5,
-	python27
+# build scripts need python2.7
+	python27,
+# xml and lzma are used to build an uninstalled bin/c-index-test, so bdep-only
+	libxml2,
+	liblzma5
 <<
 Depends: <<
 	isl-shlibs (>=0.11.1), 
@@ -33,7 +38,7 @@ Source4: http://llvm.org/releases/%v/polly-%v.src.tar.gz
 Source4-MD5: e9d21be41b1fc26d9a54e563f0e260b8
 # Source5: http://llvm.org/releases/%v/test-suite-%v.src.tar.gz
 # Source5-MD5: d8e16facb5ce65bd36dc9ff49e3243e5
-# libcxxabi is not recommended, lib++ is not ready yet
+# libcxxabi is not recommended, libc++ is not ready yet
 
 SourceDirectory: llvm-%v.src
 # may eventually split out development files
