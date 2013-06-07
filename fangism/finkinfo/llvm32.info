@@ -414,15 +414,16 @@ InstallScript: <<
 	popd
 
 	# boilerplate script for fixing post-cmake-install install_names
-	pushd $iprefix/lib
+	# expect to find in lib/
+	pushd $iprefix
 	for f in `find . -name '*.dylib'` `find . -name '*.so'`
 	do
 		if test ! -L $f
 		then
-		dir=`dirname $f`
+		dir=`dirname $f | sed -e 's|^\.\/||'`
                 b=`basename $f`
 		pushd $dir 2> /dev/null
-		install_name_tool -id "$PWD/$b" "$b"
+		install_name_tool -id "$prefix/$dir/$b" "$b"
 		case $f in
 		*.dylib) filt="sed 1,2d" ;;
 		*.so) filt="sed 1d" ;;
@@ -434,7 +435,7 @@ InstallScript: <<
 		# caution: assumes dependent libraries are in same dir
 		case $d in
 		/*) ;;
-		*) install_name_tool -change "$d" "$PWD/$d" $b ;;
+		*) install_name_tool -change "$d" "$prefix/lib/$d" $b ;;
 		esac
 		done
 		popd 2> /dev/null
