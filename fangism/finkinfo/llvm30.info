@@ -1,28 +1,13 @@
 Package: llvm30
 Version: 3.0
-Revision: 1
+Revision: 2
 Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
 
 # ccache is only temporary, for accelerating rebuilds
-BuildDepends: cmake (>= 2.8.2-1), fink (>= 0.28)
-InfoTest: <<
-# need bash because /bin/sh 2.0 on darwin8 is missing support for pipefail
-# coreutils for gtimeout for tests
-	TestDepends: python2.7, bash, coreutils
- 	TestScript: <<
-	#!/bin/sh -ev
-	# need path to bootstrapping compiler
-	pushd ../opt-bin
-	export PATH=`pwd`:$PATH
-	popd
-	cd ../build/last
-#	echo "******** Running included LLVM and clang tests ... ********"
-	make -k TESTARGS=-v check-all || :
-	<<
-	TestSuiteSize: medium
-<<
+# some cyclic dependency checker script needs python
+BuildDepends: cmake (>= 2.8.2-1), python27, fink (>= 0.28), ccache
 
 Source: http://llvm.org/releases/%v/llvm-%v.tar.gz
 Source-MD5: a8e5f5f1c1adebae7b4a654c376a6005
@@ -161,10 +146,17 @@ CompileScript: <<
 	*) : ;;
 	esac
 
-	CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_INSTALL_PREFIX=%p/opt/llvm-%v -DLLVM_ENABLE_ASSERTIONS=OFF -DCMAKE_BUILD_TYPE=Release"
+	CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_INSTALL_PREFIX=%p/opt/llvm-%v -DCMAKE_BUILD_TYPE=Release -DLLVM_LIT_ARGS:STRING=-v"
+	# -DLLVM_ENABLE_ASSERTIONS=OFF
 
 #	the --max-time option applies to aggregate test time, not individual :(
 #	CMAKE_OPTIONS="$CMAKE_OPTIONS -DLLVM_LIT_ARGS="-s -v --max-time=14400"
+
+	# trying to disable optimization flags on non-trustworthy compilers
+	ccvers=`$CXX -v 2>&1 | tail -n 1 | cut -d\  -f3`
+	if test $ccvers = 4.0.1
+	then STAGE1_CMAKE_OPTIONS='-DCMAKE_C_FLAGS_RELEASE:STRING=-O0 -DCMAKE_CXX_FLAGS_RELEASE:STRING=-O0'
+	fi
 
 	build_workaround () {
 	# pwd: builddir
@@ -196,10 +188,10 @@ CompileScript: <<
 	# wd: %b
 	mkdir -p ../build/stage1
 	pushd ../build/stage1
-	echo "CMAKE_OPTIONS=$CMAKE_OPTIONS"
-	# Technically, we only need the native back-end...
-	cmake $CMAKE_OPTIONS ../../llvm-%v.src
-	# this will fail, but we have to run it first and then fix some deps
+	echo "CMAKE_OPTIONS=$CMAKE_OPTIONS $STAGE1_CMAKE_OPTIONS"
+	# Technically, we only need the native back-end in stage 1...
+	cmake $CMAKE_OPTIONS $STAGE1_CMAKE_OPTIONS ../../llvm-%v.src
+	# first make fails, but we have to run it first and then fix some deps
 	make -k || :
 	build_workaround
 	make || make VERBOSE=1
@@ -309,7 +301,22 @@ CompileScript: <<
 	popd
 
 <<
-
+InfoTest: <<
+# need bash because /bin/sh 2.0 on darwin8 is missing support for pipefail
+# coreutils for gtimeout for tests
+	TestDepends: bash, coreutils
+ 	TestScript: <<
+	#!/bin/sh -ev
+	# need path to bootstrapping compiler
+	pushd ../opt-bin
+	export PATH=`pwd`:$PATH
+	popd
+	cd ../build/last
+#	echo "******** Running included LLVM and clang tests ... ********"
+	make -k TESTARGS=-v check-all || :
+	<<
+	TestSuiteSize: medium
+<<
 InstallScript: <<
 	#!/bin/sh -ev
 	iprefix=%i/opt/llvm-%v
