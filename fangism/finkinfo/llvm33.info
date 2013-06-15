@@ -496,13 +496,17 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/libLLVMInstCombine.dylib
 		!%p/opt/llvm-%v/lib/libLLVMInstrumentation.dylib
 		!%p/opt/llvm-%v/lib/libLLVMInterpreter.dylib
+		!%p/opt/llvm-%v/lib/libLLVMIRReader.dylib
 		!%p/opt/llvm-%v/lib/libLLVMJIT.dylib
 		!%p/opt/llvm-%v/lib/libLLVMLinker.dylib
 		!%p/opt/llvm-%v/lib/libLLVMMC.dylib
 		!%p/opt/llvm-%v/lib/libLLVMMCDisassembler.dylib
 		!%p/opt/llvm-%v/lib/libLLVMMCJIT.dylib
 		!%p/opt/llvm-%v/lib/libLLVMMCParser.dylib
+		!%p/opt/llvm-%v/lib/libLLVMObjCARCOpts.dylib
 		!%p/opt/llvm-%v/lib/libLLVMObject.dylib
+		!%p/opt/llvm-%v/lib/libLLVMOption.dylib
+		(%m = powerpc) !%p/opt/llvm-%v/lib/libLLVMPowerPCAsmParser.dylib
 		(%m = powerpc) !%p/opt/llvm-%v/lib/libLLVMPowerPCAsmPrinter.dylib
 		(%m = powerpc) !%p/opt/llvm-%v/lib/libLLVMPowerPCCodeGen.dylib
 		(%m = powerpc) !%p/opt/llvm-%v/lib/libLLVMPowerPCDesc.dylib
@@ -534,6 +538,7 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/libclangCodeGen.dylib
 		!%p/opt/llvm-%v/lib/libclangDriver.dylib
 		!%p/opt/llvm-%v/lib/libclangEdit.dylib
+		!%p/opt/llvm-%v/lib/libclangFormat.dylib
 		!%p/opt/llvm-%v/lib/libclangFrontend.dylib
 		!%p/opt/llvm-%v/lib/libclangFrontendTool.dylib
 		!%p/opt/llvm-%v/lib/libclangLex.dylib
@@ -549,6 +554,7 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/libgtest.dylib
 		!%p/opt/llvm-%v/lib/libgtest_main.dylib
 		!%p/opt/llvm-%v/lib/libprofile_rt.dylib
+		!%p/opt/llvm-%v/lib/clang/3.3/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
 <<
 Homepage: http://llvm.org/
 DescDetail: <<
