@@ -3018,3 +3018,37 @@ diff -ruN dpkg-1.16.10.orig/fink/patches/test-fix.patch dpkg-1.16.10/fink/patche
 + }
 + 
 + system("rm -f $admindir/diversions-new; mkdir $admindir/diversions-old");
+diff -rauN dpkg-1.16.10/buildflags.conf dpkg-1.16.10-p1/buildflags.conf
+--- dpkg-1.16.10/buildflags.conf	1970-01-01 01:00:00.000000000 +0100
++++ dpkg-1.16.10-p1/buildflags.conf	2013-06-21 20:33:33.000000000 +0200
+@@ -0,0 +1,30 @@
++# defaults
++APPEND CFLAGS -g -O2
++APPEND CXXFLAGS -g -O2
++APPEND FFLAGS -g -O2
++
++# debian stackprotector
++APPEND CFLAGS -fstack-protector         
++APPEND CXXFLAGS -fstack-protector         
++
++# debian pie
++APPEND CFLAGS -fPIE
++APPEND CXXFLAGS -fPIE
++APPEND LDFLAGS -fPIE -Wl,-pie
++
++# debian relro
++APPEND LDFLAGS -Wl,-read_only_stubs
++
++# debian bindnow
++APPEND LDFLAGS -Wl,-bind_at_load
++
++# debian fortify
++APPEND CPPFLAGS -D_FORTIFY_SOURCE=2
++
++# debian format
++PREPEND CFLAGS -Wformat -Werror=format-security
++PREPEND CXXFLAGS -Wformat -Werror=format-security
++
++# fink defaults
++PREPEND CPPFLAGS -I@FINKPREFIX@/include
++PREPEND LDFLAGS -L@FINKPREFIX@/lib

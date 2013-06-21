@@ -1,6 +1,6 @@
 Package: dpkg
 Version: 1.16.10
-Revision: 1.1
+Revision: 1.2
 GCC: 4.0
 ## Remove po4a
 ### Comment out libncursesw5 for bootstrap version, and don't make dselect
@@ -35,7 +35,7 @@ SourceDirectory: dpkg-%v
 Source-MD5: a20a06a5272717274a8b009368f237da
 
 PatchFile: dpkg.patch
-PatchFile-MD5: 679fac285c950c873d3fbd2d74a42f34
+PatchFile-MD5: 25be5c5c6c795a630d3545cad5322a20
 
 PatchScript: <<
 sed -e 's,@FINKPREFIX@,%p,g' %{PatchFile} | patch -p1
@@ -134,6 +134,7 @@ InstallScript: <<
   ## currently in fink
   # install -c -p -m 644 debian/shlibs.default %i/etc/dpkg
   install -c -p -m 644 debian/shlibs.override %i/etc/dpkg
+  install -c -p -m 644 buildflags.conf %i/etc/dpkg/
   rm -rf %i/lib/dpkg/methods/*
 
   install -m 0755 fink/md5sum %i/bin
