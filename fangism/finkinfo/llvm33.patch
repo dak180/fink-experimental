@@ -2323,7 +2323,7 @@ diff --git a/projects/compiler-rt/lib/asan/asan_mac.cc b/projects/compiler-rt/li
 index 63fb5f6..a3c5659 100644
 --- a/projects/compiler-rt/lib/asan/asan_mac.cc
 +++ b/projects/compiler-rt/lib/asan/asan_mac.cc
-@@ -37,10 +37,20 @@
+@@ -37,19 +37,30 @@
  #include <unistd.h>
  #include <libkern/OSAtomic.h>
  
@@ -2344,9 +2344,14 @@ index 63fb5f6..a3c5659 100644
  # if SANITIZER_WORDSIZE == 64
    *pc = ucontext->uc_mcontext->__ss.__rip;
    *bp = ucontext->uc_mcontext->__ss.__rbp;
-@@ -50,6 +60,7 @@ void GetPcSpBp(void *context, uptr *pc, uptr *sp, uptr *bp) {
-   *bp = ucontext->uc_mcontext->__ss.__ebp;
-   *sp = ucontext->uc_mcontext->__ss.__esp;
+   *sp = ucontext->uc_mcontext->__ss.__rsp;
+ # else
+-  *pc = ucontext->uc_mcontext->__ss.__eip;
+-  *bp = ucontext->uc_mcontext->__ss.__ebp;
+-  *sp = ucontext->uc_mcontext->__ss.__esp;
++  *pc = ucontext->uc_mcontext->ss.eip;
++  *bp = ucontext->uc_mcontext->ss.ebp;
++  *sp = ucontext->uc_mcontext->ss.esp;
  # endif  // SANITIZER_WORDSIZE
 +#endif
  }
