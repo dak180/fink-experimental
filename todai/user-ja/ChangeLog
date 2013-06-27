@@ -1,4 +1,8 @@
 2013-06-28 AIDA Shinra <shinra@j10n.org>
+* 4.4 release again
+* user-ja.info.in: change the tarball distribution site
+
+2013-06-28 AIDA Shinra <shinra@j10n.org>
 * 4.4 release
 * sedsrc/user-ja-conf.in: Modified the case statement for $X11NAME
   in order to work good on 10.8 or upper.
@@ -329,4 +333,4 @@
 2004-04-12 AIDA Shinra <shinra@j10n.org>
 * Initial revision
 
-$Id: ChangeLog,v 1.25 2011/12/03 04:12:39 okayama Exp $
+$Id: ChangeLog,v 1.26 2013/06/27 16:22:53 aida_s Exp $
