@@ -1,0 +1,259 @@
+Info2: <<
+
+Package: saga
+Version: 2.1.0
+Revision: 0.1
+Description: System for Automated Geoscientific Analyses
+License: GPL
+Homepage: http://qgis.org
+Maintainer: BABA Yoshihiko <babayoshihiko@mac.com>
+Depends: <<
+    %n-shlibs
+<<
+BuildDepends: << 
+	fink (>= 0.28), 
+	wxcocoa294,
+	libjasper.1,
+	gdal-dev, proj,
+	unixodbc2-nox | unixodbc2
+<<
+
+
+# Unpack Phase.
+# Source: mirror:sourceforge:%n-gis/%n_%v.tar.gz
+Source: http://www.uclmail.net/users/babayoshihiko/saga-gis-code-0-1750-trunk.zip
+Source-MD5: 2c939dc6d015ce0d49892e636ce89f41
+SourceDirectory: %n-gis-code-0-1750-trunk/%n-gis
+
+# Compile Phase.
+ConfigureParams: --enable-unicode --enable-gui --enable-odbc --disable-python
+CompileScript: <<
+#!/bin/bash -ev
+  autoreconf -i
+  ./configure %c
+  make
+<<
+InstallScript: <<
+#!/bin/bash -ev
+  make install DESTDIR=%d
+<<
+SplitOff: <<
+  Package: %N-shlibs
+  Description: Shared libraries for SAGA
+  Depends: <<
+    wxcocoa294-shlibs,
+    libjasper.1-shlibs,
+    gdal-shlibs, proj-shlibs,
+    unixodbc2-nox-shlibs | unixodbc2-shlibs
+  <<
+  Files: <<
+	lib/libsaga_api-2.1.0.dylib
+	lib/libsaga_gdi-2.1.0.dylib
+	lib/libsaga_odbc-2.1.0.dylib
+	lib/saga/libclimate_tools.dylib
+    lib/saga/libcontrib_a_perego.dylib
+    lib/saga/libdocs_html.dylib
+    lib/saga/libgarden_3d_viewer.dylib
+    lib/saga/libgarden_webservices.dylib
+    lib/saga/libgeostatistics_grid.dylib
+    lib/saga/libgeostatistics_kriging.dylib
+    lib/saga/libgeostatistics_points.dylib
+    lib/saga/libgeostatistics_regression.dylib
+    lib/saga/libgrid_analysis.dylib
+    lib/saga/libgrid_calculus.dylib
+    lib/saga/libgrid_calculus_bsl.dylib
+    lib/saga/libgrid_filter.dylib
+    lib/saga/libgrid_gridding.dylib
+    lib/saga/libgrid_spline.dylib
+    lib/saga/libgrid_tools.dylib
+    lib/saga/libgrid_visualisation.dylib
+    lib/saga/libihacres.dylib
+    lib/saga/libimagery_classification.dylib
+    lib/saga/libimagery_rga.dylib
+    lib/saga/libimagery_segmentation.dylib
+    lib/saga/libimagery_svm.dylib
+    lib/saga/libimagery_tools.dylib
+    lib/saga/libio_esri_e00.dylib
+    lib/saga/libio_gdal.dylib
+    lib/saga/libio_gps.dylib
+    lib/saga/libio_grid.dylib
+    lib/saga/libio_grid_grib2.dylib
+    lib/saga/libio_grid_image.dylib
+    lib/saga/libio_odbc.dylib
+    lib/saga/libio_shapes.dylib
+    lib/saga/libio_shapes_dxf.dylib
+    lib/saga/libio_table.dylib
+    lib/saga/liblectures_introduction.dylib
+    lib/saga/libpj_georeference.dylib
+    lib/saga/libpj_proj4.dylib
+    lib/saga/libpointcloud_tools.dylib
+    lib/saga/libpointcloud_viewer.dylib
+    lib/saga/librecreations_fractals.dylib
+    lib/saga/librecreations_games.dylib
+    lib/saga/libshapes_grid.dylib
+    lib/saga/libshapes_lines.dylib
+    lib/saga/libshapes_points.dylib
+    lib/saga/libshapes_polygons.dylib
+    lib/saga/libshapes_tools.dylib
+    lib/saga/libsim_cellular_automata.dylib
+    lib/saga/libsim_ecosystems_hugget.dylib
+    lib/saga/libsim_erosion.dylib
+    lib/saga/libsim_fire_spreading.dylib
+    lib/saga/libsim_hydrology.dylib
+    lib/saga/libta_channels.dylib
+    lib/saga/libta_compound.dylib
+    lib/saga/libta_hydrology.dylib
+    lib/saga/libta_lighting.dylib
+    lib/saga/libta_morphometry.dylib
+    lib/saga/libta_preprocessor.dylib
+    lib/saga/libta_profiles.dylib
+    lib/saga/libtable_calculus.dylib
+    lib/saga/libtable_tools.dylib
+    lib/saga/libtin_tools.dylib
+    lib/saga/libtin_viewer.dylib
+    lib/saga/libtransect.dylib
+  <<
+  Shlibs: <<
+	%p/lib/libsaga_api-2.1.0.dylib 2.1.0 %n (>=2.1.0-0.1)
+	%p/lib/libsaga_gdi-2.1.0.dylib 2.1.0 %n (>=2.1.0-0.1)
+	%p/lib/libsaga_odbc-2.1.0.dylib 2.1.0 %n (>=2.1.0-0.1)
+	%p/lib/saga/libclimate_tools.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libcontrib_a_perego.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libdocs_html.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libgarden_3d_viewer.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libgarden_webservices.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libgeostatistics_grid.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libgeostatistics_kriging.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libgeostatistics_points.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libgeostatistics_regression.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libgrid_analysis.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libgrid_calculus.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libgrid_calculus_bsl.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libgrid_filter.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libgrid_gridding.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libgrid_spline.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libgrid_tools.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libgrid_visualisation.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libihacres.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libimagery_classification.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libimagery_rga.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libimagery_segmentation.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libimagery_svm.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libimagery_tools.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libio_esri_e00.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libio_gdal.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libio_gps.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libio_grid.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libio_grid_grib2.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libio_grid_image.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libio_odbc.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libio_shapes.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libio_shapes_dxf.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libio_table.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/liblectures_introduction.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libpj_georeference.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libpj_proj4.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libpointcloud_tools.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libpointcloud_viewer.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/librecreations_fractals.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/librecreations_games.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libshapes_grid.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libshapes_lines.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libshapes_points.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libshapes_polygons.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libshapes_tools.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libsim_cellular_automata.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libsim_ecosystems_hugget.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libsim_erosion.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libsim_fire_spreading.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libsim_hydrology.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libta_channels.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libta_compound.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libta_hydrology.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libta_lighting.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libta_morphometry.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libta_preprocessor.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libta_profiles.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libtable_calculus.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libtable_tools.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libtin_tools.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libtin_viewer.dylib 2.1.0 %n (>=2.1.0-0.1)
+    %p/lib/saga/libtransect.dylib 2.1.0 %n (>=2.1.0-0.1)
+  <<
+<<
+SplitOff2: <<
+  Package: %N-dev
+  Description: Developer files for SAGA
+  Depends: %N-shlibs
+  Files: <<
+	lib/libsaga_api.la
+	lib/libsaga_gdi.la
+	lib/libsaga_odbc.la
+	lib/saga/libclimate_tools.la
+    lib/saga/libcontrib_a_perego.la
+    lib/saga/libdocs_html.la
+    lib/saga/libgarden_3d_viewer.la
+    lib/saga/libgarden_webservices.la
+    lib/saga/libgeostatistics_grid.la
+    lib/saga/libgeostatistics_kriging.la
+    lib/saga/libgeostatistics_points.la
+    lib/saga/libgeostatistics_regression.la
+    lib/saga/libgrid_analysis.la
+    lib/saga/libgrid_calculus.la
+    lib/saga/libgrid_calculus_bsl.la
+    lib/saga/libgrid_filter.la
+    lib/saga/libgrid_gridding.la
+    lib/saga/libgrid_spline.la
+    lib/saga/libgrid_tools.la
+    lib/saga/libgrid_visualisation.la
+    lib/saga/libihacres.la
+    lib/saga/libimagery_classification.la
+    lib/saga/libimagery_rga.la
+    lib/saga/libimagery_segmentation.la
+    lib/saga/libimagery_svm.la
+    lib/saga/libimagery_tools.la
+    lib/saga/libio_esri_e00.la
+    lib/saga/libio_gdal.la
+    lib/saga/libio_gps.la
+    lib/saga/libio_grid.la
+    lib/saga/libio_grid_grib2.la
+    lib/saga/libio_grid_image.la
+    lib/saga/libio_odbc.la
+    lib/saga/libio_shapes.la
+    lib/saga/libio_shapes_dxf.la
+    lib/saga/libio_table.la
+    lib/saga/liblectures_introduction.la
+    lib/saga/libpj_georeference.la
+    lib/saga/libpj_proj4.la
+    lib/saga/libpointcloud_tools.la
+    lib/saga/libpointcloud_viewer.la
+    lib/saga/librecreations_fractals.la
+    lib/saga/librecreations_games.la
+    lib/saga/libshapes_grid.la
+    lib/saga/libshapes_lines.la
+    lib/saga/libshapes_points.la
+    lib/saga/libshapes_polygons.la
+    lib/saga/libshapes_tools.la
+    lib/saga/libsim_cellular_automata.la
+    lib/saga/libsim_ecosystems_hugget.la
+    lib/saga/libsim_erosion.la
+    lib/saga/libsim_fire_spreading.la
+    lib/saga/libsim_hydrology.la
+    lib/saga/libta_channels.la
+    lib/saga/libta_compound.la
+    lib/saga/libta_hydrology.la
+    lib/saga/libta_lighting.la
+    lib/saga/libta_morphometry.la
+    lib/saga/libta_preprocessor.la
+    lib/saga/libta_profiles.la
+    lib/saga/libtable_calculus.la
+    lib/saga/libtable_tools.la
+    lib/saga/libtin_tools.la
+    lib/saga/libtin_viewer.la
+    lib/saga/libtransect.la
+  <<
+<<
+
+
+# End of Info2
+<<
