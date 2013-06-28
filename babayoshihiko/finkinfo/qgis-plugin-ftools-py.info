@@ -88,6 +88,6 @@ CompileScript: <<
 <<
 InstallScript: <<
   mkdir -p %i/share/qgis%type_pkg[qgis]-py%type_pkg[python]/plugins
-  cp -R Applications/QGIS.app/Contents/Resources/python/plugins/fTools %i/share/s%type_pkg[qgis]-py%type_pkg[python]/plugins/
+  cp -R Applications/QGIS.app/Contents/Resources/python/plugins/fTools %i/share/qgis%type_pkg[qgis]-py%type_pkg[python]/plugins/
 <<
 <<
