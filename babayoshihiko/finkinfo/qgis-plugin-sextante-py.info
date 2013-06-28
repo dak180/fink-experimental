@@ -31,7 +31,8 @@ BuildDepends: <<
 
 
 # Unpack Phase.
-Source: http://qgis.org/downloads/Quantum-GIS-master.zip
+# Source: http://qgis.org/downloads/Quantum-GIS-master.zip
+Source: http://www.uclmail.net/users/babayoshihiko/Quantum-GIS-master.zip
 Source-MD5: 4610a66b4e71bb3374f6cda5809b10ec
 SourceDirectory: Quantum-GIS-master
 
