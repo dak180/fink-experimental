@@ -1,6 +1,6 @@
 Info2: <<
-Package: qgis-plugin-ftools-py%type_pkg[python]
-Type: python (2.7 2.6)
+Package: qgis%type_pkg[qgis]-plugin-ftools-py%type_pkg[python]
+Type: python (2.7 2.6), qgis (2.0 1.8 1.7)
 Architecture: powerpc, i386, x86_64
 Version: 0.6.1
 Revision: 9.1
@@ -15,6 +15,7 @@ BuildDepends: <<
 	qt4-base-mac (>= 4.4), 
 	sip-py%type_pkg[python]-bin (>= 4.8), 
 	pyqt4-mac-py%type_pkg[python], 
+	qscintilla2.8-qt4-mac,
 	xerces-c31-dev,
 	libiconv-dev, giflib, libtiff, libjpeg8, libogdi3 (>= 3.1.5-1), libpng15, netcdf (>= 3.6.0-1002), 
 	cfitsio,
@@ -30,9 +31,9 @@ BuildDepends: <<
 <<
 
 # Unpack Phase.
-Source: http://qgis.org/downloads/qgis-1.8.0.tar.bz2
-Source-MD5: 1d60520f81d7763c026d0af887ac9a05
-SourceDirectory: qgis-1.8.0
+Source: http://qgis.org/downloads/Quantum-GIS-master.zip
+Source-MD5: 4610a66b4e71bb3374f6cda5809b10ec
+SourceDirectory: Quantum-GIS-master
 
 SetCFLAGS: -fno-common
 SetLDFLAGS: -liconv
@@ -72,8 +73,6 @@ CompileScript: <<
   					-D QWT_INCLUDE_DIR=%p/lib/qt4-mac/lib/qwt.framework/Versions/6/Headers/
   					-D BISON_EXECUTABLE=%p/bin/bison
   					-D WITH_MAPSERVER=FALSE
-  					-D QTPREFIX=%p/$QGIS_DIR/Frameworks
-  					-D QGIS_MACAPP_DEV_PREFIX=%p/$QGIS_DIR/Frameworks
   					-D QGIS_FW_SUBDIR=%p/$QGIS_DIR/Frameworks
   					-D QGIS_MACAPP_BUNDLE=0"
   QGIS_DIR=Applications/QGIS.app/Contents
@@ -81,14 +80,14 @@ CompileScript: <<
   mkdir build
   pushd build
   cmake $QGIS_OPTIONS $QGIS_VERSION_OPTIONS ..
-  make ftools
+  make fTools-.
   pushd python/plugins
   make install CMAKE_INSTALL_PREFIX=%b SIP_MAC_PATH=%p/bin
   popd
   
 <<
 InstallScript: <<
-  mkdir -p %i/share/qgis/python%type_pkg[python]/plugins
-  cp -R Applications/QGIS.app/Contents/Resources/python/plugins/fTools %i/share/qgis/python%type_pkg[python]/plugins/
+  mkdir -p %i/share/qgis%type_pkg[qgis]-py%type_pkg[python]/plugins
+  cp -R Applications/QGIS.app/Contents/Resources/python/plugins/fTools %i/share/s%type_pkg[qgis]-py%type_pkg[python]/plugins/
 <<
 <<
