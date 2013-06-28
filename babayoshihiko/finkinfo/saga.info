@@ -2,7 +2,7 @@ Info2: <<
 
 Package: saga
 Version: 2.1.0
-Revision: 0.1
+Revision: 0.2
 Description: System for Automated Geoscientific Analyses
 License: GPL
 Homepage: http://qgis.org
@@ -42,7 +42,7 @@ InstallScript: <<
   make install DESTDIR=%d
   rm -f %i/lib/*.la
   rm -f %i/lib/saga/*.la  
-  perl -pi -e "s|elif ! \[ -e \\\$exename \]; then|#elif ! [ -e $exename ]; then|g" create_saga_app.sh
+  perl -pi -e "s|elif ! \[ -e \\\$exename \]; then|#elif ! [ -e $exename ]; then|g" ../../create_saga_app.sh
   chmod +x ../../create_saga_app.sh
   mv ../../saga_gui.icns ./
   ../../create_saga_app.sh %p/bin/saga_gui SAGA
