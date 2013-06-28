@@ -322,7 +322,7 @@ DescPackaging: <<
 the latest stable versions, e.g.:
 	  postgresql90,
 	  grass64,
-	  libgeos3.3.1,
+	  libgeos3.3.6,
 	  libjpeg8, libogdi3, libpng15
 <<
 DescPort: <<
