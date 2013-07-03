@@ -11,7 +11,7 @@ Depends: <<
     %n-shlibs
 <<
 BuildDepends: << 
-	fink (>= 0.28), autoconf2.6
+	fink (>= 0.28), autoconf2.6,
 	wxcocoa294,
 	libjasper.1,
 	gdal-dev, proj,

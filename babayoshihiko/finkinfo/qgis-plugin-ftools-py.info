@@ -1,6 +1,6 @@
 Info2: <<
 Package: qgis%type_pkg[qgis]-plugin-ftools-py%type_pkg[python]
-Type: python (2.7 2.6), qgis (2.0 1.8 1.7)
+Type: python (2.7 2.6), qgis (2.0)
 Architecture: powerpc, i386, x86_64
 Version: 0.6.1
 Revision: 11
@@ -32,7 +32,7 @@ BuildDepends: <<
 # Unpack Phase.
 # Source: http://qgis.org/downloads/Quantum-GIS-master.zip
 Source: http://www.uclmail.net/users/babayoshihiko/Quantum-GIS-master.zip
-Source-MD5: 4610a66b4e71bb3374f6cda5809b10ec
+Source-MD5: fd57d7842c67a8a1d1f4ed8eff6a8b4b
 SourceDirectory: Quantum-GIS-master
 
 SetCFLAGS: -fno-common
