@@ -2,7 +2,7 @@ Info2: <<
 
 Package: saga
 Version: 2.1.0
-Revision: 0.2
+Revision: 0.20130703
 Description: System for Automated Geoscientific Analyses
 License: GPL
 Homepage: http://qgis.org
@@ -11,7 +11,7 @@ Depends: <<
     %n-shlibs
 <<
 BuildDepends: << 
-	fink (>= 0.28), 
+	fink (>= 0.28), autoconf2.6
 	wxcocoa294,
 	libjasper.1,
 	gdal-dev, proj,
