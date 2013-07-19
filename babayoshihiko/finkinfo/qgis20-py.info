@@ -90,6 +90,24 @@ CompileScript: <<
 	
 	# 2.0
 	if [[ %type_pkg[python] > 30 ]]; then
+	  %p/bin/2to3-${PY_VER} -w python/utils.py
+	  %p/bin/2to3-${PY_VER} -w python/console/__init__.py
+	  %p/bin/2to3-${PY_VER} -w python/console/console.py
+	  %p/bin/2to3-${PY_VER} -w python/console/console_compile_apis.py
+	  %p/bin/2to3-${PY_VER} -w python/console/console_editor.py
+	  %p/bin/2to3-${PY_VER} -w python/console/console_output.py
+	  %p/bin/2to3-${PY_VER} -w python/console/console_sci.py
+	  %p/bin/2to3-${PY_VER} -w python/console/console_settings.py
+	  %p/bin/2to3-${PY_VER} -w python/pyplugin_installer/__init__.py
+	  %p/bin/2to3-${PY_VER} -w python/pyplugin_installer/installer.py
+	  %p/bin/2to3-${PY_VER} -w python/pyplugin_installer/installer_data.py
+	  %p/bin/2to3-${PY_VER} -w python/pyplugin_installer/qgsplugininstallerfetchingdialog.py
+	  %p/bin/2to3-${PY_VER} -w python/pyplugin_installer/qgsplugininstallerinstallingdialog.py
+	  %p/bin/2to3-${PY_VER} -w python/pyplugin_installer/qgsplugininstallerpluginerrordialog.py
+	  %p/bin/2to3-${PY_VER} -w python/pyplugin_installer/qgsplugininstallerrepositorydialog.py
+	  %p/bin/2to3-${PY_VER} -w python/pyplugin_installer/unzip.py
+	  %p/bin/2to3-${PY_VER} -w python/pyplugin_installer/version_compare.py
+	  perl -pi -e "s|except ImportError, e|except ImportError as e|g" %b/cmake/FindQsci.py
 	  perl -pi -e "s|PyString_AS_STRING|PyUnicode_AsUTF8|g" src/python/qgspythonutilsimpl.cpp
 	  #perl -pi -e "s|return QString\( PyString_AsString\(\(\( PyClassObject\* \)obj \)->cl_name \) \);|return QString( PyString_AsString((( PyClassObject* )obj )->cl_name\"utf-8\",\"Error ~\" ) );|g" src/python/qgspythonutilsimpl.cpp
 	  #perl -pi -e "s|PyString_AsString\(([^\)]*)\)|PyUnicode_AsEncodedString(\1, \"utf-8\",\"Error ~\")|g" src/python/qgspythonutilsimpl.cpp
@@ -101,6 +119,12 @@ CompileScript: <<
 	  perl -pi -e "s|PyUnicode_AsUTF8\(\(\(|((|" src/python/qgspythonutilsimpl.cpp
 	  perl -pi -e "s|cl_name \)|tp_name|" src/python/qgspythonutilsimpl.cpp
 	  perl -pi -e "s|PyInt_|PyLong_|g" python/core/conversions.sip
+	  perl -pi -e "s|PyInt_|PyLong_|g" python/analysis/network/qgsgraphanalyzer.sip
+	  perl -pi -e "s|PyInt_|PyLong_|g" python/pyspatialite/src/connection.c
+	  perl -pi -e "s|PyInt_|PyLong_|g" python/pyspatialite/src/cursor.c
+	  perl -pi -e "s|PyInt_|PyLong_|g" python/pyspatialite/src/module.c
+	  perl -pi -e "s|PyInt_|PyLong_|g" python/pyspatialite/src/row.c
+	  perl -pi -e "s|PyInt_|PyLong_|g" python/pyspatialite/src/statement.c
 	  perl -pi -e "s|PyString_FromString|PyUnicode_FromString|g" python/core/qgspoint.sip
 	  perl -pi -e "s|PyString_FromString|PyUnicode_FromString|g" python/core/qgsapplication.sip
 	  perl -pi -e "s|PyString_AsString|PyUnicode_AsUTF8|g" python/core/qgsapplication.sip
