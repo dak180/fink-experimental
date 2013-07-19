@@ -1,7 +1,7 @@
 Info2: <<
 
 Package: qgis20-py%type_pkg[python]
-Type: python (2.7 2.6)
+Type: python (3.3 2.7 2.6)
 Architecture: powerpc, i386, x86_64
 
 Version: 2.0.0
@@ -88,6 +88,20 @@ CompileScript: <<
 	  export CC=gcc-fsf-4.6
 	fi
 	
+	# 2.0
+	if [[ %type_pkg[python] > 30 ]]; then
+	  perl -pi -e "s|PyString_AS_STRING|PyUnicode_AsUTF8|g" src/python/qgspythonutilsimpl.cpp
+	  #perl -pi -e "s|return QString\( PyString_AsString\(\(\( PyClassObject\* \)obj \)->cl_name \) \);|return QString( PyString_AsString((( PyClassObject* )obj )->cl_name\"utf-8\",\"Error ~\" ) );|g" src/python/qgspythonutilsimpl.cpp
+	  #perl -pi -e "s|PyString_AsString\(([^\)]*)\)|PyUnicode_AsEncodedString(\1, \"utf-8\",\"Error ~\")|g" src/python/qgspythonutilsimpl.cpp
+	  perl -pi -e "s|PyString_AsString|PyUnicode_AsUTF8|g" src/python/qgspythonutilsimpl.cpp
+	  perl -pi -e "s|PyString_Check|PyUnicode_Check|g" src/python/qgspythonutilsimpl.cpp
+	  perl -pi -e "s|PyObject_Unicode|PyObject_Str|g" src/python/qgspythonutilsimpl.cpp
+	  perl -pi -e "s|PyClass_Check|PyType_Check|g" src/python/qgspythonutilsimpl.cpp
+	  perl -pi -e "s|PyClassObject|PyTypeObject|g" src/python/qgspythonutilsimpl.cpp
+	  perl -pi -e "s|PyUnicode_AsUTF8\(\(\(|((|" src/python/qgspythonutilsimpl.cpp
+	  perl -pi -e "s|cl_name \)|tp_name|" src/python/qgspythonutilsimpl.cpp
+	fi
+	
 	QGIS_OPTIONS="	-D CMAKE_C_COMPILER=gcc
 					-D QGIS_APP_NAME=QGIS-py-%v
 					-D CMAKE_PREFIX_PATH=%p
@@ -139,7 +153,7 @@ CompileScript: <<
 	# 1.8.0 Workaround from MacPorts
 	echo "install_name_tool -change @executable_path/../Frameworks/qgis_core.framework/Versions/$QGIS_VER/qgis_core @executable_path/../lib/qgis_core.framework/Versions/$QGIS_VER/qgis_core ../../output/bin/crssync"  >> src/crssync/CMakeFiles/crssync.dir/link.txt
 	
-	make VERBOSE=1 
+	make VERBOSE=1 -j1
 	make install CMAKE_INSTALL_PREFIX=%b SIP_MAC_PATH=%p/bin
 	popd
 	
