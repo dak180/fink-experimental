@@ -100,6 +100,21 @@ CompileScript: <<
 	  perl -pi -e "s|PyClassObject|PyTypeObject|g" src/python/qgspythonutilsimpl.cpp
 	  perl -pi -e "s|PyUnicode_AsUTF8\(\(\(|((|" src/python/qgspythonutilsimpl.cpp
 	  perl -pi -e "s|cl_name \)|tp_name|" src/python/qgspythonutilsimpl.cpp
+	  perl -pi -e "s|PyInt_|PyLong_|g" python/core/conversions.sip
+	  perl -pi -e "s|PyString_FromString|PyUnicode_FromString|g" python/core/qgspoint.sip
+	  perl -pi -e "s|PyString_FromString|PyUnicode_FromString|g" python/core/qgsapplication.sip
+	  perl -pi -e "s|PyString_AsString|PyUnicode_AsUTF8|g" python/core/qgsapplication.sip
+	  perl -pi -e "s|PyString_FromString|PyUnicode_FromString|g" python/core/qgsfeature.sip
+	  perl -pi -e "s|PyString_FromString|PyUnicode_FromString|g" python/core/qgsgeometry.sip
+	  QGIS_PYTHON_OPTIONS=" -D PYTHON_INCLUDE_PATH=%p/include/python${PY_VER}m
+					-D PYTHON_LIBRARY=%p/lib/python${PY_VER}/config-${PY_VER}m/libpython${PY_VER}m.dylib
+					-D PYTHON_EXECUTABLE=%p/bin/python${PY_VER}m
+					-D SIP_INCLUDE_DIR=%p/include/python${PY_VER}m"
+	else
+	  QGIS_PYTHON_OPTIONS=" -D PYTHON_INCLUDE_PATH=%p/include/python$PY_VER
+					-D PYTHON_LIBRARY=%p/lib/python$PY_VER/config/libpython$PY_VER.dylib
+					-D PYTHON_EXECUTABLE=%p/bin/python$PY_VER
+					-D SIP_INCLUDE_DIR=%p/include/python$PY_VER"
 	fi
 	
 	QGIS_OPTIONS="	-D CMAKE_C_COMPILER=gcc
@@ -112,11 +127,7 @@ CompileScript: <<
 					-D QT_BINARY_DIR=%p/lib/qt4-mac/bin
 					-D QT_INCLUDE_DIR=%p/lib/qt4-mac/include
 					-D QT_QMAKE_EXECUTABLE=%p/lib/qt4-mac/bin/qmake
-					-D PYTHON_INCLUDE_PATH=%p/include/python$PY_VER
-					-D PYTHON_LIBRARY=%p/lib/python$PY_VER/config/libpython$PY_VER.dylib
-					-D PYTHON_EXECUTABLE=%p/bin/python$PY_VER
 					-D PYUIC4_PROGRAM=%p/lib/qt4-mac/lib/python$PY_VER/bin/pyuic4
-					-D SIP_INCLUDE_DIR=%p/include/python$PY_VER
 					-D SIP_BINARY_PATH=%p/bin
 					-D QSCINTILLA_INCLUDE_DIR:PATH=%p/lib/qt4-mac/include/Qsci/
 					-D QSCINTILLA_LIBRARY:FILEPATH=%p/lib/qt4-mac/lib/libqscintilla2.8.0.2.dylib
@@ -141,7 +152,7 @@ CompileScript: <<
   	  	
 	mkdir build
 	pushd build
-	cmake $QGIS_OPTIONS $QGIS_VERSION_OPTIONS ..
+	cmake $QGIS_OPTIONS $QGIS_VERSION_OPTIONS $QGIS_PYTHON_OPTIONS ..
 	
 	# 1.8.0 Fix hardcoded application name
 	for filename in src/app/cmake_install.cmake src/app/CMakeFiles/QGIS.dir/build.make src/app/CMakeFiles/QGIS.dir/link.txt cmake_clean.cmake
