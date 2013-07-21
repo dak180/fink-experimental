@@ -90,6 +90,7 @@ CompileScript: <<
 	
 	# 2.0
 	if [[ %type_pkg[python] > 30 ]]; then
+	  perl -pi -e "s|cStringIO|io|g" src/python/qgspythonutilsimpl.cpp
 	  %p/bin/2to3-${PY_VER} -w python/utils.py
 	  %p/bin/2to3-${PY_VER} -w python/console/__init__.py
 	  %p/bin/2to3-${PY_VER} -w python/console/console.py
@@ -108,6 +109,8 @@ CompileScript: <<
 	  %p/bin/2to3-${PY_VER} -w python/pyplugin_installer/unzip.py
 	  %p/bin/2to3-${PY_VER} -w python/pyplugin_installer/version_compare.py
 	  perl -pi -e "s|except ImportError, e|except ImportError as e|g" %b/cmake/FindQsci.py
+	  perl -pi -e "s|cStringIO|io|g" python/plugins/fTools/tools/doPointDistance.py
+	  perl -pi -e "s|cStringIO|io|g" python/sextante/algs/ftools/PointDistance.py
 	  perl -pi -e "s|PyString_AS_STRING|PyUnicode_AsUTF8|g" src/python/qgspythonutilsimpl.cpp
 	  #perl -pi -e "s|return QString\( PyString_AsString\(\(\( PyClassObject\* \)obj \)->cl_name \) \);|return QString( PyString_AsString((( PyClassObject* )obj )->cl_name\"utf-8\",\"Error ~\" ) );|g" src/python/qgspythonutilsimpl.cpp
 	  #perl -pi -e "s|PyString_AsString\(([^\)]*)\)|PyUnicode_AsEncodedString(\1, \"utf-8\",\"Error ~\")|g" src/python/qgspythonutilsimpl.cpp
@@ -130,6 +133,7 @@ CompileScript: <<
 	  perl -pi -e "s|PyString_AsString|PyUnicode_AsUTF8|g" python/core/qgsapplication.sip
 	  perl -pi -e "s|PyString_FromString|PyUnicode_FromString|g" python/core/qgsfeature.sip
 	  perl -pi -e "s|PyString_FromString|PyUnicode_FromString|g" python/core/qgsgeometry.sip
+	  perl -pi -e "s|PyInt_|PyLong_|g" analysis/network/qgsgraphanalyzer.sip
 	  QGIS_PYTHON_OPTIONS=" -D PYTHON_INCLUDE_PATH=%p/include/python${PY_VER}m
 					-D PYTHON_LIBRARY=%p/lib/python${PY_VER}/config-${PY_VER}m/libpython${PY_VER}m.dylib
 					-D PYTHON_EXECUTABLE=%p/bin/python${PY_VER}m
