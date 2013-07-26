@@ -2324,7 +2324,7 @@ diff --git a/projects/compiler-rt/lib/asan/asan_mac.cc b/projects/compiler-rt/li
 index 9200837..903e0d5 100644
 --- a/projects/compiler-rt/lib/asan/asan_mac.cc
 +++ b/projects/compiler-rt/lib/asan/asan_mac.cc
-@@ -36,23 +36,58 @@
+@@ -36,21 +36,58 @@
  #include <pthread.h>
  #include <stdlib.h>  // for free()
  #include <unistd.h>
