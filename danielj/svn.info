@@ -1,7 +1,7 @@
 Package: svn
 Version: 1.7.1
 Revision: 1
-Description: Subversion - svnserve, tools
+Description: Subversion - svnserve, tools ø
 License: BSD
 Maintainer: Daniel Johnson <daniel@daniel-johnson.org>
 
