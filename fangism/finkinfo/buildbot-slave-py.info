@@ -23,6 +23,10 @@ CompileScript: <<
 	#!/bin/sh -ev
 	%p/bin/python%type_raw[python] setup.py build
 <<
+InfoTest: <<
+	TestDepends: mock-py%type_pkg[python]
+	TestScript: PYTHONPATH=. trial buildslave.test || exit 2
+<<
 InstallScript: <<
 	#!/bin/sh -ev
 	%p/bin/python%type_raw[python] setup.py install --root %d
