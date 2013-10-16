@@ -26,7 +26,7 @@ CompileScript: <<
 InfoTest: <<
 	TestDepends: <<
 		mock-py%type_pkg[python],
-		sqlalchemy-migrate-py%type_pkg[python],
+		sqlalchemy-migrate-py%type_pkg[python] (>= 0.7.2-3),
 		sqlalchemy-py%type_pkg[python]
 	<<
 	TestScript: PYTHONPATH=. trial buildbot.test || exit 2
