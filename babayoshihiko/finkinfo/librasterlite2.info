@@ -26,8 +26,7 @@ Source-MD5: 6c6e8f83ac8a06c78f3fdcee63dc5e3e
 
 
 SetCPPFLAGS: -Os -I%p/include -I%p/include
-ConfigureParams: --with-proj-include=%p/include --with-proj-lib=%p/lib --with-geos-include=%p/include --with-geos-lib=%p/opt/libgeos3.4.2/lib
-
+ConfigureParams: 
 
 
 CompileScript: <<
