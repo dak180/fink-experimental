@@ -46,7 +46,7 @@ BuildDependsOnly: false
 UseMaxBuildJobs: true
 
 PatchFile: %n.patch
-PatchFile-MD5: da6924847b6fbcc3c3ef4a3e88ad811b
+PatchFile-MD5: b45df703213564d56ae4e42d66d52b26
 PatchScript: <<
 	#!/bin/sh -ev
 	darwin_vers=`uname -r | cut -d. -f1`
