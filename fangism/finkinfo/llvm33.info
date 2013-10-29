@@ -65,7 +65,7 @@ PatchScript: <<
 
 	# only on darwin8, pull-back the macosx-min-version
 	if test $darwin_vers -gt 8
-	then sed -i.orig -e '/SANITIZER_MIN_OSX_VERSION/s|10\.4|10.5|' compiler-rt/CMakeLists.txt
+	then sed -i.orig -e '/SANITIZER_MIN_OSX_VERSION/s|10\.4|10.5|' projects/compiler-rt/CMakeLists.txt
 	fi
 
 	# Do not want -DNDEBUG, cause linker errors (undef symbols)
