@@ -4,8 +4,8 @@ Package: qgis20-py%type_pkg[python]
 Type: python (3.3 2.7 2.6)
 Architecture: powerpc, i386, x86_64
 
-Version: 2.0.0
-Revision: 0.20130703
+Version: 2.0.1
+Revision: 3
 Description: User friendly Open Source GIS
 License: GPL
 Homepage: http://qgis.org
@@ -42,25 +42,23 @@ BuildDepends: <<
 	sip-py%type_pkg[python]-bin (>= 4.8), pyqt4-mac-py%type_pkg[python], 
 	qscintilla2.8-qt4-mac,
 	xerces-c31-dev,
-	libiconv-dev, giflib, libtiff, libjpeg8, libogdi3 (>= 3.1.5-1), libpng15, netcdf (>= 3.6.0-1002), 
+	libiconv-dev, giflib, libtiff5, libjpeg9, libogdi3 (>= 3.1.5-1), libpng16,
 	cfitsio,
 	unixodbc2-nox (>= 2.2.11-1010) | unixodbc2 (>= 2.2.11-1010), 
-	libgeos3.3.6 (>= 3.0),
+	libgeos3.4.2 (>= 3.0),
 	gdal-dev (>= 1.4) | gdal-pgsql-dev (>= 1.4), 
-	postgresql90-dev, 
+	postgresql91-dev, 
 	grass64-x11-dev | grass64-mac-dev,
 	proj (>= 4.4),
 	qwt6-qt4-mac (>= 5.0),
-	libspatialindex2,
+	libspatialindex3,
 	libspatialite5 (>= 3.0)
 <<
 BuildConflicts: libspatialite1
 
 # Unpack Phase.
-# Source: http://qgis.org/downloads/Quantum-GIS-master.zip
-Source: http://www.uclmail.net/users/babayoshihiko/Quantum-GIS-master.zip
-Source-MD5: fd57d7842c67a8a1d1f4ed8eff6a8b4b
-SourceDirectory: Quantum-GIS-master
+Source: http://qgis.org/downloads/qgis-%v.tar.bz2
+Source-MD5: 3822c7dd70e2d893a0f1baa9c72316d2
 
 # Compile Phase.
 GCC: 4.0
@@ -70,7 +68,7 @@ SetLDFLAGS: -liconv
 CompileScript: <<
 #!/bin/bash -ev
 
-	QGIS_VER=1.9
+	QGIS_VER=2.0
 	
 	# Find Fink's PyQt4
 	PY_VER=%type_raw[python]
@@ -84,9 +82,9 @@ CompileScript: <<
 	QGIS_DIR=Applications/QGIS-py%type_pkg[python]-%v.app/Contents
 	
 	# Lion
-	if [[ $( sw_vers -productVersion ) > 10.7 ]]; then
-	  export CC=gcc-fsf-4.6
-	fi
+	#if [[ $( sw_vers -productVersion ) > 10.7 ]]; then
+	#  export CC=gcc-fsf-4.6
+	#fi
 	
 	# 2.0
 	if [[ %type_pkg[python] > 30 ]]; then
@@ -151,7 +149,7 @@ CompileScript: <<
 					-D EXECUTABLE_OUTPUT_PATH=%b/build/src/mac/Contents/MacOS
 					-D CMAKE_INSTALL_PREFIX=%b/Applications
 					-D GDAL_INCLUDE_DIR=%p/include/gdal1
-					-D GEOS_CONFIG=%p/opt/libgeos3.3.6/bin/geos-config
+					-D GEOS_CONFIG=%p/opt/libgeos3.4.2/bin/geos-config
 					-D QT_BINARY_DIR=%p/lib/qt4-mac/bin
 					-D QT_INCLUDE_DIR=%p/lib/qt4-mac/include
 					-D QT_QMAKE_EXECUTABLE=%p/lib/qt4-mac/bin/qmake
@@ -192,8 +190,15 @@ CompileScript: <<
 	# 1.8.0 Workaround from MacPorts
 	echo "install_name_tool -change @executable_path/../Frameworks/qgis_core.framework/Versions/$QGIS_VER/qgis_core @executable_path/../lib/qgis_core.framework/Versions/$QGIS_VER/qgis_core ../../output/bin/crssync"  >> src/crssync/CMakeFiles/crssync.dir/link.txt
 	
+	# 2.0.0
+	perl -pi -e "s|EXECUTE_PROCESS\(COMMAND /usr/bin/osascript |#|g" images/icons/mac/browser/cmake_install.cmake
+	
 	make VERBOSE=1 -j1
 	make install CMAKE_INSTALL_PREFIX=%b SIP_MAC_PATH=%p/bin
+	
+	# 2.0.0
+	ln -s ../Applications/QGIS-py27-2.0.1.app/Contents/MacOS/bin/QGIS\ Browser.app ../Applications/
+
 	popd
 	
 	# 1.7.0 Tell qgis to read Fink's environmental variables
@@ -228,7 +233,7 @@ CompileScript: <<
 	
 	# 1.8.0 Fix install name for Fink's policy
 	pushd $QGIS_DIR/MacOS/lib
-	for libname in libqgispython.1.9.0.dylib
+	for libname in libqgispython.2.0.1.dylib
 	do
 		install_name_tool -id %p/$QGIS_DIR/MacOS/lib/$libname $libname
 		for loadable in qgis_core
@@ -275,8 +280,8 @@ CompileScript: <<
 	popd
 	
 	pushd $QGIS_DIR/PlugIns/qgis
-	for libname in libcoordinatecaptureplugin.so libdelimitedtextprovider.so libdiagramoverlay.so libdxf2shpconverterplugin.so libevis.so libgdalprovider.so libgeorefplugin.so libgpsimporterplugin.so libgpxprovider.so libgrass_gis.6.4.2.so libgrassplugin.so libgrassprovider.so libgrassrasterprovider.so libheatmapplugin.so libinterpolationplugin.so libmemoryprovider.so libmssqlprovider.so libofflineeditingplugin.so libogrprovider.so liboracleplugin.so libowsprovider.so libpostgresprovider.so librasterterrainplugin.so libroadgraphplugin.so libspatialiteprovider.so libspatialqueryplugin.so libspitplugin.so libsqlanywhereplugin.so libsqlanywhereprovider.so libtopolplugin.so libwcsprovider.so libwfsprovider.so libwmsprovider.so libzonalstatisticsplugin.so
-	do
+	for libname in libcoordinatecaptureplugin.so libdelimitedtextprovider.so libdxf2shpconverterplugin.so libevis.so libgdalprovider.so libgeorefplugin.so libgpsimporterplugin.so libgpxprovider.so libgrass_gis.6.4.2.so libgrassplugin.so libgrassprovider.so libgrassrasterprovider.so libheatmapplugin.so libinterpolationplugin.so libmemoryprovider.so libmssqlprovider.so libofflineeditingplugin.so libogrprovider.so liboracleplugin.so libowsprovider.so libpostgresprovider.so librasterterrainplugin.so libroadgraphplugin.so libspatialiteprovider.so libspatialqueryplugin.so libspitplugin.so libsqlanywhereplugin.so libsqlanywhereprovider.so libtopolplugin.so libwcsprovider.so libwfsprovider.so libwmsprovider.so libzonalstatisticsplugin.so 
+		do
 		install_name_tool -id %p/$QGIS_DIR/PlugIns/qgis/$libname $libname
 		for loadable in qgis_analysis qgis_core qgis_gui
 		do
@@ -312,34 +317,34 @@ SplitOff: <<
 	qscintilla2-qt4-mac-py%type_pkg[python],
 	gsl-shlibs,
 	xerces-c31-shlibs,
-	libgeos3.3.6-shlibs (>= 3.0),
+	libgeos3.4.2-shlibs (>= 3.0),
 	gdal-shlibs (>= 1.4) | gdal-pgsql-shlibs (>= 1.4), 
 	grass64-x11 | grass64-mac,
 	libspatialite5-shlibs,
 	proj-shlibs (>= 4.4),
 	qwt6-qt4-mac-shlibs (>= 5.0),
-	libspatialindex2-shlibs,
+	libspatialindex3-shlibs,
 	libspatialite5-shlibs (>= 3.0)
   <<
   Files: <<
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/1.9/qgis_analysis
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/1.9/qgis_core
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/1.9/qgis_gui
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/1.9/qgis_networkanalysis
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/Versions/1.9/qgisgrass
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/Versions/1.9/qgissqlanyconnection
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.1.9.0.dylib
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/2.0/qgis_analysis
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/2.0/qgis_core
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/2.0/qgis_gui
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/2.0/qgis_networkanalysis
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/Versions/2.0/qgisgrass
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/Versions/2.0/qgissqlanyconnection
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.2.0.1.dylib
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/qgis/crssync
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/PlugIns/qgis/*.so
   <<
   Shlibs: <<
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/1.9/qgis_analysis 1.9.0 %n (>= 1.9.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/1.9/qgis_core 1.9.0 %n (>= 1.9.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/1.9/qgis_gui 1.9.0 %n (>= 1.9.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/1.9/qgis_networkanalysis 1.9.0 %n (>= 1.9.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/Versions/1.9/qgisgrass 1.9.0 %n (>= 1.9.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/Versions/1.9/qgissqlanyconnection 1.9.0 %n (>= 1.9.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.1.9.0.dylib 1.9.0 %n (>= 1.9.0-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/2.0/qgis_analysis               2.0.1 %n (>= 2.0.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/2.0/qgis_core                       2.0.1 %n (>= 2.0.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/2.0/qgis_gui                         2.0.1 %n (>= 2.0.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/2.0/qgis_networkanalysis 2.0.1 %n (>= 2.0.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/Versions/2.0/qgisgrass                       2.0.1 %n (>= 2.0.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/Versions/2.0/qgissqlanyconnection 2.0.1 %n (>= 2.0.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.2.0.1.dylib                                         2.0.1 %n (>= 2.0.1-1)
   <<
 # End of SplitOff
 <<
@@ -374,10 +379,11 @@ DescPackaging: <<
 	
 	For consistency, qgis and relevant packages are strongly recommended to depend on 
 the latest stable versions, e.g.:
-	  postgresql90,
+	  postgresql91, postgis91
 	  grass64,
-	  libgeos3.3.6,
-	  libjpeg8, libogdi3, libpng15
+	  libgeos3.4.2,
+	  libjpeg9, libogdi3, libpng15, libtiff5,
+	  libspatialite5
 <<
 DescPort: <<
 	See INSTALL
