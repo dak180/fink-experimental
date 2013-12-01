@@ -2,7 +2,14 @@
 
 $|++;
 
-use lib '/home/f/fink/fink/perlmod';
+use strict;
+
+# Config vars
+my $userdir;
+BEGIN {
+	$userdir = '/home/f/fink';
+}
+use lib $userdir . '/fink/perlmod';
 
 use utf8;
 use Cwd qw(abs_path);
@@ -20,16 +27,20 @@ use Text::Wrap qw(fill $columns);
 use URI::Find;
 use XML::RSS;
 
-$columns = 76;
+my $columns = 76;
+my $workdir = $userdir . '/mirwork';
+my $lockfile = $workdir . '/rss-newpackages.lock';
+open (LOCKFILE, '>>' . $lockfile) or die "could not open lockfile for append: $!";
 
-#use utf8;
-use strict;
-
-open (LOCKFILE, '>>/home/f/fink/mirwork/rss-newpackages.lock') or die "could not open lockfile for append: $!";
 my $return = flock(LOCKFILE, LOCK_EX | LOCK_NB);
 die "another process is already running" if (not $return);
 
 use vars qw(
+  $userdir
+  $workdir
+  $logdir
+  $webdir
+
   $CUTOFF
   $DAYS
   $DISTDIR
@@ -67,21 +78,22 @@ use vars qw(
   $MAGIC
 );
 
-$basepath  = '/home/f/fink/sw';
+$basepath  = $userdir . '/sw';
 $TOPDIR    = abs_path( dirname($0) );
 $DAYS      = 5;                                     # number of days to look back
 $NOW       = time;
 $CUTOFF    = ( $NOW - ( 60 * 60 * 24 * $DAYS ) );
-$PREFIX    = '/home/f/fink/mirwork/fink-rss';
+$PREFIX    = $workdir . '/fink-rss';
 $CVSROOT   = '/srv/fink/cvs/fink';
 $SYNC_WAIT = 60 * 60 * 1;
 $DISTDIR   = $PREFIX . '/dists';
 $EXPDIR    = $PREFIX . '/experimental';
+$logdir    = $userdir . '/log';
+$webdir    = '/srv/fink/web/xml';
 $DOCCO     = 1;
 $DOSCP     = 1;
 $DOCVS     = 1;
 $DOCACHE   = 0;
-#$DISTDIR   = '/sw/fink' if ( -e '/sw/fink/dists' );
 
 $MAGIC     = File::MMagic->new();
 $URIFINDER = URI::Find->new(
@@ -102,19 +114,19 @@ if ($DOCCO)
 {
 	if ( -d $DISTDIR )
 	{
-		`cd $DISTDIR; cvs -d $CVSROOT up -A >/home/f/fink/log/dists.log 2>&1`;
+		`cd $DISTDIR; cvs -d $CVSROOT up -A >$logdir/dists.log 2>&1`;
 	}
 	else
 	{
-		`cd $PREFIX; cvs -d $CVSROOT co dists >/home/f/fink/log/dists.log 2>&1`;
+		`cd $PREFIX; cvs -d $CVSROOT co dists >$logdir/dists.log 2>&1`;
 	}
 	if ( -d $EXPDIR )
 	{
-		`cd $EXPDIR; cvs -d $CVSROOT up -A >/home/f/fink/log/experimental.log 2>&1`;
+		`cd $EXPDIR; cvs -d $CVSROOT up -A >$logdir/experimental.log 2>&1`;
 	}
 	else
 	{
-		`cd $PREFIX; cvs -d $CVSROOT co experimental >/home/f/fink/log/experimental.log 2>&1`;
+		`cd $PREFIX; cvs -d $CVSROOT co experimental >$logdir/experimental.log 2>&1`;
 	}
 }
 print "done\n";
@@ -168,7 +180,7 @@ if ($DOSCP)
 	print "- copying feeds to the Fink website... ";
 	for my $file (@FILES)
 	{
-		copy($file, '/srv/fink/web/xml/web/news/rdf/') or die "unable to copy $file to news/rdf/: $!";
+		copy($file, $webdir . '/web/news/rdf/') or die "unable to copy $file to news/rdf/: $!";
 	}
 	print "done\n";
 }
@@ -225,7 +237,7 @@ sub get_cvs_log
 
 	if (
 		open( CVSLOG,
-			"cvs -d $CVSROOT log @keys 2>/home/f/fink/log/cvslog.log |"
+			"cvs -d $CVSROOT log @keys 2>$logdir/cvslog.log |"
 		)
 	  )
 	{
@@ -423,7 +435,6 @@ sub make_rss
 		{
 			$description =~ s/[\r\n]+$//gsi;
 			$description =~ s/<(http:\/\/[^>]+)>/$1/gsi;
-			#$description =~ s/<(.+\@[^\@]+)>/mailto:$1"/gsi;
 			$description =~ s/((?:[\w\-\.]+)@(?:(\[([0-9]{1,3}\.){3}[0-9]{1,3}\])|(([\w\-]+\.)+)([a-zA-Z]{2,4})))/mailto:$1/gsi;
 			$description = reformat_text($description);
 			$URIFINDER->find( \$description );
@@ -516,10 +527,6 @@ sub make_rss
 		}
 		else
 		{
-#			my $prettytree = $package->{'tree'};
-#			if ($prettytree >= 10.4) {
-#				$prettytree = "10.4+";
-#			}
 			$link =
 				'http://pdb.finkproject.org/pdb/package.php/'
 				. $package->{'package'}
@@ -530,11 +537,6 @@ sub make_rss
 			if ($package->{'epoch'}) {
 				$link .= '&epoch=' . $package->{'epoch'};
 			}
-#			$title =
-#			    $packagestring . ' ('
-#			  . $package->{'description'} . ', '
-#			  . $prettytree
-#			  . ' tree)';
 			$title =
 			    $packagestring . ' ('
 			  . $package->{'description'}
@@ -572,7 +574,6 @@ sub make_rss
 	my $lctree = lc($outputtree);
 	$lctree =~ s/[^[:alnum:]]+/-/gs;
 	$lctree =~ s/-$//gs;
-	#my $savefile = $DOSCP ? "fink-$lctree.rdf.new" : "fink-$lctree.rdf";
 	my $savefile = "fink-$lctree.rdf";
 	$rss->save( $TOPDIR . '/' . $savefile ) or die "can't save rss: $!\n";
 	push( @FILES, "$TOPDIR/fink-$lctree.rdf" );
@@ -584,7 +585,6 @@ sub make_rss
 			{
 				my $filename = "fink-$key.rdf";
 				$filename =~ s#/#-#g;
-				#my $savefile = $DOSCP ? $filename . '.new' : $filename;
 				my $savefile = $filename;
 				$split_rss->{$key}->save( $TOPDIR . '/' . $savefile )
 				  or die "can't save rss: $!\n";
@@ -592,7 +592,6 @@ sub make_rss
 			}
 			else
 			{
-				#my $savefile = $DOSCP ? "fink-$key-$lctree.rdf.new" : "fink-$key-$lctree.rdf";
 				my $savefile = "fink-$key-$lctree.rdf";
 				$split_rss->{$key}->save( $TOPDIR . '/' . $savefile )
 				  or die "can't save rss: $!\n";
@@ -632,11 +631,6 @@ sub find_infofiles
 
 	if ($is_info)
 	{
-#		$properties = Fink::Package::read_properties($File::Find::name);
-#		$properties =
-#		  Fink::Package->handle_infon_block( $properties, $File::Find::name );
-#		@versions =
-#		  Fink::Package->setup_package_object( $properties, $File::Find::name );
 		@versions = Fink::PkgVersion->pkgversions_from_info_file( $File::Find::name );
 		for my $index ( 0 .. $#versions )
 		{
@@ -664,7 +658,6 @@ sub find_infofiles
 	
 			if (
 				open( SCRIPT,
-#					"/usr/bin/code2html '$escaped' 2>/dev/null |"
 					"enscript -E --color -whtml -p- '$escaped' 2>/dev/null |"
 				)
 			  )
