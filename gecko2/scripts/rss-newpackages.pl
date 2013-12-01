@@ -2,8 +2,7 @@
 
 $|++;
 
-use lib '/home/fink/cvs/fink/perlmod';
-use lib '/home/fink/cvs/scripts';
+use lib '/home/f/fink/fink/perlmod';
 
 use utf8;
 use Cwd qw(abs_path);
@@ -26,7 +25,7 @@ $columns = 76;
 #use utf8;
 use strict;
 
-open (LOCKFILE, '>>/home/fink/.local/run/rss-newpackages.lock') or die "could not open lockfile for append: $!";
+open (LOCKFILE, '>>/home/f/fink/mirwork/rss-newpackages.lock') or die "could not open lockfile for append: $!";
 my $return = flock(LOCKFILE, LOCK_EX | LOCK_NB);
 die "another process is already running" if (not $return);
 
@@ -41,6 +40,8 @@ use vars qw(
   $PREFIX
   $SYNC_WAIT
   $TOPDIR
+  $CVSROOT
+  $DOCCO
 
   @FILES
 
@@ -50,8 +51,8 @@ use vars qw(
 
   %EXPERIMENTAL_PACKAGES
   %STABLE_PACKAGES
-  %STABLE_PARENT_PACKAGES
   %UNSTABLE_PACKAGES
+  %STABLE_PARENT_PACKAGES
   %UNSTABLE_PARENT_PACKAGES
 
   %CVS_FILES
@@ -66,15 +67,17 @@ use vars qw(
   $MAGIC
 );
 
-$basepath  = '/home/fink/.local/sw';
+$basepath  = '/home/f/fink/sw';
 $TOPDIR    = abs_path( dirname($0) );
 $DAYS      = 5;                                     # number of days to look back
 $NOW       = time;
 $CUTOFF    = ( $NOW - ( 60 * 60 * 24 * $DAYS ) );
-$PREFIX    = '/home/fink/.local/tmp/fink-rss';
+$PREFIX    = '/home/f/fink/mirwork/fink-rss';
+$CVSROOT   = '/srv/fink/cvs/fink';
 $SYNC_WAIT = 60 * 60 * 1;
 $DISTDIR   = $PREFIX . '/dists';
 $EXPDIR    = $PREFIX . '/experimental';
+$DOCCO     = 1;
 $DOSCP     = 1;
 $DOCVS     = 1;
 $DOCACHE   = 0;
@@ -95,23 +98,23 @@ if ( -f $PREFIX . '/rss.cache' and $DOCACHE )
 
 print "- updating cvs repository... ";
 `mkdir -p '$PREFIX'`;
-if ($DOSCP)
+if ($DOCCO)
 {
 	if ( -d $DISTDIR )
 	{
-		`cd $DISTDIR; cvs -d :pserver:anonymous\@fink.cvs.sourceforge.net:/cvsroot/fink up -A >$PREFIX/dists.log 2>&1`;
+		`cd $DISTDIR; cvs -d $CVSROOT up -A >/home/f/fink/log/dists.log 2>&1`;
 	}
 	else
 	{
-		`cd $PREFIX; cvs -d :pserver:anonymous\@fink.cvs.sourceforge.net:/cvsroot/fink co dists >$PREFIX/dists.log 2>&1`;
+		`cd $PREFIX; cvs -d $CVSROOT co dists >/home/f/fink/log/dists.log 2>&1`;
 	}
 	if ( -d $EXPDIR )
 	{
-		`cd $EXPDIR; cvs -d :pserver:anonymous\@fink.cvs.sourceforge.net:/cvsroot/fink up -A >$PREFIX/experimental.log 2>&1`;
+		`cd $EXPDIR; cvs -d $CVSROOT up -A >/home/f/fink/log/experimental.log 2>&1`;
 	}
 	else
 	{
-		`cd $PREFIX; cvs -d :pserver:anonymous\@fink.cvs.sourceforge.net:/cvsroot/fink co experimental >$PREFIX/experimental.log 2>&1`;
+		`cd $PREFIX; cvs -d $CVSROOT co experimental >/home/f/fink/log/experimental.log 2>&1`;
 	}
 }
 print "done\n";
@@ -153,9 +156,9 @@ print "done\n";
 
 print "- generating RSS...\n";
 make_rss( \%STABLE_PACKAGES,          'Stable' );
-make_rss( \%STABLE_PARENT_PACKAGES, 'Stable - No Splitoffs' );
 make_rss( \%UNSTABLE_PACKAGES,        'Unstable' );
 make_rss( \%EXPERIMENTAL_PACKAGES,    'Experimental' );
+make_rss( \%STABLE_PARENT_PACKAGES,   'Stable - No Splitoffs' );
 make_rss( \%UNSTABLE_PARENT_PACKAGES, 'Unstable - No Splitoffs' );
 
 store( $CACHE, $PREFIX . '/rss.cache' ) if ( $CACHE and $DOCACHE );
@@ -165,8 +168,7 @@ if ($DOSCP)
 	print "- copying feeds to the Fink website... ";
 	for my $file (@FILES)
 	{
-		copy($file, '/var/www/www.finkproject.org/xml/web/news/rdf/') or die "unable to copy $file to news/rdf/: $!";
-		#chmod(0664, '/var/www/www.finkproject.org/xml/web/news/rdf/' . $file) or warn "unable to change mode on $file: $!";
+		copy($file, '/srv/fink/web/xml/web/news/rdf/') or die "unable to copy $file to news/rdf/: $!";
 	}
 	print "done\n";
 }
@@ -223,7 +225,7 @@ sub get_cvs_log
 
 	if (
 		open( CVSLOG,
-			"cvs -d :pserver:anonymous\@fink.cvs.sourceforge.net:/cvsroot/fink log @keys 2>$PREFIX/cvslog.log |"
+			"cvs -d $CVSROOT log @keys 2>/home/f/fink/log/cvslog.log |"
 		)
 	  )
 	{
@@ -421,7 +423,8 @@ sub make_rss
 		{
 			$description =~ s/[\r\n]+$//gsi;
 			$description =~ s/<(http:\/\/[^>]+)>/$1/gsi;
-			$description =~ s/<(.+\@[^\@]+)>/mailto:$1"/gsi;
+			#$description =~ s/<(.+\@[^\@]+)>/mailto:$1"/gsi;
+			$description =~ s/((?:[\w\-\.]+)@(?:(\[([0-9]{1,3}\.){3}[0-9]{1,3}\])|(([\w\-]+\.)+)([a-zA-Z]{2,4})))/mailto:$1/gsi;
 			$description = reformat_text($description);
 			$URIFINDER->find( \$description );
 		}
