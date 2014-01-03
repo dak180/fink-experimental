@@ -1,3 +1,77 @@
+diff --git a/autoconf/configure.ac b/autoconf/configure.ac
+index a9d4915..68832a8 100644
+--- a/autoconf/configure.ac
++++ b/autoconf/configure.ac
+@@ -1752,11 +1752,11 @@ AC_LINK_IFELSE(
+ ],
+ [
+   AC_MSG_RESULT([yes])
+-  AC_DEFINE([LLVM_HAS_ATOMICS], [1], [Has gcc/MSVC atomic intrinsics])
++  AC_DEFINE([LLVM_HAS_ATOMICS], [1], [Has gcc/MSVC/Apple atomic intrinsics])
+ ],
+ [
+   AC_MSG_RESULT([no])
+-  AC_DEFINE([LLVM_HAS_ATOMICS], [0], [Has gcc/MSVC atomic intrinsics])
++  AC_DEFINE([LLVM_HAS_ATOMICS], [0], [Has gcc/MSVC/Apple atomic intrinsics])
+   AC_MSG_WARN([LLVM will be built thread-unsafe because atomic builtins are missing])
+ ])
+ AC_LANG_POP([C++])
+diff --git a/cmake/modules/CheckAtomic.cmake b/cmake/modules/CheckAtomic.cmake
+index 0d63a82..213b57f 100644
+--- a/cmake/modules/CheckAtomic.cmake
++++ b/cmake/modules/CheckAtomic.cmake
+@@ -6,6 +6,10 @@ CHECK_CXX_SOURCE_COMPILES("
+ #ifdef _MSC_VER
+ #include <windows.h>
+ #endif
++#define	NEED_DARWIN_ATOMICS (defined(__APPLE__) && defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 2)))
++#if NEED_DARWIN_ATOMICS
++#include <libkern/OSAtomic.h>
++#endif
+ int main() {
+ #ifdef _MSC_VER
+         volatile LONG val = 1;
+@@ -13,6 +17,12 @@ int main() {
+         InterlockedCompareExchange(&val, 0, 1);
+         InterlockedIncrement(&val);
+         InterlockedDecrement(&val);
++#elif NEED_DARWIN_ATOMICS
++	int32_t val = 1;
++	OSMemoryBarrier();
++	OSAtomicCompareAndSwap32Barrier(1, 0, &val);
++	OSAtomicIncrement32(&val);
++	OSAtomicDecrement32(&val);
+ #else
+         volatile unsigned long val = 1;
+         __sync_synchronize();
+diff --git a/include/llvm/ADT/SmallBitVector.h b/include/llvm/ADT/SmallBitVector.h
+index 86949b2..305a054 100644
+--- a/include/llvm/ADT/SmallBitVector.h
++++ b/include/llvm/ADT/SmallBitVector.h
+@@ -34,7 +34,8 @@ class SmallBitVector {
+   // pointer to memory containing size, allocation size, and the array of bits.
+   uintptr_t X;
+ 
+-  enum {
++// gcc-4.0 workaround: make certain enums non-anonymous
++  enum _nums {
+     // The number of bits in this class.
+     NumBaseBits = sizeof(uintptr_t) * CHAR_BIT,
+ 
+diff --git a/include/llvm/Bitcode/BitstreamReader.h b/include/llvm/Bitcode/BitstreamReader.h
+index dc5e095..658a2dc 100644
+--- a/include/llvm/Bitcode/BitstreamReader.h
++++ b/include/llvm/Bitcode/BitstreamReader.h
+@@ -136,7 +136,9 @@ public:
+ ///   Record   - This is a record with a specific AbbrevID.
+ ///
+ struct BitstreamEntry {
+-  enum {
++// anonymous enum named as workaround to g++-4.0.1 bug (fixed in 4.0.2):
++// http://gcc.gnu.org/bugzilla/show_bug.cgi?id=20589
++  enum KindEnum {
+     Error,
+     EndBlock,
      SubBlock,
 diff --git a/include/llvm/CodeGen/ScheduleDFS.h b/include/llvm/CodeGen/ScheduleDFS.h
 index 73ce99f..4f85f0d 100644
