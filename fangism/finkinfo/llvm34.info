@@ -109,6 +109,8 @@ PatchScript: <<
 		tools/clang/lib/Frontend/InitHeaderSearch.cpp
 	fi
 
+	if false
+	then
 	# explicit template instantiation (needed for 10.7)
 	{ echo '#include "llvm/Analysis/Dominators.h"' ; \
 	echo '#include "llvm/Assembly/Writer.h"' ; \
@@ -120,6 +122,7 @@ PatchScript: <<
 	sed -i.orig -e '/DomPrinter/a\
   Dominators.cpp\
 ' lib/Analysis/CMakeLists.txt
+	fi
 
 	# ld warning about binding of _abort and _raise symbols vs. libSystem's
 	# suggests -bind_at_load
@@ -292,6 +295,11 @@ CompileScript: <<
 
 	# first make fails, but we have to run it first and then fix some deps
 	make -k || recompile_known_units && make || make VERBOSE=1
+	pushd lib
+	ln -s BugpointPasses.{so,dylib}
+	ln -s LLVMPolly.{so,dylib}
+	ln -s LLVMHello.{so,dylib}
+	popd
 	cd ..
 	ln -s stage1 last
 	popd
@@ -324,6 +332,11 @@ CompileScript: <<
 	pushd ../build/stage2
 	cmake $CMAKE_OPTIONS $relsrcdir
 	make -k || make VERBOSE=1
+	pushd lib
+	ln -s BugpointPasses.{so,dylib}
+	ln -s LLVMPolly.{so,dylib}
+	ln -s LLVMHello.{so,dylib}
+	popd
 	cd ..
 	rm -f last
 	ln -s stage2 last
@@ -347,6 +360,11 @@ CompileScript: <<
 	pushd ../build/stage3
 	cmake $CMAKE_OPTIONS $relsrcdir
 	make -k || make VERBOSE=1
+	pushd lib
+	ln -s BugpointPasses.{so,dylib}
+	ln -s LLVMPolly.{so,dylib}
+	ln -s LLVMHello.{so,dylib}
+	popd
 	cd ..
 	rm -f last
 	ln -s stage3 last
@@ -419,7 +437,7 @@ InfoTest: <<
 	test -x %p/bin/bash || { echo "Error: Fink-built bash >= 3.0 required for pipefail!" ; exit 1; }
 	}
 	# force time limit per test (prefix each command-line)
-	sed -i.orig -e "/script\.append/s|ln|'gtimeout 5m '+&|" utils/lit/lit/TestRunner.py
+	# sed -i.orig -e "/script\.append/s|ln|'gtimeout 5m '+&|" utils/lit/lit/TestRunner.py
 
 	# need path to bootstrapping compiler
 	pushd ../opt-bin
@@ -524,7 +542,6 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/BugpointPasses.so
 		!%p/opt/llvm-%v/lib/LLVMHello.so
 		!%p/opt/llvm-%v/lib/libLLVMAnalysis.dylib
-		!%p/opt/llvm-%v/lib/libLLVMArchive.dylib
 		!%p/opt/llvm-%v/lib/libLLVMAsmParser.dylib
 		!%p/opt/llvm-%v/lib/libLLVMAsmPrinter.dylib
 		!%p/opt/llvm-%v/lib/libLLVMBitReader.dylib
@@ -539,6 +556,7 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/libLLVMIRReader.dylib
 		!%p/opt/llvm-%v/lib/libLLVMJIT.dylib
 		!%p/opt/llvm-%v/lib/libLLVMLinker.dylib
+		!%p/opt/llvm-%v/lib/libLLVMLTO.dylib
 		!%p/opt/llvm-%v/lib/libLLVMMC.dylib
 		!%p/opt/llvm-%v/lib/libLLVMMCDisassembler.dylib
 		!%p/opt/llvm-%v/lib/libLLVMMCJIT.dylib
@@ -562,7 +580,7 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/libLLVMipa.dylib
 		!%p/opt/llvm-%v/lib/libLLVMipo.dylib
 		!%p/opt/llvm-%v/lib/LLVMPolly.so
-		!%p/opt/llvm-%v/lib/libPollyJSON.dylib
+		!%p/opt/llvm-%v/lib/libLLVMPollyJSON.dylib
 		(%m != powerpc) !%p/opt/llvm-%v/lib/libLLVMX86AsmParser.dylib
 		(%m != powerpc) !%p/opt/llvm-%v/lib/libLLVMX86AsmPrinter.dylib
 		(%m != powerpc) !%p/opt/llvm-%v/lib/libLLVMX86CodeGen.dylib
@@ -577,10 +595,12 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/libclangBasic.dylib
 		!%p/opt/llvm-%v/lib/libclangCodeGen.dylib
 		!%p/opt/llvm-%v/lib/libclangDriver.dylib
+		!%p/opt/llvm-%v/lib/libclangDynamicASTMatchers.dylib
 		!%p/opt/llvm-%v/lib/libclangEdit.dylib
 		!%p/opt/llvm-%v/lib/libclangFormat.dylib
 		!%p/opt/llvm-%v/lib/libclangFrontend.dylib
 		!%p/opt/llvm-%v/lib/libclangFrontendTool.dylib
+		!%p/opt/llvm-%v/lib/libclangIndex.dylib
 		!%p/opt/llvm-%v/lib/libclangLex.dylib
 		!%p/opt/llvm-%v/lib/libclangParse.dylib
 		!%p/opt/llvm-%v/lib/libclangRewriteCore.dylib
@@ -593,8 +613,8 @@ Shlibs: <<
 		!%p/opt/llvm-%v/lib/libclangTooling.dylib
 		!%p/opt/llvm-%v/lib/libgtest.dylib
 		!%p/opt/llvm-%v/lib/libgtest_main.dylib
-		!%p/opt/llvm-%v/lib/libprofile_rt.dylib
 		!%p/opt/llvm-%v/lib/clang/3.4/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
+		!%p/opt/llvm-%v/lib/clang/3.4/lib/darwin/libclang_rt.asan_iossim_dynamic.dylib
 <<
 Homepage: http://llvm.org/
 DescDetail: <<
