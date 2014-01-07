@@ -56,7 +56,7 @@ UseMaxBuildJobs: true
 PatchFile: %n.patch
 PatchFile-MD5: 108e3e6b1f598eced993fed1e5263254
 PatchFile2: %n-clang.patch
-PatchFile2-MD5: f815c288d1d94589c09b575d83606008
+PatchFile2-MD5: 6b29a8f781340f608471cd0d66ecf0db
 PatchFile3: %n-compiler-rt.patch
 PatchFile3-MD5: e9d7d766ab12f48695e8e973e95de4d1
 PatchFile4: %n-polly.patch

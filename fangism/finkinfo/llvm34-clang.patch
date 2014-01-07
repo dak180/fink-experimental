@@ -172,7 +172,7 @@ index bccd0d7..dd6451d 100644
      SuitableAlign = 128;
      DescriptionString = "E-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-"
 -                        "i64:32:64-f32:32:32-f64:64:64-v128:128:128-n32";
-+                        "i64:32:64-f64:32:64-f64:64:64-v128:128:128-n32";
++                        "i64:32:64-f32:32:32-f64:32:64-v128:128:128-n32";
    }
    virtual BuiltinVaListKind getBuiltinVaListKind() const {
      return TargetInfo::CharPtrBuiltinVaList;
@@ -703,7 +703,7 @@ index fc8f758..7a7530f 100644
 +
 +// RUN: %clang_cc1 -triple powerpc-darwin -o - -emit-llvm %s | \
 +// RUN: FileCheck %s -check-prefix=PPC32-DARWIN
-+// PPC32-DARWIN: target datalayout = "E-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:32:64-f64:32:64-f64:64:64-v128:128:128-n32"
++// PPC32-DARWIN: target datalayout = "E-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:32:64-f32:32:32-f64:32:64-v128:128:128-n32"
 +
 diff --git a/test/Driver/darwin-as.c b/test/Driver/darwin-as.c
 index 58c850e..e35391e 100644
