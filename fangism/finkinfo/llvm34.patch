@@ -3101,7 +3101,7 @@ index 9752417..2bb3f75 100644
 -            else:
 +            # do not commit this patch
 +            # exception: built-in shell commands and operators
-+            elif ln[1] == '(' or ln[1] == '{' or ln1 == 'export' or ln1 == 'env' or ln1 == 'cd' or ln1 == 'pushd' or ln1 == 'set' or ln1 == 'test' or ln1 == 'umask':
++            elif ln[1] == '(' or ln[1] == '{' or ln[1] == '!' or ln1 == 'export' or ln1 == 'env' or ln1 == 'cd' or ln1 == 'pushd' or ln1 == 'set' or ln1 == 'test' or ln1 == 'umask':
                  script.append(ln)
 +            else:
 +                script.append('gtimeout 1m ' +ln)
