@@ -36,7 +36,7 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.gz
-Source-MD5: a61a3903da1c0b43ac6110738a561796
+Source-MD5: 46ed668a1ce38985120dbf6344cf6116
 Source2: http://llvm.org/releases/%v/clang-%v.src.tar.gz
 Source2-MD5: b378f1e2c424e03289effc75268d3d2c
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.gz
