@@ -106,7 +106,7 @@ index 3398a83..5497822 100644
      Op_InputChain = 0,
      Op_AsmString = 1,
 diff --git a/include/llvm/MC/MCAsmInfo.h b/include/llvm/MC/MCAsmInfo.h
-index 7a99394..a06c7ac 100644
+index 7a99394..9845623 100644
 --- a/include/llvm/MC/MCAsmInfo.h
 +++ b/include/llvm/MC/MCAsmInfo.h
 @@ -266,13 +266,16 @@ namespace llvm {
@@ -132,7 +132,18 @@ index 7a99394..a06c7ac 100644
  
      /// HiddenVisibilityAttr - This attribute, if not MCSA_Invalid, is used to
      /// declare a symbol as having hidden visibility.
-@@ -497,8 +500,11 @@ namespace llvm {
+@@ -303,6 +306,10 @@ namespace llvm {
+     /// uses relocations for references to other .debug_* sections.
+     bool DwarfUsesRelocationsAcrossSections;
+ 
++    /// DwarfFDESymbolsUseAbsDiff - true if DWARF FDE symbol reference
++    /// relocations should be replaced by an absolute difference.
++    bool DwarfFDESymbolsUseAbsDiff;
++
+     /// DwarfRegNumForCFI - True if dwarf register numbers are printed
+     /// instead of symbolic register names in .cfi_* directives.
+     bool DwarfRegNumForCFI;  // Defaults to false;
+@@ -497,8 +504,11 @@ namespace llvm {
      bool hasIdentDirective() const { return HasIdentDirective; }
      bool hasNoDeadStrip() const { return HasNoDeadStrip; }
      const char *getWeakRefDirective() const { return WeakRefDirective; }
@@ -146,6 +157,16 @@ index 7a99394..a06c7ac 100644
  
      MCSymbolAttr getHiddenVisibilityAttr() const { return HiddenVisibilityAttr;}
      MCSymbolAttr getHiddenDeclarationVisibilityAttr() const {
+@@ -528,6 +538,9 @@ namespace llvm {
+     bool doesDwarfUseRelocationsAcrossSections() const {
+       return DwarfUsesRelocationsAcrossSections;
+     }
++    bool doDwarfFDESymbolsUseAbsDiff() const {
++      return DwarfFDESymbolsUseAbsDiff;
++    }
+     bool useDwarfRegNumForCFI() const {
+       return DwarfRegNumForCFI;
+     }
 diff --git a/include/llvm/MC/MCAssembler.h b/include/llvm/MC/MCAssembler.h
 index 8735a55..97e0a67 100644
 --- a/include/llvm/MC/MCAssembler.h
@@ -880,7 +901,7 @@ index 308b0e0..8be4dcb 100644
        OutStreamer.EmitSymbolAttribute(GVSym, MCSA_Global);
        //NOTE: linkonce is handled by the section the symbol was assigned to.
 diff --git a/lib/MC/MCAsmInfo.cpp b/lib/MC/MCAsmInfo.cpp
-index 28f1c95..adc6a72 100644
+index 28f1c95..daf19e9 100644
 --- a/lib/MC/MCAsmInfo.cpp
 +++ b/lib/MC/MCAsmInfo.cpp
 @@ -76,8 +76,9 @@ MCAsmInfo::MCAsmInfo() {
@@ -895,6 +916,14 @@ index 28f1c95..adc6a72 100644
    HiddenVisibilityAttr = MCSA_Hidden;
    HiddenDeclarationVisibilityAttr = MCSA_Hidden;
    ProtectedVisibilityAttr = MCSA_Protected;
+@@ -85,6 +86,7 @@ MCAsmInfo::MCAsmInfo() {
+   SupportsDebugInformation = false;
+   ExceptionsType = ExceptionHandling::None;
+   DwarfUsesRelocationsAcrossSections = true;
++  DwarfFDESymbolsUseAbsDiff = false;
+   DwarfRegNumForCFI = false;
+   HasMicrosoftFastStdCallMangling = false;
+   NeedsDwarfSectionOffsetDirective = false;
 diff --git a/lib/MC/MCAsmInfoCOFF.cpp b/lib/MC/MCAsmInfoCOFF.cpp
 index 9d9f98e..1cac71f 100644
 --- a/lib/MC/MCAsmInfoCOFF.cpp
@@ -1014,6 +1043,54 @@ index 5195b9e..75f6493 100644
 +  endif()
 +endforeach(t)
 +
+diff --git a/lib/MC/MCDwarf.cpp b/lib/MC/MCDwarf.cpp
+index 1e5c2e3..9fd13ab 100644
+--- a/lib/MC/MCDwarf.cpp
++++ b/lib/MC/MCDwarf.cpp
+@@ -836,8 +836,9 @@ static unsigned getSizeForEncoding(MCStreamer &streamer,
+   }
+ }
+ 
+-static void EmitSymbol(MCStreamer &streamer, const MCSymbol &symbol,
+-                       unsigned symbolEncoding, const char *comment = 0) {
++static void EmitFDESymbol(MCStreamer &streamer, const MCSymbol &symbol,
++                       unsigned symbolEncoding, bool isEH,
++                       const char *comment = 0) {
+   MCContext &context = streamer.getContext();
+   const MCAsmInfo *asmInfo = context.getAsmInfo();
+   const MCExpr *v = asmInfo->getExprForFDESymbol(&symbol,
+@@ -845,7 +846,10 @@ static void EmitSymbol(MCStreamer &streamer, const MCSymbol &symbol,
+                                                  streamer);
+   unsigned size = getSizeForEncoding(streamer, symbolEncoding);
+   if (streamer.isVerboseAsm() && comment) streamer.AddComment(comment);
+-  streamer.EmitAbsValue(v, size);
++  if (asmInfo->doDwarfFDESymbolsUseAbsDiff() && isEH)
++    streamer.EmitAbsValue(v, size);
++  else
++    streamer.EmitValue(v, size);
+ }
+ 
+ static void EmitPersonality(MCStreamer &streamer, const MCSymbol &symbol,
+@@ -1344,7 +1348,7 @@ MCSymbol *FrameEmitterImpl::EmitFDE(MCStreamer &streamer,
+   unsigned PCEncoding = IsEH ? MOFI->getFDEEncoding(UsingCFI)
+                              : (unsigned)dwarf::DW_EH_PE_absptr;
+   unsigned PCSize = getSizeForEncoding(streamer, PCEncoding);
+-  EmitSymbol(streamer, *frame.Begin, PCEncoding, "FDE initial location");
++  EmitFDESymbol(streamer, *frame.Begin, PCEncoding, IsEH, "FDE initial location");
+ 
+   // PC Range
+   const MCExpr *Range = MakeStartMinusEndExpr(streamer, *frame.Begin,
+@@ -1364,8 +1368,8 @@ MCSymbol *FrameEmitterImpl::EmitFDE(MCStreamer &streamer,
+ 
+     // Augmentation Data
+     if (frame.Lsda)
+-      EmitSymbol(streamer, *frame.Lsda, frame.LsdaEncoding,
+-                 "Language Specific Data Area");
++      EmitFDESymbol(streamer, *frame.Lsda, frame.LsdaEncoding, true,
++                    "Language Specific Data Area");
+   }
+ 
+   // Call Frame Instructions
 diff --git a/lib/MC/MachObjectWriter.cpp b/lib/MC/MachObjectWriter.cpp
 index 8234aff..19531ed 100644
 --- a/lib/MC/MachObjectWriter.cpp
@@ -2220,10 +2297,10 @@ index 1ef9814..9ddd104 100644
      // Instruction encodings.  These are the standard/most common forms for X86
      // instructions.
 diff --git a/lib/Target/X86/MCTargetDesc/X86MCAsmInfo.cpp b/lib/Target/X86/MCTargetDesc/X86MCAsmInfo.cpp
-index 3861e1c..729c238 100644
+index 3861e1c..dc6d502 100644
 --- a/lib/Target/X86/MCTargetDesc/X86MCAsmInfo.cpp
 +++ b/lib/Target/X86/MCTargetDesc/X86MCAsmInfo.cpp
-@@ -65,6 +65,12 @@ X86MCAsmInfoDarwin::X86MCAsmInfoDarwin(const Triple &T) {
+@@ -65,6 +65,17 @@ X86MCAsmInfoDarwin::X86MCAsmInfoDarwin(const Triple &T) {
  
    // Exceptions handling
    ExceptionsType = ExceptionHandling::DwarfCFI;
@@ -2233,6 +2310,11 @@ index 3861e1c..729c238 100644
 +  // rather than OS version
 +  if (T.isMacOSX() && T.isMacOSXVersionLT(10, 6))
 +    HasWeakDefCanBeHiddenDirective = false;
++
++  // FIXME: this should not depend on the target OS version, but on the ld64
++  // version in use.  From at least >= ld64-97.17 (Xcode 3.2.6) the abs-ified
++  // FDE relocs may be used.
++  DwarfFDESymbolsUseAbsDiff = T.isMacOSX() && !T.isMacOSXVersionLT(10, 6);
  }
  
  X86_64MCAsmInfoDarwin::X86_64MCAsmInfoDarwin(const Triple &Triple)
@@ -2788,6 +2870,66 @@ index 0000000..130d8fa
 +define i32* @f3() {
 +  ret i32* @v3
 +}
+diff --git a/test/CodeGen/X86/pr10420.ll b/test/CodeGen/X86/pr10420.ll
+index 3993f24..62951892 100644
+--- a/test/CodeGen/X86/pr10420.ll
++++ b/test/CodeGen/X86/pr10420.ll
+@@ -1,4 +1,9 @@
+-; RUN: llc < %s -mtriple=x86_64-apple-macosx -disable-cfi | FileCheck %s
++; RUN: llc < %s -mtriple=x86_64-apple-macosx10.7 -disable-cfi | FileCheck --check-prefix=CHECK-64-D11 %s
++; RUN: llc < %s -mtriple=x86_64-apple-macosx10.6 -disable-cfi | FileCheck %s
++; RUN: llc < %s -mtriple=x86_64-apple-macosx10.5 -disable-cfi | FileCheck --check-prefix=CHECK-64-D89 %s
++; RUN: llc < %s -mtriple=i686-apple-macosx10.6 -disable-cfi | FileCheck --check-prefix=CHECK-I686-D10 %s
++; RUN: llc < %s -mtriple=i686-apple-macosx10.5 -disable-cfi | FileCheck --check-prefix=CHECK-I686-D89 %s
++; RUN: llc < %s -mtriple=i686-apple-macosx10.4 -disable-cfi | FileCheck --check-prefix=CHECK-I686-D89 %s
+ 
+ define private void @foo() {
+        ret void
+@@ -19,3 +24,44 @@ define void @bar() {
+ ; CHECK: Ltmp19:
+ ; CHECK-NEXT: Ltmp20 = Ltmp2-Ltmp19                   ## FDE initial location
+ ; CHECK-NEXT:         .quad   Ltmp20
++
++
++; CHECK-64-D11: Ltmp13:
++; CHECK-64-D11-NEXT: Ltmp14 = L_foo-Ltmp13                   ## FDE initial location
++; CHECK-64-D11-NEXT:         .quad   Ltmp14
++
++; CHECK-64-D11: Ltmp20:
++; CHECK-64-D11-NEXT: Ltmp21 = Ltmp2-Ltmp20                   ## FDE initial location
++; CHECK-64-D11-NEXT:         .quad   Ltmp21
++
++
++; CHECK-64-D89: Ltmp12:
++; CHECK-64-D89-NEXT: .quad	L_foo-Ltmp12                   ## FDE initial location
++; CHECK-64-D89-NEXT: Ltmp13 = (Ltmp0-L_foo)-0                   ## FDE address range
++; CHECK-64-D89-NEXT:         .quad   Ltmp13
++
++; CHECK-64-D89: Ltmp18:
++; CHECK-64-D89-NEXT: .quad	Ltmp2-Ltmp18                   ## FDE initial location
++; CHECK-64-D89-NEXT: Ltmp19 = (Ltmp4-Ltmp2)-0                   ## FDE address range
++; CHECK-64-D89-NEXT:         .quad   Ltmp19
++
++
++; CHECK-I686-D10: Ltmp12:
++; CHECK-I686-D10-NEXT: Ltmp13 = L_foo-Ltmp12                   ## FDE initial location
++; CHECK-I686-D10-NEXT:         .long   Ltmp13
++
++; CHECK-I686-D10: Ltmp19:
++; CHECK-I686-D10-NEXT: Ltmp20 = Ltmp2-Ltmp19                   ## FDE initial location
++; CHECK-I686-D10-NEXT:         .long   Ltmp20
++
++
++; CHECK-I686-D89: Ltmp12:
++; CHECK-I686-D89-NEXT: .long	L_foo-Ltmp12                   ## FDE initial location
++; CHECK-I686-D89-NEXT: Ltmp13 = (Ltmp0-L_foo)-0                   ## FDE address range
++; CHECK-I686-D89-NEXT:         .long   Ltmp13
++
++; CHECK-I686-D89: Ltmp18:
++; CHECK-I686-D89-NEXT: .long	Ltmp2-Ltmp18                   ## FDE initial location
++; CHECK-I686-D89-NEXT: Ltmp19 = (Ltmp4-Ltmp2)-0                   ## FDE address range
++; CHECK-I686-D89-NEXT:         .long   Ltmp19
++
 diff --git a/test/CodeGen/X86/weak_def_can_be_hidden.ll b/test/CodeGen/X86/weak_def_can_be_hidden.ll
 index f78f357..22aa135 100644
 --- a/test/CodeGen/X86/weak_def_can_be_hidden.ll

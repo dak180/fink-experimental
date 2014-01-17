@@ -46,7 +46,7 @@ index a442408..705fbd6 100644
    else()
 -    set(SANITIZER_MIN_OSX_VERSION 10.6)
 +# darwin9 users will want 10.5, of course
-+    set(SANITIZER_MIN_OSX_VERSION 10.4)
++    set(SANITIZER_MIN_OSX_VERSION @MACOSX_VERSION@)
    endif()
    set(DARWIN_osx_CFLAGS -mmacosx-version-min=${SANITIZER_MIN_OSX_VERSION})
 -  set(DARWIN_iossim_CFLAGS 
@@ -505,14 +505,14 @@ index c5aa939..9d6649c 100644
      __sync_synchronize();
    return v;
 diff --git a/lib/sanitizer_common/sanitizer_common_interceptors.inc b/lib/sanitizer_common/sanitizer_common_interceptors.inc
-index d1c8976..d116233 100644
+index d1c8976..784e201 100644
 --- a/lib/sanitizer_common/sanitizer_common_interceptors.inc
 +++ b/lib/sanitizer_common/sanitizer_common_interceptors.inc
 @@ -2184,10 +2184,12 @@ INTERCEPTOR(int, pthread_mutex_lock, void *m) {
    void *ctx;
    COMMON_INTERCEPTOR_ENTER(ctx, pthread_mutex_lock, m);
    int res = REAL(pthread_mutex_lock)(m);
-+#if HAVE_EOWNERDEAD
++#if defined(EOWNERDEAD)
    if (res == errno_EOWNERDEAD)
      COMMON_INTERCEPTOR_MUTEX_REPAIR(ctx, m);
    if (res == 0 || res == errno_EOWNERDEAD)
@@ -534,7 +534,7 @@ index 78d1f5a..7fb2018 100644
      (SI_MAC && !SI_IOS) || SI_LINUX_NOT_ANDROID
  # define SANITIZER_INTERCEPT_STATVFS SI_LINUX_NOT_ANDROID
 diff --git a/lib/sanitizer_common/sanitizer_platform_limits_posix.cc b/lib/sanitizer_common/sanitizer_platform_limits_posix.cc
-index e887751..927c828 100644
+index e887751..200ab9b 100644
 --- a/lib/sanitizer_common/sanitizer_platform_limits_posix.cc
 +++ b/lib/sanitizer_common/sanitizer_platform_limits_posix.cc
 @@ -122,7 +122,9 @@ namespace __sanitizer {
@@ -563,26 +563,29 @@ index e887751..927c828 100644
  #endif // !SANITIZER_ANDROID
  
  #if SANITIZER_LINUX
-@@ -838,7 +839,9 @@ CHECK_SIZE_AND_OFFSET(cmsghdr, cmsg_type);
+@@ -838,7 +839,10 @@ CHECK_SIZE_AND_OFFSET(cmsghdr, cmsg_type);
  COMPILER_CHECK(sizeof(__sanitizer_dirent) <= sizeof(dirent));
  CHECK_SIZE_AND_OFFSET(dirent, d_ino);
  #if SANITIZER_MAC
-+#if !is_powerpc
++// macro defined in <sys/dirent.h> on darwin10
++#if defined(__DARWIN_64_BIT_INO_T) && __DARWIN_64_BIT_INO_T
  CHECK_SIZE_AND_OFFSET(dirent, d_seekoff);
 +#endif
  #else
  CHECK_SIZE_AND_OFFSET(dirent, d_off);
  #endif
 diff --git a/lib/sanitizer_common/sanitizer_platform_limits_posix.h b/lib/sanitizer_common/sanitizer_platform_limits_posix.h
-index b9a0fc9..d520c45 100644
+index b9a0fc9..3e9edf3 100644
 --- a/lib/sanitizer_common/sanitizer_platform_limits_posix.h
 +++ b/lib/sanitizer_common/sanitizer_platform_limits_posix.h
-@@ -18,6 +18,13 @@
+@@ -18,6 +18,15 @@
  #include "sanitizer_internal_defs.h"
  #include "sanitizer_platform.h"
  
 +// maybe this conditional should be darwin8 or 9 (pre-10)
-+#define is_powerpc	(defined(__ppc__) || defined(__powerpc__) || defined(__POWERPC__))
++#if	SANITIZER_MAC
++#include <sys/cdefs.h>	// just for __DARWIN_64_BIT_INO_T
++#endif
 +
 +// just doesn't exist on darwin8 -- should be auto-detected
 +#define	HAVE_STRUCT_STATFS64			0
@@ -591,7 +594,7 @@ index b9a0fc9..d520c45 100644
  namespace __sanitizer {
    extern unsigned struct_utsname_sz;
    extern unsigned struct_stat_sz;
-@@ -45,6 +52,9 @@ namespace __sanitizer {
+@@ -45,6 +54,9 @@ namespace __sanitizer {
  
  #if !SANITIZER_ANDROID
    extern unsigned ucontext_t_sz;
@@ -601,18 +604,16 @@ index b9a0fc9..d520c45 100644
  #endif // !SANITIZER_ANDROID
  
  #if SANITIZER_LINUX
-@@ -258,8 +268,14 @@ namespace __sanitizer {
+@@ -258,8 +270,12 @@ namespace __sanitizer {
  
  #if SANITIZER_MAC
    struct __sanitizer_dirent {
-+#if is_powerpc
-+    unsigned int d_ino;			// darwin8
-+#else
++#if defined(__DARWIN_64_BIT_INO_T) && __DARWIN_64_BIT_INO_T
      unsigned long long d_ino;
 -    unsigned long long d_seekoff;
-+#endif
-+#if !is_powerpc
 +    unsigned long long d_seekoff;		// not in darwin8
++#else
++    unsigned int d_ino;			// powerpc-darwin8, i386-darwin10
 +#endif
      unsigned short d_reclen;
      // more fields that we don't care about

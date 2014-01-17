@@ -1,7 +1,7 @@
 Info3: <<
 Package: llvm34
 Version: 3.4
-Revision: 0
+Revision: 0b
 Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
@@ -28,6 +28,7 @@ Depends: <<
 #	cloog-org2-shlibs (>= 0.18),
 	libgmpxx5-shlibs,
 	gmp5-shlibs,
+# only darwin8 needs odcctools
 	odcctools
 <<
 BuildConflicts: <<
@@ -35,7 +36,7 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.gz
-Source-MD5: 0070e5dfac6639de90e549e697138b36
+Source-MD5: a61a3903da1c0b43ac6110738a561796
 Source2: http://llvm.org/releases/%v/clang-%v.src.tar.gz
 Source2-MD5: b378f1e2c424e03289effc75268d3d2c
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.gz
@@ -54,11 +55,11 @@ BuildDependsOnly: false
 UseMaxBuildJobs: true
 
 PatchFile: %n.patch
-PatchFile-MD5: 598f89cee4b9ba60cf8dc33283c6c739
+PatchFile-MD5: a61a3903da1c0b43ac6110738a561796
 PatchFile2: %n-clang.patch
 PatchFile2-MD5: 6b29a8f781340f608471cd0d66ecf0db
 PatchFile3: %n-compiler-rt.patch
-PatchFile3-MD5: e9d7d766ab12f48695e8e973e95de4d1
+PatchFile3-MD5: 5d4ad8264a174735cedd9f2d8a20e3e5
 PatchFile4: %n-polly.patch
 PatchFile4-MD5: d6deda1584332af388053b19cb9dcc6f
 
@@ -78,15 +79,16 @@ PatchScript: <<
 	popd
 
 #	%{default_script}
-	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|" %{PatchFile} | patch -p1
+	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|g" %{PatchFile} | patch -p1
 	pushd tools/clang
-	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|" %{PatchFile2} | patch -p1
+	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|g" %{PatchFile2} | patch -p1
 	popd
 	pushd tools/polly
-	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|" %{PatchFile4} | patch -p1
+	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|g" %{PatchFile4} | patch -p1
 	popd
 	pushd projects/compiler-rt
-	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|" %{PatchFile3} | patch -p1
+	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|g" \
+		-e "s|@MACOSX_VERSION@|$osx_version|g" %{PatchFile3} | patch -p1
 	popd
 
 	# Do not want -DNDEBUG, cause linker errors (undef symbols)
@@ -243,8 +245,10 @@ CompileScript: <<
 	fi
 	}
 
-	# more of the same workaround
+	# more of the same workaround, only needed for gcc-4.0
 	recompile_known_units() {
+	if test "$darwin_vers" -lt 10
+	then
 	echo "Recompiling known problematic units with -O0."
 	for f in \
 	lib/Analysis:{ScalarEvolution{,Expander},LoopPass}.cpp:Analysis \
@@ -265,6 +269,7 @@ CompileScript: <<
 	# echo "$src -> $lib"
 	compile_lib_unit $dir $src $lib
 	done
+	fi
 	}
 
 	build_type=Release
@@ -633,12 +638,17 @@ Nag me if you want other cross-targets enabled.
 <<
 DescPort: <<
 Most of the patches are maintained at fangism's powerpc-darwin8 branches
-of the llvm, clang, compiler-rt projects hosted at github.
-	*** LLVM/Clang-3.4 still has serious codegen issues for PowerPC
+of the llvm, clang, compiler-rt projects hosted at github:
+	https://github.com/fangism/llvm/compare/release_34...powerpc-darwin8-rel-3.4.diff
+	https://github.com/fangism/clang/compare/release_34...powerpc-darwin8-rel-3.4.diff
+	https://github.com/fangism/compiler-rt/compare/release_34...powerpc-darwin8-rel-3.4.diff
+
+	*** LLVM/Clang-3.4 still has some codegen issues for PowerPC
 	*** It is NOT considered production quality for PowerPC
 	*** HELP WANTED: in stabilizing and fixing PowerPC CodeGen
 	*** on llvm/clang svn trunk.
 	*** status page: http://www.csl.cornell.edu/~fang/sw/llvm/
+
 Original (pre-3.0) package maintained by 
 	Benjamin Reed <llvm@fink.raccoonfink.com>
 with contributions from
@@ -646,6 +656,7 @@ with contributions from
 PatchFile contains:
 *	various compiler deficiency workarounds
 *	CMakeFile fixes, mostly missing dependencies
+*	CodeGen patches related to ABI, mach-o
 *	and much more!
 <<
 <<
