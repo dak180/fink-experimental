@@ -111,26 +111,6 @@ PatchScript: <<
 		tools/clang/lib/Frontend/InitHeaderSearch.cpp
 	fi
 
-	if false
-	then
-	# explicit template instantiation (needed for 10.7)
-	{ echo '#include "llvm/Analysis/Dominators.h"' ; \
-	echo '#include "llvm/Assembly/Writer.h"' ; \
-	grep -e namespace -e EXTERN_TEMPLATE \
-		include/llvm/Analysis/Dominators.h | \
-	sed -e 's/EXTERN_TEMPLATE_INSTANTIATION(/template /' -e 's/);/;/' ; \
-	} > lib/Analysis/Dominators.cpp
-	sed -i.orig -e '/EXTERN_TEMPLATE_INSTANTIATION/s|^|// |' include/llvm/Analysis/Dominators.h
-	sed -i.orig -e '/DomPrinter/a\
-  Dominators.cpp\
-' lib/Analysis/CMakeLists.txt
-	fi
-
-	# ld warning about binding of _abort and _raise symbols vs. libSystem's
-	# suggests -bind_at_load
-#	cp lib/Support/CMakeLists.txt{,.orig}
-#	echo "SET_TARGET_PROPERTIES(LLVMSupport PROPERTIES LINK_FLAGS -Wl,-bind_at_load)" >> lib/Support/CMakeLists.txt
-
 # needed for gcc-fsf-4.x only
 #	sed -i.orig2 -e 's|compatibility_version|dylib_&|' tools/clang/tools/libclang/CMakeLists.txt
 
