@@ -55,7 +55,7 @@ BuildDependsOnly: false
 UseMaxBuildJobs: true
 
 PatchFile: %n.patch
-PatchFile-MD5: a61a3903da1c0b43ac6110738a561796
+PatchFile-MD5: d665c51e658f0c17001584821ccea7a3
 PatchFile2: %n-clang.patch
 PatchFile2-MD5: 6b29a8f781340f608471cd0d66ecf0db
 PatchFile3: %n-compiler-rt.patch
