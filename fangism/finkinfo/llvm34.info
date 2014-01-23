@@ -465,9 +465,14 @@ InfoTest: <<
 #	echo "******** Running included compiler-rt/libclang_rt tests ... ********"
 #	( cd projects/compiler-rt
 	syslib="-lSystem"
+	clang_arch=%m
+	case "%m" in
+	powerpc) clang_arch=ppc ;;
+	powerpc64) clang_arch=ppc64 ;;
+	esac
 	test $darwin_vers -gt 10 || syslib="$syslib -lSystemStubs"
 	cat >Makefile <<EOF
-ARCH = %m
+ARCH = $clang_arch
 OS = darwin
 CC = $CC
 LIBS = $syslib
