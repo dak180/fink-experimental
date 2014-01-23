@@ -462,8 +462,8 @@ InfoTest: <<
 	{ make -k TESTARGS=-v check-clang 2>&1 || : ;} | tee clang-%v-check.log
 	echo "******** Running included polly tests ... ********"
 	( cd tools/polly/test ; make -k TESTARGS=-v polly-test 2>&1 || : ;) | tee polly-%v-check.log
-#	echo "******** Running included compiler-rt/libclang_rt tests ... ********"
-#	( cd projects/compiler-rt
+	echo "******** Running included compiler-rt/libclang_rt tests ... ********"
+	( cd projects/compiler-rt
 	syslib="-lSystem"
 	clang_arch=%m
 	case "%m" in
