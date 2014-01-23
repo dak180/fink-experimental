@@ -1,7 +1,7 @@
 Info3: <<
 Package: llvm34
 Version: 3.4
-Revision: 0b
+Revision: 0c
 Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
@@ -55,11 +55,11 @@ BuildDependsOnly: false
 UseMaxBuildJobs: true
 
 PatchFile: %n.patch
-PatchFile-MD5: d665c51e658f0c17001584821ccea7a3
+PatchFile-MD5: aff9983777892b21bf5e5e2b49e57a2e
 PatchFile2: %n-clang.patch
 PatchFile2-MD5: 6b29a8f781340f608471cd0d66ecf0db
 PatchFile3: %n-compiler-rt.patch
-PatchFile3-MD5: 5d4ad8264a174735cedd9f2d8a20e3e5
+PatchFile3-MD5: 09550dedd33b718899241db0df6bdc86
 PatchFile4: %n-polly.patch
 PatchFile4-MD5: d6deda1584332af388053b19cb9dcc6f
 
@@ -87,8 +87,7 @@ PatchScript: <<
 	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|g" %{PatchFile4} | patch -p1
 	popd
 	pushd projects/compiler-rt
-	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|g" \
-		-e "s|@MACOSX_VERSION@|$osx_version|g" %{PatchFile3} | patch -p1
+	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|g" %{PatchFile3} | patch -p1
 	popd
 
 	# Do not want -DNDEBUG, cause linker errors (undef symbols)
@@ -279,7 +278,8 @@ CompileScript: <<
 	sed -i.orig -e 's| -DNDEBUG||g' CMakeCache.txt
 
 	# first make fails, but we have to run it first and then fix some deps
-	make -k || recompile_known_units && make || make VERBOSE=1
+	make -k || recompile_known_units && make || make -j1 VERBOSE=1
+	# TODO: assemble/link missing .S files into libclang_rt.$arch.a
 	pushd lib
 	ln -s BugpointPasses.{so,dylib}
 	ln -s LLVMPolly.{so,dylib}
@@ -296,7 +296,7 @@ CompileScript: <<
 	popd
 	# wd: %b
 	# create some empty test logs, which we may overwrite and install to docs
-	for f in ../build/stage1/{llvm,clang,polly}-%v-check.log
+	for f in ../build/stage1/{llvm,clang,polly,compiler-rt}-%v-check.log
 	do echo "Stage 1 Tests were not run." > $f
 	done
 	echo "######## END of BOOTSTRAP STAGE 1: built llvm/clang with the system compiler"
@@ -332,7 +332,7 @@ CompileScript: <<
 	ln -s ../build/stage2/bin/clang++ st2-clang++
 	popd
 	# wd: %b
-	for f in ../build/stage2/{llvm,clang,polly}-%v-check.log
+	for f in ../build/stage2/{llvm,clang,polly,compiler-rt}-%v-check.log
 	do echo "Stage 2 Tests were not run." > $f
 	done
 	echo "######## END of BOOTSTRAP STAGE 2: built llvm/clang with stage 1 clang"
@@ -355,7 +355,7 @@ CompileScript: <<
 	ln -s stage3 last
 	popd
 	# wd: %b
-	for f in ../build/stage3/{llvm,clang,polly}-%v-check.log
+	for f in ../build/stage3/{llvm,clang,polly,compiler-rt}-%v-check.log
 	do echo "Stage 3 Tests were not run." > $f
 	done
 	echo "######## END of BOOTSTRAP STAGE 3: built llvm/clang with stage 2 clang"
@@ -437,7 +437,10 @@ InfoTest: <<
 	{ make -k TESTARGS=-v check-clang 2>&1 || : ;} | tee clang-%v-check.log
 	echo "******** Running included polly tests ... ********"
 	( cd tools/polly/test ; make -k TESTARGS=-v polly-test 2>&1 || : ;) | tee polly-%v-check.log
-	# TODO: compiler-rt tests
+#	echo "******** Running included compiler-rt/libclang_rt tests ... ********"
+#	( cd projects/compiler-rt
+	# create Makefile using template
+#	make -k && make check 2>&1 || : ;) | tee compiler-rt-%v-check.log
 #	echo "******** Running massive test-suite ... ********"
 #	( cd projects/test-suite ; make -k 2>&1 || : ;) | tee test-suite-%v-check.log
 	<<
