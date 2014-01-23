@@ -251,6 +251,25 @@ CompileScript: <<
 	fi
 	}
 
+	clang_arch=%m
+	case "%m" in
+	powerpc) clang_arch=ppc ;;
+	powerpc64) clang_arch=ppc64 ;;
+	esac
+	# script to assemble/link in missing .S units into libclang_rt
+	asm_link_clang_rt() {
+		CPP="$CC -E"
+		as=as
+		arch=$clang_arch
+		builddir=projects/compiler-rt/lib
+		crtsrcdir=%b/projects/compiler-rt
+		objdir=CMakeFiles/clang_rt.$arch.dir/$arch
+		libdir=../../../lib/clang/%v/lib/darwin
+		libcrt=$libdir/libclang_rt.$arch.a
+		. $crtsrcdir/lib/link-asm-libclang_rt.sh
+		assemble_clang_rt
+	}
+
 	build_type=Release
 #	build_type=RelWithDebInfo
 	# do not let cmake auto-detect OSX_SYSROOT
@@ -279,7 +298,8 @@ CompileScript: <<
 
 	# first make fails, but we have to run it first and then fix some deps
 	make -k || recompile_known_units && make || make -j1 VERBOSE=1
-	# TODO: assemble/link missing .S files into libclang_rt.$arch.a
+	asm_link_clang_rt
+	make
 	pushd lib
 	ln -s BugpointPasses.{so,dylib}
 	ln -s LLVMPolly.{so,dylib}
@@ -317,6 +337,8 @@ CompileScript: <<
 	pushd ../build/stage2
 	cmake $CMAKE_OPTIONS $relsrcdir
 	make -k || make VERBOSE=1
+	asm_link_clang_rt
+	make
 	pushd lib
 	ln -s BugpointPasses.{so,dylib}
 	ln -s LLVMPolly.{so,dylib}
@@ -345,6 +367,8 @@ CompileScript: <<
 	pushd ../build/stage3
 	cmake $CMAKE_OPTIONS $relsrcdir
 	make -k || make VERBOSE=1
+	asm_link_clang_rt
+	make
 	pushd lib
 	ln -s BugpointPasses.{so,dylib}
 	ln -s LLVMPolly.{so,dylib}
@@ -414,6 +438,7 @@ InfoTest: <<
 	<<
  	TestScript: <<
 	#!/bin/sh -ev
+	darwin_vers=`uname -r | cut -d. -f1`
 
 	# test suite requires newer bash than /bin/bash 2.0 for pipefail
 	# test the pipefail option of this shell first
@@ -439,8 +464,18 @@ InfoTest: <<
 	( cd tools/polly/test ; make -k TESTARGS=-v polly-test 2>&1 || : ;) | tee polly-%v-check.log
 #	echo "******** Running included compiler-rt/libclang_rt tests ... ********"
 #	( cd projects/compiler-rt
-	# create Makefile using template
-#	make -k && make check 2>&1 || : ;) | tee compiler-rt-%v-check.log
+	syslib="-lSystem"
+	test $darwin_vers -gt 10 || syslib="$syslib -lSystemStubs"
+	cat >Makefile <<EOF
+ARCH = %m
+OS = darwin
+CC = $CC
+LIBS = $syslib
+LLVM_SRCDIR = %b
+VERSION = %v
+include \$(LLVM_SRCDIR)/projects/compiler-rt/test/Unit/test.mk
+EOF
+	make -k && make check 2>&1 || : ;) | tee compiler-rt-%v-check.log
 #	echo "******** Running massive test-suite ... ********"
 #	( cd projects/test-suite ; make -k 2>&1 || : ;) | tee test-suite-%v-check.log
 	<<
