@@ -324,7 +324,7 @@ CompileScript: <<
 	then
 		clang_path=`xcrun -find clang`
 		cxx_incdir=`dirname $clang_path`/../lib/c++/v1
-		STAGE2_CMAKE_OPTIONS="-DCMAKE_CXX_FLAGS:STRING=-cxx-isystem\ $cxx_incdir"
+		STAGE2_CMAKE_OPTIONS=\"-DCMAKE_CXX_FLAGS:STRING=-cxx-isystem\ $cxx_incdir\"
 	fi
 	mkdir -p ../build/stage2
 	pushd ../build/stage2
@@ -600,6 +600,7 @@ SplitOff5: <<
 	Description: Shared libraries for clang compiler
 	Files: <<
 		opt/llvm-%v/lib/libclang*
+		opt/llvm-%v/lib/clang/%v/lib
 	<<
 	DocFiles: <<
 		tools/clang/*.TXT
@@ -646,6 +647,7 @@ SplitOff6: <<
 		polly34-shlibs (= %v-%r)
 	<<
 	Description: Executables and runtime for clang compiler
+	BuildDependsOnly: false
 	Files: <<
 		opt/llvm-%v/bin/clang*
 		opt/llvm-%v/bin/ld
