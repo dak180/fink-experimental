@@ -150,7 +150,7 @@ CompileScript: <<
 	export PATH=`pwd`:$PATH
 	popd
 
-	CMAKE_OPTIONS="$CMAKE_OPTIONS -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_C_FLAGS=-fno-common -DCMAKE_CXX_FLAGS=-fno-common"
+	CMAKE_OPTIONS="$CMAKE_OPTIONS -DBUILD_SHARED_LIBS:BOOL=ON"
 
 	# stage 1 compiler (try to use ccache if available)
 	# gcc-4.0.1 FAILS on darwin9
@@ -266,11 +266,12 @@ CompileScript: <<
 #	the --max-time option applies to aggregate test time, not individual :(
 #	CMAKE_OPTIONS="$CMAKE_OPTIONS -DLLVM_LIT_ARGS="-s -v --max-time=14400"
 
+	STAGE1_CMAKE_OPTIONS="-DCMAKE_C_FLAGS=-fno-common -DCMAKE_CXX_FLAGS=-fno-common"
 	# trying to disable optimization flags on non-trustworthy compilers
 	# worked around in recompile_known_units(), and now using RelWithDebInfo
 	ccvers=`$CXX -v 2>&1 | tail -n 1 | cut -d\  -f3`
 	if test $ccvers = 4.0.1
-	then STAGE1_CMAKE_OPTIONS='-DCMAKE_C_FLAGS_RELEASE:STRING=-O2 -DCMAKE_CXX_FLAGS_RELEASE:STRING=-O2'
+	then STAGE1_CMAKE_OPTIONS="$STAGE1_CMAKE_OPTIONS -DCMAKE_C_FLAGS_RELEASE:STRING=-O2 -DCMAKE_CXX_FLAGS_RELEASE:STRING=-O2"
 	fi
 	# else default to -O3
 
@@ -321,9 +322,18 @@ CompileScript: <<
 	export CCACHE_COMPILERCHECK=content
 	export CC=cc-st1-clang
 	export CXX=cc-st1-clang++
+	# point to the system C++ library for now.
+	# the following won't be needed once we bootstrap with a built libc++:
+	if test "$darwin_vers" -ge 13
+	then
+		clang_path=`xcrun -find clang`
+		cxx_incdir=`dirname $clang_path`/../lib/c++/v1
+		STAGE2_CMAKE_OPTIONS="-DCMAKE_CXX_FLAGS:STRING=-cxx-isystem=$cxx_incdir"
+	fi
 	mkdir -p ../build/stage2
 	pushd ../build/stage2
-	cmake $CMAKE_OPTIONS $relsrcdir
+	echo "CMAKE_OPTIONS=$CMAKE_OPTIONS $STAGE2_CMAKE_OPTIONS"
+	cmake $CMAKE_OPTIONS $STAGE2_CMAKE_OPTIONS $relsrcdir
 	make -k || make VERBOSE=1
 	asm_link_clang_rt
 	make
@@ -351,9 +361,10 @@ CompileScript: <<
 	export CC=cc-st2-clang
 	export CXX=cc-st2-clang++
 	export CCACHE_DISABLE=1
+	STAGE3_CMAKE_OPTIONS="$STAGE2_CMAKE_OPTIONS"
 	mkdir -p ../build/stage3
 	pushd ../build/stage3
-	cmake $CMAKE_OPTIONS $relsrcdir
+	cmake $CMAKE_OPTIONS $STAGE3_CMAKE_OPTIONS $relsrcdir
 	make -k || make VERBOSE=1
 	asm_link_clang_rt
 	make
@@ -572,8 +583,6 @@ SplitOff2: <<
 	Files: <<
 		opt/llvm-%v/share/doc/clang
 		opt/llvm-%v/share/doc/clang-html
-#		opt/llvm-%v/share/doc/%N/clang
-#		opt/llvm-%v/share/doc/%N/clang-html
 		opt/llvm-%v/share/doc/%N/testlogs/clang-%v-check.log
 		opt/llvm-%v/share/doc/%N/testlogs/compiler-rt-%v-check.log
 	<<
@@ -636,7 +645,7 @@ SplitOff6: <<
 	Package: clang34
 	Depends: <<
 	# only darwin8 needs odcctools
-	#	odcctools
+		odcctools
 		clang34-shlibs (= %v-%r),
 		polly34-shlibs (= %v-%r)
 	<<
