@@ -641,7 +641,7 @@ SplitOff6: <<
 	Package: clang34
 	Depends: <<
 	# only darwin8 needs odcctools
-		odcctools
+		odcctools,
 		clang34-shlibs (= %v-%r),
 		polly34-shlibs (= %v-%r)
 	<<
