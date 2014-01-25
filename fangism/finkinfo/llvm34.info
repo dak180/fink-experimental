@@ -324,7 +324,7 @@ CompileScript: <<
 	then
 		clang_path=`xcrun -find clang`
 		cxx_incdir=`dirname $clang_path`/../lib/c++/v1
-		STAGE2_CMAKE_OPTIONS="-DCMAKE_CXX_FLAGS:STRING=-cxx-isystem=$cxx_incdir"
+		STAGE2_CMAKE_OPTIONS="-DCMAKE_CXX_FLAGS:STRING=-cxx-isystem\ $cxx_incdir"
 	fi
 	mkdir -p ../build/stage2
 	pushd ../build/stage2
@@ -641,11 +641,10 @@ SplitOff6: <<
 	Package: clang34
 	Depends: <<
 	# only darwin8 needs odcctools
-	#	odcctools
+		odcctools
 		clang34-shlibs (= %v-%r),
 		polly34-shlibs (= %v-%r)
 	<<
-	BuildDependsOnly: true
 	Description: Executables and runtime for clang compiler
 	Files: <<
 		opt/llvm-%v/bin/clang*
@@ -695,7 +694,6 @@ SplitOff10: <<
 	Description: Documentation for LLVM tools and internals
 	Files: <<
 		opt/llvm-%v/share/doc/llvm
-		opt/llvm-%v/share/doc/%N/llvm
 		opt/llvm-%v/share/doc/%N/testlogs/llvm-%v-check.log
 	<<
 <<
@@ -781,18 +779,16 @@ SplitOff13: <<
 	Type: bundle
 	Depends: <<
 		%N,
-		%N-dev,
 		%N-docs,
 		clang34,
-		clang34-dev,
 		clang34-docs,
 		clang34-tools,
-		polly34-dev,
 		polly34-docs
 	<<
 	DescDetail: <<
-	Installing this gets all of the binaries, libraries, headers, and
+	Installing this gets all of the binaries, libraries, and
 	documentation for the llvm34 package set.
+	The -dev headers are separate because they are build-depends-only.
 	<<
 <<
 Homepage: http://llvm.org/
