@@ -339,7 +339,7 @@ CompileScript: <<
 		abi_includes="$sys_cxxabi_root;$sys_cxxabi_root/%m-apple-darwin$darwin_vers"
 		LIBCXX_CMAKE_OPTIONS=( "${LIBCXX_CMAKE_OPTIONS[@]}" \
 			-DLIBCXX_LIBSUPCXX_INCLUDE_PATHS="$abi_includes" )
-	else	abi=libc++abi
+	else	abi=libcxxabi
 		abi_includes=/usr/include
 		LIBCXX_CMAKE_OPTIONS=( "${LIBCXX_CMAKE_OPTIONS[@]}" \
 			-DLIBCXX_LIBCXXABI_INCLUDE_PATHS="$abi_includes" )
