@@ -117,7 +117,7 @@ PatchScript: <<
 <<
 CompileScript: <<
 	#!/bin/sh -ev
-	COMMON_CMAKE_OPTIONS = ( -DBUILD_SHARED_LIBS:BOOL=ON \
+	COMMON_CMAKE_OPTIONS=( -DBUILD_SHARED_LIBS:BOOL=ON \
 		-DLLVM_LIT_ARGS:STRING=-v \
 		-DLLVM_ENABLE_ASSERTIONS:BOOL=ON \
 		-DPYTHON_EXECUTABLE:FILEPATH=%p/bin/python2.7 \
@@ -293,9 +293,9 @@ CompileScript: <<
 	# wd: %b
 	mkdir -p ../build/stage1
 	pushd ../build/stage1
-	echo "CMAKE_OPTIONS = $(COMMON_CMAKE_OPTIONS[@]} ${CMAKE_OPTIONS[@]} ${STAGE1_CMAKE_OPTIONS[@]}"
+	echo "CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${CMAKE_OPTIONS[@]} ${STAGE1_CMAKE_OPTIONS[@]}"
 	# Technically, we only need the native back-end in stage 1...
-	cmake "$(COMMON_CMAKE_OPTIONS[@]}" "${CMAKE_OPTIONS[@]}" "${STAGE1_CMAKE_OPTIONS[@]}" $relsrcdir
+	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${CMAKE_OPTIONS[@]}" "${STAGE1_CMAKE_OPTIONS[@]}" $relsrcdir
 	# kill -DNDEBUG with fire
 	sed -i.orig -e 's| -DNDEBUG||g' CMakeCache.txt
 
@@ -387,13 +387,13 @@ CompileScript: <<
 	# point to the system C++ library for now.
 	# the following won't be needed once we bootstrap with a built libc++:
 	STAGE2_CMAKE_OPTIONS=()
-	if test "$darwin_vers" -ge 13
-	then
-		clang_path=`xcrun -find clang`
-		cxx_incdir=`dirname $clang_path`/../lib/c++/v1
-		STAGE2_CMAKE_OPTIONS=( "${STAGE2_CMAKE_OPTIONS[@]}" \
-			-DCMAKE_CXX_FLAGS:STRING="-cxx-isystem $cxx_incdir" )
-	fi
+#	if test "$darwin_vers" -ge 13
+#	then
+#		clang_path=`xcrun -find clang`
+#		cxx_incdir=`dirname $clang_path`/../lib/c++/v1
+#		STAGE2_CMAKE_OPTIONS=( "${STAGE2_CMAKE_OPTIONS[@]}" \
+#			-DCMAKE_CXX_FLAGS:STRING="-cxx-isystem $cxx_incdir" )
+#	fi
 	mkdir -p ../build/stage2
 	pushd ../build/stage2
 	echo "CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${CMAKE_OPTIONS[@]} ${STAGE2_CMAKE_OPTIONS[@]}"
@@ -468,7 +468,7 @@ CompileScript: <<
 	do echo "Stage 3 Tests were not run." > $f
 	done
 	echo "######## END of BOOTSTRAP STAGE 3: built llvm/clang with stage 2 clang"
-	# comparison!
+	# stage comparison:
 	# diff-ing binaries directly doesn't quite work because paths to build
 	# locations differ 'stage2' vs. 'stage3'.
 	pushd ../build
@@ -503,7 +503,7 @@ CompileScript: <<
 	diff_obj_dir stage1.5 stage2.5 | grep -v basename
 	err=
 	for f in $diffs
-	do echo "  $f -- not OK" ; err=1 ;;
+	do echo "  $f -- not OK" ; err=1
 	done
 	test -z "$err"
 
@@ -520,7 +520,7 @@ CompileScript: <<
 	esac
 	done
 	test -z "$err"
-	echo "######## 3-STAGE BOOTSTRAP of llvm/clang PASSED!"
+	echo "######## 3-STAGE BOOTSTRAP of llvm/clang PASSED"
 	popd
 <<
 InfoTest: <<
