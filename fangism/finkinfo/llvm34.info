@@ -99,12 +99,12 @@ PatchScript: <<
 	if test ! -d /usr/include/c++/4.0.0
 	then sed -i.orig2 -e '/GnuCPlusPlusInclude.*4\.0\.0/,/);/d' \
 		tools/clang/lib/Frontend/InitHeaderSearch.cpp
-		sys_cxxabi_root=/usr/include/c++/4.0.0
+	else	sys_cxxabi_root=/usr/include/c++/4.0.0
 	fi
 	if test ! -d /usr/include/c++/4.2.1
 	then sed -i.orig2 -e '/GnuCPlusPlusInclude.*4\.2\.1/,/);/d' \
 		tools/clang/lib/Frontend/InitHeaderSearch.cpp
-		sys_cxxabi_root=/usr/include/c++/4.2.1
+	else	sys_cxxabi_root=/usr/include/c++/4.2.1
 	fi
 
 # needed for gcc-fsf-4.x only
