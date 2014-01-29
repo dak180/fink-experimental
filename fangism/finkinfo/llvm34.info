@@ -99,12 +99,10 @@ PatchScript: <<
 	if test ! -d /usr/include/c++/4.0.0
 	then sed -i.orig2 -e '/GnuCPlusPlusInclude.*4\.0\.0/,/);/d' \
 		tools/clang/lib/Frontend/InitHeaderSearch.cpp
-	else	sys_cxxabi_root=/usr/include/c++/4.0.0
 	fi
 	if test ! -d /usr/include/c++/4.2.1
 	then sed -i.orig2 -e '/GnuCPlusPlusInclude.*4\.2\.1/,/);/d' \
 		tools/clang/lib/Frontend/InitHeaderSearch.cpp
-	else	sys_cxxabi_root=/usr/include/c++/4.2.1
 	fi
 
 # needed for gcc-fsf-4.x only
@@ -254,9 +252,11 @@ CompileScript: <<
 	}
 
 	clang_arch=%m
+	cxxabi_arch=%m
 	case "%m" in
 	powerpc) clang_arch=ppc ;;
 	powerpc64) clang_arch=ppc64 ;;
+	i386) cxxabi_arch=i686 ;;
 	esac
 	# script to assemble/link in missing .S units into libclang_rt
 	asm_link_clang_rt() {
@@ -336,7 +336,12 @@ CompileScript: <<
 	if test $darwin_vers -le 10
 	then flags="$flags -DDARWIN8_LIBSUPCXX"
 		abi=libsupc++
-		abi_includes="$sys_cxxabi_root;$sys_cxxabi_root/%m-apple-darwin$darwin_vers"
+		if test -f /usr/include/c++/4.2.1/cxxabi.h
+		then sys_cxxabi_root=/usr/include/c++/4.2.1
+		elif test -f /usr/include/c++/4.0.0/cxxabi.h
+		then sys_cxxabi_root=/usr/include/c++/4.0.0
+		fi
+		abi_includes="$sys_cxxabi_root;$sys_cxxabi_root/$cxxabi_arch-apple-darwin$darwin_vers"
 		LIBCXX_CMAKE_OPTIONS=( "${LIBCXX_CMAKE_OPTIONS[@]}" \
 			-DLIBCXX_LIBSUPCXX_INCLUDE_PATHS="$abi_includes" )
 	else	abi=libcxxabi
