@@ -374,6 +374,7 @@ CompileScript: <<
 	cd c++
 	ln -s %b/libcxx-%v/include v1
 	popd
+	echo "Stage 1.5 Tests were not run." > ../build/stage1.5/libcxx-%v-check.log
 	echo "######## END of BOOTSTRAP STAGE 1.5: built libc++ with stage 1 clang++"
 
 	# don't bootstrap on powerpc-darwinX until all codegen issues fixed
@@ -442,6 +443,7 @@ CompileScript: <<
 	cd c++
 	ln -s %b/libcxx-%v/include v1
 	popd
+	echo "Stage 1.5 Tests were not run." > ../build/stage1.5/libcxx-%v-check.log
 	echo "######## END of BOOTSTRAP STAGE 2.5: built libc++ with stage 2 clang++"
 # TODO: object compare stage 1.5 vs. 2.5
 
@@ -577,7 +579,8 @@ include \$(LLVM_SRCDIR)/projects/compiler-rt/test/Unit/test.mk
 EOF
 	make -k && make check 2>&1 || : ;) | tee compiler-rt-%v-check.log
 	echo "******** Running included libc++ tests ... ********"
-	( cd ../last-libcxx && make -k check-libcxx 2>&1 || : ;) | tee libcxx-%v-check.log
+	pushd ../last-libcxx
+	( make -k check-libcxx 2>&1 || : ;) | tee libcxx-%v-check.log
 #	echo "******** Running massive test-suite ... ********"
 #	( cd projects/test-suite ; make -k 2>&1 || : ;) | tee test-suite-%v-check.log
 	<<
@@ -687,6 +690,7 @@ InstallScript: <<
 #	ln -s $docdir/polly-html .
 	mkdir testlogs
 	cp %b/../build/last/*-check.log testlogs/
+	cp %b/../build/last-libcxx/*-check.log testlogs/
 	popd
 <<
 SplitOff: <<
@@ -906,6 +910,7 @@ SplitOff13: <<
 	Package: libcxx1-shlibs
 	Description: Standard library for libc++
 	Files: lib/libc++.*.*.dylib
+# TODO: DocFiles
 	Shlibs: <<
 	 	%p/lib/libc++.1.0.dylib 1.0.0 %n (>= 3.4-0)
 	<<
@@ -915,7 +920,12 @@ SplitOff14: <<
 	Description: Standard library headers for libc++
 	Depends: libcxx1-shlibs (= %v-%r)
 	BuildDependsOnly: false
-	Files: include/c++ lib/libc++*.dylib
+	# just include test log here
+	Files: <<
+		include/c++
+		lib/libc++*.dylib
+		opt/llvm-%v/share/doc/%N/testlogs/clang-%v-check.log
+	<<
 <<
 SplitOff15: <<
 	Package: %N-bundle
