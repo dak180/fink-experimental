@@ -117,10 +117,10 @@ CompileScript: <<
 	#!/bin/sh -ev
 	COMMON_CMAKE_OPTIONS=( -DBUILD_SHARED_LIBS:BOOL=ON \
 		-DLLVM_LIT_ARGS:STRING=-v \
-		-DPYTHON_EXECUTABLE:FILEPATH=%p/bin/python2.7 \
+		-DPYTHON_EXECUTABLE:FILEPATH=%p/bin/python2.7 )
+	LLVM_CMAKE_OPTIONS=( -DLLVM_ENABLE_ASSERTIONS:BOOL=ON \
 		-DCMAKE_OSX_SYSROOT:STRING=/ \
 		-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING= )
-	CMAKE_OPTIONS=( -DLLVM_ENABLE_ASSERTIONS:BOOL=ON )
 
 	# just always build these archs
 	case "%m" in
@@ -131,7 +131,7 @@ CompileScript: <<
 	# to enable cross-compiling to other archs, uncomment the following:
 	# TARGET_ARCHS="X86;PowerPC;ARM"
 	# TARGET_ARCHS="all"
-	CMAKE_OPTIONS=( "${CMAKE_OPTIONS[@]}" -DLLVM_TARGETS_TO_BUILD="$TARGET_ARCHS" )
+	LLVM_CMAKE_OPTIONS=( "${LLVM_CMAKE_OPTIONS[@]}" -DLLVM_TARGETS_TO_BUILD="$TARGET_ARCHS" )
 
 	# automatically use ccache if detected
 	# ccache recommended, but not required
@@ -163,6 +163,7 @@ CompileScript: <<
 
 	# stage 1 compiler (try to use ccache if available)
 	# gcc-4.0.1 FAILS on darwin9
+	osx_version=`sw_vers -productVersion | cut -d. -f-2`
 	darwin_vers=`uname -r | cut -d. -f1`
 	case "$darwin_vers" in
 	8)
@@ -273,7 +274,7 @@ CompileScript: <<
 	build_type=Release
 #	build_type=RelWithDebInfo
 	# do not let cmake auto-detect OSX_SYSROOT
-	CMAKE_OPTIONS=( "${CMAKE_OPTIONS[@]}" \
+	LLVM_CMAKE_OPTIONS=( "${LLVM_CMAKE_OPTIONS[@]}" \
 		-DCMAKE_INSTALL_PREFIX:PATH=%p/opt/llvm-%v \
 		-DCMAKE_BUILD_TYPE:STRING=$build_type )
 
@@ -292,9 +293,9 @@ CompileScript: <<
 	# wd: %b
 	mkdir -p ../build/stage1
 	pushd ../build/stage1
-	echo "CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${CMAKE_OPTIONS[@]} ${STAGE1_CMAKE_OPTIONS[@]}"
+	echo "LLVM_CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LLVM_CMAKE_OPTIONS[@]} ${STAGE1_CMAKE_OPTIONS[@]}"
 	# Technically, we only need the native back-end in stage 1...
-	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${CMAKE_OPTIONS[@]}" "${STAGE1_CMAKE_OPTIONS[@]}" $relsrcdir
+	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE1_CMAKE_OPTIONS[@]}" $relsrcdir
 	# kill -DNDEBUG with fire
 	sed -i.orig -e 's| -DNDEBUG||g' CMakeCache.txt
 
@@ -353,7 +354,8 @@ CompileScript: <<
 		-DLIBCXX_ENABLE_ASSERTIONS:BOOL=ON \
 		-DCMAKE_CXX_FLAGS="$flags" \
 		-DLIBCXX_CXX_ABI="$abi" \
-		-DLIT_EXECUTABLE=%b/build/last/bin/llvm-lit \
+		-DLIT_EXECUTABLE=%b/../build/last/bin/llvm-lit \
+		-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=$osx_version \
 		-DCMAKE_OSX_ARCHITECTURES="$clang_arch" )
 	# darwin8: stage2+ needs odcctools
 	if test $darwin_vers -le 8
@@ -365,7 +367,7 @@ CompileScript: <<
 
 	mkdir -p ../build/stage1.5
 	pushd ../build/stage1.5
-	echo "CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LIBCXX_CMAKE_OPTIONS[@]}"
+	echo "LLVM_CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LIBCXX_CMAKE_OPTIONS[@]}"
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LIBCXX_CMAKE_OPTIONS[@]}" ../../libcxx-%v
 	make
 	cd ..
@@ -402,8 +404,8 @@ CompileScript: <<
 #	fi
 	mkdir -p ../build/stage2
 	pushd ../build/stage2
-	echo "CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${CMAKE_OPTIONS[@]} ${STAGE2_CMAKE_OPTIONS[@]}"
-	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
+	echo "LLVM_CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LLVM_CMAKE_OPTIONS[@]} ${STAGE2_CMAKE_OPTIONS[@]}"
+	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	make -k || make VERBOSE=1
 	asm_link_clang_rt
 	make
@@ -434,7 +436,7 @@ CompileScript: <<
 	mkdir -p ../build/stage2.5
 	pushd ../build/stage2.5
 	# use same flags as stage1.5
-	echo "CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LIBCXX_CMAKE_OPTIONS[@]}"
+	echo "LLVM_CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LIBCXX_CMAKE_OPTIONS[@]}"
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LIBCXX_CMAKE_OPTIONS[@]}" ../../libcxx-%v
 	make
 	# link over to stage1 so built clang can use this
@@ -456,8 +458,8 @@ CompileScript: <<
 	STAGE3_CMAKE_OPTIONS=( "${STAGE2_CMAKE_OPTIONS[@]}" )
 	mkdir -p ../build/stage3
 	pushd ../build/stage3
-	echo "CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${CMAKE_OPTIONS[@]} ${STAGE3_CMAKE_OPTIONS[@]}"
-	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${CMAKE_OPTIONS[@]}" "${STAGE3_CMAKE_OPTIONS[@]}" $relsrcdir
+	echo "LLVM_CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LLVM_CMAKE_OPTIONS[@]} ${STAGE3_CMAKE_OPTIONS[@]}"
+	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE3_CMAKE_OPTIONS[@]}" $relsrcdir
 	make -k || make VERBOSE=1
 	asm_link_clang_rt
 	make
