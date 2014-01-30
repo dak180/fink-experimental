@@ -337,7 +337,7 @@ index f6ab1cb..e580315 100644
 +
  #endif  // _LIBCPP_ATOMIC
 diff --git a/include/iterator b/include/iterator
-index 70a664d..c79e66b 100644
+index 70a664d..cd3fe4c 100644
 --- a/include/iterator
 +++ b/include/iterator
 @@ -332,7 +332,7 @@ template <class C> auto crend(const C& c) -> decltype(std::rend(c));          //
@@ -349,8 +349,19 @@ index 70a664d..c79e66b 100644
  #endif
  
  #ifdef _LIBCPP_DEBUG
+@@ -901,8 +901,8 @@ public:
+     _LIBCPP_INLINE_VISIBILITY bool failed() const _NOEXCEPT {return __sbuf_ == 0;}
+ 
+ #if !defined(__APPLE__) || \
+-    (defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED > __MAC_10_8) || \
+-    (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && __IPHONE_OS_VERSION_MIN_REQUIRED > __IPHONE_6_0)
++    (defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && defined(__MAC_10_8) && __MAC_OS_X_VERSION_MIN_REQUIRED > __MAC_10_8) || \
++    (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && defined(__IPHONE_6_0) && __IPHONE_OS_VERSION_MIN_REQUIRED > __IPHONE_6_0)
+ 
+     template <class _Ch, class _Tr>
+     friend
 diff --git a/include/locale b/include/locale
-index ac3ae7e..63bd2f0 100644
+index ac3ae7e..2f6a16a 100644
 --- a/include/locale
 +++ b/include/locale
 @@ -198,7 +198,7 @@ template <class charT> class messages_byname;
@@ -362,6 +373,17 @@ index ac3ae7e..63bd2f0 100644
  #endif
  
  #include <__undef_min_max>
+@@ -1467,8 +1467,8 @@ __pad_and_output(_OutputIterator __s,
+ }
+ 
+ #if !defined(__APPLE__) || \
+-    (defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED > __MAC_10_8) || \
+-    (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && __IPHONE_OS_VERSION_MIN_REQUIRED > __IPHONE_6_0)
++    (defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && defined(__MAC_10_8) && __MAC_OS_X_VERSION_MIN_REQUIRED > __MAC_10_8) || \
++    (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && defined(__IPHONE_6_0) && __IPHONE_OS_VERSION_MIN_REQUIRED > __IPHONE_6_0)
+ 
+ template <class _CharT, class _Traits>
+ _LIBCPP_HIDDEN
 diff --git a/lib/CMakeLists.txt b/lib/CMakeLists.txt
 index cec0bee..28035c1 100644
 --- a/lib/CMakeLists.txt
