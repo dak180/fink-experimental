@@ -376,7 +376,6 @@ CompileScript: <<
 	# link includes over to same root to avoid needing -cxx-isystem
 	cd stage1/lib
 	ln -s ../../stage1.5/lib/libc++*.dylib .
-	cd ../include
 	mkdir -p c++
 	cd c++
 	ln -s %b/libcxx-%v/include v1
@@ -445,7 +444,6 @@ CompileScript: <<
 	ln -s stage2.5 last-libcxx
 	cd stage2/lib
 	ln -s ../../stage2.5/lib/libc++*.dylib .
-	cd ../include
 	mkdir -p c++
 	cd c++
 	ln -s %b/libcxx-%v/include v1
@@ -601,6 +599,10 @@ InstallScript: <<
 		cd ../last-libcxx
 		make install DESTDIR="%d"
 	popd
+#	pushd %i/lib
+#	rm -f libc++.1.dylib
+#	mv libc++.1{.0,}.dylib
+#	popd
 
 	# boilerplate script for fixing post-cmake-install install_names
 	# expect to find in lib/
@@ -617,7 +619,11 @@ InstallScript: <<
 		dir=`dirname $f | sed -e 's|^\.\/||'`
                 b=`basename $f`
 		pushd $dir 2> /dev/null
-		install_name_tool -id "$prefix/$dir/$b" "$b"
+		if test "$dir" = "."
+		then iname="$prefix/$b"
+		else iname="$prefix/$dir/$b"
+		fi
+		install_name_tool -id "$iname" "$b"
 		case $f in
 		*.dylib) filt="sed 1,2d" ;;
 		*.so) filt="sed 1d" ;;
@@ -663,22 +669,24 @@ InstallScript: <<
 	done
 
 	# need symlink /usr/bin/ld so libLTO.dylib can be found relative to @executable_path
-	# iprefix = %i/opt/llvm-%v
-	# prefix = %p/opt/llvm-%v
+	iprefix=%i/opt/llvm-%v
+	prefix=%p/opt/llvm-%v
 	pushd $iprefix/bin
 	test -x /usr/bin/ld && ln -s /usr/bin/ld .
 	popd
 
 	# link to libc++ include/lib
 	pushd $iprefix/lib
-	for f in libc++{,1.{,.0}.dylib
-	ln -s %p/lib/$f .
+	for f in libc++{,1.{,.0}}.dylib
+	do ln -s %p/lib/$f .
+	done
+	ln -s %p/include/c++ .
 	popd
-	pushd $iprefix/include
-	mkdir c++
-	cd c++
-	ln -s %p/include/c++/v1 .
-	popd
+#	pushd $iprefix/include
+#	mkdir -p c++
+#	cd c++
+#	ln -s %p/include/c++/v1 .
+#	popd
 
 	# documentation
 	# pwd: llvm srcdir
@@ -931,7 +939,7 @@ SplitOff14: <<
 	Files: <<
 		include/c++
 		lib/libc++*.dylib
-		opt/llvm-%v/share/doc/%N/testlogs/clang-%v-check.log
+		opt/llvm-%v/share/doc/%N/testlogs/libcxx-%v-check.log
 	<<
 <<
 SplitOff15: <<
