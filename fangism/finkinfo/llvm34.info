@@ -378,7 +378,7 @@ CompileScript: <<
 	ln -s ../../stage1.5/lib/libc++*.dylib .
 	mkdir -p c++
 	cd c++
-	ln -s %b/libcxx-%v/include v1
+	ln -s %b/../libcxx-%v/include v1
 	popd
 	echo "Stage 1.5 Tests were not run." > ../build/stage1.5/libcxx-%v-check.log
 	echo "######## END of BOOTSTRAP STAGE 1.5: built libc++ with stage 1 clang++"
@@ -446,7 +446,7 @@ CompileScript: <<
 	ln -s ../../stage2.5/lib/libc++*.dylib .
 	mkdir -p c++
 	cd c++
-	ln -s %b/libcxx-%v/include v1
+	ln -s %b/../libcxx-%v/include v1
 	popd
 	echo "Stage 1.5 Tests were not run." > ../build/stage1.5/libcxx-%v-check.log
 	echo "######## END of BOOTSTRAP STAGE 2.5: built libc++ with stage 2 clang++"
