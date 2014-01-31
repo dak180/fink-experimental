@@ -608,7 +608,11 @@ InstallScript: <<
 		make install DESTDIR="%d"
 	popd
 	# there seems to be an extraneous include/c++/v1/c++/v1 dir
-	rm -rf %i/include/c++/v1/c++
+	pushd %i/include/c++/v1/
+	rm -rf c++ CMakeFiles
+	rm -f cmake* Makefile
+	popd
+	# there seems to be an extra copy of cxxabi.h, identical to system's
 #	pushd %i/lib
 #		rm -f libc++.1.dylib
 #		mv libc++.1{.0,}.dylib
@@ -645,7 +649,7 @@ InstallScript: <<
 		# caution: assumes dependent libraries are in same dir
 		case $d in
 	# NOTE: libc++ shared library lives in different prefix!
-		*libc++*) install_name_tool -change "$d" "%p/lib/libc++.1.0.dylib" $b ;;
+		*stage*/lib/libc++*) install_name_tool -change "$d" "%p/lib/libc++.1.0.dylib" $b ;;
 		/*) ;;
 		*) install_name_tool -change "$d" "$prefix/lib/$d" $b ;;
 		esac
@@ -670,6 +674,8 @@ InstallScript: <<
 		do
 		# consider substituting with relative @executable_path/../lib ?
 		case $d in
+	# NOTE: libc++ shared library lives in different prefix!
+		*stage*/lib/libc++*) install_name_tool -change "$d" "%p/lib/libc++.1.0.dylib" $f ;;
 		/*) ;;
 		@*) ;;
 		*) install_name_tool -change "$d" "$prefix/lib/$d" $f ;;
