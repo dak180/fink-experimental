@@ -305,9 +305,9 @@ CompileScript: <<
 	make
 	# tests hardcode the .dylib extension for modules
 	pushd lib
-	ln -s BugpointPasses.{so,dylib}
-	ln -s LLVMPolly.{so,dylib}
-	ln -s LLVMHello.{so,dylib}
+		ln -s BugpointPasses.{so,dylib}
+		ln -s LLVMPolly.{so,dylib}
+		ln -s LLVMHello.{so,dylib}
 	popd
 	cd ..
 	ln -s stage1 last
@@ -315,8 +315,8 @@ CompileScript: <<
 	# wd: %b
 	# link stage1 compilers into opt-bin for next stage
 	pushd ../opt-bin
-	ln -s ../build/stage1/bin/clang st1-clang
-	ln -s ../build/stage1/bin/clang++ st1-clang++
+		ln -s ../build/stage1/bin/clang st1-clang
+		ln -s ../build/stage1/bin/clang++ st1-clang++
 	popd
 	# wd: %b
 	# create some empty test logs, which we may overwrite and install to docs
@@ -376,12 +376,14 @@ CompileScript: <<
 	# link includes over to same root to avoid needing -cxx-isystem
 	cd stage1/lib
 	ln -s ../../stage1.5/lib/libc++*.dylib .
+	cd ../include
 	mkdir -p c++
 	cd c++
 	ln -s %b/../libcxx-%v/include v1
 	popd
 	echo "Stage 1.5 Tests were not run." > ../build/stage1.5/libcxx-%v-check.log
 	echo "######## END of BOOTSTRAP STAGE 1.5: built libc++ with stage 1 clang++"
+	libcxx_stage_dir=%b/../build/last-libcxx/lib
 
 	# don't bootstrap on powerpc-darwinX until all codegen issues fixed
 	test "%m" != "powerpc" || exit 0
@@ -390,10 +392,12 @@ CompileScript: <<
 #	exit
 
 	echo "######## START of BOOTSTRAP STAGE 2: building llvm/clang with stage 1 clang"
-	# reuse CC and CXX
-	# point to the system C++ library for now.
-	# the following won't be needed once we bootstrap with a built libc++:
-	STAGE2_CMAKE_OPTIONS=()
+	# reuse CC and CXX from stage 1.5
+	STAGE2_CMAKE_OPTIONS=( -DCMAKE_CXX_FLAGS="-std=c++11 -stdlib=libc++" \
+		-DCMAKE_EXE_LINKER_FLAGS="-L$libcxx_stage_dir" \
+		-DCMAKE_SHARED_LINKER_FLAGS=-"L$libcxx_stage_dir" \
+		-DCMAKE_MODULE_LINKER_FLAGS=-"L$libcxx_stage_dir" )
+# point to the system C++ library for now, until we bootstrap libc++:
 #	if test "$darwin_vers" -ge 13
 #	then
 #		clang_path=`xcrun -find clang`
@@ -409,9 +413,9 @@ CompileScript: <<
 	asm_link_clang_rt
 	make
 	pushd lib
-	ln -s BugpointPasses.{so,dylib}
-	ln -s LLVMPolly.{so,dylib}
-	ln -s LLVMHello.{so,dylib}
+		ln -s BugpointPasses.{so,dylib}
+		ln -s LLVMPolly.{so,dylib}
+		ln -s LLVMHello.{so,dylib}
 	popd
 	cd ..
 	rm -f last
@@ -419,8 +423,8 @@ CompileScript: <<
 	popd
 	# wd: %b
 	pushd ../opt-bin
-	ln -s ../build/stage2/bin/clang st2-clang
-	ln -s ../build/stage2/bin/clang++ st2-clang++
+		ln -s ../build/stage2/bin/clang st2-clang
+		ln -s ../build/stage2/bin/clang++ st2-clang++
 	popd
 	# wd: %b
 	for f in ../build/stage2/{llvm,clang,polly,compiler-rt}-%v-check.log
@@ -441,18 +445,21 @@ CompileScript: <<
 	# link over to stage1 so built clang can use this
 	# link includes over to same root to avoid needing -cxx-isystem
 	cd ..
+	rm -f last-libcxx
 	ln -s stage2.5 last-libcxx
 	cd stage2/lib
 	ln -s ../../stage2.5/lib/libc++*.dylib .
+	cd ../include
 	mkdir -p c++
 	cd c++
 	ln -s %b/../libcxx-%v/include v1
 	popd
-	echo "Stage 1.5 Tests were not run." > ../build/stage1.5/libcxx-%v-check.log
+	echo "Stage 2.5 Tests were not run." > ../build/stage2.5/libcxx-%v-check.log
 	echo "######## END of BOOTSTRAP STAGE 2.5: built libc++ with stage 2 clang++"
-# TODO: object compare stage 1.5 vs. 2.5
+	# below, object compare stage 1.5 vs. 2.5
 
 	echo "######## START of BOOTSTRAP STAGE 3: building llvm/clang with stage 2 clang"
+	# reuse CC and CXX from stage 2.5
 	STAGE3_CMAKE_OPTIONS=( "${STAGE2_CMAKE_OPTIONS[@]}" )
 	mkdir -p ../build/stage3
 	pushd ../build/stage3
@@ -462,9 +469,9 @@ CompileScript: <<
 	asm_link_clang_rt
 	make
 	pushd lib
-	ln -s BugpointPasses.{so,dylib}
-	ln -s LLVMPolly.{so,dylib}
-	ln -s LLVMHello.{so,dylib}
+		ln -s BugpointPasses.{so,dylib}
+		ln -s LLVMPolly.{so,dylib}
+		ln -s LLVMHello.{so,dylib}
 	popd
 	cd ..
 	rm -f last
@@ -535,7 +542,7 @@ InfoTest: <<
 # coreutils for gtimeout for tests, see %N.patch:utils/lit/lit/TestRunner.py
 	TestDepends: <<
 		# only darwin8 needs fink's bash
-		bash (>= 3.0),
+	#	bash (>= 3.0),
 		coreutils
 	<<
  	TestScript: <<
@@ -551,7 +558,7 @@ InfoTest: <<
 
 	# need path to bootstrapping compiler
 	pushd ../opt-bin
-	export PATH=`pwd`:$PATH
+		export PATH=`pwd`:$PATH
 	popd
 	cd ../build/last
 #	echo "******** Running included LLVM and clang tests ... ********"
@@ -586,6 +593,7 @@ EOF
 	echo "******** Running included libc++ tests ... ********"
 	pushd ../last-libcxx
 	( make -k check-libcxx 2>&1 || : ;) | tee libcxx-%v-check.log
+	popd
 #	echo "******** Running massive test-suite ... ********"
 #	( cd projects/test-suite ; make -k 2>&1 || : ;) | tee test-suite-%v-check.log
 	<<
@@ -596,12 +604,14 @@ InstallScript: <<
 	pushd ../build/last
 		make -j1 install/fast DESTDIR="%d"
 		# install most recent stage libc++
-		cd ../last-libcxx
+	cd ../last-libcxx
 		make install DESTDIR="%d"
 	popd
+	# there seems to be an extraneous include/c++/v1/c++/v1 dir
+	rm -rf %i/include/c++/v1/c++
 #	pushd %i/lib
-#	rm -f libc++.1.dylib
-#	mv libc++.1{.0,}.dylib
+#		rm -f libc++.1.dylib
+#		mv libc++.1{.0,}.dylib
 #	popd
 
 	# boilerplate script for fixing post-cmake-install install_names
@@ -634,6 +644,8 @@ InstallScript: <<
 		# prefix absolute paths to llvm/clang's lib installation
 		# caution: assumes dependent libraries are in same dir
 		case $d in
+	# NOTE: libc++ shared library lives in different prefix!
+		*libc++*) install_name_tool -change "$d" "%p/lib/libc++.1.0.dylib" $b ;;
 		/*) ;;
 		*) install_name_tool -change "$d" "$prefix/lib/$d" $b ;;
 		esac
@@ -672,21 +684,18 @@ InstallScript: <<
 	iprefix=%i/opt/llvm-%v
 	prefix=%p/opt/llvm-%v
 	pushd $iprefix/bin
-	test -x /usr/bin/ld && ln -s /usr/bin/ld .
+		test -x /usr/bin/ld && ln -s /usr/bin/ld .
 	popd
 
 	# link to libc++ include/lib
 	pushd $iprefix/lib
-	for f in libc++{,1.{,.0}}.dylib
-	do ln -s %p/lib/$f .
-	done
-	ln -s %p/include/c++ .
+		for f in libc++{,.1{,.0}}.dylib
+		do ln -s %p/lib/$f .
+		done
+	# link libc++ headers to llvm root (clang34 will dep:libcxx1-dev)
+	cd ../include
+		ln -s %p/include/c++ .
 	popd
-#	pushd $iprefix/include
-#	mkdir -p c++
-#	cd c++
-#	ln -s %p/include/c++/v1 .
-#	popd
 
 	# documentation
 	# pwd: llvm srcdir
@@ -699,13 +708,9 @@ InstallScript: <<
 	cp -R tools/polly/www $idocdir/polly-html
 	mkdir -p $idocdir/%n
 	pushd $idocdir/%n
-#	ln -s $docdir/llvm .
-#	ln -s $docdir/clang .
-#	ln -s $docdir/clang-html .
-#	ln -s $docdir/polly-html .
-	mkdir testlogs
-	cp %b/../build/last/*-check.log testlogs/
-	cp %b/../build/last-libcxx/*-check.log testlogs/
+		mkdir testlogs
+		cp %b/../build/last/*-check.log testlogs/
+		cp %b/../build/last-libcxx/*-check.log testlogs/
 	popd
 <<
 SplitOff: <<
@@ -786,7 +791,7 @@ SplitOff6: <<
 	Package: clang34
 	Depends: <<
 	# only darwin8 needs odcctools
-		odcctools,
+	#	odcctools,
 	# Q: does this need to be coupled to the same version?
 		libcxx1-dev (= %v-%r),
 		clang34-shlibs (= %v-%r),
@@ -798,6 +803,7 @@ SplitOff6: <<
 		opt/llvm-%v/bin/clang*
 		opt/llvm-%v/bin/ld
 		opt/llvm-%v/lib/clang
+		opt/llvm-%v/include/c++
 	<<
 <<
 SplitOff7: <<
