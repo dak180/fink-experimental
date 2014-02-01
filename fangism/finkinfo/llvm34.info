@@ -331,7 +331,8 @@ CompileScript: <<
 	export CXX=cc-st1-clang++
 	LIBCXX_CMAKE_OPTIONS=()
 	case %m in
-	powerpc*) flags=-no-integrated-as ;;
+	# PowerPC is not ready for -integrated-as yet
+	powerpc*) flags="$flags -no-integrated-as" ;;
 	esac
 	if test $darwin_vers -le 10
 	then flags="$flags -DDARWIN8_LIBSUPCXX"
@@ -373,13 +374,15 @@ CompileScript: <<
 	cd ..
 	ln -s stage1.5 last-libcxx
 	# link over to stage1 so built clang can use this
-	# link includes over to same root to avoid needing -cxx-isystem
 	cd stage1/lib
 	ln -s ../../stage1.5/lib/libc++*.dylib .
-	cd ../include
-	mkdir -p c++
-	cd c++
-	ln -s %b/../libcxx-%v/include v1
+# linking includes over to same root would avoid needing -cxx-isystem
+# on second thought, this causes bootstrap comparison failures due to
+# differing paths to included files, which is embedded in objects (even !debug)
+#	cd ../include
+#	mkdir -p c++
+#	cd c++
+#	ln -s %b/../libcxx-%v/include v1
 	popd
 	echo "Stage 1.5 Tests were not run." > ../build/stage1.5/libcxx-%v-check.log
 	echo "######## END of BOOTSTRAP STAGE 1.5: built libc++ with stage 1 clang++"
@@ -393,11 +396,12 @@ CompileScript: <<
 
 	echo "######## START of BOOTSTRAP STAGE 2: building llvm/clang with stage 1 clang"
 	# reuse CC and CXX from stage 1.5
-	STAGE2_CMAKE_OPTIONS=( -DCMAKE_CXX_FLAGS="-std=c++11 -stdlib=libc++" \
+	STAGE2_CMAKE_OPTIONS=( \
+		-DCMAKE_CXX_FLAGS="-std=c++11 -stdlib=libc++ -cxx-isystem %b/../libcxx-%v/include" \
 		-DCMAKE_EXE_LINKER_FLAGS="-L$libcxx_stage_dir" \
 		-DCMAKE_SHARED_LINKER_FLAGS=-"L$libcxx_stage_dir" \
 		-DCMAKE_MODULE_LINKER_FLAGS=-"L$libcxx_stage_dir" )
-# point to the system C++ library for now, until we bootstrap libc++:
+# use system C++ library for now (buried in XCode), until we bootstrap libc++:
 #	if test "$darwin_vers" -ge 13
 #	then
 #		clang_path=`xcrun -find clang`
@@ -443,16 +447,18 @@ CompileScript: <<
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LIBCXX_CMAKE_OPTIONS[@]}" ../../libcxx-%v
 	make
 	# link over to stage1 so built clang can use this
-	# link includes over to same root to avoid needing -cxx-isystem
 	cd ..
 	rm -f last-libcxx
 	ln -s stage2.5 last-libcxx
 	cd stage2/lib
 	ln -s ../../stage2.5/lib/libc++*.dylib .
-	cd ../include
-	mkdir -p c++
-	cd c++
-	ln -s %b/../libcxx-%v/include v1
+# linking includes over to same root would avoid needing -cxx-isystem
+# on second thought, this causes bootstrap comparison failures due to
+# differing paths to included files, which is embedded in objects (even !debug)
+#	cd ../include
+#	mkdir -p c++
+#	cd c++
+#	ln -s %b/../libcxx-%v/include v1
 	popd
 	echo "Stage 2.5 Tests were not run." > ../build/stage2.5/libcxx-%v-check.log
 	echo "######## END of BOOTSTRAP STAGE 2.5: built libc++ with stage 2 clang++"
@@ -490,31 +496,34 @@ CompileScript: <<
 	# diff -r stage{2,3}/lib
 	# diff -r stage{2,3}/bin
 
+	# suppress noise from `eval` commands
+	set +o verbose
+
 	diffs=
+	# recursively descend directories in parallel
 	diff_obj_dir () {
 	# $1 is reference dir
 	# $2 is target dir
 	for f in $2/*
 	do
+	o=`basename $f`
 	if test -d $f
-	then
-	  diff_obj_dir $1/`basename $f` $f
+	then diff_obj_dir $1/$o $f
 	else
+	r=`echo "$f" | cut -d/ -f2-`
 	case $f in
 	*.s.tmp.o) ;;
-	*.o)
-	  if test -f $1/`basename $f`
-	  then
-	  diff $1/`basename $f` $f && echo "matches: $f" || diffs="$diffs $f"
-	  fi
-	  ;;
+	*.o|*.inc|*.h)
+	  if test -f $1/$o
+	  then diff -q $1/$o $f && echo "matches: $r" || diffs="$diffs $r"
+	  fi ;;
 	esac
 	fi
 	done
 	}
 
 	echo "######## Comparing objects from stage 1.5 vs. 2.5 libc++"
-	diff_obj_dir stage1.5 stage2.5 | grep -v basename
+	diff_obj_dir stage{1,2}.5
 	err=
 	for f in $diffs
 	do echo "  $f -- not OK" ; err=1
@@ -522,7 +531,8 @@ CompileScript: <<
 	test -z "$err"
 
 	echo "######## Comparing objects from stage 2 vs. 3 LLVM, Clang, compiler-rt"
-	diff_obj_dir stage2 stage3 | grep -v basename
+	diffs=
+	diff_obj_dir stage{2,3}
 	err=
 	echo "Objects that differ:"
 	for f in $diffs
