@@ -11,9 +11,8 @@ BuildDepends: <<
 	cmake (>= 2.8.10.2-1), 
 # ccache is optional, for accelerating rebuilds
 #	ccache,
-# polly plug-in needs isl,cloog,gmp
+# polly plug-in needs isl,gmp
 	isl (>=0.12.1), 
-#	cloog-org2 (>= 0.18), 
 	gmp5,
 # build scripts need python2.7
 	python27,
@@ -23,6 +22,7 @@ BuildDepends: <<
 	liblzma5
 <<
 Depends: %N-shlibs
+# no longer uses cloog directly, only indirectly through isl
 BuildConflicts: <<
 	cloog, cloog-org, cloog-org2
 <<
@@ -39,7 +39,7 @@ Source5: http://llvm.org/releases/%v/libcxx-%v.src.tar.gz
 Source5-MD5: 85c3c4e2233893b037256bf9f7077857
 # Source6: http://llvm.org/releases/%v/test-suite-%v.src.tar.gz
 # Source6-MD5: 
-# libcxxabi is not recommended, libc++ is not ready yet
+# libcxxabi is not needed, use system's libc++abi or libsupc++
 
 SourceDirectory: llvm-%v
 UseMaxBuildJobs: true
@@ -57,9 +57,10 @@ PatchFile5-MD5: 988115c40cfa34ec6c039d577c69305c
 
 PatchScript: <<
 	#!/bin/sh -ev
+	# set -o pipefail || :
 	darwin_vers=`uname -r | cut -d. -f1`
 	osx_version=`sw_vers -productVersion | cut -d. -f-2`
-	# relocated a few auxiliary directories where they are expected
+	# cmake build ties subproject dirs together into one build
 	pushd tools
 	ln -f -s ../../clang-%v ./clang
 	ln -f -s ../../polly-%v ./polly
@@ -70,18 +71,19 @@ PatchScript: <<
 #	ln -f -s ../../test-suite-%v test-suite
 	popd
 
-	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|g" %{PatchFile} | patch -p1
+	patch_filter="sed -e s|@FINK_PREFIX@|%p|g -e s|@DARWIN_VERSION@|$darwin_vers|g"
+	$patch_filter %{PatchFile} | patch -p1
 	pushd tools/clang
-	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|g" %{PatchFile2} | patch -p1
+	$patch_filter %{PatchFile2} | patch -p1
 	popd
 	pushd tools/polly
-	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|g" %{PatchFile4} | patch -p1
+	$patch_filter %{PatchFile4} | patch -p1
 	popd
 	pushd projects/compiler-rt
-	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|g" %{PatchFile3} | patch -p1
+	$patch_filter %{PatchFile3} | patch -p1
 	popd
 	pushd ../libcxx-%v
-	sed -e 's|@FINK_PREFIX@|%p|g' -e "s|@DARWIN_VERSION@|$darwin_vers|g" %{PatchFile5} | patch -p1
+	$patch_filter %{PatchFile5} | patch -p1
 	popd
 
 
@@ -115,6 +117,7 @@ PatchScript: <<
 <<
 CompileScript: <<
 	#!/bin/sh -ev
+	# set -o pipefail || :
 	COMMON_CMAKE_OPTIONS=( -DBUILD_SHARED_LIBS:BOOL=ON \
 		-DLLVM_LIT_ARGS:STRING=-v \
 		-DPYTHON_EXECUTABLE:FILEPATH=%p/bin/python2.7 )
@@ -466,11 +469,11 @@ CompileScript: <<
 
 	echo "######## START of BOOTSTRAP STAGE 3: building llvm/clang with stage 2 clang"
 	# reuse CC and CXX from stage 2.5
-	STAGE3_CMAKE_OPTIONS=( "${STAGE2_CMAKE_OPTIONS[@]}" )
+	# yes, reuse STAGE2_CMAKE_OPTIOSN in stage 3
 	mkdir -p ../build/stage3
 	pushd ../build/stage3
-	echo "LLVM_CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LLVM_CMAKE_OPTIONS[@]} ${STAGE3_CMAKE_OPTIONS[@]}"
-	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE3_CMAKE_OPTIONS[@]}" $relsrcdir
+	echo "LLVM_CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LLVM_CMAKE_OPTIONS[@]} ${STAGE2_CMAKE_OPTIONS[@]}"
+	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	make -k || make VERBOSE=1
 	asm_link_clang_rt
 	make
@@ -538,6 +541,10 @@ CompileScript: <<
 	for f in $diffs
 	do
 	case $f in
+	*/tools/llvm-config/BuildVariables.inc)
+	  echo "  $f -- OK, due to different LLVM_OBJ_DIR" ;;
+	*/tools/llvm-config/CMakeFiles/llvm-config.dir/llvm-config.cpp.o)
+	  echo "  $f -- OK, due to different LLVM_OBJ_DIR" ;;
 	*/lib/Support/CMakeFiles/LLVMSupport.dir/CommandLine.cpp.o)
 	  echo "  $f -- OK, due to __DATE__, __TIME__ cpp macros" ;;
 	*) echo "  $f -- not OK" ; err=1 ;;
@@ -622,7 +629,17 @@ InstallScript: <<
 	rm -rf c++ CMakeFiles
 	rm -f cmake* Makefile
 	popd
+# push libc++ libraries down a directory so they will not be found by default
+# by user nor fink.  Force user to opt-in via -L%p/lib/c++.
+# By default, clang++ will use system's libc++.
+	libcxx_install_dir=%p/lib/c++
+	pushd %i/lib
+	mkdir c++
+	mv libc++* c++/
+	# fix install_name below
+	popd
 	# there seems to be an extra copy of cxxabi.h, identical to system's
+	# remove if identical?
 #	pushd %i/lib
 #		rm -f libc++.1.dylib
 #		mv libc++.1{.0,}.dylib
@@ -631,7 +648,7 @@ InstallScript: <<
 	# boilerplate script for fixing post-cmake-install install_names
 	# expect to find in lib/
 	# libc++ will be in %p/lib and %p/include/c++/v1
-	for stem in opt/llvm-%v lib
+	for stem in opt/llvm-%v lib/c++
 	do
 	iprefix=%i/$stem
 	prefix=%p/$stem
@@ -659,7 +676,7 @@ InstallScript: <<
 		# caution: assumes dependent libraries are in same dir
 		case $d in
 	# NOTE: libc++ shared library lives in different prefix!
-		*stage*/lib/libc++*) install_name_tool -change "$d" "%p/lib/libc++.1.0.dylib" $b ;;
+		*stage*/lib/libc++*) install_name_tool -change "$d" "$libcxx_install_dir/libc++.1.0.dylib" $b ;;
 		/*) ;;
 		*) install_name_tool -change "$d" "$prefix/lib/$d" $b ;;
 		esac
@@ -685,7 +702,7 @@ InstallScript: <<
 		# consider substituting with relative @executable_path/../lib ?
 		case $d in
 	# NOTE: libc++ shared library lives in different prefix!
-		*stage*/lib/libc++*) install_name_tool -change "$d" "%p/lib/libc++.1.0.dylib" $f ;;
+		*stage*/lib/libc++*) install_name_tool -change "$d" "$libcxx_install_dir/libc++.1.0.dylib" $f ;;
 		/*) ;;
 		@*) ;;
 		*) install_name_tool -change "$d" "$prefix/lib/$d" $f ;;
@@ -703,15 +720,16 @@ InstallScript: <<
 		test -x /usr/bin/ld && ln -s /usr/bin/ld .
 	popd
 
-	# link to libc++ include/lib
-	pushd $iprefix/lib
-		for f in libc++{,.1{,.0}}.dylib
-		do ln -s %p/lib/$f .
-		done
-	# link libc++ headers to llvm root (clang34 will dep:libcxx1-dev)
-	cd ../include
-		ln -s %p/include/c++ .
-	popd
+# if link to libc++ include/lib
+# but rather require user to opt-in to use built libc++ over system's
+#	pushd $iprefix/lib
+#		for f in libc++{,.1{,.0}}.dylib
+#		do ln -s %p/lib/$f .
+#		done
+# if link libc++ headers to llvm root (clang34 will dep:libcxx1-dev)
+#	cd ../include
+#		ln -s %p/include/c++ .
+#	popd
 
 	# documentation
 	# pwd: llvm srcdir
@@ -808,8 +826,8 @@ SplitOff6: <<
 	Depends: <<
 	# only darwin8 needs odcctools
 	#	odcctools,
-	# Q: does this need to be coupled to the same version?
-		libcxx1-dev (= %v-%r),
+	# choosing to require opt-in instead of defaulting to libcxx1-dev
+	#	libcxx1-dev,
 		clang34-shlibs (= %v-%r),
 		polly34-shlibs (= %v-%r)
 	<<
@@ -819,7 +837,6 @@ SplitOff6: <<
 		opt/llvm-%v/bin/clang*
 		opt/llvm-%v/bin/ld
 		opt/llvm-%v/lib/clang
-		opt/llvm-%v/include/c++
 	<<
 <<
 SplitOff7: <<
@@ -946,21 +963,20 @@ SplitOff12: <<
 SplitOff13: <<
 	Package: libcxx1-shlibs
 	Description: Standard library for libc++
-	Files: lib/libc++.*.*.dylib
+	Files: lib/c++/libc++.*.*.dylib
 # TODO: DocFiles
 	Shlibs: <<
-	 	%p/lib/libc++.1.0.dylib 1.0.0 %n (>= 3.4-0)
+	 	%p/lib/c++/libc++.1.0.dylib 1.0.0 %n (>= 3.4-0)
 	<<
 <<
 SplitOff14: <<
 	Package: libcxx1-dev
 	Description: Standard library headers for libc++
 	Depends: libcxx1-shlibs (= %v-%r)
-	BuildDependsOnly: false
-	# just include test log here
+	BuildDependsOnly: true
 	Files: <<
 		include/c++
-		lib/libc++*.dylib
+		lib/c++/libc++*.dylib
 		opt/llvm-%v/share/doc/%N/testlogs/libcxx-%v-check.log
 	<<
 <<
@@ -993,9 +1009,17 @@ The goal of the Clang project is to create a new C, C++, Objective C
 and Objective C++ front-end for the LLVM compiler.
 <<
 DescPackaging: <<
-Built with shared-libraries to reduce the binary size.
+clang binaries now live in the clang34 split-off.
+The %N-bundle package installs the entire set except for -dev headers.  
+
+libc++ is installed with headers at %p/include/c++/v1
+and libraries in %p/lib/c++/, so opt to use them, pass to clang:
+-cxx-isystem %p/include/c++/v1 -L%p/lib/c++
+Otherwise the default is to use the system's libc++.
+
+Built with shared-libraries to reduce the binary size and peak disk usage.
 Enabled only native targets X86, PowerPC.
-Nag me if you want other cross-targets enabled.
+Other targets can be enabled by uncommenting lines in the CompileScript.
 <<
 DescPort: <<
 Most of the patches are maintained at fangism's powerpc-darwin8 branches
@@ -1003,6 +1027,9 @@ of the llvm, clang, compiler-rt projects hosted at github:
 	https://github.com/fangism/llvm/compare/release_34...powerpc-darwin8-rel-3.4.diff
 	https://github.com/fangism/clang/compare/release_34...powerpc-darwin8-rel-3.4.diff
 	https://github.com/fangism/compiler-rt/compare/release_34...powerpc-darwin8-rel-3.4.diff
+
+On darwin>9 and x86 architectures, the package build is done as a
+3-stage bootstrap (self-host), now including a built libc++.  
 
 	*** LLVM/Clang-3.4 still has some codegen issues for PowerPC
 	*** It is NOT considered production quality for PowerPC
