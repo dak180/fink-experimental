@@ -336,6 +336,38 @@ index f6ab1cb..e580315 100644
 +#endif	// defined(__ppc__) && !defined(__ppc64__)
 +
  #endif  // _LIBCPP_ATOMIC
+diff --git a/include/cmath b/include/cmath
+index 75087ae..1257c8b 100644
+--- a/include/cmath
++++ b/include/cmath
+@@ -298,7 +298,27 @@ long double    truncl(long double x);
+ */
+ 
+ #include <__config>
++
++// The C++11 standard requires C99, but whether or not __STDC_VERSION__
++// is accordingly set is implementation-defined.
++// on darwin10: C99 is explicltly required to enable long long returning 
++// functions, like llrint and llround.
++// Alternatively, undefine __STRICT_ANSI__ for those symbols.
++// This is just a convenient, isolated workaround.
++// #if defined(__APPLE__) && (__cplusplus >= 201101L) && !defined(__STDC_VERSION__)
++#if defined(__APPLE__) && (__cplusplus >= 201101L) && !defined(__STDC_VERSION__) && defined(__STRICT_ANSI__)
++#define	__IMPLICIT_STDC_VERSION_C99__
++// #define	__STDC_VERSION__	199901L
++#undef	__STRICT_ANSI__
++#endif
+ #include <math.h>
++#ifdef	__IMPLICIT_STDC_VERSION_C99__
++// undo the abvoe
++// #undef	__STDC_VERSION__
++#define	__STRICT_ANSI__
++// __IMPLICIT_STDC_VERSION_C99__ remains defined as evidence of what happened
++#endif
++
+ #include <type_traits>
+ 
+ #ifdef _LIBCPP_MSVCRT
 diff --git a/include/iterator b/include/iterator
 index 70a664d..cd3fe4c 100644
 --- a/include/iterator
@@ -385,13 +417,14 @@ index ac3ae7e..2f6a16a 100644
  template <class _CharT, class _Traits>
  _LIBCPP_HIDDEN
 diff --git a/lib/CMakeLists.txt b/lib/CMakeLists.txt
-index cec0bee..28035c1 100644
+index cec0bee..0893001 100644
 --- a/lib/CMakeLists.txt
 +++ b/lib/CMakeLists.txt
-@@ -50,6 +50,23 @@ append_if(compile_flags LIBCXX_HAS_FPIC_FLAG -fPIC)
+@@ -50,14 +50,27 @@ append_if(compile_flags LIBCXX_HAS_FPIC_FLAG -fPIC)
  append_if(link_flags LIBCXX_HAS_NODEFAULTLIBS_FLAG -nodefaultlibs)
  
  if ( APPLE )
+-  if ( CMAKE_OSX_DEPLOYMENT_TARGET STREQUAL "10.6" )
 +  if ( CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS "10.6" )
 +    # libc++ must be built with clang++
 +    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -print-search-dirs
@@ -400,7 +433,6 @@ index cec0bee..28035c1 100644
 +      OUTPUT_VARIABLE CXX_LIBDIR
 +      OUTPUT_STRIP_TRAILING_WHITESPACE
 +    )
-+    list(APPEND compile_flags "-U__STRICT_ANSI__")
 +    list(APPEND link_flags
 +      "-compatibility_version 1"
 +      "-Wl,-unexported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/libc++unexp.exp"
@@ -408,11 +440,19 @@ index cec0bee..28035c1 100644
 +      "${CXX_LIBDIR}/lib/darwin/libclang_rt.${CMAKE_OSX_ARCHITECTURES}.a"
 +      "/usr/lib/libSystem.B.dylib"
 +      "-lSystemStubs" )
-+  else()
-   if ( CMAKE_OSX_DEPLOYMENT_TARGET STREQUAL "10.6" )
++  elseif ( CMAKE_OSX_DEPLOYMENT_TARGET STREQUAL "10.6" )
      list(APPEND compile_flags "-U__STRICT_ANSI__")
      list(APPEND link_flags
-@@ -71,6 +88,7 @@ if ( APPLE )
+       "-compatibility_version 1"
+-      "-current_version ${LIBCXX_VERSION}"
+-      "-install_name /usr/lib/libc++.1.dylib"
+-      "-Wl,-reexport_library,/usr/lib/libc++abi.dylib"
+       "-Wl,-unexported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/libc++unexp.exp"
++      "-lgcc_s.1"
+       "/usr/lib/libSystem.B.dylib")
+   else()
+     if ( ${CMAKE_OSX_SYSROOT} )
+@@ -71,6 +84,7 @@ if ( APPLE )
            "-Wl,-reexport_library,${CMAKE_OSX_SYSROOT}/usr/lib/libc++abi.dylib")
        endif()
      else()
@@ -420,11 +460,7 @@ index cec0bee..28035c1 100644
        set (OSX_RE_EXPORT_LINE "/usr/lib/libc++abi.dylib -Wl,-reexported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/libc++abi${LIBCXX_LIBCPPABI_VERSION}.exp")
      endif()
  
-@@ -82,9 +100,11 @@ if ( APPLE )
-       "-Wl,-force_symbols_not_weak_list,${CMAKE_CURRENT_SOURCE_DIR}/notweak.exp"
-       "-Wl,-force_symbols_weak_list,${CMAKE_CURRENT_SOURCE_DIR}/weak.exp")
-   endif()
-+  endif()
+@@ -85,6 +99,7 @@ if ( APPLE )
  endif()
  
  string(REPLACE ";" " " link_flags "${link_flags}")
@@ -433,7 +469,7 @@ index cec0bee..28035c1 100644
  set_target_properties(cxx
    PROPERTIES
 diff --git a/src/exception.cpp b/src/exception.cpp
-index 3ce6f2e..c585665 100644
+index 3ce6f2e..6c090e5 100644
 --- a/src/exception.cpp
 +++ b/src/exception.cpp
 @@ -16,7 +16,8 @@
@@ -442,7 +478,7 @@ index 3ce6f2e..c585665 100644
  
 -#ifdef __APPLE__
 +// darwin8: there is no __cxxabiapple namespace anywhere
-+#if defined(__APPLE__) && !defined(DARWIN8_LIBSUPCXX)
++#if defined(__APPLE__) && !defined(DARWIN_LIBSUPCXX)
    #include <cxxabi.h>
  
    using namespace __cxxabiv1;
@@ -450,7 +486,7 @@ index 3ce6f2e..c585665 100644
    #endif  // _LIBCPPABI_VERSION
  #elif defined(LIBCXXRT) || __has_include(<cxxabi.h>)
    #include <cxxabi.h>
-+  #if defined(DARWIN8_LIBSUPCXX)
++  #if defined(DARWIN_LIBSUPCXX)
 +  namespace __cxxabiv1 {
 +    extern std::terminate_handler  __terminate_handler;
 +    extern std::unexpected_handler __unexpected_handler;
@@ -463,7 +499,7 @@ index 3ce6f2e..c585665 100644
    static std::unexpected_handler __unexpected_handler;
  #endif // __has_include(<cxxabi.h>)
  
-+#if defined(__APPLE__) && defined(DARWIN8_LIBSUPCXX)
++#if defined(__APPLE__) && defined(DARWIN_LIBSUPCXX)
 +// should clang provide -DPIC
 +#define	PIC	1
 +#include <bits/os_defines.h>
@@ -485,7 +521,7 @@ index 3ce6f2e..c585665 100644
  }
 -
 +#endif
-+#if __PRED__ || defined(DARWIN8_LIBSUPCXX)
++#if __PRED__ || defined(DARWIN_LIBSUPCXX)
  unexpected_handler
  get_unexpected() _NOEXCEPT
  {
@@ -509,7 +545,7 @@ index 3ce6f2e..c585665 100644
  }
  
 +#endif
-+#if __PRED__ || defined(DARWIN8_LIBSUPCXX)
++#if __PRED__ || defined(DARWIN_LIBSUPCXX)
  terminate_handler
  get_terminate() _NOEXCEPT
  {
@@ -536,7 +572,7 @@ index 3ce6f2e..c585665 100644
 +#undef	__PRED__
  
  #if !defined(LIBCXXRT) && !defined(__GLIBCXX__) && !defined(__EMSCRIPTEN__)
-+#if !defined(DARWIN8_LIBSUPCXX)
++#if !defined(DARWIN_LIBSUPCXX)
  bool uncaught_exception() _NOEXCEPT
  {
  #if defined(__APPLE__) || defined(_LIBCPPABI_VERSION)
@@ -554,7 +590,7 @@ index 3ce6f2e..c585665 100644
  }
 -
 +#endif
-+#if !defined(_LIBCPPABI_VERSION) && !defined(__GLIBCXX__) || defined(DARWIN8_LIBSUPCXX)
++#if !defined(_LIBCPPABI_VERSION) && !defined(__GLIBCXX__) || (defined(DARWIN_LIBSUPCXX) && DARWIN_LIBSUPCXX < 10)
  const char* bad_exception::what() const _NOEXCEPT
  {
    return "std::bad_exception";
@@ -563,7 +599,7 @@ index 3ce6f2e..c585665 100644
  #endif
  
 -#if defined(__GLIBCXX__)
-+#define	GLIBCXX_HAS___EXCEPTION_PTR		!defined(DARWIN8_LIBSUPCXX)
++#define	GLIBCXX_HAS___EXCEPTION_PTR		!defined(DARWIN_LIBSUPCXX)
 +
 +#if defined(__GLIBCXX__) && GLIBCXX_HAS___EXCEPTION_PTR
  
@@ -601,7 +637,7 @@ index 3ce6f2e..c585665 100644
  }
  
 -#if !defined(__GLIBCXX__)
-+#if !defined(__GLIBCXX__) || defined(DARWIN8_LIBSUPCXX)
++#if !defined(__GLIBCXX__) || defined(DARWIN_LIBSUPCXX)
  
  nested_exception::~nested_exception() _NOEXCEPT
  {
@@ -610,7 +646,7 @@ index 3ce6f2e..c585665 100644
  }
  
 -#if !defined(__GLIBCXX__)
-+#if !defined(__GLIBCXX__) || defined(DARWIN8_LIBSUPCXX)
++#if !defined(__GLIBCXX__) || defined(DARWIN_LIBSUPCXX)
  
  exception_ptr current_exception() _NOEXCEPT
  {
@@ -624,7 +660,7 @@ index 3ce6f2e..c585665 100644
  #else
  #   if defined(_MSC_VER) && ! defined(__clang__)
 diff --git a/src/new.cpp b/src/new.cpp
-index f4998cf..6be5ca3 100644
+index f4998cf..c3cfe14 100644
 --- a/src/new.cpp
 +++ b/src/new.cpp
 @@ -17,7 +17,7 @@
@@ -632,7 +668,7 @@ index f4998cf..6be5ca3 100644
  #endif
  
 -#ifdef __APPLE__
-+#if defined(__APPLE__) && !defined(DARWIN8_LIBSUPCXX)
++#if defined(__APPLE__) && !defined(DARWIN_LIBSUPCXX)
      #include <cxxabi.h>
  
      #ifndef _LIBCPPABI_VERSION
@@ -640,7 +676,7 @@ index f4998cf..6be5ca3 100644
      #if defined(LIBCXXRT) || __has_include(<cxxabi.h>)
          #include <cxxabi.h>
      #endif  // __has_include(<cxxabi.h>)
-+    #if defined(DARWIN8_LIBSUPCXX)
++    #if defined(DARWIN_LIBSUPCXX)
 +        extern std::new_handler	__new_handler;
 +    #endif
      #if !defined(_LIBCPPABI_VERSION) && !defined(__GLIBCXX__)
@@ -648,7 +684,7 @@ index f4998cf..6be5ca3 100644
      #endif  // _LIBCPPABI_VERSION
  #endif
  
-+#if defined(__APPLE__) && defined(DARWIN8_LIBSUPCXX)
++#if defined(__APPLE__) && defined(DARWIN_LIBSUPCXX)
 +// should clang provide -DPIC
 +#define	PIC	1
 +#include <bits/os_defines.h>
@@ -662,7 +698,7 @@ index f4998cf..6be5ca3 100644
  namespace std
  {
  
-+#if	!defined(DARWIN8_LIBSUPCXX)
++#if	!defined(DARWIN_LIBSUPCXX)
  #ifndef __GLIBCXX__
  const nothrow_t nothrow = {};
  #endif
@@ -676,7 +712,7 @@ index f4998cf..6be5ca3 100644
  }
 -
 +#endif
-+#if !defined(__GLIBCXX__) || defined(DARWIN8_LIBSUPCXX)
++#if !defined(__GLIBCXX__) || defined(DARWIN_LIBSUPCXX)
  new_handler
  get_new_handler() _NOEXCEPT
  {
@@ -698,12 +734,12 @@ index f4998cf..6be5ca3 100644
  }
 +#endif // !__GLIBCXX__
  
-+#if !defined(__GLIBCXX__) || defined(DARWIN8_LIBSUPCXX)
++#if !defined(__GLIBCXX__) || (defined(DARWIN_LIBSUPCXX) && DARWIN_LIBSUPCXX < 10)
  const char*
  bad_alloc::what() const _NOEXCEPT
  {
 diff --git a/src/typeinfo.cpp b/src/typeinfo.cpp
-index b428120..f04b3a2 100644
+index b428120..4153372 100644
 --- a/src/typeinfo.cpp
 +++ b/src/typeinfo.cpp
 @@ -35,23 +35,29 @@ std::bad_typeid::bad_typeid() _NOEXCEPT
@@ -712,7 +748,7 @@ index b428120..f04b3a2 100644
  }
 +#endif
  
-+#if !defined(__GLIBCXX__) || defined(DARWIN8_LIBSUPCXX)
++#if !defined(__GLIBCXX__) || (defined(DARWIN_LIBSUPCXX) && DARWIN_LIBSUPCXX < 10)
  const char*
  std::bad_cast::what() const _NOEXCEPT
  {
@@ -726,7 +762,7 @@ index b428120..f04b3a2 100644
  }
 -
 +#endif
-+#if !defined(__GLIBCXX__) || defined(DARWIN8_LIBSUPCXX)
++#if !defined(__GLIBCXX__) || (defined(DARWIN_LIBSUPCXX) && DARWIN_LIBSUPCXX < 10)
  const char*
  std::bad_typeid::what() const _NOEXCEPT
  {
@@ -10168,7 +10204,7 @@ index 611ce56..fbf292b 100644
      test<double, false>();
      test<long double, false>();
 diff --git a/test/lit.cfg b/test/lit.cfg
-index aa45439..6165757 100644
+index aa45439..bf2ee2c 100644
 --- a/test/lit.cfg
 +++ b/test/lit.cfg
 @@ -181,10 +181,11 @@ if cxx_under_test is None:
@@ -10207,15 +10243,17 @@ index aa45439..6165757 100644
  # This test suite supports testing against either the system library or the
  # locally built one; the former mode is useful for testing ABI compatibility
  # between the current headers and a shipping dynamic library.
-@@ -247,7 +261,31 @@ if link_flags_str is None:
+@@ -247,7 +261,33 @@ if link_flags_str is None:
          lit_config.fatal('C++ ABI setting %s unsupported for tests' % cxx_abi)
  
        if sys.platform == 'darwin':
 +        # need libgcc_s for libunwind
 +        darwin_vers = int(platform.release().split('.')[0])
 +        osx_vers_maj = '.'.join(platform.mac_ver()[0].split('.')[0:2])
-+        if darwin_vers < 11:
++        if darwin_vers < 10:
 +          link_flags += ['.'.join(['-lgcc_s', osx_vers_maj])]
++        elif darwin_vers < 11:
++          link_flags += ['-lgcc_s.1']
 +        # need libclang_rt for eprintf
 +        arch = platform.processor()
 +        if arch == 'powerpc':
@@ -10239,7 +10277,7 @@ index aa45439..6165757 100644
        elif sys.platform == 'linux2':
          link_flags += [ '-lgcc_eh', '-lc', '-lm', '-lpthread',
                '-lrt', '-lgcc_s']
-@@ -281,8 +319,8 @@ else:
+@@ -281,8 +321,8 @@ else:
  
  config.test_format = LibcxxTestFormat(
      cxx_under_test,

@@ -53,7 +53,7 @@ PatchFile3-MD5: d99f6660245b55febad43728a8978676
 PatchFile4: %n-polly.patch
 PatchFile4-MD5: d6deda1584332af388053b19cb9dcc6f
 PatchFile5: %n-libcxx.patch
-PatchFile5-MD5: 988115c40cfa34ec6c039d577c69305c
+PatchFile5-MD5: 233eca5b80817eccbcb7b53d2a27085d
 
 PatchScript: <<
 	#!/bin/sh -ev
@@ -338,7 +338,7 @@ CompileScript: <<
 	powerpc*) flags="$flags -no-integrated-as" ;;
 	esac
 	if test $darwin_vers -le 10
-	then flags="$flags -DDARWIN8_LIBSUPCXX"
+	then flags="$flags -DDARWIN_LIBSUPCXX=$darwin_vers"
 		abi=libsupc++
 		if test -f /usr/include/c++/4.2.1/cxxabi.h
 		then sys_cxxabi_root=/usr/include/c++/4.2.1
@@ -838,6 +838,12 @@ SplitOff6: <<
 		opt/llvm-%v/bin/ld
 		opt/llvm-%v/lib/clang
 	<<
+	DescUsage: <<
+	To use clang/clang++, point your PATH to %p/opt/llvm-%v/bin.
+	clang++ uses the system C++ library by default.
+	To use libcxx1-dev, pass "-cxx-isystem %p/include/c++/v1"
+	and -L%p/lib/c++.
+	<<
 <<
 SplitOff7: <<
 	Package: polly34-docs
@@ -898,6 +904,7 @@ SplitOff11: <<
 SplitOff12: <<
 	Package: %N-shlibs
 	Description: Shared libraries for LLVM infrastructure
+	# Really, only full bootstraps with libc++ depend on libcxx1-shlibs.
 	Depends: libncurses5-shlibs, libcxx1-shlibs (= %v-%r)
 	Files: <<
 		opt/llvm-%v/lib/BugpointPasses.so
@@ -964,9 +971,20 @@ SplitOff13: <<
 	Package: libcxx1-shlibs
 	Description: Standard library for libc++
 	Files: lib/c++/libc++.*.*.dylib
-# TODO: DocFiles
 	Shlibs: <<
 	 	%p/lib/c++/libc++.1.0.dylib 1.0.0 %n (>= 3.4-0)
+	<<
+	DocFiles: ../libcxx-%v/*.TXT
+	DescPort: <<
+	This C++ library is always built using the system's C++ ABI library,
+	not libc++abi from the LLVM project.  
+	The system ABI could be either libc++abi or libsupc++.
+	This allows for interoperability across different C++ libraries.  
+	<<
+	DescUsage: <<
+	libc++ lives in a private location, which requires opt-in to use.
+	To use libc++, you need to pass "-cxx-isystem %p/include/c++/v1"
+	and -L%p/lib/c++ to clang++.  
 	<<
 <<
 SplitOff14: <<
@@ -978,6 +996,17 @@ SplitOff14: <<
 		include/c++
 		lib/c++/libc++*.dylib
 		opt/llvm-%v/share/doc/%N/testlogs/libcxx-%v-check.log
+	<<
+	DescPort: <<
+	This C++ library is always built using the system's C++ ABI library,
+	not libc++abi from the LLVM project.  
+	The system ABI could be either libc++abi or libsupc++.
+	This allows for interoperability across different C++ libraries.  
+	<<
+	DescUsage: <<
+	libc++ lives in a private location, which requires opt-in to use.
+	To use libc++, you need to pass "-cxx-isystem %p/include/c++/v1"
+	and -L%p/lib/c++ to clang++.  
 	<<
 <<
 SplitOff15: <<
@@ -995,7 +1024,7 @@ SplitOff15: <<
 	DescDetail: <<
 	Installing this gets all of the binaries, libraries, and
 	documentation for the llvm34 package set.
-	The -dev headers are separate because they are build-depends-only.
+	The -dev headers are separate because they are build-depends-only:true.
 	<<
 <<
 Homepage: http://llvm.org/
