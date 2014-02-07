@@ -328,6 +328,15 @@ CompileScript: <<
 	done
 	echo "######## END of BOOTSTRAP STAGE 1: built llvm/clang with the system compiler"
 
+	# LDFLAGS influences cmake, aggregate and re-export
+	FINK_LDFLAGS=( "$LDFLAGS" )
+	# beyond stage1, use the following flags for both libc++ and llvm
+	STAGE2_COMMON_LDFLAGS=()
+	# darwin8: stage2+ needs odcctools
+	if test $darwin_vers -le 8
+	then STAGE2_COMMON_LDFLAGS=( "-B%p/lib/odcctools/bin" )
+	fi
+
 	echo "######## START of BOOTSTRAP STAGE 1.5: building libc++ with stage 1 clang++"
 	export CCACHE_COMPILERCHECK=content
 	export CC=cc-st1-clang
@@ -361,17 +370,12 @@ CompileScript: <<
 		-DLIT_EXECUTABLE=%b/../build/last/bin/llvm-lit \
 		-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=$osx_version \
 		-DCMAKE_OSX_ARCHITECTURES="$clang_arch" )
-	# darwin8: stage2+ needs odcctools
-	if test $darwin_vers -le 8
-	then LIBCXX_CMAKE_OPTIONS=( "${LIBCXX_CMAKE_OPTIONS[@]}" \
-		-DCMAKE_EXE_LINKER_FLAGS=-B%p/lib/odcctools/bin \
-		-DCMAKE_SHARED_LINKER_FLAGS=-B%p/lib/odcctools/bin \
-		-DCMAKE_MODULE_LINKER_FLAGS=-B%p/lib/odcctools/bin )
-	fi
 
 	mkdir -p ../build/stage1.5
 	pushd ../build/stage1.5
 	echo "LLVM_CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LIBCXX_CMAKE_OPTIONS[@]}"
+	export LDFLAGS="${STAGE2_COMMON_LDFLAGS[@]} ${FINK_LDFLAGS[@]}"
+	echo "LDFLAGS = $LDFLAGS"
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LIBCXX_CMAKE_OPTIONS[@]}" ../../libcxx-%v
 	make
 	cd ..
@@ -400,10 +404,8 @@ CompileScript: <<
 	echo "######## START of BOOTSTRAP STAGE 2: building llvm/clang with stage 1 clang"
 	# reuse CC and CXX from stage 1.5
 	STAGE2_CMAKE_OPTIONS=( \
-		-DCMAKE_CXX_FLAGS="-std=c++11 -stdlib=libc++ -cxx-isystem %b/../libcxx-%v/include" \
-		-DCMAKE_EXE_LINKER_FLAGS="-L$libcxx_stage_dir" \
-		-DCMAKE_SHARED_LINKER_FLAGS=-"L$libcxx_stage_dir" \
-		-DCMAKE_MODULE_LINKER_FLAGS=-"L$libcxx_stage_dir" )
+		-DCMAKE_CXX_FLAGS="-std=c++11 -stdlib=libc++ -cxx-isystem %b/../libcxx-%v/include" )
+	STAGE2_LLVM_LDFLAGS=( "-L$libcxx_stage_dir" )
 # use system C++ library for now (buried in XCode), until we bootstrap libc++:
 #	if test "$darwin_vers" -ge 13
 #	then
@@ -415,6 +417,8 @@ CompileScript: <<
 	mkdir -p ../build/stage2
 	pushd ../build/stage2
 	echo "LLVM_CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LLVM_CMAKE_OPTIONS[@]} ${STAGE2_CMAKE_OPTIONS[@]}"
+	export LDFLAGS="${STAGE2_COMMON_LDFLAGS[@]} ${STAGE2_LLVM_LDFLAGS[@]} ${FINK_LDFLAGS[@]}"
+	echo "LDFLAGS = $LDFLAGS"
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	make -k || make VERBOSE=1
 	asm_link_clang_rt
@@ -447,6 +451,8 @@ CompileScript: <<
 	pushd ../build/stage2.5
 	# use same flags as stage1.5
 	echo "LLVM_CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LIBCXX_CMAKE_OPTIONS[@]}"
+	export LDFLAGS="${STAGE2_COMMON_LDFLAGS[@]} ${FINK_LDFLAGS[@]}"
+	echo "LDFLAGS = $LDFLAGS"
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LIBCXX_CMAKE_OPTIONS[@]}" ../../libcxx-%v
 	make
 	# link over to stage1 so built clang can use this
@@ -473,6 +479,8 @@ CompileScript: <<
 	mkdir -p ../build/stage3
 	pushd ../build/stage3
 	echo "LLVM_CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LLVM_CMAKE_OPTIONS[@]} ${STAGE2_CMAKE_OPTIONS[@]}"
+	export LDFLAGS="${STAGE2_COMMON_LDFLAGS[@]} ${STAGE2_LLVM_LDFLAGS[@]} ${FINK_LDFLAGS[@]}"
+	echo "LDFLAGS = $LDFLAGS"
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	make -k || make VERBOSE=1
 	asm_link_clang_rt
