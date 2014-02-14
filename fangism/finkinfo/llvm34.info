@@ -610,12 +610,12 @@ EOF
 	  # don't bother analyzing diffs
 	popd
 
-if test "$do_stage35" = 1
-then
-	echo "######## START of BOOTSTRAP STAGE 3.5: building libc++ with stage 2 clang++"
 	export CC=cc-st3-clang
 	export CXX=cc-st3-clang++
 	export CCACHE_DISABLE=1
+if test "$do_stage35" = 1
+then
+	echo "######## START of BOOTSTRAP STAGE 3.5: building libc++ with stage 2 clang++"
 	mkdir -p ../build/stage3.5
 	pushd ../build/stage3.5
 	# use same flags as stage1.5
