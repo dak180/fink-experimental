@@ -1096,8 +1096,11 @@ SplitOff11: <<
 SplitOff12: <<
 	Package: %N-shlibs
 	Description: Shared libraries for LLVM infrastructure
-	# Really, only full bootstraps with libc++ depend on libcxx1-shlibs.
-	Depends: libncurses5-shlibs, libcxx1-shlibs (= %v-%r)
+	Depends: <<
+	# only darwin10+ bootstraps with built libc++
+		libcxx1-shlibs (>= %v-%r),
+		libncurses5-shlibs
+	<<
 	Files: <<
 		opt/llvm-%v/lib/BugpointPasses.so
 		opt/llvm-%v/lib/LLVMHello.so
