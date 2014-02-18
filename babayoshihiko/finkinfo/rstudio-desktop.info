@@ -6,22 +6,23 @@ License: GPL
 Homepage: http://rstudio.org
 Maintainer: BABA Yoshihiko <babayoshihiko@mac.com>
 Depends: <<
-  r-base213, 
-  boost1.46.nopython-shlibs,
-  libiconv, libpng14-shlibs,
+  r-base30, 
+  boost1.46.1.cmake-shlibs,
+  libiconv, libpng15-shlibs,
   webkit-1.0.2-shlibs,
   qt4-base-mac-qtcore-shlibs
 <<
 BuildDepends: << 
-  fink (>= 0.28), cmake, boost1.46.nopython,
-  r-base213-dev,
-  libiconv-dev, libpng14,
+  fink (>= 0.28), cmake, 
+  boost1.46.1.cmake,
+  r-base30-dev,
+  libiconv-dev, libpng15,
   webkit-1.0.2,
   qt4-base-mac
 <<
-Source: http://homepage.mac.com/babayoshihiko/fink/rstudio-rstudio-v%v-0-ga250b30.tar.gz
-Source-MD5: 43754f89fe079700c5d3a181968133e3
-SourceDirectory: rstudio-rstudio-a250b30
+Source: https://github.com/rstudio/rstudio/archive/v%v.tar.gz
+Source-MD5: 03795e5789cfda63397c19182b4cb41b
+SourceDirectory: rstudio-%v
 # Source: https://github.com/rstudio/rstudio/zipball/rstudio-rstudio-v0.93.91-1-g12cb413.tar.gz
 # Source-MD5: 989e64f2e29ab447c1955a35c71a868a
 # SourceDirectory: rstudio-rstudio-12cb413
@@ -33,10 +34,14 @@ PatchFile: rstudio.patch
 PatchFile-MD5: 410cea75c0b96bc6497121aa2a0a17c9
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 
+SetCPPFLAGS: -I%p/include/boost-1_46_1
+SetCXXFLAGS: -I%p/include/boost-1_46_1
 SetLDFLAGS: %p/Library/Frameworks/R.framework/Libraries/libR.dylib
 CompileScript: <<
 #!/bin/bash -ev
-  export QTDIR=%p/lib/qt4-mac
+  export QTDIR="%p/lib/qt4-mac"
+  export PATH="${QTDIR}/bin:${PATH}"
+  export CMAKE_PREFIX_PATH="${QTDIR}:%p"
   
   # Move Source2 and Source3 files
   # See dependencies/osx/install-dependencies-osx
@@ -58,14 +63,15 @@ CompileScript: <<
          -DCMAKE_INSTALL_LOCAL_ONLY=TRUE \
          -DCMAKE_VERBOSE_MAKEFILE=TRUE \
          -DLIBR_LIBRARIES=%p/Library/Frameworks/R.framework/Libraries \
-         -DBOOST_INCLUDE_DIR=%p/include \
+         -DBOOST_INCLUDE_DIR=%p/include/boost-1_46_1/ \
+         -DQT_LIBRARY_DIR=%p/lib/qt4-mac/lib \
          ..
   
   perl -pi -e 's|include|# include|'                       src/cpp/desktop/cmake_install.cmake
   perl -pi -e 's|fixup_bundle|# fixup_bundle|'   src/cpp/desktop/cmake_install.cmake
   # perl -pi -e 's|dylib|bundle|'   src/cpp/desktop/cmake_install.cmake
   
-  make VERBOSE=0  
+  make VERBOSE=1
   make install CMAKE_INSTALL_PREFIX=%p/Applications
 <<
 # Install Phase.
