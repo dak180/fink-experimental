@@ -6,7 +6,7 @@ License: GPL
 Homepage: http://rstudio.org
 Maintainer: BABA Yoshihiko <babayoshihiko@mac.com>
 Depends: <<
-  r-base30, 
+  r-base (=2.15.3-104), r-base215, 
   boost1.46.1.cmake-shlibs,
   libiconv, libpng15-shlibs,
   webkit-1.0.2-shlibs,
@@ -15,7 +15,7 @@ Depends: <<
 BuildDepends: << 
   fink (>= 0.28), cmake, 
   boost1.46.1.cmake,
-  r-base30-dev,
+  r-base215-dev,
   libiconv-dev, libpng15,
   webkit-1.0.2,
   qt4-base-mac
@@ -34,9 +34,9 @@ PatchFile: rstudio.patch
 PatchFile-MD5: 410cea75c0b96bc6497121aa2a0a17c9
 PatchScript: sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
 
-SetCPPFLAGS: -I%p/include/boost-1_46_1
-SetCXXFLAGS: -I%p/include/boost-1_46_1
-SetLDFLAGS: %p/Library/Frameworks/R.framework/Libraries/libR.dylib
+# SetCPPFLAGS: -I%p/Library/Frameworks/R.framework/Versions/2.15.3/PrivateHeaders -I%p/include/boost-1_46_1
+SetCXXFLAGS: -I%p/Library/Frameworks/R.framework/Versions/2.15.3/Headers -I%p/include/boost-1_46_1
+SetLDFLAGS: %p/Library/Frameworks/R.framework/Versions/2.15.3/Resources/lib/libR.dylib
 CompileScript: <<
 #!/bin/bash -ev
   export QTDIR="%p/lib/qt4-mac"
@@ -62,12 +62,12 @@ CompileScript: <<
          -DCMAKE_INSTALL_PREFIX=%b/Applications \
          -DCMAKE_INSTALL_LOCAL_ONLY=TRUE \
          -DCMAKE_VERBOSE_MAKEFILE=TRUE \
-         -DLIBR_LIBRARIES=%p/Library/Frameworks/R.framework/Libraries \
+         -DLIBR_LIBRARIES=%p/Library/Frameworks/R.framework/Versions/2.15.3/Resources/lib \
          -DBOOST_INCLUDE_DIR=%p/include/boost-1_46_1/ \
          -DQT_LIBRARY_DIR=%p/lib/qt4-mac/lib \
          ..
   
-  perl -pi -e 's|include|# include|'                       src/cpp/desktop/cmake_install.cmake
+  # perl -pi -e 's|include|# include|'                       src/cpp/desktop/cmake_install.cmake
   perl -pi -e 's|fixup_bundle|# fixup_bundle|'   src/cpp/desktop/cmake_install.cmake
   # perl -pi -e 's|dylib|bundle|'   src/cpp/desktop/cmake_install.cmake
   
