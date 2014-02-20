@@ -5,7 +5,10 @@ Revision: 106
 Description: R Framework
 Maintainer:  BABA Yoshihiko <babayoshihiko@mac.com>
 Depends: %N-shlibs (=%v-%r)
-BuildDepends: bzip2-dev, cairo (>= 1.12.8-1), glib2-dev, gcc48-compiler, libgettext8-dev, libiconv-dev, libjpeg9, liblzma5, libpng16, pango1-xft2-ft219-dev, pcre, pkgconfig, readline6, tcltk-dev, x11-dev, fink (>= 0.28.1), fink-package-precedence, flag-sort (>= 0.5)
+BuildDepends: <<
+  bzip2-dev, cairo (>= 1.12.8-1), glib2-dev, gcc48-compiler, libgettext8-dev, libiconv-dev, libjpeg9, liblzma5, libpng16, pango1-xft2-ft219-dev, pcre, pkgconfig, readline6, tcltk-dev, x11-dev, fink (>= 0.28.1), fink-package-precedence, flag-sort (>= 0.5),
+  lapack350
+<<
 Distribution: 10.4, 10.5, 10.6, 10.7, 10.8
 Source: http://cran.r-project.org/src/base/R-2/R-%v.tar.gz
 Source-MD5: b2f1a5d701f1f90679be0c60e1931a5c
@@ -18,8 +21,8 @@ SetCXX: flag-sort -r g++
 
 ConfigureParams: <<
   --libdir='%p/lib' --mandir='${prefix}/share/man' \
-  --with-blas="-framework Accelerate" \
-  --with-lapack="-framework Accelerate" \
+  --with-blas=%p/lib/lapack/3.5.0 \
+  --with-lapack=%p/lib/lapack/3.5.0 \
   --with-aqua --enable-R-framework=%p/Library/Frameworks \
   --with-system-bzlib --with-system-pcre --with-system-zlib \
   --with-x --x-includes=/usr/X11R6/include --x-libraries=/usr/X11R6/lib \
@@ -31,7 +34,7 @@ CompileScript: <<
   export F77=%p/bin/gfortran-fsf-4.8
   export FC=%p/bin/gfortran-fsf-4.8
 
-  perl -pi -e "s|vecLib|Accelerate|g" src/modules/lapack/vecLibg95c.c
+  " perl -pi -e "s|vecLib|Accelerate|g" src/modules/lapack/vecLibg95c.c
   
   unset R_HOME
   ./configure %c CFLAGS="-g -O3" CXXFLAGS="-g -O3" FFLAGS="-g -O3"
@@ -128,7 +131,10 @@ RunTimeVars: <<
 SplitOff: <<
   Package: %N-shlibs
   Description: R Libraries
-  Depends: bzip2-shlibs, cairo-shlibs (>= 1.12.8-1), gcc48-shlibs, glib2-shlibs, libgettext8-shlibs, libiconv, libjpeg9-shlibs, liblzma5-shlibs, libpng16-shlibs, libtiff5-shlibs, pango1-xft2-ft219-shlibs, pcre-shlibs, readline6-shlibs, tcltk
+  Depends: <<
+    bzip2-shlibs, cairo-shlibs (>= 1.12.8-1), gcc48-shlibs, glib2-shlibs, libgettext8-shlibs, libiconv, libjpeg9-shlibs, liblzma5-shlibs, libpng16-shlibs, libtiff5-shlibs, pango1-xft2-ft219-shlibs, pcre-shlibs, readline6-shlibs, tcltk,
+    lapack350-shlibs
+  <<
   Files: <<
   Library/Frameworks/R.framework/Versions/2.15/Resources/lib
   Library/Frameworks/R.framework/Versions/2.15/Resources/library
