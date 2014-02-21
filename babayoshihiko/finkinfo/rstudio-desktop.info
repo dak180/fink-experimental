@@ -1,6 +1,6 @@
 Package: rstudio-desktop
 Version: 0.98.653
-Revision: 0.91
+Revision: 0.92
 Distribution: 10.8, 10.7
 Description: IDE for R
 License: GPL
@@ -14,6 +14,7 @@ Depends: <<
   qt4-base-mac-qtcore-shlibs
 <<
 BuildDepends: << 
+  fink-package-precedence,
   fink (>= 0.28), cmake, 
   boost1.52.0.cmake,
   r-base30-dev,
@@ -51,16 +52,22 @@ CompileScript: <<
   # Move Source2-5 files
   # See dependencies/osx/install-dependencies-osx
   mkdir -p src/gwt/lib/gin/1.5
-  mv ../LICENSE   src/gwt/lib/gin/1.5/
-  mv ../README   src/gwt/lib/gin/1.5/  
-  mv  ../javadoc   src/gwt/lib/gin/1.5/
+  FILES="LICENSE README javadoc"
+  for $FILE in $FILES;
+    do
+      mv  ../$FILE   src/gwt/lib/gin/1.5/
+    done
   mv  ../*.jar         src/gwt/lib/gin/1.5/
+  
   mkdir -p src/gwt/lib/gwt
   mv ../gwt-2.5.1 src/gwt/lib/gwt/2.5.1
+  
   mkdir -p dependencies/common/dictionaries
   mv ../*.dic* dependencies/common/dictionaries/
   mv ../*.aff dependencies/common/dictionaries/
+  
   mv ../mathjax dependencies/common/
+  
   mkdir -p dependencies/common/pandoc
   mv ../pandoc-1.12.3 dependencies/common/pandoc/1.12.3
 
@@ -72,12 +79,11 @@ CompileScript: <<
          -DCMAKE_BUILD_TYPE=Release \
          -DCMAKE_INSTALL_PREFIX=%b/Applications \
          -DCMAKE_VERBOSE_MAKEFILE=TRUE \
-         -DLIBR_LIBRARIES=%p/Library/Frameworks/R.framework/Versions/3.0.2/Resources/lib \
+         -DLIBR_LIBRARIES=%p/Library/Frameworks/R.framework/Versions/3.0/Resources/lib \
          ..
-  
-  # perl -pi -e 's|fixup_bundle|# fixup_bundle|' src/cpp/desktop/cmake_install.cmake
-  
+    
   make VERBOSE=1
+  fink-package-precedence --prohibit-bdep %n .
   make install CMAKE_INSTALL_PREFIX=%p/Applications
 <<
 # Install Phase.
