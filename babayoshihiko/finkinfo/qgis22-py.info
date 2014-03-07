@@ -40,7 +40,7 @@ BuildDepends: <<
 	gsl,
 	qt4-base-mac (>= 4.4), 
 	sip-py%type_pkg[python]-bin (>= 4.8), pyqt4-mac-py%type_pkg[python], 
-	qscintilla2.8-qt4-mac,
+	qscintilla2.11-qt4-mac,
 	xerces-c31-dev,
 	libiconv-dev, giflib, libtiff5, libjpeg9, libogdi3 (>= 3.1.5-1), libpng16,
 	cfitsio,
@@ -71,13 +71,9 @@ CompileScript: <<
 	QGIS_VER=2.2
 	
 	# Find Fink's PyQt4
-	PY_VER=%type_raw[python]
+	PY_VER=%type_raw[python]	# 2.6, 2.7 or 3.3
 	perl -pi -e 's|sys.path = |sys.path = \[\\\"%p/lib/qt4-mac/lib/python'${PY_VER}'/site-packages\\\", " + newpaths.join( "," ) + "] + sys.path" ); //|' src/python/qgspythonutilsimpl.cpp
 	perl -pi -e 's|\.app|-py%type_pkg[python]-%v.app|' CMakeLists.txt
-	
-	# 2.2 workaround?
-	# QXml to QCoreXml
-	perl -pi -e 's|QXml|QCoreXml|g' src/analysis/openstreetmap/qgsosmimport.cpp
 	
 	export QTDIR=%p/lib/qt4-mac
 	export PYTHONPATH=%p/lib/qt4-mac/lib/python$PY_VER/site-packages:$PYTHONPATH
@@ -211,7 +207,7 @@ CompileScript: <<
 	echo '#!/bin/sh' >QGIS
 	echo 'export PYTHONPATH=%p/lib/qt4-mac/lib/python'${PY_VER}'/site-packages:$PYTHONPATH' >>QGIS
 	echo 'export PATH=%p/lib/qt4-mac/lib/python'${PY_VER}'/bin:$PATH' >>QGIS
-	echo 'export QGIS_PLUGINPATH=%p/share/qgis20-py'${PY_VER}'/plugins' >>QGIS
+	echo 'export QGIS_PLUGINPATH=%p/share/qgis22-py'%type_pkg[python]'/plugins' >>QGIS
 	echo ". %p/bin/init.sh && %p/$QGIS_DIR/MacOS/QGIS.exe" >>QGIS
 	chmod 555 QGIS
 		# 1.8.0
@@ -229,7 +225,7 @@ CompileScript: <<
 	
 	# 1.6.0 Plugins are now managed by their own package (e.g. qgis-plugin-ftools)
 	rm -rf %b/$QGIS_DIR/Resources/python/plugins
-	ln -s %p/share/qgis20-py%type_pkg[python]/plugins %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins
+	ln -s %p/share/qgis22-py%type_pkg[python]/plugins %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins
 	  
 	# 1.6.0 Workaround to SJIS problem
 	mkdir -p %b/$QGIS_DIR/PlugIns
@@ -237,7 +233,7 @@ CompileScript: <<
 	
 	# 1.8.0 Fix install name for Fink's policy
 	pushd $QGIS_DIR/MacOS/lib
-	for libname in libqgispython.2.0.1.dylib
+	for libname in libqgispython.2.2.0.dylib
 	do
 		install_name_tool -id %p/$QGIS_DIR/MacOS/lib/$libname $libname
 		for loadable in qgis_core
@@ -284,7 +280,7 @@ CompileScript: <<
 	popd
 	
 	pushd $QGIS_DIR/PlugIns/qgis
-	for libname in libcoordinatecaptureplugin.so libdelimitedtextprovider.so libdxf2shpconverterplugin.so libevis.so libgdalprovider.so libgeorefplugin.so libgpsimporterplugin.so libgpxprovider.so libgrass_gis.6.4.2.so libgrassplugin.so libgrassprovider.so libgrassrasterprovider.so libheatmapplugin.so libinterpolationplugin.so libmemoryprovider.so libmssqlprovider.so libofflineeditingplugin.so libogrprovider.so liboracleplugin.so libowsprovider.so libpostgresprovider.so librasterterrainplugin.so libroadgraphplugin.so libspatialiteprovider.so libspatialqueryplugin.so libspitplugin.so libsqlanywhereplugin.so libsqlanywhereprovider.so libtopolplugin.so libwcsprovider.so libwfsprovider.so libwmsprovider.so libzonalstatisticsplugin.so 
+	for libname in libcoordinatecaptureplugin.so libdelimitedtextprovider.so libdxf2shpconverterplugin.so libevis.so libgdalprovider.so libgeorefplugin.so libgpsimporterplugin.so libgpxprovider.so libgrass_gis.6.4.3.so libgrassplugin.so libgrassprovider.so libgrassrasterprovider.so libheatmapplugin.so libinterpolationplugin.so libmemoryprovider.so libmssqlprovider.so libofflineeditingplugin.so libogrprovider.so liboracleplugin.so libowsprovider.so libpostgresprovider.so librasterterrainplugin.so libroadgraphplugin.so libspatialiteprovider.so libspatialqueryplugin.so libspitplugin.so libsqlanywhereplugin.so libsqlanywhereprovider.so libtopolplugin.so libwcsprovider.so libwfsprovider.so libwmsprovider.so libzonalstatisticsplugin.so 
 		do
 		install_name_tool -id %p/$QGIS_DIR/PlugIns/qgis/$libname $libname
 		for loadable in qgis_analysis qgis_core qgis_gui
@@ -317,7 +313,7 @@ SplitOff: <<
   Depends: <<
 	qt4-base-mac-qtcore-shlibs (>= 4.4), 
 	python%type_pkg[python], sip-py%type_pkg[python] (>= 4.8), pyqt4-mac-py%type_pkg[python], 
-	qscintilla2.8-qt4-mac-shlibs,
+	qscintilla2.11-qt4-mac-shlibs,
 	qscintilla2-qt4-mac-py%type_pkg[python],
 	gsl-shlibs,
 	xerces-c31-shlibs,
@@ -337,7 +333,7 @@ SplitOff: <<
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/2.2/qgis_networkanalysis
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/Versions/2.2/qgisgrass
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/Versions/2.2/qgissqlanyconnection
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.2.2.1.dylib
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.2.2.0.dylib
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/qgis/crssync
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/PlugIns/qgis/*.so
   <<
