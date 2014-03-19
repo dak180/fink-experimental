@@ -5,7 +5,7 @@ Type: python (3.3 2.7 2.6)
 Architecture: powerpc, i386, x86_64
 
 Version: 2.2.0
-Revision: 1
+Revision: 1.1
 Description: User friendly Open Source GIS
 License: GPL
 Homepage: http://qgis.org
@@ -59,12 +59,15 @@ BuildConflicts: libspatialite1
 # Unpack Phase.
 Source: http://qgis.org/downloads/qgis-%v.tar.bz2
 Source-MD5: 0390e50c8a38c6cbef1720fc11aeabe6
+PatchFile: qgis-qt440.patch
+PatchFile-MD5: 37a706aee52b31385bc9a517675caa14
+
 
 # Compile Phase.
 GCC: 4.0
 
 SetCFLAGS: -fno-common
-SetLDFLAGS: -liconv
+SetLDFLAGS: -liconv %p/opt/libgeos3.4.2/lib/libgeos-3.4.2.dylib
 CompileScript: <<
 #!/bin/bash -ev
 
@@ -159,7 +162,7 @@ CompileScript: <<
 					-D QSCINTILLA_LIBRARY:FILEPATH=%p/lib/qt4-mac/lib/libqscintilla2.8.0.2.dylib
 					-D POSTGRES_CONFIG=%p/bin/pg_config
 					-D GRASS_PREFIX=%p/Applications/GRASS-6.4.app/Contents/MacOS"
-	QGIS_VERSION_OPTIONS="-D CMAKE_BUILD_TYPE=Release
+	QGIS_VERSION_OPTIONS="-D CMAKE_BUILD_TYPE=Debug
 					-D ENABLE_TESTS=FALSE
 					-D WITH_INTERNAL_SPATIALITE=FALSE
 					-D WITH_PYSPATIALITE=FALSE
