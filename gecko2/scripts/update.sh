@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: update.sh,v 1.2 2012/03/27 15:18:12 gecko2 Exp $
+# $Id: update.sh,v 1.3 2013/12/01 10:57:37 gecko2 Exp $
 
 if [ $(id -u) -ne 0 ]; then
 	exec sudo "$0"
@@ -28,7 +28,7 @@ grep -ZRl http://www.finkproject.org/ xml | xargs -0 perl -pi -e 's,http://www.f
 cd xml
 #make -s --no-print-directory all               # we do not recompile website
 find . -type f -name hostlogo.inc -exec cp ~fink/public_html/hostlogo.inc {} \;
-~fink/scripts/ranger/rss-newpackages.pl
+~fink/scripts/rss-newpackages.pl
 cd web/news/rdf
 for feed in $(ls -A1 *rdf | sed -e 's/.rdf$//g'); do
         ln -fsv $feed.rdf $feed.rss
