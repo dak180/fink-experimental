@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id$
+# $Id: sync-distfiles-finkinfo.sh,v 1.13 2011/09/12 22:57:44 gecko2 Exp $
 ###
 # Change this to match your local mirror structur
 ###
@@ -58,6 +58,15 @@ if [ \! -s ${TMPDIR}/mirror.lock ]; then
 						date -u +%s >${HTTPSNAPDIR}/${osx}-${release}-${tree}-TIMESTAMP
 						if [ "${osx}" == "10.4" ]; then
 							for dist in 10.5 10.6; do
+								printf " Creating symlinks and timestamps for "${dist}"-"${release}"-"${tree}"\n"
+								ln -sf ${osx}-${release}-${tree}.tbz ${HTTPSNAPDIR}/${dist}-${release}-${tree}.tbz
+								for check in md5 sha1 sha256; do
+									ln -sf ${osx}-${release}-${tree}.tbz.${check} ${HTTPSNAPDIR}/${dist}-${release}-${tree}.tbz.${check}
+								done
+								ln -sf ${osx}-${release}-${tree}-TIMESTAMP ${HTTPSNAPDIR}/${dist}-${release}-${tree}-TIMESTAMP
+							done
+						elif [ "${osx}" == "10.7" ]; then
+							for dist in 10.8 10.9; do
 								printf " Creating symlinks and timestamps for "${dist}"-"${release}"-"${tree}"\n"
 								ln -sf ${osx}-${release}-${tree}.tbz ${HTTPSNAPDIR}/${dist}-${release}-${tree}.tbz
 								for check in md5 sha1 sha256; do
