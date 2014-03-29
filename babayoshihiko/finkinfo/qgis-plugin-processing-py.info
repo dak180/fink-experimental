@@ -8,7 +8,7 @@ Description: Spatial data processing framework for QGIS
 License: GPL
 Homepage: http://qgis.org
 Maintainer: BABA Yoshihiko <babayoshihiko@mac.com>
-Depends: sip-py%type_pkg[python], qscintilla2-qt4-mac-py%type_pkg[python], saga
+Depends: sip-py%type_pkg[python], qscintilla2-qt4-mac-py%type_pkg[python] (>= 2.8.1-1), saga
 BuildDepends: << 
 	fink (>= 0.28), cmake, bison (>= 2.4),
 	gsl,
