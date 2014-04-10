@@ -99,7 +99,7 @@ SplitOff: <<
   Depends: ( %type_raw[-64bit] = -64bit ) 64bit-cpu
   Files: %lib/gmp5/libgmp.*.dylib
   Shlibs: <<
-    %p/%lib/gmp5/libgmp.10.dylib 13.0.0 %n (>= 5.1.0-1) %type_num[-64bit]
+    %p/%lib/gmp5/libgmp.10.dylib 13.0.0 %n (>= 6.0.0a-1) %type_num[-64bit]
   <<
   Description: Shared library for gmp package
   DocFiles: doc/*.html doc/isa_abi* AUTHORS COPYING* ChangeLog INSTALL NEWS README
@@ -109,7 +109,7 @@ SplitOff2: <<
   Depends: ( %type_raw[-64bit] = -64bit ) 64bit-cpu, %N-shlibs
   Files: %lib/gmp5/libgmpxx.*.dylib
   Shlibs: <<
-    %p/%lib/gmp5/libgmpxx.4.dylib 8.0.0 %n (>= 5.1.0-1) %type_num[-64bit]
+    %p/%lib/gmp5/libgmpxx.4.dylib 9.0.0 %n (>= 6.0.0a-1) %type_num[-64bit]
   <<
   Description: Shared C++ library for gmp package
   DocFiles: doc/*.html doc/isa_abi* AUTHORS COPYING* ChangeLog INSTALL NEWS README
