@@ -1,9 +1,9 @@
 Package: gnutls28
-Version: 3.2.12.1
+Version: 3.3.0
 Revision: 0.9
-Source: ftp://ftp.gnutls.org/gcrypt/gnutls/v3.2/gnutls-%v.tar.xz
-Source-MD5: a795db68253d1336f1e3c2ee48c1fee4
-SourceDirectory: gnutls-3.2.12
+Source: ftp://ftp.gnutls.org/gcrypt/gnutls/v3.3/gnutls-%v.tar.xz
+Source-MD5: 4aeb8014feb4016c73a60f4e1ac73c9f
+SourceDirectory: gnutls-%v
 GCC: 4.0
 Depends: %N-shlibs (= %v-%r), libidn-shlibs
 Replaces: gnutls-dev, gnutls, gnutls12, gnutls14, gnutls26, gnutls-2.12
@@ -18,6 +18,8 @@ PatchScript: <<
   #!/bin/bash -ev
   # stdalign.h patch added to circumvent Xcode 4.3.1 issue
   perl -pi -e "s|STDALIGN_H=''|STDALIGN_H='stdalign.h'|g" ./configure
+  #patch around strerror being turned into rpl_strerror
+  perl -pi -e "s|, strerror|, gnutls_strerror|g" tests/openpgp-auth.c tests/openpgp-auth2.c
 <<
 ConfigureParams: <<
   --libdir=%p/lib/gnutls28 \
@@ -40,7 +42,9 @@ CompileScript: <<
 InstallScript: <<
   #!/bin/bash -ev
   make install DESTDIR=%d
-  /bin/mv %i/lib/gnutls28/pkgconfig %i/lib  
+  /bin/mv %i/lib/gnutls28/pkgconfig %i/lib 
+  ##make validator happy
+  perl -pi -e 's|-Wl,-framework -Wl,CoreFoundation|-Wl,-framework,CoreFoundation|g' %i/lib/pkgconfig/gnutls.pc 
 <<
 
 InfoTest: TestScript: make check || exit 2
@@ -57,13 +61,11 @@ SplitOff: <<
     lib/gnutls28/libgnutls.28.dylib
     lib/gnutls28/libgnutls-openssl.27.dylib
     lib/gnutls28/libgnutlsxx.28.dylib
-    lib/gnutls28/libgnutls-xssl.0.dylib
   <<
   Shlibs: <<
-    %p/lib/gnutls28/libgnutls.28.dylib         59.0.0 %n (>= 3.2.12.1-1)
+    %p/lib/gnutls28/libgnutls.28.dylib         65.0.0 %n (>= 3.3.0-1)
     %p/lib/gnutls28/libgnutls-openssl.27.dylib 28.0.0 %n (>= 3.0.8-1)
-    %p/lib/gnutls28/libgnutlsxx.28.dylib       30.0.0 %n (>= 3.2.12.1-1)
-    %p/lib/gnutls28/libgnutls-xssl.0.dylib     1.0.0  %n (>= 3.2.12.1-1)
+    %p/lib/gnutls28/libgnutlsxx.28.dylib       30.0.0 %n (>= 3.3.0-1)
   <<
 <<
 
