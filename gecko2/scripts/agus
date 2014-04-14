@@ -1,0 +1,59 @@
+#!/bin/sh
+# $Id: agus 2187 2011-08-08 10:56:36Z agocke $
+
+unset LANGUAGE
+export LC_ALL=C
+
+if [ $(id -u) -ne 0 ]; then
+	exec sudo "$0"
+fi
+
+BASEDIR="/sw"
+FINKBIN="$BASEDIR/bin"
+FINKGIT="$BASEDIR/git"
+FINKCVS="$BASEDIR/cvs"
+
+. $FINKBIN/init.sh
+
+rv=
+cn=$( ($FINKBIN/dpkg-query -W --showformat='${Version}\n' dpkg) || rv=$? )
+
+cd $FINKGIT
+for dir in *; do
+	cd $FINKGIT/$dir
+	git pull
+done
+
+cd $FINKCVS
+cvs -qz3 up -PAd
+
+for dir in fink fink-mirrors; do
+	cd $FINKGIT/$dir
+	./inject.pl
+done
+cd
+
+$FINKBIN/fink selfupdate || rv=${rv:-$?}
+$FINKBIN/fink scanpackages || rv=${rv:-$?}
+$FINKBIN/apt-get update || rv=${rv:-$?}
+
+$FINKBIN/fink -y update-all || rv=${rv:-$?}
+$FINKBIN/apt-get -fy --purge dist-upgrade || rv=${rv:-$?}
+
+test -x $FINKBIN/apt-file && $FINKBIN/apt-file update || rv=${rv:-$?}
+
+$FINKBIN/apt-get autoclean || rv=${rv:-$?}
+
+$FINKBIN/fink cleanup --debs --srcs --bl  --dpkg-status || rv=${rv:-$?}
+$FINKBIN/dpkg --clear-avail || rv=${rv:-$?}
+
+if $FINKBIN/dpkg --compare-versions "$cn" "<" "1.15.4"; then
+	$FINKBIN/dpkg --forget-old-unavail || rv=${rv:-$?}
+fi
+
+/bin/rm -f $BASEDIR/var/cache/apt/available || rv=${rv:-$?}
+$FINKBIN/apt-cache dumpavail > $BASEDIR/var/cache/apt/available || rv=${rv:-$?}
+$FINKBIN/dpkg --admindir=$BASEDIR/var/lib/dpkg --update-avail $BASEDIR/var/cache/apt/available || true
+/bin/rm -f $BASEDIR/var/cache/apt/available || rv=${rv:-$?}
+
+exit $rv
