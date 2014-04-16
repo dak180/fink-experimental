@@ -1,6 +1,6 @@
 Package: nettle4a
 Version: 2.7.1
-Revision: 0.9
+Revision: 1
 #
 License: GPL
 Maintainer: Dave Reiser <dbreiser@users.sourceforge.net>
@@ -101,4 +101,7 @@ DescPackaging: <<
  
  Had to recover from shlibs policy problem when releasing nettle 2.5 as package nettle4 
  with over-specified install_name for nettle shlibs.
+ 
+ Would like to delete .a files, but tests are hardcoded to them. Something
+ to fix later.
 <<
