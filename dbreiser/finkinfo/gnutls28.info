@@ -11,8 +11,9 @@ Conflicts: gnutls-dev, gnutls, gnutls12, gnutls14, gnutls26, gnutls-2.12
 BuildDepends: <<
   fink (>= 0.32), fink-package-precedence,
   gmp5, libidn, libtool2, libgettext8-dev, libiconv-dev, pkgconfig,
-  nettle4a (>= 2.7-1), libtasn1-6
+  nettle4a (>= 2.7-1), libtasn1-6-dev
 <<
+BuildConflicts: autogen
 BuildDependsOnly: True
 PatchScript: <<
   #!/bin/bash -ev
@@ -26,17 +27,17 @@ ConfigureParams: <<
   --with-libintl-prefix=%p \
   --with-libiconv-prefix=%p \
   --without-p11-kit \
-  --without-autogen \
   --without-tpm \
   --mandir=%p/share/man \
   --infodir=%p/share/info \
   --enable-dependency-tracking \
+  --enable-shared \
+  --disable-static \
   --disable-guile
 <<
 CompileScript: <<
   #!/bin/bash -ev
   %{default_script}
-  sed -i.orig -e '/Requires.private/s| , zlib||' lib/gnutls.pc
   fink-package-precedence --prohibit-bdep=gnutls,gnutls-dev,gnutls12,gnutls14,gnutls26,gnutls-2.12 .
 <<
 InstallScript: <<
