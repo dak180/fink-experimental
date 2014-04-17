@@ -21,6 +21,9 @@ PatchScript: <<
   perl -pi -e "s|STDALIGN_H=''|STDALIGN_H='stdalign.h'|g" ./configure
   #patch around strerror being turned into rpl_strerror
   perl -pi -e "s|, strerror|, gnutls_strerror|g" tests/openpgp-auth.c tests/openpgp-auth2.c
+  #strip unnecessary lines from .pc
+  perl -pi -e "s|^Libs\.private.*\n||g" lib/gnutls.pc.in
+  perl -pi -e "s|\@GNUTLS_REQUIRES_PRIVATE\@\n||g" lib/gnutls.pc.in
 <<
 ConfigureParams: <<
   --libdir=%p/lib/gnutls28 \
@@ -44,8 +47,6 @@ InstallScript: <<
   #!/bin/bash -ev
   make install DESTDIR=%d
   /bin/mv %i/lib/gnutls28/pkgconfig %i/lib 
-  ##make validator happy
-  perl -pi -e 's|-Wl,-framework -Wl,CoreFoundation|-Wl,-framework,CoreFoundation|g' %i/lib/pkgconfig/gnutls.pc 
 <<
 
 InfoTest: TestScript: make check || exit 2
