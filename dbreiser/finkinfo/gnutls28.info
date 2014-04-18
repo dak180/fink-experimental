@@ -1,6 +1,6 @@
 Package: gnutls28
 Version: 3.3.0
-Revision: 0.9
+Revision: 1
 Source: ftp://ftp.gnutls.org/gcrypt/gnutls/v3.3/gnutls-%v.tar.xz
 Source-MD5: 4aeb8014feb4016c73a60f4e1ac73c9f
 SourceDirectory: gnutls-%v
@@ -89,6 +89,10 @@ DescPort: <<
    Version 3.0.8 had new libversions of the two main shlibs, but the same libversion of openssl
    lib as 2.12.x -- so all 3 shlibs are installed in a private dir to allow prior shlibs
    with the same libversion to exist according to policy.
+   
+   autogen 5.18.2 generates a bare -R flag which breaks gnutls make check
+   http://sourceforge.net/p/autogen/bugs/157/
+   Using BuildConflicts: autogen here to force gnutls to use internal substitute
 <<
 License: GPL/LGPL
 Maintainer: Dave Reiser <dbreiser@users.sourceforge.net>
