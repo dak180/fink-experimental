@@ -299,6 +299,17 @@ EOF
 		assemble_clang_rt
 	}
 
+	# need to fix llvm-config to not point to build-dir, but instead
+	# where libc++ headers and libs will be installed.
+	# This is needed because llvm3x-shlibs links to the built
+	# libc++ in the bootstrap process.
+	# Keep this path in sync with libcxx_install_dir elsewhere in this file.
+	fix_llvm_config_build_variables() {
+		sed -i.orig -e '/LLVM_CXXFLAGS/s|%b[^ ]*/include|%p/include/c++/v1|' \
+			-e '/LLVM_LDFLAGS/s|%b[^ ]*/lib|%p/lib/c++|' \
+			tools/llvm-config/BuildVariables.inc
+	}
+
 	build_type=Release
 #	build_type=RelWithDebInfo
 	# do not let cmake auto-detect OSX_SYSROOT
@@ -326,7 +337,7 @@ EOF
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE1_CMAKE_OPTIONS[@]}" $relsrcdir
 	# kill -DNDEBUG with fire
 	sed -i.orig -e 's| -DNDEBUG||g' CMakeCache.txt
-
+	# fix_llvm_config_build_variables # not needed b/c not using libc++ yet
 	# first make fails, but we have to run it first and then fix some deps
 	make -k || recompile_known_units && make || make -j1 VERBOSE=1
 	asm_link_clang_rt
@@ -439,6 +450,7 @@ EOF
 	export LDFLAGS="${STAGE2_COMMON_LDFLAGS[@]} ${STAGE2_LLVM_LDFLAGS[@]} ${FINK_LDFLAGS[@]}"
 	echo "LDFLAGS = $LDFLAGS"
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
+	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
 	asm_link_clang_rt
 	make
@@ -492,6 +504,7 @@ EOF
 	export LDFLAGS="${STAGE2_COMMON_LDFLAGS[@]} ${STAGE2_LLVM_LDFLAGS[@]} ${FINK_LDFLAGS[@]}"
 	echo "LDFLAGS = $LDFLAGS"
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
+	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
 	asm_link_clang_rt
 	make
@@ -706,6 +719,7 @@ else
 	export LDFLAGS="${STAGE2_COMMON_LDFLAGS[@]} ${STAGE2_LLVM_LDFLAGS[@]} ${FINK_LDFLAGS[@]}"
 	echo "LDFLAGS = $LDFLAGS"
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
+	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
 	asm_link_clang_rt
 	make
