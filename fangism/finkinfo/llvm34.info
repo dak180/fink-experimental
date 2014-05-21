@@ -181,6 +181,8 @@ EOF
 	# wrap ccache into single cmd b/c cmake can't handle "ccache g++"
 	mkdir ../opt-bin
 	pushd ../opt-bin
+	  # force use of system make via override path
+	  ln -s /usr/bin/make make
 	  wrap_compiler gcc ccgcc
 	  wrap_compiler g++ ccg++
 	  wrap_compiler gcc-4.2 ccgcc-4.2
@@ -774,7 +776,7 @@ InfoTest: <<
 	test -x %p/bin/bash || { echo "Error: Fink-built bash >= 3.0 required for pipefail!" ; exit 1; }
 	}
 
-	# need path to bootstrapping compiler
+	# need path to bootstrapping compiler, and 'make' link
 	pushd ../opt-bin
 	  export PATH=`pwd`:$PATH
 	popd
@@ -842,6 +844,10 @@ InstallScript: <<
 	#!/bin/sh -ev
 	# "brv" = branch version, 3.4
 	brv=3.4
+	# need 'make' link
+	pushd ../opt-bin
+	  export PATH=`pwd`:$PATH
+	popd
 	pushd ../build/last
 	  make -j1 install/fast DESTDIR="%d"
 	  # install most recent stage libc++
