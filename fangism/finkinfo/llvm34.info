@@ -108,7 +108,6 @@ if ($1 == "cmd.append(exec_path)") {
 }' test/lit.cfg.orig > test/lit.cfg
 	popd
 
-
 	# Do not want -DNDEBUG, cause linker errors (undef symbols)
 	# LLVM_ENABLE_ASSERTIONS:ON should have removed -DNDEBUG
 	# but it doesn't, so hack it out of cmake file
@@ -203,7 +202,8 @@ EOF
 	    wrap_compiler st$s-clang++ cc-st$s-clang++
 	  done
 	  # force system make for testsuite to pass
-	  ln -s /usr/bin/make make
+	  # if you suspect fink-make (4.0?) is troublesome, uncomment:
+	  # ln -s /usr/bin/make make
 	  export PATH=`pwd`:$PATH
 	popd
 
@@ -788,8 +788,12 @@ InfoTest: <<
 # need bash because /bin/sh 2.0 on darwin8 is missing support for pipefail
 # coreutils for gtimeout for tests, see %N.patch:utils/lit/lit/TestRunner.py
 	TestDepends: <<
-		# only darwin8 needs fink's bash
-	#	bash (>= 3.0),
+		# darwin8 needs fink's bash for pipefail
+		# others need fink's bash for operability with python2.7 subprocess
+		bash (>= 4.3),
+		# bash 3.2 was good enough on darwin8
+		# bash 4.2 was good enough on darwin9-12
+		# bash 4.3 good enough on darwin13
 		coreutils
 	<<
  	TestScript: <<
