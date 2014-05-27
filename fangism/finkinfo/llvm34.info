@@ -9,6 +9,8 @@ Maintainer: David Fang <fangism@users.sourceforge.net>
 BuildDepends: <<
 	fink (>= 0.30.0), 
 	cmake (>= 2.8.10.2-1), 
+	# on darwin11+, for libc++
+	xcode (>= 4.6)
 # ccache is optional, for accelerating rebuilds
 #	ccache,
 # polly plug-in needs isl,gmp
@@ -19,9 +21,7 @@ BuildDepends: <<
 	libncurses5-dev,
 # xml and lzma are used to build an uninstalled bin/c-index-test, so bdep-only
 	libxml2,
-	liblzma5,
-	# on darwin11+, for libc++
-	xcode (>= 4.6)
+	liblzma5
 <<
 Depends: %N-shlibs
 # no longer uses cloog directly, only indirectly through isl
