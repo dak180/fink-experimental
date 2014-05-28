@@ -10,7 +10,7 @@ BuildDepends: <<
 	fink (>= 0.30.0), 
 	cmake (>= 2.8.10.2-1), 
 	# on darwin11+, for libc++
-	xcode (>= 4.6)
+	xcode (>= 4.6),
 # ccache is optional, for accelerating rebuilds
 #	ccache,
 # polly plug-in needs isl,gmp
@@ -807,6 +807,14 @@ fi
 fi
 
 # after clang is built, bootstrapped or not, build clang-openmp
+	build_clang_omp=1
+	case "%m" in
+	powerpc) build_clang_omp=0 ;;
+	powerpc64) build_clang_omp=0 ;;
+	esac
+
+	if test "$build_clang_omp" = 1
+	then
 	pushd ../build/last/bin
 	  export PATH=`pwd`:$PATH
 	popd
@@ -819,6 +827,7 @@ fi
 	install -m 644 omp.h %b/../build/last/lib/clang/%v/include
 	popd
 	popd
+	fi
 <<
 InfoTest: <<
 # need bash because /bin/sh 2.0 on darwin8 is missing support for pipefail
@@ -1015,9 +1024,17 @@ InstallScript: <<
 	prefix=%p/$stem
 
 	# clang-openmp
+	build_clang_omp=1
+	case "%m" in
+	powerpc) build_clang_omp=0 ;;
+	powerpc64) build_clang_omp=0 ;;
+	esac
+	if test "$build_clang_omp" = 1
+	then
 	install -m 755 %b/../build/last/lib/libiomp5.dylib $iprefix/lib
 	install_name_tool -id "$prefix/lib/libiomp5.dylib" "$iprefix/lib/libiomp5.dylib"
 	install -m 644 %b/../build/last/lib/clang/%v/include/omp.h $iprefix/lib/clang/%v/include
+	fi
 
 	# need symlink /usr/bin/ld so libLTO.dylib can be found relative to @executable_path
 	pushd $iprefix/bin
@@ -1087,7 +1104,7 @@ SplitOff5: <<
 	Files: <<
 		opt/llvm-3.4/lib/libclang*
 		opt/llvm-3.4/lib/clang/%v/lib
-		opt/llvm-3.4/lib/libiomp5.dylib
+		(%m != powerpc) opt/llvm-3.4/lib/libiomp5.dylib
 	<<
 	DocFiles: <<
 		tools/clang/*.TXT
@@ -1123,7 +1140,7 @@ SplitOff5: <<
 		!%p/opt/llvm-3.4/lib/libclangTooling.dylib
 		!%p/opt/llvm-3.4/lib/clang/%v/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
 		!%p/opt/llvm-3.4/lib/clang/%v/lib/darwin/libclang_rt.asan_iossim_dynamic.dylib
-		%p/opt/llvm-3.4/lib/libiomp5.dylib 5.0.0 %n (>= 3.4.1-0)
+		(%m != powerpc) %p/opt/llvm-3.4/lib/libiomp5.dylib 5.0.0 %n (>= 3.4.1-0)
 	<<
 <<
 SplitOff6: <<
