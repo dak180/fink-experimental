@@ -928,8 +928,8 @@ EOF
 	pushd %b/../openmp-r208472/testsuite
 	  export LIBRARY_PATH="%b/../build/last/lib:%p/lib::/usr/lib"
 	  export C_INCLUDE_PATH="%b/../build/last/lib/clang/%v/include:%p/include:/usr/include"
-	  # hide stderr to mask ld warnings as -Wl,-w is non-functional
-	  make -j1 -k ctest 2>/dev/null || :
+	  # manually prune the ld warnings
+	  make -j1 -k ctest 2>&1 | grep -v "ld: warning: directory not found for option '-L%p/opt/llvm-3.4/lib" || :
 	  export -n LIBRARY_PATH
 	  export -n C_INCLUDE_PATH
 	popd
