@@ -143,6 +143,7 @@ if ($1 == "cmd.append(exec_path)") {
 	pushd ../openmp-r208472
 	  $patch_filter %{PatchFile8} | patch -p0
 	  sed -i.orig -e 's|= gcc|= %b/../build/last/bin/clang-3.4|g' testsuite/Makefile
+	  sed -i.orig -e 's|-fopenmp|-fopenmp -Wl,-w|g' testsuite/Makefile
 	popd
 	
 # needed for gcc-fsf-4.x only
