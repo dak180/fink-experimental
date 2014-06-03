@@ -33519,7 +33519,7 @@ diff -uNr clang-3.4/lib/Serialization/ASTCommon.cpp clang/lib/Serialization/ASTC
  
 diff -uNr clang-3.4/lib/Serialization/ASTReaderDecl.cpp clang/lib/Serialization/ASTReaderDecl.cpp
 --- clang-3.4/lib/Serialization/ASTReaderDecl.cpp	2013-11-03 20:48:18.000000000 -0500
-+++ clang/lib/Serialization/ASTReaderDecl.cpp	2014-05-19 19:58:57.000000000 -0400
++++ clang/lib/Serialization/ASTReaderDecl.cpp	2014-06-01 09:40:40.000000000 -0400
 @@ -35,6 +35,7 @@
  
  namespace clang {
@@ -33591,7 +33591,20 @@ diff -uNr clang-3.4/lib/Serialization/ASTReaderDecl.cpp clang/lib/Serialization/
  //===----------------------------------------------------------------------===//
  // Attribute Reading
  //===----------------------------------------------------------------------===//
-@@ -2565,6 +2615,19 @@
+@@ -1981,7 +2031,11 @@
+ 
+   if (isa<FileScopeAsmDecl>(D) || 
+       isa<ObjCProtocolDecl>(D) || 
+-      isa<ObjCImplDecl>(D))
++      isa<ObjCImplDecl>(D) ||
++      isa<OMPThreadPrivateDecl>(D) ||
++      isa<OMPDeclareSimdDecl>(D) ||
++      isa<OMPDeclareReductionDecl>(D) ||
++      isa<OMPDeclareTargetDecl>(D))
+     return true;
+   if (VarDecl *Var = dyn_cast<VarDecl>(D))
+     return Var->isFileVarDecl() &&
+@@ -2565,6 +2619,19 @@
    case DECL_OMP_THREADPRIVATE:
      D = OMPThreadPrivateDecl::CreateDeserialized(Context, ID, Record[Idx++]);
      break;
@@ -34588,7 +34601,7 @@ diff -uNr clang-3.4/lib/Serialization/ASTReaderStmt.cpp clang/lib/Serialization/
        break;
 diff -uNr clang-3.4/lib/Serialization/ASTWriterDecl.cpp clang/lib/Serialization/ASTWriterDecl.cpp
 --- clang-3.4/lib/Serialization/ASTWriterDecl.cpp	2013-10-25 17:44:50.000000000 -0400
-+++ clang/lib/Serialization/ASTWriterDecl.cpp	2014-05-19 19:58:57.000000000 -0400
++++ clang/lib/Serialization/ASTWriterDecl.cpp	2014-06-01 09:40:40.000000000 -0400
 @@ -32,7 +32,7 @@
  
  namespace clang {
@@ -34656,6 +34669,17 @@ diff -uNr clang-3.4/lib/Serialization/ASTWriterDecl.cpp clang/lib/Serialization/
  //===----------------------------------------------------------------------===//
  // ASTWriter Implementation
  //===----------------------------------------------------------------------===//
+@@ -1818,7 +1862,9 @@
+   // implementation container always is.
+ 
+   // File scoped assembly or obj-c implementation must be seen.
+-  if (isa<FileScopeAsmDecl>(D) || isa<ObjCImplDecl>(D))
++  if (isa<FileScopeAsmDecl>(D) || isa<ObjCImplDecl>(D) ||
++      isa<OMPThreadPrivateDecl>(D) || isa<OMPDeclareSimdDecl>(D) ||
++      isa<OMPDeclareTargetDecl>(D) || isa<OMPDeclareReductionDecl>(D))
+     return true;
+ 
+   return Context.DeclMustBeEmitted(D);
 diff -uNr clang-3.4/lib/Serialization/ASTWriterStmt.cpp clang/lib/Serialization/ASTWriterStmt.cpp
 --- clang-3.4/lib/Serialization/ASTWriterStmt.cpp	2013-10-01 01:32:34.000000000 -0400
 +++ clang/lib/Serialization/ASTWriterStmt.cpp	2014-05-19 19:58:57.000000000 -0400
