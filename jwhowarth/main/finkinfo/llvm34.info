@@ -143,7 +143,6 @@ if ($1 == "cmd.append(exec_path)") {
 	pushd ../openmp-r208472
 	  $patch_filter %{PatchFile8} | patch -p0
 	  sed -i.orig -e 's|= gcc|= %b/../build/last/bin/clang-3.4|g' testsuite/Makefile
-	  sed -i.orig -e 's|-fopenmp|-fopenmp -Wl,-w|g' testsuite/Makefile
 	popd
 	
 # needed for gcc-fsf-4.x only
@@ -929,7 +928,8 @@ EOF
 	pushd %b/../openmp-r208472/testsuite
 	  export LIBRARY_PATH="%b/../build/last/lib:%p/lib::/usr/lib"
 	  export C_INCLUDE_PATH="%b/../build/last/lib/clang/%v/include:%p/include:/usr/include"
-	  make -j1 -k ctest || :
+	  # hide stderr to mask ld warnings as -Wl,-w is non-functional
+	  make -j1 -k ctest 2>/dev/null || :
 	  export -n LIBRARY_PATH
 	  export -n C_INCLUDE_PATH
 	popd
