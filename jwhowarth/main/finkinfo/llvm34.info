@@ -926,10 +926,10 @@ EOF
 
 # test clang-openmp
 	pushd %b/../openmp-r208472/testsuite
-	  export DYLD_LIBRARY_PATH="%b/../build/last/lib:%p/lib::/usr/lib"
+	  export LIBRARY_PATH="%b/../build/last/lib:%p/lib::/usr/lib"
 	  export C_INCLUDE_PATH="%b/../build/last/lib/clang/%v/include:%p/include:/usr/include"
 	  make -j1 -k ctest || :
-	  export -n DYLD_LIBRARY_PATH
+	  export -n LIBRARY_PATH
 	  export -n C_INCLUDE_PATH
 	popd
 
