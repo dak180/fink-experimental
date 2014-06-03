@@ -924,6 +924,7 @@ EOF
 	popd
 
 # pwd: ../build/last
+	echo "******** Running included openmp tests ... ********"
 # test clang-openmp
 	build_clang_omp=1
 	case "%m" in
