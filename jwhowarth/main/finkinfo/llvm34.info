@@ -63,7 +63,7 @@ PatchFile6-MD5: 209ed2b55c1fcd73073b92112dada0ae
 PatchFile7: %n-clang-iomp5.patch
 PatchFile7-MD5: 7e4ff3be5b6c64736797b11d824d7365
 PatchFile8: %n-openmp-cmake.patch
-PatchFile8-MD5: a54bc5845d85ea503f06badd43e12387
+PatchFile8-MD5: 14bff4462485272ac350289a197aaaf3 
 
 PatchScript: <<
 	#!/bin/sh -ev
