@@ -1,8 +1,8 @@
 Index: runtime/src/CMakeLists.txt
 ===================================================================
---- runtime/src/CMakeLists.txt	(revision 0)
-+++ runtime/src/CMakeLists.txt	(working copy)
-@@ -0,0 +1,146 @@
+--- runtime/src/CMakeLists.txt  (revision 0)
++++ runtime/src/CMakeLists.txt  (working copy)
+@@ -0,0 +1,160 @@
 +project(openmp)
 +cmake_minimum_required(VERSION 2.8)
 +
@@ -81,6 +81,11 @@ Index: runtime/src/CMakeLists.txt
 +set(COMMON_FLAGS "${COMMON_FLAGS} -Wno-deprecated-register")
 +set(COMMON_FLAGS "${COMMON_FLAGS} -fno-exceptions")
 +
++# Disable use of EBP as general purpose register.
++if(NOT ${ARCH} STREQUAL "32e")
++	set(COMMON_FLAGS "${COMMON_FLAGS} -m32 -fno-omit-frame-pointer")
++endif()
++
 +set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FEATURE_FLAGS} ${COMMON_FLAGS}")
 +set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FEATURE_FLAGS} ${COMMON_FLAGS}")
 +
@@ -135,10 +140,19 @@ Index: runtime/src/CMakeLists.txt
 +  OUTPUT omp.h
 +    COMMAND perl ${CMAKE_CURRENT_SOURCE_DIR}/../tools/expand-vars.pl --strict -D Revision=\"\\$$Revision\" -D Date=\"\\$$Date\" -D KMP_TYPE=\"Performance\" -D KMP_ARCH=\"\\\"${ARCH_STR}\\\"\" -D KMP_VERSION_MAJOR=${VERSION} -D KMP_VERSION_MINOR=0 -D KMP_VERSION_BUILD=00000000 -D KMP_BUILD_DATE=\"${BUILD_TIME} UTC\" -D KMP_TARGET_COMPILER=12 -D KMP_DIAG=0 -D KMP_DEBUG_INFO=0 -D OMP_VERSION=${OMP_VERSION} ${CMAKE_CURRENT_SOURCE_DIR}/include/${OMP_VERSION_NUM}/omp.h.var omp.h
 +)
-+add_custom_command(
-+  OUTPUT z_Linux_asm.o
-+    COMMAND ${CMAKE_CXX_COMPILER} -c -o z_Linux_asm.o -D KMP_ASM_INTRINS -D KMP_GOMP_COMPAT -D KMP_ARCH_X86_64 -x assembler-with-cpp ${CMAKE_CURRENT_SOURCE_DIR}/${ASM_SOURCES}
-+)
++
++if(NOT ${ARCH} STREQUAL "32e")
++  add_custom_command(
++    OUTPUT z_Linux_asm.o
++      COMMAND ${CMAKE_CXX_COMPILER} -m32 -fno-omit-frame-pointer -c -o z_Linux_asm.o -D KMP_ASM_INTRINS -D KMP_GOMP_COMPAT -D KMP_ARCH_X86 -x assembler-with-cpp ${CMAKE_CURRENT_SOURCE_DIR}/${ASM_SOURCES}
++  )
++else()
++  add_custom_command(
++    OUTPUT z_Linux_asm.o
++      COMMAND ${CMAKE_CXX_COMPILER} -c -o z_Linux_asm.o -D KMP_ASM_INTRINS -D KMP_GOMP_COMPAT -D KMP_ARCH_X86_64 -x assembler-with-cpp ${CMAKE_CURRENT_SOURCE_DIR}/${ASM_SOURCES}
++  )
++endif()
++
 +
 +add_custom_target(gen_kmp_i18n DEPENDS kmp_i18n_id.inc kmp_i18n_default.inc omp.h z_Linux_asm.o)
 +
