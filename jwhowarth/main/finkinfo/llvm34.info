@@ -63,7 +63,7 @@ PatchFile6-MD5: 209ed2b55c1fcd73073b92112dada0ae
 PatchFile7: %n-clang-iomp5.patch
 PatchFile7-MD5: 7e4ff3be5b6c64736797b11d824d7365
 PatchFile8: %n-openmp-cmake.patch
-PatchFile8-MD5: 647a9ecc8ca39bcb9a73eb9a2e7512f3
+PatchFile8-MD5: a54bc5845d85ea503f06badd43e12387
 
 PatchScript: <<
 	#!/bin/sh -ev
@@ -417,7 +417,7 @@ EOF
 	popd
 	# wd: %b
 	# create some empty test logs, which we may overwrite and install to docs
-	for f in ../build/stage1/{llvm,clang,polly,compiler-rt}-$version-check.log
+	for f in ../build/stage1/{llvm,clang,polly,compiler-rt,openmp}-$version-check.log
 	do echo "Stage 1 Tests were not run." > $f
 	done
 	echo "######## END of BOOTSTRAP STAGE 1: built llvm/clang with the system compiler"
@@ -530,7 +530,7 @@ then
 	  ln -s ../build/stage2/bin/clang++ st2-clang++
 	popd
 	# wd: %b
-	for f in ../build/stage2/{llvm,clang,polly,compiler-rt}-$version-check.log
+	for f in ../build/stage2/{llvm,clang,polly,compiler-rt,openmp}-$version-check.log
 	do echo "Stage 2 Tests were not run." > $f
 	done
 	echo "######## END of BOOTSTRAP STAGE 2: built llvm/clang with stage 1 clang"
@@ -584,7 +584,7 @@ then
 	  ln -s ../build/stage3/bin/clang++ st3-clang++
 	popd
 	# wd: %b
-	for f in ../build/stage3/{llvm,clang,polly,compiler-rt}-$version-check.log
+	for f in ../build/stage3/{llvm,clang,polly,compiler-rt,openmp}-$version-check.log
 	do echo "Stage 3 Tests were not run." > $f
 	done
 	echo "######## END of BOOTSTRAP STAGE 3: built llvm/clang with stage 2 clang"
@@ -799,7 +799,7 @@ else
 	ln -s stage4 last
 	popd
 	# wd: %b
-	for f in ../build/stage4/{llvm,clang,polly,compiler-rt}-$version-check.log
+	for f in ../build/stage4/{llvm,clang,polly,compiler-rt,openmp}-$version-check.log
 	do echo "Stage 4 Tests were not run." > $f
 	done
 	echo "######## END of BOOTSTRAP STAGE 4: built llvm/clang with stage 3 clang"
@@ -824,20 +824,27 @@ fi
 	powerpc) build_clang_omp=0 ;;
 	powerpc64) build_clang_omp=0 ;;
 	esac
-
 	if test "$build_clang_omp" = 1
 	then
 	pushd ../build/last/bin
 	  export PATH=`pwd`:$PATH
 	popd
 	pushd ../openmp-r208472/runtime/src
-	  mkdir build
-	  pushd build
-	    cmake ..
-	    make 
+	  # build FAT, this loop could be parallelized too
+	  for a in 32 32e
+	  do
+	    mkdir build_$a
+	    pushd build_$a
+	      cmake -DARCH=$a ..
+	      make VERBOSE=1
+	    popd
+	  done
+	  mkdir lipo_build
+	  pushd lipo_build
+	    lipo  ../build_32e/libiomp5.dylib ../build_32/libiomp5.dylib -create -o libiomp5.dylib 
 	    # install to build dir first
 	    install -m 755 libiomp5.dylib %b/../build/last/lib
-	    install -m 644 omp.h %b/../build/last/lib/clang/%v/include
+	    install -m 644 ../build_32e/omp.h %b/../build/last/lib/clang/%v/include
 	  popd
 	popd
 	fi
@@ -924,14 +931,25 @@ EOF
 	  ) 2>&1 | tee libcxx-%v-check.log
 	popd
 
+# pwd: ../build/last
+	echo "******** Running included openmp tests ... ********"
 # test clang-openmp
-	pushd %b/../openmp-r208472/testsuite
+	build_clang_omp=1
+	case "%m" in
+	powerpc) build_clang_omp=0 ;;
+	powerpc64) build_clang_omp=0 ;;
+	esac
+	if test "$build_clang_omp" = 1
+	then
+	( pushd %b/../openmp-r208472/testsuite
 	  export LIBRARY_PATH="%b/../build/last/lib:%p/lib"
 	  export DYLD_LIBRARY_PATH="%b/../build/last/lib:%p/lib"
 	  export C_INCLUDE_PATH="%b/../build/last/lib/clang/%v/include:%p/include:/usr/include"
 	  # manually prune the ld warnings
 	  make -j1 -k ctest 2>&1 | grep -v "ld: warning: directory not found for option '-L%p/opt/llvm-3.4/lib" || :
 	popd
+	) 2>&1 | tee openmp-%v-check.log
+	fi
 
 #	echo "******** Running massive test-suite ... ********"
 #	( cd projects/test-suite ; make -k 2>&1 || : ;) | tee test-suite-%v-check.log
@@ -1103,6 +1121,7 @@ SplitOff2: <<
 		opt/llvm-3.4/share/doc/clang
 		opt/llvm-3.4/share/doc/clang-html
 		opt/llvm-3.4/share/doc/%N/testlogs/clang-%v-check.log
+		opt/llvm-3.4/share/doc/%N/testlogs/openmp-%v-check.log
 		opt/llvm-3.4/share/doc/%N/testlogs/compiler-rt-%v-check.log
 	<<
 <<
