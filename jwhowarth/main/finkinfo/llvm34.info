@@ -830,21 +830,19 @@ fi
 	  export PATH=`pwd`:$PATH
 	popd
 	pushd ../openmp-r208472/runtime
-	  # build FAT, this loop could be parallelized too
-	  for a in 32 32e
-	  do
-	    mkdir build_$a
-	    pushd build_$a
+	  mkdir build
+	  pushd build
+	    for a in 32 32e
+	    do
+	      # http://lists.cs.uiuc.edu/pipermail/openmp-dev/2014-June/000208.html
+	      rm -fr *
 	      cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -Dos=mac -Darch=$a ..
-	      make all common VERBOSE=1
-	    popd
-	  done
-	  mkdir lipo_build
-	  pushd lipo_build
-	    lipo  ../build_32e/libiomp5.dylib ../build_32/libiomp5.dylib -create -o libiomp5.dylib 
+	      make
+	    done
+	    make fat
 	    # install to build dir first
-	    install -m 755 libiomp5.dylib %b/../build/last/lib
-	    install -m 644 ../build_32e/omp.h %b/../build/last/lib/clang/%v/include
+	    install -m 755 ../exports/mac_32e/lib/libiomp5.dylib %b/../build/last/lib
+	    install -m 644 omp.h %b/../build/last/lib/clang/%v/include
 	  popd
 	popd
 	fi
