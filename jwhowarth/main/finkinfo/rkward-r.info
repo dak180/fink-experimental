@@ -48,7 +48,10 @@ pushd build
 	-DBUNDLE_INSTALL_DIR=%p/Applications \
 	-DNO_R_XML=1 \
 	-DRKVERSION_NUMBER=%type_raw[rversion] \
+	-DR_HOME=%p/Library/Frameworks/R.framework/Versions/%type_raw[rversion]/Resources \
 	-DR_EXECUTABLE=%p/Library/Frameworks/R.framework/Versions/%type_raw[rversion]/Resources/bin/R \
+	-DR_INCLUDEDIR=%p/Library/Frameworks/R.framework/Versions/%type_raw[rversion]/PrivateHeaders \
+	-DR_LIBDIR=%p/Library/Frameworks/R.framework/Versions/%type_raw[rversion]/Resources/site-library \
 	..
 	make
 popd
@@ -64,8 +67,8 @@ PostInstScript: <<
 if [ ! -e /Applications/Fink ]; then
 	/usr/bin/install -d -m 755 /Applications/Fink
 fi
-if [ -e /Applications/Fink/RKWard.app ]; then
-	ln -sf %p/Applications/RKWard.app /Applications/Fink/RKWard.app
+if [ ! -e /Applications/Fink/RKWard.app ]; then
+	ln -s %p/Applications/RKWard.app /Applications/Fink/RKWard.app
 fi
 <<
 PreRmScript: <<
