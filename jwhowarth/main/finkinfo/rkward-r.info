@@ -12,6 +12,7 @@ PatchFile-MD5: ebe16cec04f8829fcd49f492f482673a
 Depends: <<
 	kdelibs4-mac-shlibs,
 	libgettext8-shlibs,
+	libkatepartinterfaces4-mac-shlibs,
 	qt4-base-mac-qtcore-shlibs,
 	qt4-base-mac-qtgui-shlibs,
 	qt4-base-mac-qtnetwork-shlibs,
@@ -76,7 +77,14 @@ if [ $1 != "upgrade" ]; then
 	rm -f /Applications/Fink/RKWard.app
 fi
 <<
+DescDetail: <<
+RKWard aims to provide an easily extensible, easy to use IDE/GUI for the
+R-project. RKWard tries to combine the power of the R-language with the
+(relative) ease of use of commercial statistics tools. Long term plans
+include integration with office suites
+<<
 DescPort: <<
+Use patch-rkward-rbackend-rkstructuregetter.cpp.diff patch.
 <<
 License: GPL
 Homepage: http://rkward.sourceforge.net
