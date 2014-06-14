@@ -4,9 +4,10 @@ Version: 0.6.1
 Revision: 1
 Description: KDE IDE for R
 Type: rversion (2.15 3.0 3.1)
-Source: http://hivelocity.dl.sourceforge.net/project/rkward/Current_Stable_Releases/rkward-%v.tar.gz
+#Source: http://hivelocity.dl.sourceforge.net/project/rkward/Current_Stable_Releases/rkward-%v.tar.gz
+Source: mirror:sourceforge:rkward/Current_Stable_Releases/rkward-%v.tar.gz
 Source-MD5: aa2c16c4b76f729289bd2853fa4da2a8
-PatchFile: rkward.patch
+PatchFile: rkward-r.patch
 PatchFile-MD5: ebe16cec04f8829fcd49f492f482673a 
 Depends: <<
 	kdelibs4-mac-shlibs,
@@ -43,7 +44,12 @@ export KDE4_PREFIX="%p" KDE4_TYPE="mac"
 
 mkdir -p build
 pushd build
-	cmake $KDE4_CMAKE_ARGS -DBUNDLE_INSTALL_DIR=%p/Applications -DNO_R_XML=1 -DRKVERSION_NUMBER=%type_raw[rversion] -DR_EXECUTABLE=%p/Library/Frameworks/R.framework/Versions/%type_raw[rversion]/Resources/bin/R -DCMAKE_BUILD_TYPE=Release ..
+	cmake $KDE4_CMAKE_ARGS \
+	-DBUNDLE_INSTALL_DIR=%p/Applications \
+	-DNO_R_XML=1 \
+	-DRKVERSION_NUMBER=%type_raw[rversion] \
+	-DR_EXECUTABLE=%p/Library/Frameworks/R.framework/Versions/%type_raw[rversion]/Resources/bin/R \
+	..
 	make
 popd
 <<
@@ -55,11 +61,16 @@ popd
 <<
 DocFiles: README TODO
 PostInstScript: <<
-ln -sf %p/Applications/RKWard.app /Applications/fink/RKWard.app
+if [ ! -e /Applications/Fink ]; then
+	/usr/bin/install -d -m 755 /Applications/Fink
+fi
+if [ -e /Applications/Fink/RKWard.app ]; then
+	ln -sf %p/Applications/RKWard.app /Applications/Fink/RKWard.app
+fi
 <<
 PreRmScript: <<
 if [ $1 != "upgrade" ]; then
-  rm -f /Applications/fink/RKWard.app
+	rm -f /Applications/Fink/RKWard.app
 fi
 <<
 DescPort: <<
