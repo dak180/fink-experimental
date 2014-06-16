@@ -456,10 +456,8 @@ EOF
 		LIBCXX_CMAKE_OPTIONS=( "${LIBCXX_CMAKE_OPTIONS[@]}" \
 			-DLIBCXX_LIBCXXABI_INCLUDE_PATHS="$abi_includes" )
 	fi
-	# on darwin10, build FAT
-	if test $darwin_vers = 10
-	then flags="$flags -arch i386 -arch x86_64"
-	fi
+	# build FAT
+	flags="$flags -arch i386 -arch x86_64"
 	LIBCXX_CMAKE_OPTIONS=( "${LIBCXX_CMAKE_OPTIONS[@]}" \
 		-DCMAKE_INSTALL_PREFIX=$fink_root \
 		-DLIBCXX_ENABLE_ASSERTIONS:BOOL=$enable_assertions \
