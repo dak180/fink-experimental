@@ -1,7 +1,7 @@
 Info3: <<
 Package: llvm34
 Version: 3.4.2
-Revision: 0a
+Revision: 0b
 Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
@@ -183,15 +183,15 @@ CompileScript: <<
 		-DCMAKE_OSX_SYSROOT:STRING=/ \
 		-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING= )
 
-	# just always build these archs
-	case "$build_arch" in
-	ppc*|powerpc*) TARGET_ARCHS="PowerPC" ;;
-	i386*|x86*) TARGET_ARCHS="X86" ;;
-	esac
-	echo "Target option: $TARGET_ARCHS"
-	# to enable cross-compiling to other archs, uncomment the following:
-	# TARGET_ARCHS="X86;PowerPC;ARM"
+	# always build the native archs' backends
+#	case "$build_arch" in
+#	ppc*|powerpc*) TARGET_ARCHS="PowerPC" ;;
+#	i386*|x86*) TARGET_ARCHS="X86" ;;
+#	esac
+	# enable cross-compiling to other archs:
+	TARGET_ARCHS="X86;PowerPC;ARM"
 	# TARGET_ARCHS="all"
+	echo "Target option: $TARGET_ARCHS"
 	LLVM_CMAKE_OPTIONS=( "${LLVM_CMAKE_OPTIONS[@]}" -DLLVM_TARGETS_TO_BUILD="$TARGET_ARCHS" )
 
 	# automatically use ccache if detected
@@ -1282,6 +1282,12 @@ SplitOff12: <<
 		!%p/opt/llvm-3.4/lib/libLTO.dylib
 		!%p/opt/llvm-3.4/lib/BugpointPasses.so
 		!%p/opt/llvm-3.4/lib/LLVMHello.so
+		!%p/opt/llvm-3.4/lib/libLLVMARMAsmParser.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMARMAsmPrinter.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMARMCodeGen.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMARMDesc.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMARMDisassembler.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMARMInfo.dylib
 		!%p/opt/llvm-3.4/lib/libLLVMAnalysis.dylib
 		!%p/opt/llvm-3.4/lib/libLLVMAsmParser.dylib
 		!%p/opt/llvm-3.4/lib/libLLVMAsmPrinter.dylib
@@ -1305,11 +1311,11 @@ SplitOff12: <<
 		!%p/opt/llvm-3.4/lib/libLLVMObjCARCOpts.dylib
 		!%p/opt/llvm-3.4/lib/libLLVMObject.dylib
 		!%p/opt/llvm-3.4/lib/libLLVMOption.dylib
-		(%m = powerpc) !%p/opt/llvm-3.4/lib/libLLVMPowerPCAsmParser.dylib
-		(%m = powerpc) !%p/opt/llvm-3.4/lib/libLLVMPowerPCAsmPrinter.dylib
-		(%m = powerpc) !%p/opt/llvm-3.4/lib/libLLVMPowerPCCodeGen.dylib
-		(%m = powerpc) !%p/opt/llvm-3.4/lib/libLLVMPowerPCDesc.dylib
-		(%m = powerpc) !%p/opt/llvm-3.4/lib/libLLVMPowerPCInfo.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMPowerPCAsmParser.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMPowerPCAsmPrinter.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMPowerPCCodeGen.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMPowerPCDesc.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMPowerPCInfo.dylib
 		!%p/opt/llvm-3.4/lib/libLLVMRuntimeDyld.dylib
 		!%p/opt/llvm-3.4/lib/libLLVMScalarOpts.dylib
 		!%p/opt/llvm-3.4/lib/libLLVMSelectionDAG.dylib
@@ -1320,13 +1326,13 @@ SplitOff12: <<
 		!%p/opt/llvm-3.4/lib/libLLVMVectorize.dylib
 		!%p/opt/llvm-3.4/lib/libLLVMipa.dylib
 		!%p/opt/llvm-3.4/lib/libLLVMipo.dylib
-		(%m != powerpc) !%p/opt/llvm-3.4/lib/libLLVMX86AsmParser.dylib
-		(%m != powerpc) !%p/opt/llvm-3.4/lib/libLLVMX86AsmPrinter.dylib
-		(%m != powerpc) !%p/opt/llvm-3.4/lib/libLLVMX86CodeGen.dylib
-		(%m != powerpc) !%p/opt/llvm-3.4/lib/libLLVMX86Desc.dylib
-		(%m != powerpc) !%p/opt/llvm-3.4/lib/libLLVMX86Disassembler.dylib
-		(%m != powerpc) !%p/opt/llvm-3.4/lib/libLLVMX86Info.dylib
-		(%m != powerpc) !%p/opt/llvm-3.4/lib/libLLVMX86Utils.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMX86AsmParser.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMX86AsmPrinter.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMX86CodeGen.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMX86Desc.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMX86Disassembler.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMX86Info.dylib
+		!%p/opt/llvm-3.4/lib/libLLVMX86Utils.dylib
 		!%p/opt/llvm-3.4/lib/libgtest.dylib
 		!%p/opt/llvm-3.4/lib/libgtest_main.dylib
 	<<
@@ -1410,9 +1416,10 @@ and libraries in %p/lib/c++/, so opt to use them, pass to clang:
 -cxx-isystem %p/include/c++/v1 -L%p/lib/c++
 Otherwise the default is to use the system's libc++.
 
+openmp runtime is installed privately under clang's per-version resource dir.
+
 Built with shared-libraries to reduce the binary size and peak disk usage.
-Enabled only native targets X86, PowerPC.
-Other targets can be enabled by uncommenting lines in the CompileScript.
+Targets enabled in CompileScript: X86, PowerPC, ARM.
 <<
 DescPort: <<
 Most of the patches are maintained at fangism's powerpc-darwin8 branches
@@ -1424,8 +1431,8 @@ of the llvm, clang, compiler-rt projects hosted at github:
 
 On darwin>9 and x86 architectures, the package build is done as a
 3-stage bootstrap (self-host), now including a built libc++.  
-When stage 2 and 3 of bootstrap miscompare, a 4th stage is done, 
-and then compared against stage 3.  
+Should stage 2 vs. 3 of bootstrap miscompare, a 4th stage is done, 
+and then compared against stage 3 (only expected on darwin10).  
 
 	*** LLVM/Clang-3.4 still has some codegen issues for PowerPC
 	*** It is NOT considered production quality for PowerPC
