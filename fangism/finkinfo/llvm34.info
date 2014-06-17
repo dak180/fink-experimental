@@ -1,7 +1,7 @@
 Info3: <<
 Package: llvm34
-Version: 3.4.1
-Revision: 0g
+Version: 3.4.2
+Revision: 0a
 Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
@@ -30,9 +30,9 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.gz
-Source-MD5: b90697f4de35563ad6c35924defa8dd1
+Source-MD5: a20669f75967440de949ac3b1bad439c
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.gz
-Source2-MD5: c64fdc567383211c9ac212d6f7b69263
+Source2-MD5: 87945973b7c73038871c5f849a818588
 Source3: http://llvm.org/releases/3.4/compiler-rt-3.4.src.tar.gz
 Source3-MD5: 7938353e3a3bda85733a165e7ac4bb84
 Source4: http://llvm.org/releases/3.4/polly-3.4.src.tar.gz
@@ -456,8 +456,8 @@ EOF
 		LIBCXX_CMAKE_OPTIONS=( "${LIBCXX_CMAKE_OPTIONS[@]}" \
 			-DLIBCXX_LIBCXXABI_INCLUDE_PATHS="$abi_includes" )
 	fi
-	# on darwin10, build FAT
-	if test $darwin_vers = 10
+	# on x86 darwin10+, build FAT
+	if test $darwin_vers -ge 10
 	then flags="$flags -arch i386 -arch x86_64"
 	fi
 	LIBCXX_CMAKE_OPTIONS=( "${LIBCXX_CMAKE_OPTIONS[@]}" \
@@ -830,21 +830,19 @@ fi
 	  export PATH=`pwd`:$PATH
 	popd
 	pushd ../openmp-r208472/runtime
-	  # build FAT, this loop could be parallelized too
-	  for a in 32 32e
-	  do
-	    mkdir build_$a
-	    pushd build_$a
+	  mkdir build
+	  pushd build
+	    for a in 32 32e
+	    do
+	      # http://lists.cs.uiuc.edu/pipermail/openmp-dev/2014-June/000208.html
+	      rm -fr *
 	      cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -Dos=mac -Darch=$a ..
-	      make all common VERBOSE=1
-	    popd
-	  done
-	  mkdir lipo_build
-	  pushd lipo_build
-	    lipo  ../build_32e/libiomp5.dylib ../build_32/libiomp5.dylib -create -o libiomp5.dylib 
+	      make
+	    done
+	    make fat
 	    # install to build dir first
-	    install -m 755 libiomp5.dylib %b/../build/last/lib
-	    install -m 644 ../build_32e/omp.h %b/../build/last/lib/clang/%v/include
+	    install -m 755 ../exports/mac_32e/lib/libiomp5.dylib %b/../build/last/lib
+	    install -m 644 omp.h %b/../build/last/lib/clang/%v/include
 	  popd
 	popd
 	fi
@@ -916,6 +914,7 @@ EOF
 	pushd ../last-libcxx
 	  ( case $darwin_vers in
 	    # we built FAT, but must test each arch separately
+	    # TODO: double-test on darwin11+
 	    10) sed -e '/cxx_flags/s| -arch x86_64||' test/lit.site.cfg > test/lit.site.cfg.32
 	      sed -e '/cxx_flags/s| -arch i386||' test/lit.site.cfg > test/lit.site.cfg.64
 	      echo "******** Checking -arch i386 (32b):"
