@@ -1,0 +1,135 @@
+--- w/Source/WebCore/platform/text/TextCodecUTF8.h.orig	2012-04-12 17:24:24.000000000 -0700
++++ w/Source/WebCore/platform/text/TextCodecUTF8.h	2012-04-12 17:46:05.000000000 -0700
+@@ -28,6 +28,9 @@
+ 
+ #include "TextCodec.h"
+ 
++/* https://bugs.webkit.org/show_bug.cgi?id=65811 */
++#include "../../../JavaScriptCore/icu/unicode/utf8.h"
++
+ namespace WebCore {
+ 
+ class TextCodecUTF8 : public TextCodec {
+--- w/Source/WTF/wtf/Assertions.h.orig	2013-01-18 15:03:57.000000000 -0800
++++ w/Source/WTF/wtf/Assertions.h	2013-01-18 15:04:46.000000000 -0800
+@@ -381,7 +381,8 @@ while (0)
+ // a function. Hence it uses macro naming convention.
+ #pragma clang diagnostic push
+ #pragma clang diagnostic ignored "-Wmissing-noreturn"
+-static inline void UNREACHABLE_FOR_PLATFORM()
++__attribute__ ((__always_inline__))
++static __inline__ void UNREACHABLE_FOR_PLATFORM()
+ {
+     ASSERT_NOT_REACHED();
+ }
+diff -Naurp webkitgtk-1.10.2.orig/Source/JavaScriptCore/tools/CodeProfile.cpp webkitgtk-1.10.2/Source/JavaScriptCore/tools/CodeProfile.cpp
+--- w/Source/JavaScriptCore/tools/CodeProfile.cpp	2013-01-31 22:39:07.000000000 -0800
++++ w/Source/JavaScriptCore/tools/CodeProfile.cpp	2013-01-31 22:42:01.000000000 -0800
+@@ -36,7 +36,6 @@
+ #if OS(DARWIN)
+ #include <cxxabi.h>
+ #include <dlfcn.h>
+-#include <execinfo.h>
+ #endif
+ 
+ namespace JSC {
+diff -Naurp webkitgtk-1.10.2.orig/Source/WTF/wtf/Assertions.cpp webkitgtk-1.10.2/Source/WTF/wtf/Assertions.cpp
+--- w/Source/WTF/wtf/Assertions.cpp	2012-11-23 12:12:16.000000000 -0800
++++ w/Source/WTF/wtf/Assertions.cpp	2013-01-31 22:43:57.000000000 -0800
+@@ -61,8 +61,11 @@
+ #if (OS(DARWIN) || OS(LINUX)) && !OS(ANDROID)
+ #include <cxxabi.h>
+ #include <dlfcn.h>
++#include <AvailabilityMacros.h>
++#if !OS(DARWIN) || MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
+ #include <execinfo.h>
+ #endif
++#endif
+ 
+ #if OS(ANDROID)
+ #include "android/log.h"
+@@ -242,7 +245,7 @@ void WTFReportArgumentAssertionFailure(c
+ 
+ void WTFGetBacktrace(void** stack, int* size)
+ {
+-#if (OS(DARWIN) || (OS(LINUX) && !defined(__UCLIBC__))) && !OS(ANDROID)
++#if ((OS(DARWIN) && MAC_OS_X_VERSION_MAX_ALLOWED >= 1050) || (OS(LINUX) && !defined(__UCLIBC__))) && !OS(ANDROID)
+     *size = backtrace(stack, *size);
+ #elif OS(WINDOWS) && !OS(WINCE)
+     // The CaptureStackBackTrace function is available in XP, but it is not defined
+--- w/Source/autotools/FindDependencies.m4.orig	2013-03-07 19:18:41.000000000 -0800
++++ w/Source/autotools/FindDependencies.m4	2013-03-07 19:18:48.000000000 -0800
+@@ -108,10 +108,6 @@ GLIB_GSETTINGS
+ 
+ # TODO: use pkg-config (after CFLAGS in their .pc files are cleaned up).
+ case "$host" in
+-    *-*-darwin*)
+-        UNICODE_CFLAGS="-I$srcdir/Source/JavaScriptCore/icu -I$srcdir/Source/WebCore/icu"
+-        UNICODE_LIBS="-licucore"
+-        ;;
+     *-*-mingw*)
+         UNICODE_CFLAGS=""
+         UNICODE_LIBS="-licui18n -licuuc"
+--- w/Source/WebCore/platform/Length.cpp.orig	2012-11-23 14:12:17.000000000 -0600
++++ w/Source/WebCore/platform/Length.cpp	2013-01-28 15:38:17.000000000 -0600
+@@ -249,10 +249,12 @@
+     return isCalculated() && (calculationValue() == o.calculationValue() || *calculationValue() == *o.calculationValue());
+ }
+ 
++#ifndef __ppc__
+ struct SameSizeAsLength {
+     int32_t value;
+     int32_t metaData;
+ };
+ COMPILE_ASSERT(sizeof(Length) == sizeof(SameSizeAsLength), length_should_stay_small);
++#endif
+ 
+ } // namespace WebCore
+--- w/Source/WebCore/bridge/npruntime_internal-orig.h	2013-07-19 00:04:01.000000000 -0700
++++ w/Source/WebCore/bridge/npruntime_internal.h	2013-08-12 16:04:17.000000000 -0700
+@@ -29,7 +29,7 @@
+ #include "npfunctions.h"
+ #include "npruntime.h"
+ 
+-#ifdef XP_UNIX
++#if PLATFORM(X11)
+     #include <X11/Xresource.h>
+ 
+     #undef None
+--- w/Source/WebCore/plugins/PluginView-orig.cpp	2013-07-19 00:04:11.000000000 -0700
++++ w/Source/WebCore/plugins/PluginView.cpp	2013-08-12 17:48:20.000000000 -0700
+@@ -865,7 +865,7 @@
+     , m_contextRef(0)
+     , m_fakeWindow(0)
+ #endif
+-#if defined(XP_UNIX) && ENABLE(NETSCAPE_PLUGIN_API)
++#if PLATFORM(X11) && ENABLE(NETSCAPE_PLUGIN_API)
+     , m_hasPendingGeometryChange(true)
+     , m_drawable(0)
+     , m_visual(0)
+--- w/Source/WebCore/plugins/PluginView-orig.h	2013-07-19 00:04:11.000000000 -0700
++++ w/Source/WebCore/plugins/PluginView.h	2013-08-12 16:09:21.000000000 -0700
+@@ -427,7 +427,7 @@
+         Point mousePosForPlugin(MouseEvent* event = 0) const;
+ #endif
+ 
+-#if defined(XP_UNIX) && ENABLE(NETSCAPE_PLUGIN_API)
++#if PLATFORM(X11) && ENABLE(NETSCAPE_PLUGIN_API)
+         bool m_hasPendingGeometryChange;
+         Pixmap m_drawable;
+         Visual* m_visual;
+--- w/Source/JavaScriptCore/offlineasm/offsets.rb.orig	2012-11-23 14:12:16.000000000 -0600
++++ w/Source/JavaScriptCore/offlineasm/offsets.rb	2013-01-22 19:35:47.000000000 -0600
+@@ -109,7 +109,11 @@
+     File.open(file, "r") {
+         | inp |
+         loop {
+-            byte = inp.getbyte
++            if RUBY_VERSION >= '1.8.7'
++              byte = inp.getbyte
++            else
++              byte = inp.getc
++            end
+             break unless byte
+             fileBytes << byte
+         }

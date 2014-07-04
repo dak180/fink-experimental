@@ -1,0 +1,99 @@
+Package: gobject-introspection
+Version: 1.36.0
+Revision: 0.9
+Description: Middleware between C libs and lang. bindings
+License: LGPL
+Maintainer: The Gnome Core Team <fink-gnome-core@lists.sourceforge.net>
+
+Depends: <<
+	%N-shlibs (= %v-%r),
+	glib2-shlibs (>= 2.36.4-1),
+	libffi6-shlibs
+<<
+BuildDepends: <<
+	fink (>= 0.32),
+	fink-package-precedence,
+	glib2-dev (>= 2.36.4-1),
+	libffi6,
+	pkgconfig (>= 0.23)
+<<
+Source: mirror:gnome:sources/gobject-introspection/1.36/%n-%v.tar.xz
+Source-MD5: 747523a60d02effe39417e2157b3a1c4
+ConfigureParams: <<
+	--mandir=%p/share/man \
+	--disable-gtk-doc \
+	--enable-dependency-tracking \
+	PKG_CONFIG_PATH="%p/lib/glib-2.0/pkgconfig-strict:$PKG_CONFIG_PATH"
+<<
+
+CompileScript: <<
+#!/bin/sh -ev
+	./configure %c
+	make
+	fink-package-precedence --prohibit-bdep %n-dev .
+<<
+InfoTest: TestScript: make -C tests || exit 2
+InstallScript: <<
+	make install DESTDIR=%d
+<<
+DocFiles: <<
+	AUTHORS CONTRIBUTORS COPYING COPYING.GPL
+	COPYING.LGPL ChangeLog NEWS README
+<<
+SplitOff: <<
+	Package: %N-shlibs
+	Depends: <<
+		glib2-shlibs (>= 2.34.6-1),
+		libffi6-shlibs
+	<<
+	DocFiles:	AUTHORS COPYING	COPYING.LGPL NEWS
+	Files: <<
+		share/gir-1.0
+		lib/girepository-1.0
+		lib/libgirepository-1.0.1.dylib
+	<<
+	Shlibs: <<
+		%p/lib/libgirepository-1.0.1.dylib           2.0.0 %n (>= 1.36.0-1)
+	<<
+<<
+SplitOff2: <<
+	Package: %N-dev
+	Depends: <<
+		%N (= %v-%r),
+		%N-shlibs (= %v-%r),
+		glib2-shlibs (>= 2.36.4-1),
+		libffi6-shlibs
+	<<
+	BuildDependsOnly: False
+	DocFiles: AUTHORS COPYING COPYING.GPL COPYING.LGPL NEWS
+	Files: <<
+		include
+		share/gobject-introspection-1.0
+		share/aclocal
+		lib/gobject-introspection
+		lib/libgirepository-1.0.dylib
+		lib/libgirepository-1.0.a
+		lib/libgirepository-1.0.la
+		lib/pkgconfig
+	<<
+<<
+
+Homepage: https://wiki.gnome.org/GObjectIntrospection
+DescDetail: <<
+GObject introspection is a middleware layer between C libraries (using GObject)
+and language bindings. The C library can be scanned at compile time and
+generate a metadata file, in addition to the actual native C library.
+Then at runtime, language bindings can read this metadata and automatically
+provide bindings to call into the C library.
+<<
+DescUsage: <<
+Not sure -- it's needed by gdk-pixbuf, so here it is.
+<<
+
+DescPackaging: <<
+version needs to match glib2 release version (seemingly the minor release version)
+This is a first attempt. Expect oddities and mistakes.
+<<
+DescPort: <<
+should be a straight port
+<<
