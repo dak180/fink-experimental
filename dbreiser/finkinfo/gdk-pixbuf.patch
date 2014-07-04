@@ -1,0 +1,37 @@
+diff -Nurd -x'*~' gdk-pixbuf-2.28.2.orig/docs/reference/gdk-pixbuf/Makefile.in gdk-pixbuf-2.28.2/docs/reference/gdk-pixbuf/Makefile.in
+--- gdk-pixbuf-2.28.2.orig/docs/reference/gdk-pixbuf/Makefile.in	2013-06-07 18:25:02.000000000 -0400
++++ gdk-pixbuf-2.28.2/docs/reference/gdk-pixbuf/Makefile.in	2013-09-12 00:38:00.000000000 -0400
+@@ -536,7 +536,8 @@
+ man_MANS = \
+ 	gdk-pixbuf-csource.1		\
+ 	gdk-pixbuf-query-loaders.1
+
++BUILT_EXTRA_DIST = $(man_MANS) 
+ @ENABLE_MAN_TRUE@XSLTPROC_FLAGS = \
+ @ENABLE_MAN_TRUE@        --nonet \
+ @ENABLE_MAN_TRUE@        --stringparam man.output.quietly 1 \
+diff -Nurd -x'*~' gdk-pixbuf-2.28.2.orig/update-gdk-pixbuf-loaders gdk-pixbuf-2.28.2/update-gdk-pixbuf-loaders
+--- gdk-pixbuf-2.28.2.orig/update-gdk-pixbuf-loaders	1969-12-31 19:00:00.000000000 -0500
++++ gdk-pixbuf-2.28.2/update-gdk-pixbuf-loaders	2010-03-18 21:30:52.000000000 -0400
+@@ -0,0 +1,21 @@
++#!/bin/sh -e
++#
++# update-gdk-pixbuf-loaders
++#
++#   Packages which install gdk-pixbuf loader(s) should call update-gdk-
++#   pixbuf-loaders in their PostInstScript and PostRmScript to update the
++#   gdk-pixbuf.loaders file.
++#
++
++CONFDIR=@PREFIX@/etc/gtk-2.0
++CONFFILE=$CONFDIR/gdk-pixbuf.loaders
++
++mkdir -p $CONFDIR
++
++TMPFILE=`tempfile`
++gdk-pixbuf-query-loaders >$TMPFILE
++
++mv -f $TMPFILE $CONFFILE
++chmod 0644 $CONFFILE
++
++exit 0

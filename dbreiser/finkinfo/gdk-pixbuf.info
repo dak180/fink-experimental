@@ -1,0 +1,186 @@
+Package: gdk-pixbuf
+Version: 2.28.2
+Revision: 0.9
+Description: Image loading/pixel buffer manip. toolkit
+License: LGPL
+Maintainer: The Gnome Core Team <fink-gnome-core@lists.sourceforge.net>
+
+Depends: <<
+	%N-shlibs (= %v-%r),
+	glib2-shlibs (>= 2.36.4-1),
+	gobject-introspection,
+	libgettext8-shlibs,
+	x11
+<<
+BuildDepends: <<
+	atk1 (>= 1.28.0-1),
+	cairo (>= 1.12.14-1),
+	fink (>= 0.32),
+	fink-package-precedence,
+	fontconfig2-dev (>= 2.10.0-1),
+	freetype219 (>= 2.4.11-1),
+	gettext-bin,
+	gettext-tools,
+	glib2-dev (>= 2.36.4-1),
+	gobject-introspection-dev,
+	gtk-doc (>= 1.13-5),
+	libffi6,
+	libgettext8-dev,
+	libjasper.1 (>= 1.900.1-4),
+	libjpeg9,
+	libpng16,
+	libtiff5,
+	pango1-xft2-ft219-dev (>= 1.24.5-4),
+	pkgconfig (>= 0.23),
+	x11-dev
+<<
+#Conflicts: %N-common
+#Replaces: %N-common
+Source: mirror:gnome:sources/gdk-pixbuf/2.28/gdk-pixbuf-%v.tar.xz
+Source-MD5: 04c04e5042acd85cff6c439aba1995f1
+PatchFile: %n.patch
+PatchFile-MD5: 61d203c84e5b2a6d05af99b3e496f954
+PatchScript: <<
+#!/bin/sh -ev
+	sed -e 's|@PREFIX@|%p|g' <%{PatchFile} | patch -p1
+	perl -pi -e 's/\$\(no_undefined\)/-no-undefined/' `find . -name Makefile.in`
+<<
+
+#SetCPPFLAGS: -D_IPP_PRIVATE_STRUCTURES=1
+SetCFLAGS: -Os
+SetCXXFLAGS: -Os
+SetLDFLAGS: -lintl
+ConfigureParams: <<
+	--mandir=%p/share/man \
+	--disable-gtk-doc \
+	--enable-dependency-tracking \
+	--disable-explicit-deps \
+	--with-libjasper \
+	--enable-introspection=yes \
+	--with-x11 \
+	PKG_CONFIG_PATH="%p/lib/glib-2.0/pkgconfig-strict:$PKG_CONFIG_PATH"
+<<
+
+CompileScript: <<
+#!/bin/sh -ev
+	./configure %c
+	make
+	fink-package-precedence --prohibit-bdep %n-dev .
+<<
+InfoTest: TestScript: make -C tests || exit 2
+InstallScript: <<
+	make install DESTDIR=%d
+	find %i/lib/gtk-2.0 -name \*.la | xargs perl -pi -e "s/^(dependency_libs|inherited_linker_flags)=.*/\1=''/" 
+
+	install -d -m 755 %i/sbin
+	install -c -m 755 update-gdk-pixbuf-loaders %i/sbin/
+
+	# libversioned actual placed in %N-shlibs because needed
+	# during %N-shlibs PostInst; keep unversioned links in %N for
+	# legacy compat for others' PostInst
+	mv %i/bin/gdk-pixbuf-query-loaders     %i/bin/gdk-pixbuf-query-loaders-2.0
+	ln -s     gdk-pixbuf-query-loaders-2.0 %i/bin/gdk-pixbuf-query-loaders
+	perl -pi -e 's/(gdk-pixbuf-query-loaders)/\1-2.0/' %i/sbin/update-gdk-pixbuf-loaders
+	mv %i/sbin/update-gdk-pixbuf-loaders     %i/sbin/update-gdk-pixbuf-loaders-2.0
+	ln -s      update-gdk-pixbuf-loaders-2.0 %i/sbin/update-gdk-pixbuf-loaders
+
+<<
+DocFiles: <<
+	AUTHORS COPYING NEWS README
+<<
+SplitOff: <<
+	Package: %N-shlibs
+	Depends: <<
+		atk1-shlibs (>= 1.28.0-1),
+		cairo-shlibs (>= 1.12.14-1),
+		dpkg-base-files,
+		fontconfig2-shlibs (>= 2.10.0-1),
+		freetype219-shlibs (>= 2.4.11-1),
+		glib2-shlibs (>= 2.36.4-1),
+		libffi6-shlibs,
+		libgettext8-shlibs,
+		libjasper.1-shlibs (>= 1.900.1-4),
+		libjpeg9-shlibs,
+		libpng16-shlibs,
+		libtiff5-shlibs,
+		pango1-xft2-ft219-shlibs (>= 1.24.5-4),
+		shared-mime-info (>= 0.70-1),
+		x11-shlibs
+	<<
+#	Replaces:
+	Conflicts: gtk+2-shlibs (<<2.22.0-1)
+	DocFiles:	AUTHORS COPYING	NEWS
+	RuntimeVars: GDK_USE_XFT: 1
+	Files: <<
+		bin/gdk-pixbuf-query-loaders-2.0
+		bin/gdk-pixbuf-pixdata
+		lib/girepository-1.0
+		lib/libgdk_pixbuf_xlib-2.0.0.dylib
+		lib/libgdk_pixbuf-2.0.0.dylib
+		lib/gdk-pixbuf-2.0/2.10.0/loaders
+		sbin/update-gdk-pixbuf-loaders-2.0
+		share/locale
+		share/gir-1.0
+		share/man/man1/gdk-pixbuf-query-loaders.1
+	<<
+	Shlibs: <<
+		%p/lib/libgdk_pixbuf_xlib-2.0.0.dylib 2801.0.0 %n (>= 2.28.2-1)
+		%p/lib/libgdk_pixbuf-2.0.0.dylib      2801.0.0 %n (>= 2.28.2-1)
+	<<
+	PostInstScript: <<
+		case "$1" in
+			configure)
+				update-gdk-pixbuf-loaders-2.0
+				;;
+		esac
+	<<
+<<
+SplitOff2: <<
+	Package: %N-dev
+	Depends: <<
+		%N (= %v-%r),
+		%N-shlibs (= %v-%r),
+		glib2-shlibs (>= 2.36.4-1),
+		libgettext8-shlibs,
+		x11
+	<<
+	Conflicts: <<
+		gtk+2 (<< 2.22.1-1)
+	<<
+#	Replaces: 
+	BuildDependsOnly: True
+	DocFiles: AUTHORS COPYING	NEWS
+	Files: <<
+		bin/gdk-pixbuf-csource
+		include
+		lib
+		share/man/man1/gdk-pixbuf-csource.1
+	<<
+<<
+
+Homepage: http://www.gtk.org
+DescDetail: <<
+The gdk-pixbuf library is a toolkit for image loading and pixel buffer 
+manipulation that you can use in conjunction with libart. Gdk-pixbuf 
+also provides convenience functions for progressive image loading, 
+animation (which we won't cover here), and rendering the libart image 
+buffer to a GdkDrawable instance.
+<<
+DescUsage: <<
+Packages which install gdk-pixbuf loader(s) should call update-gdk-
+pixbuf-loaders in their PostInstScript and PostRmScript to update the
+gdk-pixbuf.loaders file.
+
+Reinstall %N-shlibs to regenerate those index files if they get
+damaged or lost.
+
+<<
+
+DescPackaging: <<
+gdk-pixbuf has been turned back into a standalone library, after being
+shipped as part of GTK+ for a number of years. The split occurred after
+gtk+ 2.20
+<<
+DescPort: <<
+
+<<
