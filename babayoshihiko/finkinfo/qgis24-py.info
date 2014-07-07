@@ -147,6 +147,7 @@ CompileScript: <<
 	QGIS_OPTIONS="	-D CMAKE_C_COMPILER=gcc
 					-D CMAKE_OSX_DEPLOYMENT_TARGET=''
 					-D QGIS_APP_NAME=QGIS-py-%v
+					-D QGIS_MACAPP_DEV_PREFIX=%p/${QGIS_DIR}/Frameworks
 					-D CMAKE_PREFIX_PATH=%p
 					-D EXECUTABLE_OUTPUT_PATH=%b/build/src/mac/Contents/MacOS
 					-D CMAKE_INSTALL_PREFIX=%b/Applications
@@ -190,9 +191,6 @@ CompileScript: <<
 	done
 	mkdir -p output/bin/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS
 	
-	# 1.8.0 Workaround from MacPorts
-	echo "install_name_tool -change @executable_path/../Frameworks/qgis_core.framework/Versions/$QGIS_VER/qgis_core @executable_path/../lib/qgis_core.framework/Versions/$QGIS_VER/qgis_core ../../output/bin/crssync"  >> src/crssync/CMakeFiles/crssync.dir/link.txt
-	
 	make VERBOSE=1 -j1
 	make install CMAKE_INSTALL_PREFIX=%b SIP_MAC_PATH=%p/bin
 	
@@ -226,6 +224,8 @@ CompileScript: <<
 	ln -s %p/share/qgis24-py%type_pkg[python]/plugins %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins
 	
 	# 1.8.0 Fix install name for Fink's policy
+	LOADBLES = "qgis_analysis qgis_core qgis_gui qgis_networkanalysis qgisgrass qgissqlanyconnection"
+	
 	pushd $QGIS_DIR/MacOS/lib
 	for libname in libqgispython.%v.dylib
 	do
@@ -238,10 +238,11 @@ CompileScript: <<
 	popd
 	
 	pushd $QGIS_DIR/Frameworks
-	for libname in qgis_analysis qgis_core qgis_gui qgis_networkanalysis qgisgrass qgissqlanyconnection
+	for libname in ${LOADBLES}
 	do
+	    otool -L $libname.framework/Versions/$QGIS_VER/$libname
 		install_name_tool -id %p/$QGIS_DIR/Frameworks/$libname.framework/Versions/$QGIS_VER/$libname $libname.framework/Versions/$QGIS_VER/$libname
-		for loadable in qgis_analysis qgis_core qgis_gui
+		for loadable in ${LOADBLES}
 		do
 			install_name_tool -change @loader_path/../../../$loadable.framework/$loadable %p/$QGIS_DIR/Frameworks/$loadable.framework/Versions/$QGIS_VER/$loadable $libname.framework/Versions/$QGIS_VER/$libname
 		done
@@ -249,10 +250,11 @@ CompileScript: <<
 	popd
 	
 	pushd $QGIS_DIR/Resources/python/qgis
-	for libname in _analysis.so _core.so _gui.so _networkanalysis.so
+	for libname in *.so
 	do
+	    otool -L $libname
 		install_name_tool -id %p/$QGIS_DIR/Resources/python/qgis/$libname $libname
-		for loadable in qgis_analysis qgis_core qgis_gui
+		for loadable in ${LOADBLES}
 		do
 			install_name_tool -change @loader_path/../../../MacOS/../Frameworks/$loadable.framework/$loadable %p/$QGIS_DIR/Frameworks/$loadable.framework/Versions/$QGIS_VER/$loadable $libname
 		done
@@ -274,12 +276,14 @@ CompileScript: <<
 	popd
 	
 	pushd $QGIS_DIR/PlugIns/qgis
-	for libname in libcoordinatecaptureplugin.so libdelimitedtextprovider.so libdxf2shpconverterplugin.so libevis.so libgdalprovider.so libgeorefplugin.so libgpsimporterplugin.so libgpxprovider.so libgrassplugin.so libgrassprovider.so libgrassrasterprovider.so libheatmapplugin.so libinterpolationplugin.so libmemoryprovider.so libmssqlprovider.so libofflineeditingplugin.so libogrprovider.so liboracleplugin.so libowsprovider.so libpostgresprovider.so librasterterrainplugin.so libroadgraphplugin.so libspatialiteprovider.so libspatialqueryplugin.so libspitplugin.so libsqlanywhereplugin.so libsqlanywhereprovider.so libtopolplugin.so libwcsprovider.so libwfsprovider.so libwmsprovider.so libzonalstatisticsplugin.so 
+	ls -alF
+	for libname in *.so 
 		do
-		install_name_tool -id %p/$QGIS_DIR/PlugIns/qgis/$libname $libname
-		for loadable in qgis_analysis qgis_core qgis_gui
+		otool -L $libname
+		install_name_tool -id %p/$QGIS_DIR/PlugIns/qgis/${libname}.so ${libname}.so
+		for loadable in ${LOADBLES}
 		do
-			install_name_tool -change @loader_path/../../MacOS/../Frameworks/$loadable.framework/$loadable %p/$QGIS_DIR/Frameworks/$loadable.framework/Versions/$QGIS_VER/$loadable $libname
+			install_name_tool -change @loader_path/../../MacOS/../Frameworks/$loadable.framework/$loadable %p/$QGIS_DIR/Frameworks/$loadable.framework/Versions/$QGIS_VER/$loadable ${libname}.so
 		done
 	done
 	popd
