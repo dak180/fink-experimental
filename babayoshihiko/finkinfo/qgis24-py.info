@@ -64,6 +64,9 @@ PatchScript: <<
 	perl -pi -e 's|sys.path = |sys.path = \[\\\"%p/lib/qt4-mac/lib/python'%type_raw[python]'/site-packages\\\", " + newpaths.join( "," ) + "] + sys.path" ); //|' src/python/qgspythonutilsimpl.cpp
 	perl -pi -e 's|\.app|-py%type_pkg[python]-%v.app|' CMakeLists.txt
     
+	# 2.0.0
+	perl -pi -e "s|^.*osascript.*$|#|g" images/icons/mac/browser/CMakeLists.txt
+    
     # SIP related fixes
     perl -pi -e "s/SET\(SIP_TAGS\)/SET(SIP_TAGS WS_MACX Qt_4_7_4)/" cmake/SIPMacros.cmake
 <<
@@ -159,7 +162,7 @@ CompileScript: <<
 					-D QSCINTILLA_LIBRARY:FILEPATH=%p/lib/qt4-mac/lib/libqscintilla2.11.dylib
 					-D POSTGRES_CONFIG=%p/bin/pg_config
 					-D GRASS_PREFIX=%p/Applications/GRASS-6.4.app/Contents/MacOS"
-	QGIS_VERSION_OPTIONS="-D CMAKE_BUILD_TYPE=Release
+	QGIS_VERSION_OPTIONS="-D CMAKE_BUILD_TYPE=Debug
 					-D ENABLE_TESTS=FALSE
 					-D WITH_INTERNAL_SPATIALITE=FALSE
 					-D WITH_PYSPATIALITE=FALSE
@@ -186,6 +189,9 @@ CompileScript: <<
 		perl -pi -e "s|QGIS.app|QGIS-py%type_pkg[python]-%v.app|g" $filename
 	done
 	mkdir -p output/bin/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS
+	
+	# 1.8.0 Workaround from MacPorts
+	echo "install_name_tool -change @executable_path/../Frameworks/qgis_core.framework/Versions/$QGIS_VER/qgis_core @executable_path/../lib/qgis_core.framework/Versions/$QGIS_VER/qgis_core ../../output/bin/crssync"  >> src/crssync/CMakeFiles/crssync.dir/link.txt
 	
 	make VERBOSE=1 -j1
 	make install CMAKE_INSTALL_PREFIX=%b SIP_MAC_PATH=%p/bin
