@@ -37,7 +37,7 @@ Depends: %n-shlibs (=%v-%r)
 BuildDepends: << 
 	fink (>= 0.28), cmake, bison,
 	gsl,
-	qt4-base-mac, 
+	qt4-base-mac (>=4.8.6-1), 
 	sip-py%type_pkg[python]-bin (>=4.16.1-1), pyqt4-mac-py%type_pkg[python] (>=4.11-1), 
 	qscintilla2.11-qt4-mac,
 	xerces-c31-dev,
@@ -68,7 +68,7 @@ PatchScript: <<
 	perl -pi -e "s|^.*osascript.*$|#|g" images/icons/mac/browser/CMakeLists.txt
     
     # SIP related fixes (SIP 4.16.1)
-    perl -pi -e "s/SET\(SIP_TAGS\)/SET(SIP_TAGS WS_MACX Qt_4_7_4)/" cmake/SIPMacros.cmake
+    perl -pi -e "s/SET\(SIP_TAGS\)/SET(SIP_TAGS WS_MACX Qt_4_8_6)/" cmake/SIPMacros.cmake
 <<
 
 
