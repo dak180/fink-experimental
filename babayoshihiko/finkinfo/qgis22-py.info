@@ -79,14 +79,13 @@ SetCFLAGS: -fno-common
 SetLDFLAGS: -liconv %p/opt/libgeos3.4.2/lib/libgeos-3.4.2.dylib
 CompileScript: <<
 #!/bin/bash -ev
-
 	QGIS_VER=2.2
+	QGIS_DIR=Applications/QGIS-py%type_pkg[python]-%v.app/Contents
+	LOADBLES='qgis_analysis qgis_core qgis_gui qgis_networkanalysis qgisgrass qgissqlanyconnection'
 	
 	export QTDIR=%p/lib/qt4-mac
 	export PYTHONPATH=%p/lib/qt4-mac/lib/python%type_raw[python]/site-packages:$PYTHONPATH
-	export PATH=%p/lib/qt4-mac/lib/python$%type_raw[python]/bin:$PATH
-	
-	QGIS_DIR=Applications/QGIS-py%type_pkg[python]-%v.app/Contents
+	export PATH=%p/lib/qt4-mac/lib/python%type_raw[python]/bin:$PATH
 	
 	# 2.0
 	if [[ %type_pkg[python] > 30 ]]; then
@@ -225,9 +224,7 @@ CompileScript: <<
 	rm -rf %b/$QGIS_DIR/Resources/python/plugins
 	ln -s %p/share/qgis22-py%type_pkg[python]/plugins %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins
 	
-	# 1.8.0 Fix install name for Fink's policy
-	LOADBLES = "qgis_analysis qgis_core qgis_gui qgis_networkanalysis qgisgrass qgissqlanyconnection"
-	
+	# 1.8.0 Fix install name for Fink's policy	
 	pushd $QGIS_DIR/MacOS/lib
 	for libname in libqgispython.%v.dylib
 	do
@@ -256,10 +253,10 @@ CompileScript: <<
 	for libname in *.so
 	do
 	    otool -L $libname
-		install_name_tool -id %p/$QGIS_DIR/Resources/python/qgis/${libname}.so ${libname}.so
+		install_name_tool -id %p/$QGIS_DIR/Resources/python/qgis/$libname $libname
 		for loadable in ${LOADBLES}
 		do
-			install_name_tool -change @loader_path/../../../MacOS/../Frameworks/$loadable.framework/$loadable %p/$QGIS_DIR/Frameworks/$loadable.framework/Versions/$QGIS_VER/$loadable ${libname}.so
+			install_name_tool -change @loader_path/../../../MacOS/../Frameworks/$loadable.framework/$loadable %p/$QGIS_DIR/Frameworks/$loadable.framework/Versions/$QGIS_VER/$loadable $libname
 		done
 	done
 	popd

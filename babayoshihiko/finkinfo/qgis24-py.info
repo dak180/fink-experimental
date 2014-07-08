@@ -78,15 +78,14 @@ SetCFLAGS: -fno-common
 SetLDFLAGS: -liconv %p/opt/libgeos3.4.2/lib/libgeos-3.4.2.dylib
 CompileScript: <<
 #!/bin/bash -ev
-
 	QGIS_VER=2.4
+	QGIS_DIR=Applications/QGIS-py%type_pkg[python]-%v.app/Contents
+	LOADBLES='qgis_analysis qgis_core qgis_gui qgis_networkanalysis qgisgrass qgissqlanyconnection'
 	
 	export QTDIR=%p/lib/qt4-mac
 	export PYTHONPATH=%p/lib/qt4-mac/lib/python%type_raw[python]/site-packages:$PYTHONPATH
 	export PATH=%p/lib/qt4-mac/lib/python%type_raw[python]/bin:$PATH
-	
-	QGIS_DIR=Applications/QGIS-py%type_pkg[python]-%v.app/Contents
-	
+		
 	# 2.0
 	if [[ %type_pkg[python] > 30 ]]; then
 	  perl -pi -e "s|cStringIO|io|g" src/python/qgspythonutilsimpl.cpp
@@ -224,8 +223,6 @@ CompileScript: <<
 	ln -s %p/share/qgis24-py%type_pkg[python]/plugins %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins
 	
 	# 1.8.0 Fix install name for Fink's policy
-	LOADBLES = "qgis_analysis qgis_core qgis_gui qgis_networkanalysis qgisgrass qgissqlanyconnection"
-	
 	pushd $QGIS_DIR/MacOS/lib
 	for libname in libqgispython.%v.dylib
 	do
@@ -280,16 +277,14 @@ CompileScript: <<
 	for libname in *.so 
 		do
 		otool -L $libname
-		install_name_tool -id %p/$QGIS_DIR/PlugIns/qgis/${libname}.so ${libname}.so
+		install_name_tool -id %p/$QGIS_DIR/PlugIns/qgis/$libname $libname
 		for loadable in ${LOADBLES}
 		do
-			install_name_tool -change @loader_path/../../MacOS/../Frameworks/$loadable.framework/$loadable %p/$QGIS_DIR/Frameworks/$loadable.framework/Versions/$QGIS_VER/$loadable ${libname}.so
+			install_name_tool -change @loader_path/../../MacOS/../Frameworks/$loadable.framework/$loadable %p/$QGIS_DIR/Frameworks/$loadable.framework/Versions/$QGIS_VER/$loadable $libname
 		done
 	done
 	popd
 	
-	
-
 	# 1.8.0 Creates Info.plist
 	sed -e 's|\${QGIS_APP_NAME}|QGIS|g' \
 		-e 's|\${COMPLETE_VERSION}|%v|g' \
