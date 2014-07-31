@@ -79,6 +79,7 @@ ConfigureParams: <<
   --with-jpeg-includes=%p/include --with-jpeg-libs=%p/lib \
   --with-png-includes=%p/include --with-png-libs=%p/lib \
   --with-tiff-includes=%p/include --with-tiff-libs=%p/lib \
+  --with-postgres --with-postgres-includes=%p/opt/postgresql-9.2/include --with-postgres-libs=%p/opt/postgresql-9.2/lib \
   --without-mysql --with-odbc --with-sqlite \
   --with-sqlite-libs=%p/lib --with-sqlite-includes=%p/include \
   --with-fftw-includes=%p/include --with-fftw-libs=%p/lib \
@@ -93,40 +94,40 @@ ConfigureParams: <<
 
 CompileScript: <<
 #!/bin/bash -xe
-  PGSQLPARAM=" --with-postgres --with-postgres-includes=%p/opt/postgresql-9.2/include --with-postgres-libs=%p/opt/postgresql-9.2/lib "
   
   if [ "%type_raw[gui]" == "-mac" ]; then
-    ./configure %c $PGSQLPARAM --without-x --with-wxwidgets=%p/lib/wx/config/osx_cocoa-unicode-3.0
+    ./configure %c --without-x --with-wxwidgets=%p/lib/wx/config/osx_cocoa-unicode-3.0
   else
-    ./configure %c $PGSQLPARAM --with-x --x-includes=/usr/X11R6/include --x-libraries=/usr/X11R6/lib --with-wxwidgets=%p/lib/wx/config/gtk2-unicode-release-2.8
+    ./configure %c --with-x --x-includes=/usr/X11R6/include --x-libraries=/usr/X11R6/lib --with-wxwidgets=%p/lib/wx/config/gtk2-unicode-release-2.8
   fi
+  
   # See include/Make/Platform.make, include/Make/Vars.make and macosx/Makefile for variables
-  make UNIX_BIN=%b/bin INST_DIR=%p/Applications/GRASS-7.0.app/Contents/MacOS PYTHON=%p/bin/python2.7
+  make         INST_DIR=%p/Applications/GRASS-7.0.app/Contents/MacOS \
+               PYTHON=%p/bin/python2.7
     
-  #mkdir -p %b/Applications/GRASS-7.0.app/Contents/MacOS/share/doc/GRASS-7.0
-  make install UNIX_BIN=%b/Applications/GRASS-7.0.app/Contents/MacOS INST_DIR=%b/Applications/GRASS-7.0.app/Contents/MacOS PREFIX_TARGET=%b/Applications MACOSX_SUPPDIR=%b/Library/GRASS/7.0 RUN_GISBASE=%b/lib/GRASS/%v PYTHON=%p/bin/python2.7
-  #if [ "%type_raw[gui]" == "-mac" ]; then
-  #  perl -pi -e "s|MACORX11|/usr|g" %b/Applications/GRASS-7.0.app/Contents/MacOS/grass.sh
-  #  
-  #else
-  #  perl -pi -e "s|MACORX11|%p|g" %b/Applications/GRASS-7.0.app/Contents/MacOS/grass.sh
-  #fi 
+  
+  make install UNIX_BIN=%b/Applications/GRASS-7.0.app/Contents/MacOS \
+               INST_DIR=%b/Applications/GRASS-7.0.app/Contents/MacOS \
+               PREFIX_TARGET=%b/Applications \
+               MACOSX_SUPPDIR=%b/Library/GRASS/7.0 \
+               RUN_GISBASE=%b/lib/GRASS/%v PYTHON=%p/bin/python2.7
 
   # Recompile python scripts to fix path (because 'make install' is
   # called with path to staging directory that masks runtime location)
-  for pydir in python/grass python/grass/imaging python/grass/lib python/grass/pydispatch python/grass/pygrass python/grass/script python/grass/temporal
-    do
-      %p/bin/python2.7    %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir
-      %p/bin/python2.7 -O %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir
-    done
   perl -pi -e 's|%b|%p|g' %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/python/grass/lib/*.py
-  for pydir in python/grass/lib gui/wxpython gui/wxpython/* r.in.wms ../tools
+  for pydir in python/grass python/grass/imaging python/grass/lib python/grass/pydispatch \
+               python/grass/pygrass python/grass/script python/grass/temporal python/grass/lib \
+               gui/wxpython gui/wxpython/* r.in.wms ../tools
     do
       %p/bin/python2.7    %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir
       %p/bin/python2.7 -O %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir
     done
   
-  for libname in  arraystats bitmap btree btree2 cairodriver ccmath cdhc cluster datetime dbmibase dbmiclient dbmidriver dbstubs dgl dig2 display driver dspf g3d gis gmath gpde gproj htmldriver imagery interpdata interpfl iortho lidar linkm lrs manage neta pngdriver psdriver qtree raster rli rowio rtree segment shape sim sites sqlp stats symb temporal vector vedit 
+  for libname in  arraystats bitmap btree btree2 cairodriver ccmath cdhc cluster datetime \
+                  dbmibase dbmiclient dbmidriver dbstubs dgl dig2 display driver dspf g3d \
+                  gis gmath gpde gproj htmldriver imagery interpdata interpfl iortho lidar \
+                  linkm lrs manage neta pngdriver psdriver qtree raster rli rowio rtree \
+                  segment shape sim sites sqlp stats symb temporal vector vedit 
     do
       install_name_tool -id %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib %b/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib
     done
