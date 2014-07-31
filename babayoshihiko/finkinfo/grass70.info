@@ -22,7 +22,6 @@ X11 version uses Fink's TclTk and lacks OpenGL/NVIZ support.
 
 DescUsage: Just type double click GRASS-7.0.app in %p/Applications.
 
-
 DescPackaging: <<
 	dmacks added fix for building with make-3.82. See:
 	http://lists.osgeo.org/pipermail/grass-dev/2012-May/058634.html
@@ -46,7 +45,7 @@ BuildDepends: <<
   proj, proj-bin,
   python27,
   sqlite3-dev,
-  (%type_raw[gui] = -mac) wxcocoa295,
+  (%type_raw[gui] = -mac) wxwidgets300-cocoa,
   (%type_pkg[gui] = -x11) wxgtk2.8, (%type_pkg[gui] = -x11) wxgtk2.8-py27-dev
 <<
 # hdf5-18-bin | hdf5-bin,
@@ -97,7 +96,7 @@ CompileScript: <<
   PGSQLPARAM=" --with-postgres --with-postgres-includes=%p/opt/postgresql-9.2/include --with-postgres-libs=%p/opt/postgresql-9.2/lib "
   
   if [ "%type_raw[gui]" == "-mac" ]; then
-    ./configure %c $PGSQLPARAM --without-x --with-wxwidgets=%p/lib/wx/config/osx_cocoa-unicode-2.9
+    ./configure %c $PGSQLPARAM --without-x --with-wxwidgets=%p/lib/wx/config/osx_cocoa-unicode-3.0
   else
     ./configure %c $PGSQLPARAM --with-x --x-includes=/usr/X11R6/include --x-libraries=/usr/X11R6/lib --with-wxwidgets=%p/lib/wx/config/gtk2-unicode-release-2.8
   fi
@@ -116,29 +115,21 @@ CompileScript: <<
   # Recompile python scripts to fix path (because 'make install' is
   # called with path to staging directory that masks runtime location)
   for pydir in python/grass python/grass/imaging python/grass/lib python/grass/pydispatch python/grass/pygrass python/grass/script python/grass/temporal
-  do
-    %p/bin/python2.7    %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir
-    %p/bin/python2.7 -O %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir
-  done
+    do
+      %p/bin/python2.7    %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir
+      %p/bin/python2.7 -O %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir
+    done
+  perl -pi -e 's|%b|%p|g' %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/python/grass/lib/*.py
+  for pydir in python/grass/lib gui/wxpython gui/wxpython/* r.in.wms ../tools
+    do
+      %p/bin/python2.7    %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir
+      %p/bin/python2.7 -O %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir
+    done
   
   for libname in  arraystats bitmap btree btree2 cairodriver ccmath cdhc cluster datetime dbmibase dbmiclient dbmidriver dbstubs dgl dig2 display driver dspf g3d gis gmath gpde gproj htmldriver imagery interpdata interpfl iortho lidar linkm lrs manage neta pngdriver psdriver qtree raster rli rowio rtree segment shape sim sites sqlp stats symb temporal vector vedit 
-  do
-    install_name_tool -id %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib %b/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib
-  done
-  
-  #if [ "%type_raw[gui]" == "-x11" ]; then
-  #for libname in Iortho
-  #do
-  #  install_name_tool -id %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib %b/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib
-  #done
-  #fi
-  
-  #if [ "%type_raw[gui]" == "-mac" ]; then
-  #for libname in nviz ogsf
-  #do
-  #  install_name_tool -id %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib %b/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib
-  #done
-  #fi
+    do
+      install_name_tool -id %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib %b/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib
+    done
 <<
 
 
@@ -150,15 +141,6 @@ InstallScript: <<
 <<
 AppBundles: Applications/GRASS-7.0.app
 
-DocFiles: 
-
-
-
-
-
-
-
-
 # Additional Phase.
 SplitOff: <<
   Package: %N-dev
@@ -168,11 +150,6 @@ SplitOff: <<
   Files: Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_*.a
   DocFiles:
 <<
-
-
-
-
-
 
 SplitOff2: <<
   Package: %N-shlibs
@@ -189,7 +166,7 @@ SplitOff2: <<
     python27-shlibs,
     sqlite3-shlibs,
     unixodbc2-shlibs | unixodbc2-nox-shlibs,
-    (%type_raw[gui] = -mac) wxcocoa295-shlibs,
+    (%type_raw[gui] = -mac) wxwidgets300-cocoa-shlibs,
     (%type_pkg[gui] = -x11) wxgtk2.8-shlibs, (%type_pkg[gui] = -x11) wxgtk2.8-py27
   <<
 
