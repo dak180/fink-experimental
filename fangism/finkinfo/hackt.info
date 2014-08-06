@@ -65,6 +65,7 @@ InfoTest: <<
 	#!/bin/sh -ev
 	cd darwin-build
 	{ make -k check 2>&1 || exit 2 ;} | tee check.log
+	../scripts/tally_tests.awk check.log
 	<<
 	TestSuiteSize: large
 <<
