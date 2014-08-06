@@ -30,6 +30,7 @@ ConfigureParams: <<
   YACC=/usr/bin/yacc \
   LEX=%p/bin/flex \
   --disable-static \
+  --disable-ltdl-install \
   --with-ltdl-include=%p/include \
   --with-ltdl-lib=%p/lib \
   --with-readline=%p \
@@ -40,21 +41,24 @@ ConfigureParams: <<
 #  --docdir=%p/share/doc/%n (only if bootstrapped with automake-1.10+)
 GCC: 4.0
 SetCFLAGS: -g -O2 -Qunused-arguments
-SetCXXFLAGS: -g -O2 -Wno-error=sign-conversion -Wno-error=unused-function -Wno-error=conversion -Qunused-arguments
+SetCXXFLAGS: -g -O2
 CompileScript: <<
-#!/bin/sh -ev
-darwin_vers=`uname -r | cut -d. -f1`
-mkdir darwin-build
-cd darwin-build
-# guile18-build
-# workaround for linker issue with darwin10
-test "$darwin_vers" != 10 || ldcfg="LDFLAGS=-Wl,-no_compact_linkedit"
-test "$darwin_vers" -lt 13 || export CXXFLAGS="-g -O2 -std=c++11"
-../configure %c $ldcfg
-# patch to workaround buggy libtool/configure test?
+  #!/bin/sh -ev
+  darwin_vers=`uname -r | cut -d. -f1`
+  mkdir darwin-build
+  cd darwin-build
+  # guile18-build
+  # workaround for linker issue with darwin10
+  CXXFLAGS="-g -O2"
+  test "$darwin_vers" != 10 || ldcfg="LDFLAGS=-Wl,-no_compact_linkedit"
+  test "$darwin_vers" -lt 11 || CXXFLAGS="$CXXFLAGS -Wno-error=sign-conversion -Wno-error=unused-function -Wno-error=conversion -Qunused-arguments"
+  test "$darwin_vers" -lt 13 || CXXFLAGS="$CXXFLAGS -std=c++11"
+  export CXXFLAGS
+  ../configure %c $ldcfg
+# patch to workaround buggy libtool/configure test for SP2NL, NL2SP?
 # see http://debbugs.gnu.org/cgi/bugreport.cgi?bug=12156
-patch -p0 < %{PatchFile}
-make
+  patch -p0 < %{PatchFile}
+  make
 <<
 InfoTest: <<
 	TestScript: <<
