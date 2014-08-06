@@ -48,11 +48,11 @@ mkdir darwin-build
 cd darwin-build
 # guile18-build
 # workaround for linker issue with darwin10
-if test "$darwin_vers" = 10 ; then
-  ldcfg="LDFLAGS=-Wl,-no_compact_linkedit"
-fi
+test "$darwin_vers" != 10 || ldcfg="LDFLAGS=-Wl,-no_compact_linkedit"
+test "$darwin_vers" -lt 13 || export CXXFLAGS="-g -O2 -std=c++11"
 ../configure %c $ldcfg
-# workaround buggy libtool/configure test?
+# patch to workaround buggy libtool/configure test?
+# see http://debbugs.gnu.org/cgi/bugreport.cgi?bug=12156
 patch -p0 < %{PatchFile}
 make
 <<
