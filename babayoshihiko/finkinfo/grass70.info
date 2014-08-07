@@ -50,7 +50,6 @@ BuildDepends: <<
 <<
 # hdf5-18-bin | hdf5-bin,
 
-# Source: http://grass.osgeo.org/grass64/source/grass-%v.tar.gz
 Source: http://grass.osgeo.org/grass70/source/grass-%v.tar.gz
 Source-MD5: 13f5844e1302e3b3c6621c3062f54367
 
@@ -60,9 +59,9 @@ Source-MD5: 13f5844e1302e3b3c6621c3062f54367
 PatchScript: <<
 #!/bin/bash -xe
   # sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
-  perl -pi -e 's|wximgview||' visualization/Makefile
+  #perl -pi -e 's|wximgview||' visualization/Makefile
   perl -pi -e 's|/usr/bin/env python|%p/bin/python2.7|' gui/wxpython/*/*.py
-  #perl -pi -e 's|py_compile|py_compile -d %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir|' include/Make/Python.make
+  #perl -pi -e 's|py_compile|py_compile dfile=%p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir|' include/Make/Python.make
 <<
 
 # Compile Phase.
@@ -94,6 +93,9 @@ ConfigureParams: <<
 
 CompileScript: <<
 #!/bin/bash -xe
+  darwin_vers=`uname -r`
+  
+  mkdir OBJ.x86_64-apple-darwin13.3.0
   
   if [ "%type_raw[gui]" == "-mac" ]; then
     ./configure %c --without-x --with-wxwidgets=%p/lib/wx/config/osx_cocoa-unicode-3.0
@@ -101,16 +103,29 @@ CompileScript: <<
     ./configure %c --with-x --x-includes=/usr/X11R6/include --x-libraries=/usr/X11R6/lib --with-wxwidgets=%p/lib/wx/config/gtk2-unicode-release-2.8
   fi
   
+  # Used by ctypes_loader.py
+  #export DYLD_FALLBACK_LIBRARY_PATH=%b/dist.x86_64-apple-darwin13.3.0/lib
+  
+  
   # See include/Make/Platform.make, include/Make/Vars.make and macosx/Makefile for variables
   make         INST_DIR=%p/Applications/GRASS-7.0.app/Contents/MacOS \
-               PYTHON=%p/bin/python2.7
+               PREFIX_TARGET=%b/Applications \
+               GISBASE=%b/dist.x86_64-apple-darwin${darwin_vers} \
+               GISBASE_SYSTEM=%b/lib/GRASS/7.0 \
+               RUN_GISBASE=%p/Applications/GRASS-7.0.app/Contents/MacOS \
+               PYTHON=%p/bin/python2.7 \
+               GRASS_PYTHON=%p/bin/python2.7
     
   
   make install UNIX_BIN=%b/Applications/GRASS-7.0.app/Contents/MacOS \
                INST_DIR=%b/Applications/GRASS-7.0.app/Contents/MacOS \
                PREFIX_TARGET=%b/Applications \
-               MACOSX_SUPPDIR=%b/Library/GRASS/7.0 \
-               RUN_GISBASE=%b/lib/GRASS/%v PYTHON=%p/bin/python2.7
+               MACOSX_SUPPDIR=%p/lib/GRASS/7.0 \
+               GISBASE=%p/Applications/GRASS-7.0.app/Contents/MacOS \
+               GISBASE_SYSTEM=%p/lib/GRASS/7.0 \
+               RUN_GISBASE=%p/Applications/GRASS-7.0.app/Contents/MacOS \
+               PYTHON=%p/bin/python2.7 \
+               GRASS_PYTHON=%p/bin/python2.7
 
   # Recompile python scripts to fix path (because 'make install' is
   # called with path to staging directory that masks runtime location)
@@ -140,7 +155,7 @@ InstallScript: <<
 #!/bin/sh -xe
   echo "Nothing "
 <<
-AppBundles: Applications/GRASS-7.0.app
+#AppBundles: Applications/GRASS-7.0.app
 
 # Additional Phase.
 SplitOff: <<
