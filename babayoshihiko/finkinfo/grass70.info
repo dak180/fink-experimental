@@ -2,7 +2,7 @@ Info2: <<
 Package: grass70%type_pkg[gui]
 Type: gui (-mac -x11)
 Version: 7.0.0beta2
-Revision: 0.1
+Revision: 0.2
 
 Description: Powerful GIS software
 License: GPL
@@ -37,6 +37,7 @@ BuildDepends: <<
   libncurses5-dev,
   libiconv-dev, readline6, libgettext8-dev, gettext-tools,
   fftw3,
+  libgeos3.4.2,
   gdal-dev, 
   libjpeg9, libpng16, libtiff5,
   unixodbc2 | unixodbc2-nox,
@@ -61,7 +62,14 @@ PatchScript: <<
   # sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
   #perl -pi -e 's|wximgview||' visualization/Makefile
   perl -pi -e 's|/usr/bin/env python|%p/bin/python2.7|' gui/wxpython/*/*.py
+  perl -pi -e 's|call|chmod +x \$\(1\) && call|' include/Make/HtmlRules.make 
+  perl -pi -e 's|if \[|-if [|' include/Make/Html.make   # This will not create html files for lib/*
   #perl -pi -e 's|py_compile|py_compile dfile=%p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir|' include/Make/Python.make
+  
+  # rewrite python wrapper
+  chmod 0777 macosx/app/python_wrapper
+  echo 'exec "$GRASS_PYTHONWX" "$@"' >./macosx/app/python_wrapper
+  chmod 0755 macosx/app/python_wrapper
 <<
 
 # Compile Phase.
@@ -75,6 +83,7 @@ ConfigureParams: <<
   --with-freetype-libs=%p/lib/freetype219/lib \
   --with-gdal=%p/bin/gdal-config \
   --with-proj --with-proj-includes=%p/include --with-proj-libs=%p/lib --with-proj-share=%p/share/proj \
+  --with-geos=%p/opt/libgeos3.4.2/bin/geos-config \
   --with-jpeg-includes=%p/include --with-jpeg-libs=%p/lib \
   --with-png-includes=%p/include --with-png-libs=%p/lib \
   --with-tiff-includes=%p/include --with-tiff-libs=%p/lib \
@@ -85,7 +94,7 @@ ConfigureParams: <<
   --with-cxx --without-motif \
   --without-glw \
   --without-readline \
-  --with-opengl=no \
+  --without-opengl \
   --prefix=%p/Applications \
   --enable-macosx-app
 <<
@@ -95,7 +104,7 @@ CompileScript: <<
 #!/bin/bash -xe
   darwin_vers=`uname -r`
   
-  mkdir OBJ.x86_64-apple-darwin13.3.0
+  # mkdir OBJ.x86_64-apple-darwin13.3.0
   
   if [ "%type_raw[gui]" == "-mac" ]; then
     ./configure %c --without-x --with-wxwidgets=%p/lib/wx/config/osx_cocoa-unicode-3.0
@@ -111,8 +120,8 @@ CompileScript: <<
   make         INST_DIR=%p/Applications/GRASS-7.0.app/Contents/MacOS \
                PREFIX_TARGET=%b/Applications \
                GISBASE=%b/dist.x86_64-apple-darwin${darwin_vers} \
-               GISBASE_SYSTEM=%b/lib/GRASS/7.0 \
                RUN_GISBASE=%p/Applications/GRASS-7.0.app/Contents/MacOS \
+               GISBASE_SYSTEM=%b/Applications/GRASS-7.0.app/Contents/MacOS/lib \
                PYTHON=%p/bin/python2.7 \
                GRASS_PYTHON=%p/bin/python2.7
     
@@ -120,12 +129,22 @@ CompileScript: <<
   make install UNIX_BIN=%b/Applications/GRASS-7.0.app/Contents/MacOS \
                INST_DIR=%b/Applications/GRASS-7.0.app/Contents/MacOS \
                PREFIX_TARGET=%b/Applications \
-               MACOSX_SUPPDIR=%p/lib/GRASS/7.0 \
                GISBASE=%p/Applications/GRASS-7.0.app/Contents/MacOS \
-               GISBASE_SYSTEM=%p/lib/GRASS/7.0 \
                RUN_GISBASE=%p/Applications/GRASS-7.0.app/Contents/MacOS \
+               MACOSX_SUPPDIR=%b/Applications/GRASS-7.0.app/Contents/MacOS/lib \
+               GISBASE_SYSTEM=%p/Applications/GRASS-7.0.app/Contents/MacOS/lib \
                PYTHON=%p/bin/python2.7 \
                GRASS_PYTHON=%p/bin/python2.7
+  # RUN_GISBASE:     = GISBASE
+  # GISBASE_SYSTEM:  /Library/GRASS/$grass_ver
+  #                  Used in build and grass startup shell scripts.
+  # MACOSX_SUPPDIR:  /Library/GRASS/${GRASS_VERSION_MAJOR}.${GRASS_VERSION_MINOR}
+  #                  Used only to create the directory during installation time;
+  #                  Why not use GISBASE_SYSTEM?
+  # PYTHON:          System python
+  #                  Used during build time; this open does NOT set run-time python.
+  # GRASS_PYTHON:    Used by grass startup script
+  #                  Cannot be overridden, so the shell script needs to be patched
 
   # Recompile python scripts to fix path (because 'make install' is
   # called with path to staging directory that masks runtime location)
@@ -144,7 +163,7 @@ CompileScript: <<
                   linkm lrs manage neta pngdriver psdriver qtree raster rli rowio rtree \
                   segment shape sim sites sqlp stats symb temporal vector vedit 
     do
-      install_name_tool -id %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib %b/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib
+      install_name_tool -id %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib %b/dist.x86_64-apple-darwin${darwin_vers}/lib/libgrass_${libname}.dylib
     done
 <<
 
@@ -153,19 +172,19 @@ CompileScript: <<
 # Install Phase.
 InstallScript: <<
 #!/bin/sh -xe
-  echo "Nothing "
+  darwin_vers=`uname -r`
+  #cp -R %b/dist.x86_64-apple-darwin${darwin_vers}/lib %i/Applications/GRASS-7.0.app/Contents/MacOS/lib
 <<
-#AppBundles: Applications/GRASS-7.0.app
+AppBundles: Applications/GRASS-7.0.app
 
 # Additional Phase.
-SplitOff: <<
-  Package: %N-dev
-  Description: GRASS Development Headers
-  Depends: %N-shlibs (= %v-%r)
-  BuildDependsOnly: true
-  Files: Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_*.a
-  DocFiles:
-<<
+#SplitOff: <<
+#  Package: %N-dev
+#  Description: GRASS Development Headers
+#  Depends: %N-shlibs (= %v-%r)
+#  BuildDependsOnly: true
+#  Files: Applications/GRASS-7.0.app/Contents/MacOS/include
+#<<
 
 SplitOff2: <<
   Package: %N-shlibs
@@ -175,6 +194,7 @@ SplitOff2: <<
     libncurses5-shlibs,
     libiconv,
     fftw3-shlibs, 
+    libgeos3.4.2-shlibs, 
     gdal-shlibs, 
     libgettext8-shlibs, libjpeg9-shlibs, libpng16-shlibs, libtiff5-shlibs,
     xerces-c31-shlibs,
