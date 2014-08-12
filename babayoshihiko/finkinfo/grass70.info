@@ -2,7 +2,7 @@ Info2: <<
 Package: grass70%type_pkg[gui]
 Type: gui (-x11)
 Version: 7.0.0beta3
-Revision: 0.3
+Revision: 0.4
 
 Description: Powerful GIS software
 License: GPL
@@ -48,23 +48,23 @@ Source-MD5: 79f48713a1c7e5e26ff46ca34f358869
 PatchScript: <<
 #!/bin/bash -xe
   # sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+  
+  PY_VER=2.7
+  
   if [ $( sw_vers -productVersion ) > 10.8 ]; then
     perl -pi -e 's|wximgview||' visualization/Makefile
   fi
-  perl -pi -e 's|/usr/bin/env python|%p/bin/python2.7|' gui/wxpython/*/*.py
+  perl -pi -e 's|/usr/bin/env python|%p/bin/python${PY_VER}|' gui/wxpython/*/*.py
   perl -pi -e 's|call|chmod +x \$\(1\) && call|' include/Make/HtmlRules.make 
   perl -pi -e 's|if \[|-if [|' include/Make/Html.make   # This will not create html files for lib/*
-  #perl -pi -e 's|py_compile|py_compile dfile=%p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir|' include/Make/Python.make
-  
+    
   # rewrite python wrapper
-  #chmod 0777 macosx/app/python_wrapper
-  #echo 'exec "$GRASS_PYTHONWX" "$@"' >./macosx/app/python_wrapper
-  echo 'exec "%p/bin/python2.7" "$@"' >./macosx/app/python_wrapper
+  echo 'exec "%p/bin/python${PY_VER}" "$@"' >macosx/app/python_wrapper
   chmod 0755 macosx/app/python_wrapper
   
   # Since beta3
   perl -pi -e 's|wxpython_base = gfile\("gui", "wxpython"\)|wxpython_base = gfile("etc", "gui", "wxpython")|' lib/init/grass.py
-  perl -pi -e 's|GRASS_PYTHON="python"|GRASS_PYTHON="%p/bin/python2.7"|' macosx/app/grass.sh.in
+  perl -pi -e 's|GRASS_PYTHON="python"|GRASS_PYTHON="%p/bin/python${PY_VER}"|' macosx/app/grass.sh.in  # This workaround doesn't seem to go well.
 <<
 
 # Compile Phase.
@@ -97,10 +97,9 @@ ConfigureParams: <<
 
 CompileScript: <<
 #!/bin/bash -xe
-  darwin_vers=`uname -r`
-  
-  # mkdir OBJ.x86_64-apple-darwin13.3.0
-  
+  DARWIN_VER=`uname -r`
+  PY_VER=2.7
+    
   if [ "%type_raw[gui]" == "-mac" ]; then
     ./configure %c --without-x --with-wxwidgets=%p/lib/wx/config/osx_cocoa-unicode-3.0
   elif [ "%type_raw[gui]" == "-x11" ]; then
@@ -111,11 +110,11 @@ CompileScript: <<
   
   make         INST_DIR=%p/Applications/GRASS-7.0.app/Contents/MacOS \
                PREFIX_TARGET=%b/Applications \
-               GISBASE=%b/dist.x86_64-apple-darwin${darwin_vers} \
+               GISBASE=%b/dist.x86_64-apple-darwin${DARWIN_VER} \
                RUN_GISBASE=%p/Applications/GRASS-7.0.app/Contents/MacOS \
                GISBASE_SYSTEM=%b/Applications/GRASS-7.0.app/Contents/MacOS/lib \
-               PYTHON=%p/bin/python2.7 \
-               GRASS_PYTHON=%p/bin/python2.7
+               PYTHON=%p/bin/python${PY_VER} \
+               GRASS_PYTHON=%p/bin/python${PY_VER}
   
   make install UNIX_BIN=%b/Applications/GRASS-7.0.app/Contents/MacOS \
                INST_DIR=%b/Applications/GRASS-7.0.app/Contents/MacOS \
@@ -124,10 +123,11 @@ CompileScript: <<
                RUN_GISBASE=%p/Applications/GRASS-7.0.app/Contents/MacOS \
                MACOSX_SUPPDIR=%b/Applications/GRASS-7.0.app/Contents/MacOS/lib \
                GISBASE_SYSTEM=%p/Applications/GRASS-7.0.app/Contents/MacOS/lib \
-               PYTHON=%p/bin/python2.7 \
-               GRASS_PYTHON=%p/bin/python2.7
+               PYTHON=%p/bin/python${PY_VER} \
+               GRASS_PYTHON=%p/bin/python${PY_VER}
   
-  perl -pi -e 's|GRASS_PYTHON="python"|GRASS_PYTHON="%p/bin/python2.7"|' Applications/GRASS-7.0.app/Contents/MacOS/grass.sh
+  perl -pi -e 's|GRASS_PYTHON="python"|GRASS_PYTHON="%p/bin/python${PY_VER}"|' Applications/GRASS-7.0.app/Contents/MacOS/grass.sh
+  perl -pi -e 's|GRASS_CONFIG_DIR="Library/Preferences/GRASS/\$grass_Ver"|GRASS_CONFIG_DIR="Library/Preferences/GRASS/7.0"|' Applications/GRASS-7.0.app/Contents/MacOS/grass.sh
   
   # Recompile python scripts to fix path (because 'make install' is
   # called with path to staging directory that masks runtime location)
@@ -136,8 +136,8 @@ CompileScript: <<
                python/grass/pygrass python/grass/script python/grass/temporal python/grass/lib \
                gui/wxpython gui/wxpython/* r.in.wms ../tools
     do
-      %p/bin/python2.7    %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir
-      %p/bin/python2.7 -O %p/lib/python2.7/compileall.py -f -d %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir
+      %p/bin/python${PY_VER}    %p/lib/python${PY_VER}/compileall.py -f -d %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir
+      %p/bin/python${PY_VER} -O %p/lib/python${PY_VER}/compileall.py -f -d %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir %b/Applications/GRASS-7.0.app/Contents/MacOS/etc/$pydir
     done
   
   for libname in  arraystats bitmap btree btree2 cairodriver ccmath cdhc cluster datetime \
@@ -146,7 +146,7 @@ CompileScript: <<
                   linkm lrs manage neta pngdriver psdriver qtree raster rli rowio rtree \
                   segment shape sim sites sqlp stats symb temporal vector vedit 
     do
-      install_name_tool -id %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib %b/dist.x86_64-apple-darwin${darwin_vers}/lib/libgrass_${libname}.dylib
+      install_name_tool -id %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib %b/dist.x86_64-apple-darwin${DARWIN_VER}/lib/libgrass_${libname}.dylib
     done
 <<
 
@@ -155,7 +155,7 @@ CompileScript: <<
 # Install Phase.
 InstallScript: <<
 #!/bin/sh -xe
-  # darwin_vers=`uname -r`
+  # DARWIN_VER=`uname -r`
   echo "Nothing to install..."
 <<
 AppBundles: Applications/GRASS-7.0.app
