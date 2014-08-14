@@ -54,6 +54,7 @@ PatchScript: <<
   if [ $( sw_vers -productVersion ) > 10.8 ]; then
     perl -pi -e 's|wximgview||' visualization/Makefile
   fi
+  perl -pi -e 's|/usr/bin/env python|%p/bin/python${PY_VER}|' lib/init/grass.py
   perl -pi -e 's|/usr/bin/env python|%p/bin/python${PY_VER}|' gui/wxpython/*/*.py
   perl -pi -e 's|call|chmod +x \$\(1\) && call|' include/Make/HtmlRules.make 
   perl -pi -e 's|if \[|-if [|' include/Make/Html.make   # This will not create html files for lib/*
