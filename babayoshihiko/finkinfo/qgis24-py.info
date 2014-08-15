@@ -59,7 +59,7 @@ BuildConflicts: libspatialite1
 Source: http://qgis.org/downloads/qgis-%v.tar.bz2
 Source-MD5: c509ae14d34bf35456ee95c71b909172
 PatchFile: qgis24-processing.patch
-PatchFile-MD5: 2d91980028c4c6520867ff0e47c2bc1c
+PatchFile-MD5: b7902b461cae40cbc4a6a64d2538d48f
 #PatchFile: qgis24-2to3.patch
 #PatchFile2-MD5: ae7a7f40a86f7aac941b916be6f8fdf5
 PatchScript: <<

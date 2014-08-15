@@ -82,7 +82,7 @@ diff -ruN qgis-2.4.0-orig/python/plugins/processing/algs/grass/GrassUtils.py qgi
                  return
 diff -ruN qgis-2.4.0-orig/python/plugins/processing/algs/grass7/Grass7Utils.py qgis-2.4.0-processing/python/plugins/processing/algs/grass7/Grass7Utils.py
 --- qgis-2.4.0-orig/python/plugins/processing/algs/grass7/Grass7Utils.py	2014-07-10 11:09:14.000000000 +0900
-+++ qgis-2.4.0-processing/python/plugins/processing/algs/grass7/Grass7Utils.py	2014-08-15 12:19:40.000000000 +0900
++++ qgis-2.4.0-processing/python/plugins/processing/algs/grass7/Grass7Utils.py	2014-08-15 12:34:48.000000000 +0900
 @@ -2,7 +2,7 @@
  
  """
@@ -152,7 +152,7 @@ diff -ruN qgis-2.4.0-orig/python/plugins/processing/algs/grass7/Grass7Utils.py q
  
          return command
  
-@@ -353,18 +326,6 @@
+@@ -353,43 +326,7 @@
  
      @staticmethod
      def checkGrass7IsInstalled(ignorePreviousState=False):
@@ -168,6 +168,33 @@ diff -ruN qgis-2.4.0-orig/python/plugins/processing/algs/grass7/Grass7Utils.py q
 -                        + 'Please, go to the Processing settings dialog, and \
 -                        check that the GRASS GIS 7\n' \
 -                        + 'folder is correctly configured'
+-
+-        if not ignorePreviousState:
+-            if Grass7Utils.isGrass7Installed:
+-                return
+-        try:
+-            from processing import runalg
+-            result = runalg(
+-                'grass7:v.voronoi',
+-                points(),
+-                False,
+-                False,
+-                '270778.60198,270855.745301,4458921.97814,4458983.8488',
+-                -1,
+-                0.0001,
+-                0,
+-                None,
+-                )
+-            if not os.path.exists(result['output']):
+-                return 'It seems that GRASS GIS 7 is not correctly installed and \
+-                    configured in your system.\nPlease install it before \
+-                    running GRASS GIS 7 algorithms.'
+-        except:
+-            s = traceback.format_exc()
+-            return 'Error while checking GRASS GIS 7 installation. GRASS GIS 7 might not \
+-                be correctly configured.\n' + s
+-
+         Grass7Utils.isGrass7Installed = True
++        return
++
  
-         if not ignorePreviousState:
-             if Grass7Utils.isGrass7Installed:
