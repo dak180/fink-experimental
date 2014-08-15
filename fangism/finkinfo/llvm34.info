@@ -1,7 +1,7 @@
 Info3: <<
 Package: llvm34
 Version: 3.4.2
-Revision: 1
+Revision: 2
 Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
@@ -63,7 +63,7 @@ PatchFile6-MD5: fcbf05761ea7425b1f9b77461b9928b2
 PatchFile7: %n-clang-iomp5.patch
 PatchFile7-MD5: 7e4ff3be5b6c64736797b11d824d7365
 PatchFile8: %n-openmp-cmake.patch
-PatchFile8-MD5: 84df97a76abba61e2661527e3c222101 
+PatchFile8-MD5: 5271212d336b2bf08322674cf8a94543
 
 PatchScript: <<
 	#!/bin/sh -ev
