@@ -289,7 +289,6 @@ CompileScript: <<
 	ls -alF
 	for libname in *.so 
 		do
-		otool -L $libname
 		install_name_tool -id %p/$QGIS_DIR/PlugIns/qgis/$libname $libname
 		for loadable in ${LOADBLES}
 		do
@@ -318,7 +317,7 @@ InstallScript: <<
 
 	ln -s %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/python/grass %i/share/qgis24-py%type_pkg[python]/grass
 	
-	chmod 0777 %i/share/qgis24-py%type_pkg[python]/plugins/processing/test/data/*
+	chmod 0777 %i/share/qgis24-py%type_pkg[python]/plugins/processing/tests/data/*
 <<
 
 AppBundles: Applications/QGIS-py%type_pkg[python]-%v.app
