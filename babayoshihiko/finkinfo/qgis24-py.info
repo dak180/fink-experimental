@@ -1,10 +1,10 @@
 Info2: <<
 
 Package: qgis24-py%type_pkg[python]
-Type: qgis (2.4), python (3.4 3.3 2.7)
+Type: qgis (2.4), python (3.4 2.7)
 
 Version: 2.4.0
-Revision: 1
+Revision: 1.3
 Description: User friendly Open Source GIS
 License: GPL
 Homepage: http://qgis.org
@@ -33,7 +33,7 @@ in /Applications/Fink.
 <<
 
 # Dependencies.
-Depends: %n-shlibs (=%v-%r), psychopg2-py%type_pkg[python]
+Depends: %n-shlibs (=%v-%r), gdal-py%type_pkg[python], psycopg2-py%type_pkg[python]
 BuildDepends: << 
 	fink (>= 0.28), cmake, bison,
 	gsl,
@@ -45,7 +45,7 @@ BuildDepends: <<
 	cfitsio,
 	unixodbc2-nox | unixodbc2, 
 	libgeos3.4.2,
-	gdal-dev | gdal-pgsql-dev, 
+	gdal-dev (>=1.11.0-1) | gdal-pgsql-dev (>=1.11.0-1), 
 	postgresql92-dev, 
 	grass64-x11-dev | grass64-mac-dev,
 	proj,
@@ -58,14 +58,20 @@ BuildConflicts: libspatialite1
 # Unpack Phase.
 Source: http://qgis.org/downloads/qgis-%v.tar.bz2
 Source-MD5: c509ae14d34bf35456ee95c71b909172
+PatchFile: qgis24-processing.patch
+PatchFile-MD5: 2d91980028c4c6520867ff0e47c2bc1c
+#PatchFile: qgis24-2to3.patch
+#PatchFile2-MD5: ae7a7f40a86f7aac941b916be6f8fdf5
 PatchScript: <<
 #!/bin/bash -ev
-	# Find Fink's PyQt4
-	perl -pi -e 's|sys.path = |sys.path = \[\\\"%p/lib/qt4-mac/lib/python'%type_raw[python]'/site-packages\\\", " + newpaths.join( "," ) + "] + sys.path" ); //|' src/python/qgspythonutilsimpl.cpp
-	perl -pi -e 's|\.app|-py%type_pkg[python]-%v.app|' CMakeLists.txt
+    sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+
+    # Find Fink's PyQt4
+    perl -pi -e 's|sys.path = |sys.path = \[\\\"%p/lib/qt4-mac/lib/python'%type_raw[python]'/site-packages\\\", " + newpaths.join( "," ) + "] + sys.path" ); //|' src/python/qgspythonutilsimpl.cpp
+    perl -pi -e 's|\.app|-py%type_pkg[python]-%v.app|' CMakeLists.txt
     
-	# 2.0.0
-	perl -pi -e "s|^.*osascript.*$|#|g" images/icons/mac/browser/CMakeLists.txt
+    # 2.0.0
+    perl -pi -e "s|^.*osascript.*$|#|g" images/icons/mac/browser/CMakeLists.txt
     
     # Python related fixes
     perl -pi -e "s|from PyQt4 import pyqtconfig||" python/console/console.py
@@ -73,25 +79,9 @@ PatchScript: <<
     
     # SIP related fixes
     perl -pi -e "s/SET\(SIP_TAGS\)/SET(SIP_TAGS WS_MACX Qt_4_8_6)/" cmake/SIPMacros.cmake
-<<
-
-# Compile Phase.
-GCC: 4.0
-
-SetCFLAGS: -fno-common
-SetLDFLAGS: -liconv %p/opt/libgeos3.4.2/lib/libgeos-3.4.2.dylib
-CompileScript: <<
-#!/bin/bash -ev
-	QGIS_VER=2.4
-	QGIS_DIR=Applications/QGIS-py%type_pkg[python]-%v.app/Contents
-	LOADBLES='qgis_analysis qgis_core qgis_gui qgis_networkanalysis qgisgrass qgissqlanyconnection'
-	
-	export QTDIR=%p/lib/qt4-mac
-	export PYTHONPATH=%p/lib/qt4-mac/lib/python%type_raw[python]/site-packages:$PYTHONPATH
-	export PATH=%p/lib/qt4-mac/lib/python%type_raw[python]/bin:$PATH
-		
-	# 2.0
+    
 	if [[ %type_pkg[python] > 30 ]]; then
+	  patch -p1 < %{PatchFile}
 	  perl -pi -e "s|cStringIO|io|g" src/python/qgspythonutilsimpl.cpp
 	  %p/bin/2to3-%type_raw[python] -w python/utils.py
 	  %p/bin/2to3-%type_raw[python] -w python/console/__init__.py
@@ -136,6 +126,26 @@ CompileScript: <<
 	  perl -pi -e "s|PyString_FromString|PyUnicode_FromString|g" python/core/qgsfeature.sip
 	  perl -pi -e "s|PyString_FromString|PyUnicode_FromString|g" python/core/qgsgeometry.sip
 	  perl -pi -e "s|PyInt_|PyLong_|g" analysis/network/qgsgraphanalyzer.sip
+	fi
+<<
+
+# Compile Phase.
+GCC: 4.0
+
+SetCFLAGS: -fno-common
+SetLDFLAGS: -liconv %p/opt/libgeos3.4.2/lib/libgeos-3.4.2.dylib
+CompileScript: <<
+#!/bin/bash -ev
+	QGIS_VER=2.4
+	QGIS_DIR=Applications/QGIS-py%type_pkg[python]-%v.app/Contents
+	LOADBLES='qgis_analysis qgis_core qgis_gui qgis_networkanalysis qgisgrass qgissqlanyconnection'
+	
+	export QTDIR=%p/lib/qt4-mac
+	export PYTHONPATH=%p/lib/qt4-mac/lib/python%type_raw[python]/site-packages:$PYTHONPATH
+	export PATH=%p/lib/qt4-mac/lib/python%type_raw[python]/bin:$PATH
+		
+	# 2.0
+	if [[ %type_pkg[python] > 30 ]]; then
 	  QGIS_PYTHON_OPTIONS=" -D PYTHON_INCLUDE_PATH=%p/include/python%type_raw[python]m
 					-D PYTHON_LIBRARY=%p/lib/python%type_raw[python]/config-%type_raw[python]m/libpython%type_raw[python]m.dylib
 					-D PYTHON_EXECUTABLE=%p/bin/python%type_raw[python]m
@@ -305,6 +315,10 @@ InstallScript: <<
 	# 2.4.0 Defaults plugins are installed
 	mv %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins %i/share/qgis24-py%type_pkg[python]/plugins
 	ln -s %p/share/qgis24-py%type_pkg[python]/plugins %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins
+
+	ln -s %p/Applications/GRASS-7.0.app/Contents/MacOS/etc/python/grass %i/share/qgis24-py%type_pkg[python]/grass
+	
+	chmod 0777 %i/share/qgis24-py%type_pkg[python]/plugins/processing/test/data/*
 <<
 
 AppBundles: Applications/QGIS-py%type_pkg[python]-%v.app
@@ -316,14 +330,13 @@ SplitOff: <<
 	qt4-base-mac-qtcore-shlibs (>=4.8.6-1), 
 	python%type_pkg[python], 
 	sip-py%type_pkg[python] (>=4.16.1-1), pyqt4-mac-py%type_pkg[python] (>=4.11-1), 
-	qscintilla2.11-qt4-mac-shlibs,
+	qscintilla2.11-qt4-mac-shlibs (>= 2.8.1-1),
 	qscintilla2-qt4-mac-py%type_pkg[python] (>= 2.8.1-1),
 	gsl-shlibs,
 	xerces-c31-shlibs,
 	libgeos3.4.2-shlibs,
-	gdal-shlibs (>= 1.4) | gdal-pgsql-shlibs (>= 1.4), 
+	gdal-shlibs (>=1.11.0-1) | gdal-pgsql-shlibs (>=1.11.0-1), 
 	grass64-x11 | grass64-mac,
-	libspatialite5-shlibs,
 	proj-shlibs (>= 4.4),
 	qwt6-qt4-mac-shlibs (>= 5.0),
 	libspatialindex3-shlibs,
