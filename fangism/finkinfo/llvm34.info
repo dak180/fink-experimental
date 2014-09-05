@@ -128,7 +128,7 @@ if ($1 == "cmd.append(exec_path)") {
 	fi
 
 	# Adjust path for relocation of libc++ headers (from xcode)
-	test -d /usr/include/c++/v1 ||
+	test -d /usr/lib/c++/v1 ||
 	if test "$darwin_vers" -ge 11
 	then
 		clang_path=`xcrun -find clang`
