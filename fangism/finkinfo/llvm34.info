@@ -127,18 +127,29 @@ if ($1 == "cmd.append(exec_path)") {
 		tools/clang/lib/Frontend/InitHeaderSearch.cpp
 	fi
 
-	# Adjust path for relocation of libc++ headers (from xcode)
+	# Adjust path for relocation of libc++ headers (from xcode or system)
 	test -d /usr/lib/c++/v1 ||
-	if test "$darwin_vers" -ge 11
-	then
-		clang_path=`xcrun -find clang`
-		pushd `dirname $clang_path`
-		cd ../lib/c++/v1
-		cxx_incdir=`pwd`
-		popd
-		sed -i.orig3 -e 's|AddPath("/usr/include/c++/v1"|AddPath("'"$cxx_incdir"'"|' \
-			tools/clang/lib/Frontend/InitHeaderSearch.cpp
-	fi
+	test "$darwin_vers" -lt 11 ||
+	{
+	  clang_path=`xcrun -find clang`
+	  pushd `dirname $clang_path`
+	  if test -d ../lib/c++/v1
+	  then
+	    cd ../lib/c++/v1
+	    cxx_incdir=`pwd`
+	  elif test -d ../include/c++/v1
+	  then
+	    cd ../include/c++/v1
+	    cxx_incdir=`pwd`
+	  else
+	    echo "Unable to find libc++ headers relative to $clang_path (from xcrun)."
+	    exit 1
+	  fi
+	  popd
+	  echo "Found system libc++ headers in: $cxx_incdir"
+	  sed -i.orig3 -e 's|AddPath("/usr/include/c++/v1"|AddPath("'"$cxx_incdir"'"|' \
+		tools/clang/lib/Frontend/InitHeaderSearch.cpp
+	}
 
 	# add experimental cmake support to openmp
 	pushd ../openmp-r208472
