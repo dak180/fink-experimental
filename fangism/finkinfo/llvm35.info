@@ -15,14 +15,16 @@ BuildDepends: <<
 # ccache is optional, for accelerating rebuilds
 #	ccache,
 # polly plug-in needs isl,gmp
-	isl (>=0.13), 
+	isl2 (>=0.13), 
 	gmp5,
 # build scripts need python2.7
 	python27,
 	libncurses5-dev,
 # xml and lzma are used to build an uninstalled bin/c-index-test, so bdep-only
 	libxml2,
-	liblzma5
+	liblzma5,
+# pre-xz fink dists need explicit dependence on xz
+	xz
 <<
 Depends: %N-shlibs
 # no longer uses cloog directly, only indirectly through isl
@@ -156,6 +158,9 @@ if ($1 == "cmd.append(exec_path)") {
 	# add experimental cmake support to openmp
 	pushd ../openmp-%v.src
 #	  $patch_filter %{PatchFile8} | patch -p1
+	  sed -i.orig -e '/message-converter/s|--enum=|--enum-file=|' \
+		-e '/message-converter/s|--default=|--default-file=|' \
+		runtime/CMakeLists.txt
 	  sed -i.orig -e 's|= gcc|= %b/../build/last/bin/clang-3.5|g' testsuite/Makefile
 	popd
 	
@@ -227,14 +232,12 @@ EOF
 
 
 	# set up some possible stage-1 compilers
-	fsfgccv=4.8
+	fsfgccv=4.9
 	# wrap ccache into single cmd b/c cmake can't handle "ccache g++"
 	mkdir ../opt-bin
 	pushd ../opt-bin
-	  wrap_compiler gcc ccgcc
-	  wrap_compiler g++ ccg++
-	  wrap_compiler gcc-4.2 ccgcc-4.2
-	  wrap_compiler g++-4.2 ccg++-4.2
+	  wrap_compiler clang ccclang
+	  wrap_compiler clang++ ccclang++
 	  wrap_compiler gcc-fsf-$fsfgccv ccgcc-$fsfgccv
 	  wrap_compiler g++-fsf-$fsfgccv ccg++-$fsfgccv
 	# also setup bootstrap stage compilers
@@ -253,21 +256,19 @@ EOF
 	# stage 1 compiler (try to use ccache if available)
 	# gcc-4.0.1 FAILS on darwin9
 	case "$darwin_vers" in
-	8)
-	  export CC=ccgcc
-	  export CXX=ccg++
+	8|9|10)
+	# bootstrap with clang-3.4 and libcxx1-dev
+	  export PATH=%p/opt/llvm-3.4/bin:$PATH
+	  export CC=ccclang
+	  export CXX=ccclang++
 #	  export CC=ccgcc-$fsfgccv
 #	  export CXX=ccg++-$fsfgccv
 	  ;;
-	9)
-	  export CC=ccgcc-4.2
-	  export CXX=ccg++-4.2
-	  ;;
 	*)
-	  export CC=ccgcc
-	  export CXX=ccg++
+	  # use system clang
+	  export CC=ccclang
+	  export CXX=ccclang++
 	  ;;
-	# on darwin11+, fink redirects gcc/g++ to clang/clang++ via PATH
 	esac
 
 	clang_arch=$build_arch
@@ -349,9 +350,9 @@ EOF
 	make
 	# tests hardcode the .dylib extension for modules
 	pushd lib
-	  ln -s BugpointPasses.{so,dylib}
+	  ln -s BugpointPasses.{dylib,so}
 	  ln -s LLVMPolly.{so,dylib}
-	  ln -s LLVMHello.{so,dylib}
+	  ln -s LLVMHello.{dylib,so}
 	popd
 	cd ..
 	ln -s stage1 last
@@ -463,9 +464,9 @@ then
 	asm_link_clang_rt
 	make
 	pushd lib
-	  ln -s BugpointPasses.{so,dylib}
+	  ln -s BugpointPasses.{dylib,so}
 	  ln -s LLVMPolly.{so,dylib}
-	  ln -s LLVMHello.{so,dylib}
+	  ln -s LLVMHello.{dylib,so}
 	popd
 	cd ..
 	rm -f last
@@ -517,9 +518,9 @@ then
 	asm_link_clang_rt
 	make
 	pushd lib
-	  ln -s BugpointPasses.{so,dylib}
+	  ln -s BugpointPasses.{dylib,so}
 	  ln -s LLVMPolly.{so,dylib}
-	  ln -s LLVMHello.{so,dylib}
+	  ln -s LLVMHello.{dylib,so}
 	popd
 	cd ..
 	rm -f last
@@ -737,9 +738,9 @@ else
 	asm_link_clang_rt
 	make
 	pushd lib
-	  ln -s BugpointPasses.{so,dylib}
+	  ln -s BugpointPasses.{dylib,so}
 	  ln -s LLVMPolly.{so,dylib}
-	  ln -s LLVMHello.{so,dylib}
+	  ln -s LLVMHello.{dylib,so}
 	popd
 	cd ..
 	rm -f last
@@ -931,6 +932,9 @@ InstallScript: <<
 	# there seems to be an extra copy of cxxabi.h, identical to system's
 	# remove if identical?
 
+# no longer need this, linking is now relative to @rpath
+if false
+then
 	# boilerplate script for fixing post-cmake-install install_names
 	# expect to find in lib/
 	# libc++ will be in %p/lib and %p/include/c++/v1
@@ -1000,6 +1004,7 @@ InstallScript: <<
 	  done
 	  popd
 	done
+fi
 
 	stem=opt/llvm-$brv
 	iprefix=%i/$stem
@@ -1113,7 +1118,7 @@ SplitOff5: <<
 		!%p/opt/llvm-3.5/lib/libclangIndex.dylib
 		!%p/opt/llvm-3.5/lib/libclangLex.dylib
 		!%p/opt/llvm-3.5/lib/libclangParse.dylib
-		!%p/opt/llvm-3.5/lib/libclangRewriteCore.dylib
+		!%p/opt/llvm-3.5/lib/libclangRewrite.dylib
 		!%p/opt/llvm-3.5/lib/libclangRewriteFrontend.dylib
 		!%p/opt/llvm-3.5/lib/libclangSema.dylib
 		!%p/opt/llvm-3.5/lib/libclangSerialization.dylib
@@ -1173,19 +1178,19 @@ SplitOff9: <<
 	Description: Shared libraries for Polly loop optimizer
 	Depends: <<
 		%N-shlibs (= %v-%r),
-		isl-shlibs (>= 0.12.1), 
+		isl2-shlibs (>= 0.13), 
 	#	cloog-org2-shlibs (>= 0.18),
 		libgmpxx5-shlibs,
 		gmp5-shlibs
 	<<
 	Files: <<
 		opt/llvm-3.5/lib/LLVMPolly.so
-		opt/llvm-3.5/lib/libLLVMPolly*.dylib
+		opt/llvm-3.5/lib/libPolly*.dylib
 	<<
 	DocFiles: tools/polly/LICENSE.txt tools/polly/CREDITS.txt
 	Shlibs: <<
 		!%p/opt/llvm-3.5/lib/LLVMPolly.so
-		!%p/opt/llvm-3.5/lib/libLLVMPollyJSON.dylib
+		!%p/opt/llvm-3.5/lib/libPolly.dylib
 	<<
 <<
 SplitOff10: <<
@@ -1216,8 +1221,8 @@ SplitOff12: <<
 		libncurses5-shlibs
 	<<
 	Files: <<
-		opt/llvm-3.5/lib/BugpointPasses.so
-		opt/llvm-3.5/lib/LLVMHello.so
+		opt/llvm-3.5/lib/BugpointPasses.dylib
+		opt/llvm-3.5/lib/LLVMHello.dylib
 		opt/llvm-3.5/lib/libLLVM*.dylib
 		opt/llvm-3.5/lib/libLTO.dylib
 		opt/llvm-3.5/lib/libgtest*.dylib
@@ -1225,8 +1230,8 @@ SplitOff12: <<
 	DocFiles: *.TXT README.txt
 	Shlibs: <<
 		!%p/opt/llvm-3.5/lib/libLTO.dylib
-		!%p/opt/llvm-3.5/lib/BugpointPasses.so
-		!%p/opt/llvm-3.5/lib/LLVMHello.so
+		!%p/opt/llvm-3.5/lib/BugpointPasses.dylib
+		!%p/opt/llvm-3.5/lib/LLVMHello.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMARMAsmParser.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMARMAsmPrinter.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMARMCodeGen.dylib
@@ -1289,7 +1294,7 @@ SplitOff13: <<
 	Shlibs: <<
 	 	%p/lib/c++/libc++.1.0.dylib 1.0.0 %n (>= 3.5.0-0)
 	<<
-	DocFiles: ../libcxx-3.5.src/*.TXT
+	DocFiles: ../libcxx-%v.src/*.TXT
 	DescPort: <<
 	This C++ library is always built using the system's C++ ABI library,
 	not libc++abi from the LLVM project.  
@@ -1369,10 +1374,10 @@ Targets enabled in CompileScript: X86, PowerPC, ARM.
 DescPort: <<
 Most of the patches are maintained at fangism's powerpc-darwin8 branches
 of the llvm, clang, compiler-rt projects hosted at github:
-	https://github.com/fangism/llvm/compare/release-3.5.0..powerpc-darwin8-rel-3.5.0.diff
-	https://github.com/fangism/clang/compare/release-3.5.0..powerpc-darwin8-rel-3.5.0.diff
-	https://github.com/fangism/compiler-rt/compare/release-3.5.0..powerpc-darwin8-rel-3.5.0.diff
-	https://github.com/fangism/libcxx/compare/release-3.5.0..powerpc-darwin8-rel-3.5.0.diff
+	https://github.com/fangism/llvm/compare/release-3.5.0...powerpc-darwin8-rel-3.5.0.diff
+	https://github.com/fangism/clang/compare/release-3.5.0...powerpc-darwin8-rel-3.5.0.diff
+	https://github.com/fangism/compiler-rt/compare/release-3.5.0...powerpc-darwin8-rel-3.5.0.diff
+	https://github.com/fangism/libcxx/compare/release-3.5.0...powerpc-darwin8-rel-3.5.0.diff
 
 On darwin>9 and x86 architectures, the package build is done as a
 3-stage bootstrap (self-host), now including a built libc++.  
