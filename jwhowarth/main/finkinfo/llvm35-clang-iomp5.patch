@@ -5,7 +5,7 @@
    if (Args.hasArg(options::OPT_fopenmp)){
      // This is more complicated in gcc...
 +    // Help clang find libiomp5.dylib
-+    CmdArgs.push_back("-L@FINK_PREFIX@/opt/llvm-3.4/lib");
++    CmdArgs.push_back("-L@FINK_PREFIX@/opt/llvm-3.5/lib");
      CmdArgs.push_back("-liomp5");
  
      if (Args.hasArg(options::OPT_omptargets_EQ))
@@ -14,7 +14,7 @@
        bool OpenMP = Args.hasArg(options::OPT_fopenmp);
        if (OpenMP) {
 +	// Help clang find libiomp5.dylib
-+	CmdArgs.push_back("-L@FINK_PREFIX@/opt/llvm-3.4/lib");
++	CmdArgs.push_back("-L@FINK_PREFIX@/opt/llvm-3.5/lib");
          CmdArgs.push_back("-liomp5");
          if (Args.hasArg(options::OPT_omptargets_EQ))
            CmdArgs.push_back("-lomptarget");
