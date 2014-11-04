@@ -22,6 +22,8 @@ PatchScript: <<
 CompileScript: <<
 #!/bin/bash -efv
 mkdir build
+# nasty hack to get cmake to set the proper compatibility and current versions
+perl -pi -e 's|VERSION 3.9.0 SOVERSION 3|VERSION 13.0.0 SOVERSION 13|g' CMakeLists.txt
 cd build
 CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=%p \
                 -DCMAKE_VERBOSE_MAKEFILE=ON \
@@ -47,12 +49,15 @@ cd build
 perl -pi -e 's|.PHONY|#.PHONY|g' Makefile
 make -j1 install/fast DESTDIR="%d"
 # hack around the absence of a cmake --disable-replace-glut option
-mv %i/lib/libglut.3.9.0.dylib %i/lib/libfreeglut.3.9.0.dylib
-install_name_tool -id %p/lib/libfreeglut.3.9.0.dylib %i/lib/libfreeglut.3.9.0.dylib 
-install_name_tool -change libglut.3.dylib %p/lib/libfreeglut.3.dylib  %i/lib/libfreeglut.3.9.0.dylib
+# and restore VERSION to 3 and create symlink for SOVERSION
+mv %i/lib/libglut.13.0.0.dylib %i/lib/libfreeglut.3.dylib
+rm %i/lib/libglut.13.dylib
+install_name_tool -id %p/lib/libfreeglut.3.dylib %i/lib/libfreeglut.3.dylib 
+install_name_tool -change libglut.3.dylib %p/lib/libfreeglut.3.dylib  %i/lib/libfreeglut.3.dylib
+ln -fs libfreeglut.3.dylib %i/lib/libglut.3.9.0.dylib
 ln -fs libfreeglut.3.dylib %i/lib/libglut.dylib
-ln -fs libfreeglut.a %i/lib/libglut.a
-ln -fs libfreeglut.la %i/lib/libglut.la
+#ln -fs libfreeglut.a %i/lib/libglut.a
+#ln -fs libfreeglut.la %i/lib/libglut.la
 #ln -s freeglut.h %i/include/GL/glut.h
 ln -s freeglut_ext.h %i/include/GL/glut_ext.h
 ln -s freeglut_std.h %i/include/GL/glut_std.h
@@ -61,7 +66,7 @@ SplitOff: <<
  Package: %N-shlibs
  Depends: libgl, x11
  Files: lib/libfreeglut.3*.dylib
- Shlibs: %p/lib/libfreeglut.3.9.0.dylib 3.0.0 %n (>= 3.0.0-1)
+ Shlibs: %p/lib/libfreeglut.3.dylib 13.0.0 %n (>= 3.0.0-1)
  DocFiles: AUTHORS COPYING ChangeLog NEWS README TODO
 <<
 Description: Opengl utility toolkit
