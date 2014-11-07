@@ -3,22 +3,22 @@ Package: gcc50
 Version: 5.0.0
 Revision: 1000
 #Source: ftp://gcc.gnu.org/pub/gcc/releases/gcc-%v/gcc-%v.tar.bz2
-Source: ftp://gcc.gnu.org/pub/gcc/snapshots/%v-5.0-20141106/gcc-5.0-20141106.tar.bz2
-Source-MD5: a34994f9a17450676cc2c927e1b3607b
+Source: ftp://gcc.gnu.org/pub/gcc/snapshots/%v-5.0-20141107/gcc-5.0-20141107.tar.bz2
+Source-MD5: 34fcc2560caea4da4961c690cfc7cf47
 Source2: ftp://sourceware.org/pub/java/ecj-4.5.jar
 Source2-MD5: d7cd6a27c8801e66cbaa964a039ecfdb
 PatchFile: %n.patch
 PatchFile-MD5: 866b1eed3eea4aa7dc10e54f9a085f88
 PatchFile2: ipa_icf_aliasing_restriction.patch
 PatchFile2-MD5: 9bacef55c3586baee1037c3ee300250b
-PatchFile3: PR63750.patch
-PatchFile3-MD5: 008f6261b59a4acfd996513dfe0bd52b
-PatchFile4: PR63699.patch
-PatchFile4-MD5: 87d9baabcf34bb5dbfb54e8a07be4287
+PatchFile3: PR63750_v3.patch
+PatchFile3-MD5: 5b79aab1e79a6ff65230765227183ba5
+PatchFile4: PR63699_v2.patch
+PatchFile4-MD5: db869c43a183a203da5d7d6f801714b8
 PatchFile5: PR63534_comment55.patch
 PatchFile5-MD5: 38f2d5b07714ca9b2c16c16f53dd98fb
-PatchFile6: PR63580_comment4.patch
-PatchFile6-MD5: 97533de6e83018f9d14c1f033b479506
+PatchFile6: PR63534_comment50.patch
+PatchFile6-MD5: 3a94771c39b46672528341c06d2dde10
 Type: -64bit .
 NoSetCPPFLAGS: True
 NoSetLDFLAGS: True
@@ -67,7 +67,7 @@ CompileScript: <<
  mkdir ../darwin_objdir
  cd ../darwin_objdir
  #../gcc-%v/configure %c
- ../gcc-5.0-20141106/configure %c
+ ../gcc-5.0-20141107/configure %c
  # Use bootstrap-lean to reduce disk usage.
  # Note that this causes plugin testsuite failures
  # since the plugin headers must come from prev-gcc.
