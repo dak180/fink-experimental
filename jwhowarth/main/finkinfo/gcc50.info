@@ -4,7 +4,7 @@ Version: 5.0.0
 Revision: 1000
 #Source: ftp://gcc.gnu.org/pub/gcc/releases/gcc-%v/gcc-%v.tar.bz2
 Source: ftp://gcc.gnu.org/pub/gcc/snapshots/%v-5.0-20141107/gcc-5.0-20141107.tar.bz2
-Source-MD5: 34fcc2560caea4da4961c690cfc7cf47
+Source-MD5: eec22e5e4ef0a16489dae24af733e2d0 
 Source2: ftp://sourceware.org/pub/java/ecj-4.5.jar
 Source2-MD5: d7cd6a27c8801e66cbaa964a039ecfdb
 PatchFile: %n.patch
@@ -15,10 +15,8 @@ PatchFile3: PR63750_v3.patch
 PatchFile3-MD5: 5b79aab1e79a6ff65230765227183ba5
 PatchFile4: PR63699_v2.patch
 PatchFile4-MD5: db869c43a183a203da5d7d6f801714b8
-PatchFile5: PR63534_comment55.patch
-PatchFile5-MD5: 38f2d5b07714ca9b2c16c16f53dd98fb
-PatchFile6: PR63534_comment50.patch
-PatchFile6-MD5: 3a94771c39b46672528341c06d2dde10
+PatchFile5: PR63534_comment50.patch
+PatchFile5-MD5: 3a94771c39b46672528341c06d2dde10
 Type: -64bit .
 NoSetCPPFLAGS: True
 NoSetLDFLAGS: True
