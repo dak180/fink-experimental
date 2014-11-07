@@ -1,0 +1,18 @@
+--- gcc-5.0-20141106/gcc/ipa-chkp.c	2014-11-07 08:56:40.000000000 -0500
++++ gcc-5.0-20141106/gcc/ipa-chkp.c.new	2014-11-07 08:42:32.000000000 -0500
+@@ -19,6 +19,7 @@
+ <http://www.gnu.org/licenses/>.  */
+ 
+ #include "config.h"
++#include <string>
+ #include "system.h"
+ #include "coretypes.h"
+ #include "tree-core.h"
+@@ -41,7 +42,6 @@
+ #include "cgraph.h"
+ #include "tree-chkp.h"
+ #include "ipa-chkp.h"
+-#include <string>
+ 
+ /*  Pointer Bounds Checker has two IPA passes to support code instrumentation.
+ 
