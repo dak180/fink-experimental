@@ -1,0 +1,11 @@
+--- gcc-5.0-20141029/libcc1/plugin.cc.orig	2014-10-31 08:42:46.000000000 -0400
++++ gcc-5.0-20141029/libcc1/plugin.cc	2014-10-31 08:43:25.000000000 -0400
+@@ -31,6 +31,8 @@
+ #undef PACKAGE_TARNAME
+ #undef PACKAGE_VERSION
+ 
++#include <sstream>
++
+ #include "gcc-plugin.h"
+ #include "system.h"
+ #include "coretypes.h"
