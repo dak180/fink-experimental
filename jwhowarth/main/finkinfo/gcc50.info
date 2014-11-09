@@ -3,8 +3,8 @@ Package: gcc50
 Version: 5.0.0
 Revision: 1000
 #Source: ftp://gcc.gnu.org/pub/gcc/releases/gcc-%v/gcc-%v.tar.bz2
-Source: ftp://gcc.gnu.org/pub/gcc/snapshots/%v-5.0-20141107/gcc-5.0-20141107.tar.bz2
-Source-MD5: eec22e5e4ef0a16489dae24af733e2d0 
+Source: ftp://gcc.gnu.org/pub/gcc/snapshots/%v-5.0-20141109/gcc-5.0-20141109.tar.bz2
+Source-MD5: d96fc36af72c7db6edbf346dba986750
 Source2: ftp://sourceware.org/pub/java/ecj-4.5.jar
 Source2-MD5: d7cd6a27c8801e66cbaa964a039ecfdb
 PatchFile: %n.patch
@@ -65,7 +65,7 @@ CompileScript: <<
  mkdir ../darwin_objdir
  cd ../darwin_objdir
  #../gcc-%v/configure %c
- ../gcc-5.0-20141107/configure %c
+ ../gcc-5.0-20141109/configure %c
  # Use bootstrap-lean to reduce disk usage.
  # Note that this causes plugin testsuite failures
  # since the plugin headers must come from prev-gcc.
