@@ -23,7 +23,7 @@ Depends: %N-compiler (= %v-%r)
 BuildDepends: gmp5 (>= 6.0.0a-3), libmpfr4 (>= 3.1.2-2), libiconv-dev, gettext-tools, libgettext8-dev, isl2 (>= 0.14), libmpc3 (>= 1.0.2-2), xcode (>= 4.6), fink (>= 0.30.0), fink-package-precedence
 ConfigureParams: <<
  --prefix=%p/lib/gcc5.0 --mandir=%p/share/man --infodir=%p/lib/gcc5.0/info --enable-languages=c,c++,fortran,lto,objc,obj-c++,java \
- --with-gmp=%p --with-libiconv-prefix=%p --with-isl=%p --without-cloog --with-mpc=%p --with-system-zlib \
+ --with-gmp=%p --with-libiconv-prefix=%p --with-isl=%p --with-mpc=%p --with-system-zlib \
  --x-includes=/usr/X11R6/include --x-libraries=/usr/X11R6/lib --program-suffix=-fsf-5.0
 <<
 InfoTest: <<
