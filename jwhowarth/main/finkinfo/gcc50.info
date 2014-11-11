@@ -3,22 +3,16 @@ Package: gcc50
 Version: 5.0.0
 Revision: 1000
 #Source: ftp://gcc.gnu.org/pub/gcc/releases/gcc-%v/gcc-%v.tar.bz2
-Source: ftp://gcc.gnu.org/pub/gcc/snapshots/5-20141109/gcc-5-20141109.tar.bz2
-Source-MD5: 654b2ac5d0ac1b73db460cd9082d3a21
+Source: ftp://gcc.gnu.org/pub/gcc/snapshots/5-20141111/gcc-5-20141111.tar.bz2
+Source-MD5: a5d7722624ffeeb04f2f922ab4c6de3a
 Source2: ftp://sourceware.org/pub/java/ecj-4.5.jar
 Source2-MD5: d7cd6a27c8801e66cbaa964a039ecfdb
 PatchFile: %n.patch
 PatchFile-MD5: 866b1eed3eea4aa7dc10e54f9a085f88
-PatchFile2: ipa_icf_aliasing_restriction.patch
-PatchFile2-MD5: 9bacef55c3586baee1037c3ee300250b
-PatchFile3: PR63699_PR63750.patch
-PatchFile3-MD5: c2a5b083de334b1776cde8bc168e52ff
-PatchFile4: PR63534_comment50.patch
-PatchFile4-MD5: 3a94771c39b46672528341c06d2dde10
-PatchFile5: deprecate_cloog.patch
-PatchFile5-MD5: 12f094e36d484c51b8e8c606c540e18c
-PatchFile6: gcc5-isl-update.patch
-PatchFile6-MD5: ab230e7a9e6834a6b936d8f199c51db5
+PatchFile2: PR63534_comment50.patch
+PatchFile2-MD5: 3a94771c39b46672528341c06d2dde10
+PatchFile3: gcc5-isl-update.patch
+PatchFile3-MD5: ab230e7a9e6834a6b936d8f199c51db5
 Type: -64bit .
 NoSetCPPFLAGS: True
 NoSetLDFLAGS: True
@@ -67,7 +61,7 @@ CompileScript: <<
  mkdir ../darwin_objdir
  cd ../darwin_objdir
  #../gcc-%v/configure %c
- ../gcc-5-20141109/configure %c
+ ../gcc-5-20141111/configure %c
  # Use bootstrap-lean to reduce disk usage.
  # Note that this causes plugin testsuite failures
  # since the plugin headers must come from prev-gcc.
@@ -247,6 +241,9 @@ DescPackaging: <<
  are left in main gcc50 package which still conflicts with other gcc4x packages.
 
  Backport r211067 to fix PR debug/61352.
+
+ Adjust patching for r217355 or later.
+ Add patch to build against isl2-0.14.
 <<
 Homepage: http://gcc.gnu.org/
 Maintainer: Jack Howarth <howarth.at.fink@gmail.com>
