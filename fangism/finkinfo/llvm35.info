@@ -54,7 +54,7 @@ UseMaxBuildJobs: true
 PatchFile: %n.patch
 PatchFile-MD5: ecaf94589ea651deb3afa9d634ddc050
 PatchFile2: %n-clang.patch
-PatchFile2-MD5: 82cbd81d6c02157d6c1d6a4cf559d802
+PatchFile2-MD5: c81342d20cea8ef1e2871d47c76d4155
 PatchFile3: %n-compiler-rt.patch
 PatchFile3-MD5: 1830baf5e1ed12c73044edb04bab01ab
 PatchFile4: %n-polly.patch
@@ -932,13 +932,11 @@ InstallScript: <<
 	# there seems to be an extra copy of cxxabi.h, identical to system's
 	# remove if identical?
 
-# no longer need this, linking is now relative to @rpath
-if false
-then
 	# boilerplate script for fixing post-cmake-install install_names
 	# expect to find in lib/
 	# libc++ will be in %p/lib and %p/include/c++/v1
-	for stem in opt/llvm-$brv lib/c++
+	# for stem in opt/llvm-$brv lib/c++
+	for stem in lib/c++
 	do
 	  iprefix=%i/$stem
 	  prefix=%p/$stem
@@ -977,6 +975,9 @@ then
 	  done
 	  popd
 	done
+# no longer need this, linking is now relative to @rpath
+if false
+then
 	# for binaries and plug-in modules
 	for stem in opt/llvm-$brv
 	do

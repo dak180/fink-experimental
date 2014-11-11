@@ -66,18 +66,6 @@ index bccdae9..ae86f71 100644
  }
  
  static char ObjCEncodingForEnumType(const ASTContext *C, const EnumType *ET) {
-diff --git a/lib/Driver/Driver.cpp b/lib/Driver/Driver.cpp
-index ef26bfa..d2b532e 100644
---- a/lib/Driver/Driver.cpp
-+++ b/lib/Driver/Driver.cpp
-@@ -1953,6 +1953,7 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
-     case llvm::Triple::Darwin:
-     case llvm::Triple::MacOSX:
-     case llvm::Triple::IOS:
-+      // also use this driver for PPC
-       TC = new toolchains::DarwinClang(*this, Target, Args);
-       break;
-     case llvm::Triple::DragonFly:
 diff --git a/lib/Driver/ToolChains.cpp b/lib/Driver/ToolChains.cpp
 index b46f69d..81af930 100644
 --- a/lib/Driver/ToolChains.cpp
