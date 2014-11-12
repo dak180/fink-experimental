@@ -3,16 +3,16 @@ Package: gcc50
 Version: 5.0.0
 Revision: 1000
 #Source: ftp://gcc.gnu.org/pub/gcc/releases/gcc-%v/gcc-%v.tar.bz2
-Source: ftp://gcc.gnu.org/pub/gcc/snapshots/5-20141111/gcc-5-20141111.tar.bz2
-Source-MD5: 526c0f6bfc291aefee7d02d160256438
+Source: ftp://gcc.gnu.org/pub/gcc/snapshots/5-20141112/gcc-5-20141112.tar.bz2
+Source-MD5: 3e19f294589471fc8ad3c7ab5da66cc0
 Source2: ftp://sourceware.org/pub/java/ecj-4.5.jar
 Source2-MD5: d7cd6a27c8801e66cbaa964a039ecfdb
 PatchFile: %n.patch
-PatchFile-MD5: 866b1eed3eea4aa7dc10e54f9a085f88
+PatchFile-MD5: c36a7d9ebcd2ad4226d66e93bfb2fa3c 
 PatchFile2: PR63534_comment50.patch
 PatchFile2-MD5: 3a94771c39b46672528341c06d2dde10
 PatchFile3: gcc5-isl-update.patch
-PatchFile3-MD5: ab230e7a9e6834a6b936d8f199c51db5
+PatchFile3-MD5: 0a00eb5174a8dd6c3203aaa36c41a60d
 Type: -64bit .
 NoSetCPPFLAGS: True
 NoSetLDFLAGS: True
@@ -56,7 +56,7 @@ CompileScript: <<
  mkdir ../darwin_objdir
  cd ../darwin_objdir
  #../gcc-%v/configure %c
- ../gcc-5-20141111/configure %c
+ ../gcc-5-20141112/configure %c
  # Use bootstrap-lean to reduce disk usage.
  # Note that this causes plugin testsuite failures
  # since the plugin headers must come from prev-gcc.
@@ -236,9 +236,6 @@ DescPackaging: <<
  are left in main gcc50 package which still conflicts with other gcc4x packages.
 
  Backport r211067 to fix PR debug/61352.
-
- Adjust patching for r217355 or later.
- Add patch to build against isl2-0.14.
 <<
 Homepage: http://gcc.gnu.org/
 Maintainer: Jack Howarth <howarth.at.fink@gmail.com>
