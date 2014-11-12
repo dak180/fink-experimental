@@ -11,9 +11,9 @@
 -#if defined(__cplusplus)
 -}
 -#endif
- #ifdef HAVE_cloog
- #include <cloog/cloog.h>
- #include <cloog/isl/domain.h>
+ #endif
+ 
+ #include "system.h"
 --- gcc-5-20141109/gcc/graphite-isl-ast-to-gimple.c.orig	2014-11-10 17:51:56.000000000 -0500
 +++ gcc-5-20141109/gcc/graphite-isl-ast-to-gimple.c	2014-11-10 17:52:18.000000000 -0500
 @@ -25,13 +25,7 @@
