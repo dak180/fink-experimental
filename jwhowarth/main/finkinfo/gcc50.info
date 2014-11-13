@@ -4,7 +4,7 @@ Version: 5.0.0
 Revision: 1000
 #Source: ftp://gcc.gnu.org/pub/gcc/releases/gcc-%v/gcc-%v.tar.bz2
 Source: ftp://gcc.gnu.org/pub/gcc/snapshots/5-20141112/gcc-5-20141112.tar.bz2
-Source-MD5: 3e19f294589471fc8ad3c7ab5da66cc0
+Source-MD5: b1b8e357e2d91279c8840a968326d0d8
 Source2: ftp://sourceware.org/pub/java/ecj-4.5.jar
 Source2-MD5: d7cd6a27c8801e66cbaa964a039ecfdb
 PatchFile: %n.patch
@@ -13,6 +13,8 @@ PatchFile2: PR63534_comment50.patch
 PatchFile2-MD5: 3a94771c39b46672528341c06d2dde10
 PatchFile3: gcc5-isl-update.patch
 PatchFile3-MD5: 0a00eb5174a8dd6c3203aaa36c41a60d
+PatchFile4: gcc5-darwin-libatomic.patch
+PatchFile4-MD5: bd8597b5d5c1c297fe4d0e24384ad6e2
 Type: -64bit .
 NoSetCPPFLAGS: True
 NoSetLDFLAGS: True
