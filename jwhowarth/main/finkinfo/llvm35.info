@@ -54,7 +54,7 @@ UseMaxBuildJobs: true
 PatchFile: %n.patch
 PatchFile-MD5: ecaf94589ea651deb3afa9d634ddc050
 PatchFile2: %n-clang.patch
-PatchFile2-MD5: c81342d20cea8ef1e2871d47c76d4155 
+PatchFile2-MD5: c81342d20cea8ef1e2871d47c76d4155
 PatchFile3: %n-compiler-rt.patch
 PatchFile3-MD5: 1830baf5e1ed12c73044edb04bab01ab
 PatchFile4: %n-polly.patch
@@ -933,13 +933,11 @@ InstallScript: <<
 	# there seems to be an extra copy of cxxabi.h, identical to system's
 	# remove if identical?
 
-# no longer need this, linking is now relative to @rpath
-if false
-then
 	# boilerplate script for fixing post-cmake-install install_names
 	# expect to find in lib/
 	# libc++ will be in %p/lib and %p/include/c++/v1
-	for stem in opt/llvm-$brv lib/c++
+	# for stem in opt/llvm-$brv lib/c++
+	for stem in lib/c++
 	do
 	  iprefix=%i/$stem
 	  prefix=%p/$stem
@@ -978,6 +976,9 @@ then
 	  done
 	  popd
 	done
+# no longer need this, linking is now relative to @rpath
+if false
+then
 	# for binaries and plug-in modules
 	for stem in opt/llvm-$brv
 	do
@@ -1103,32 +1104,32 @@ SplitOff5: <<
 		tools/clang/README.txt
 	<<
 	Shlibs: <<
-	 	%p/opt/llvm-3.5/lib/libclang.3.5.dylib 1.0.0 %n (>= 3.5-0)
-		!%p/opt/llvm-3.5/lib/libclangAnalysis.dylib
-		!%p/opt/llvm-3.5/lib/libclangARCMigrate.dylib
-		!%p/opt/llvm-3.5/lib/libclangAST.dylib
-		!%p/opt/llvm-3.5/lib/libclangASTMatchers.dylib
-		!%p/opt/llvm-3.5/lib/libclangBasic.dylib
-		!%p/opt/llvm-3.5/lib/libclangCodeGen.dylib
-		!%p/opt/llvm-3.5/lib/libclangDriver.dylib
-		!%p/opt/llvm-3.5/lib/libclangDynamicASTMatchers.dylib
-		!%p/opt/llvm-3.5/lib/libclangEdit.dylib
-		!%p/opt/llvm-3.5/lib/libclangFormat.dylib
-		!%p/opt/llvm-3.5/lib/libclangFrontend.dylib
-		!%p/opt/llvm-3.5/lib/libclangFrontendTool.dylib
-		!%p/opt/llvm-3.5/lib/libclangIndex.dylib
-		!%p/opt/llvm-3.5/lib/libclangLex.dylib
-		!%p/opt/llvm-3.5/lib/libclangParse.dylib
-		!%p/opt/llvm-3.5/lib/libclangRewrite.dylib
-		!%p/opt/llvm-3.5/lib/libclangRewriteFrontend.dylib
-		!%p/opt/llvm-3.5/lib/libclangSema.dylib
-		!%p/opt/llvm-3.5/lib/libclangSerialization.dylib
-		!%p/opt/llvm-3.5/lib/libclangStaticAnalyzerCheckers.dylib
-		!%p/opt/llvm-3.5/lib/libclangStaticAnalyzerCore.dylib
-		!%p/opt/llvm-3.5/lib/libclangStaticAnalyzerFrontend.dylib
-		!%p/opt/llvm-3.5/lib/libclangTooling.dylib
-		!%p/opt/llvm-3.5/lib/clang/%v/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
-		!%p/opt/llvm-3.5/lib/clang/%v/lib/darwin/libclang_rt.asan_iossim_dynamic.dylib
+	 	@rpath/libclang.3.5.dylib 1.0.0 %n (>= 3.5-0)
+		!@rpath/libclangAnalysis.dylib
+		!@rpath/libclangARCMigrate.dylib
+		!@rpath/libclangAST.dylib
+		!@rpath/libclangASTMatchers.dylib
+		!@rpath/libclangBasic.dylib
+		!@rpath/libclangCodeGen.dylib
+		!@rpath/libclangDriver.dylib
+		!@rpath/libclangDynamicASTMatchers.dylib
+		!@rpath/libclangEdit.dylib
+		!@rpath/libclangFormat.dylib
+		!@rpath/libclangFrontend.dylib
+		!@rpath/libclangFrontendTool.dylib
+		!@rpath/libclangIndex.dylib
+		!@rpath/libclangLex.dylib
+		!@rpath/libclangParse.dylib
+		!@rpath/libclangRewrite.dylib
+		!@rpath/libclangRewriteFrontend.dylib
+		!@rpath/libclangSema.dylib
+		!@rpath/libclangSerialization.dylib
+		!@rpath/libclangStaticAnalyzerCheckers.dylib
+		!@rpath/libclangStaticAnalyzerCore.dylib
+		!@rpath/libclangStaticAnalyzerFrontend.dylib
+		!@rpath/libclangTooling.dylib
+		!@rpath/libclang_rt.asan_osx_dynamic.dylib
+		!@rpath/libclang_rt.asan_iossim_dynamic.dylib
 		(%m != powerpc) %p/opt/llvm-3.5/lib/libiomp5.dylib 5.0.0 %n (>= 3.5.0-0)
 	<<
 <<
@@ -1191,7 +1192,7 @@ SplitOff9: <<
 	DocFiles: tools/polly/LICENSE.txt tools/polly/CREDITS.txt
 	Shlibs: <<
 		!%p/opt/llvm-3.5/lib/LLVMPolly.so
-		!%p/opt/llvm-3.5/lib/libPolly.dylib
+		!@rpath/libPolly.dylib
 	<<
 <<
 SplitOff10: <<
@@ -1231,11 +1232,11 @@ SplitOff12: <<
 	DocFiles: *.TXT README.txt
 	Shlibs: <<
 		!%p/opt/llvm-3.5/lib/libLTO.dylib
-		!%p/opt/llvm-3.5/lib/BugpointPasses.dylib
-		!%p/opt/llvm-3.5/lib/LLVMHello.dylib
-		!%p/opt/llvm-3.5/lib/libLLVMARMAsmParser.dylib
-		!%p/opt/llvm-3.5/lib/libLLVMARMAsmPrinter.dylib
-		!%p/opt/llvm-3.5/lib/libLLVMARMCodeGen.dylib
+		!%p/opt/llvm-3.5/lib//BugpointPasses.dylib
+		!%p/opt/llvm-3.5/lib//LLVMHello.dylib
+		!%p/opt/llvm-3.5/lib//libLLVMARMAsmParser.dylib
+		!%p/opt/llvm-3.5/lib//libLLVMARMAsmPrinter.dylib
+		!%p/opt/llvm-3.5/lib//libLLVMARMCodeGen.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMARMDesc.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMARMDisassembler.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMARMInfo.dylib
