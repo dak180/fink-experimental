@@ -156,6 +156,10 @@ if ($1 == "cmd.append(exec_path)") {
 		tools/clang/lib/Frontend/InitHeaderSearch.cpp
 	}
 
+	# adjust clang openmp linkage test
+	sed -i.orig -e 's|"-liomp5" "-lomptarget"|"%p/opt/llvm-3.5/lib" "-liomp5" "-lomptarget"|g' \
+		tools/clang/test/OpenMP/target_driver_and_codegen.c
+
 	# add experimental cmake support to openmp
 	pushd ../openmp-%v.src
 	  $patch_filter %{PatchFile8} | patch -p1
@@ -837,7 +841,7 @@ InfoTest: <<
 
 	echo "******** Running included compiler-rt/libclang_rt tests ... ********"
 	CC=`grep "CMAKE_C_COMPILER:FILEPATH" CMakeCache.txt | cut -d= -f2`
-	( mkdir projects/compiler-rt/test
+	( mkdir -p projects/compiler-rt/test
 	cd projects/compiler-rt/test
 	syslib="-lSystem"
 	clang_arch=%m
