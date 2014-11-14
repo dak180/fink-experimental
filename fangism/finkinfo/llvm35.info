@@ -784,6 +784,7 @@ fi
 	    for a in 32 32e
 	    do
 	      CC=clang CXX=clang++ cmake -Dos=mac -Darch=$a ..
+	      rm -f CMakeFiles/iomp5.dir/src/*.o
 	      make
 	    done
 	    make fat
