@@ -837,7 +837,7 @@ InfoTest: <<
 
 	echo "******** Running included compiler-rt/libclang_rt tests ... ********"
 	CC=`grep "CMAKE_C_COMPILER:FILEPATH" CMakeCache.txt | cut -d= -f2`
-	( mkdir projects/compiler-rt/test
+	( mkdir -p projects/compiler-rt/test
 	cd projects/compiler-rt/test
 	syslib="-lSystem"
 	clang_arch=%m
@@ -846,7 +846,7 @@ InfoTest: <<
 	powerpc64) clang_arch=ppc64 ;;
 	esac
 	test $darwin_vers -gt 10 || syslib="$syslib -lSystemStubs"
-	cat >Makefile <<EOF
+	cat >Makefile.custom <<EOF
 ARCH = $clang_arch
 OS = darwin
 CC = $CC
@@ -855,7 +855,7 @@ LLVM_SRCDIR = %b
 VERSION = %v
 include \$(LLVM_SRCDIR)/projects/compiler-rt/test/Unit/test.mk
 EOF
-	make -k && make check 2>&1 || : ;) | tee compiler-rt-%v-check.log
+	make -k && make -f Makefile.custom check 2>&1 || : ;) | tee compiler-rt-%v-check.log
 
 	echo "******** Running included libc++ tests ... ********"
 	pushd ../last-libcxx
