@@ -15,7 +15,7 @@ BuildDepends: <<
 # ccache is optional, for accelerating rebuilds
 #	ccache,
 # polly plug-in needs isl,gmp
-	isl2 (>=0.13), 
+	isl2 (>=0.14), 
 	gmp5,
 # build scripts need python2.7
 	python27,
@@ -1180,7 +1180,7 @@ SplitOff9: <<
 	Description: Shared libraries for Polly loop optimizer
 	Depends: <<
 		%N-shlibs (= %v-%r),
-		isl2-shlibs (>= 0.13), 
+		isl2-shlibs (>= 0.14), 
 	#	cloog-org2-shlibs (>= 0.18),
 		libgmpxx5-shlibs,
 		gmp5-shlibs
