@@ -1257,7 +1257,9 @@ SplitOff12: <<
 		!@rpath/libLLVMLinker.dylib
 		!@rpath/libLLVMLTO.dylib
 		!@rpath/libLLVMMC.dylib
+		!@rpath/libLLVMMCAnalysis.dylib
 		!@rpath/libLLVMMCDisassembler.dylib
+		!@rpath/libLLVMLineEditor.dylib
 		!@rpath/libLLVMMCJIT.dylib
 		!@rpath/libLLVMMCParser.dylib
 		!@rpath/libLLVMObjCARCOpts.dylib
@@ -1267,7 +1269,9 @@ SplitOff12: <<
 		!@rpath/libLLVMPowerPCAsmPrinter.dylib
 		!@rpath/libLLVMPowerPCCodeGen.dylib
 		!@rpath/libLLVMPowerPCDesc.dylib
+		!@rpath/libLLVMPowerPCDisassembler.dylib
 		!@rpath/libLLVMPowerPCInfo.dylib
+		!@rpath/libLLVMProfileData.dylib
 		!@rpath/libLLVMRuntimeDyld.dylib
 		!@rpath/libLLVMScalarOpts.dylib
 		!@rpath/libLLVMSelectionDAG.dylib
