@@ -157,7 +157,7 @@ if ($1 == "cmd.append(exec_path)") {
 	}
 
 	# adjust clang openmp linkage test
-	sed -i.orig -e 's|"-liomp5" "-lomptarget"|"%p/opt/llvm-3.5/lib" "-liomp5" "-lomptarget"|g' \
+	sed -i.orig -e 's|"-liomp5" "-lomptarget"|"-L%p/opt/llvm-3.5/lib" "-liomp5" "-lomptarget"|g' \
 		tools/clang/test/OpenMP/target_driver_and_codegen.c
 
 	# add experimental cmake support to openmp
