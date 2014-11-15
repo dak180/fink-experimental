@@ -854,7 +854,7 @@ CC = $CC
 LIBS = $syslib
 LLVM_SRCDIR = %b
 VERSION = %v
-include \$(LLVM_SRCDIR)/projects/compiler-rt/test/Unit/test.mk
+include \$(LLVM_SRCDIR)/projects/compiler-rt/test/builtins/Unit/test.mk
 EOF
 	make -k && make -f Makefile.custom check 2>&1 || : ;) | tee compiler-rt-%v-check.log
 
