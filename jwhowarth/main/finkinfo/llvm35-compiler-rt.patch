@@ -471,7 +471,7 @@ index 0000000..bdfeebf
 +        $CC -arch $arch -c $f -o $objdir/$b.o
 +done
 +echo "Updating static library $libcrt."
-+ar cru -b `ar -t $libcrt  | grep .c.o -m 1` $libcrt $objdir/*.S.o
++ar cru $libcrt $objdir/*.S.o
 +popd
 +}
 +
