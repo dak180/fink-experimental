@@ -1700,7 +1700,7 @@ index 5e64e54..bf2ee2c 100644
 +        arch = platform.processor()
 +        if arch == 'powerpc':
 +          arch = 'ppc'
-+        libcrt = '.'.join(['libclang_rt', arch, 'a'])
++        libcrt = '.'.join(['libclang_rt', '-'.join(['builtins', arch]), 'a'])
 +        cmd = [cxx_under_test, '-print-search-dirs']
 +        p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 +        out,err = p.communicate()
