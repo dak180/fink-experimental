@@ -285,9 +285,9 @@ EOF
 		arch=$clang_arch
 		builddir=projects/compiler-rt/lib
 		crtsrcdir=$llvm_abs_srcdir/projects/compiler-rt
-		objdir=CMakeFiles/clang_rt.$arch.dir/$arch
+		objdir=CMakeFiles/clang_rt.builtins-$arch.dir/$arch
 		libdir=../../../lib/clang/$version/lib/darwin
-		libcrt=$libdir/libclang_rt.$arch.a
+		libcrt=$libdir/libclang_rt.builtins-$arch.a
 		. $crtsrcdir/lib/link-asm-libclang_rt.sh
 		assemble_clang_rt
 	}
@@ -347,7 +347,7 @@ EOF
 	# fix_llvm_config_build_variables # not needed b/c not using libc++ yet
 	# first make fails, but we have to run it first and then fix some deps
 	make -k || make -j1 VERBOSE=1
-	#asm_link_clang_rt
+	asm_link_clang_rt
 	make
 	# tests hardcode the .dylib extension for modules
 	pushd lib
@@ -462,7 +462,7 @@ then
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	#asm_link_clang_rt
+	asm_link_clang_rt
 	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
@@ -516,7 +516,7 @@ then
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	#asm_link_clang_rt
+	asm_link_clang_rt
 	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
@@ -736,7 +736,7 @@ else
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	#asm_link_clang_rt
+	asm_link_clang_rt
 	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
