@@ -7,7 +7,7 @@ License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
 
 BuildDepends: <<
-	fink (>= 0.32), 
+	fink (>= 0.38.3), 
 # for xz
 	cmake (>= 2.8.10.2-1), 
 	# on darwin11+, for libc++
