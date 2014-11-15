@@ -287,7 +287,7 @@ EOF
 		crtsrcdir=$llvm_abs_srcdir/projects/compiler-rt
 		objdir=CMakeFiles/clang_rt.$arch.dir/$arch
 		libdir=../../../lib/clang/$version/lib/darwin
-		libcrt=$libdir/libclang_rt.$arch.a
+		libcrt=$libdir/libclang_rt.builtins-$arch.a
 		. $crtsrcdir/lib/link-asm-libclang_rt.sh
 		assemble_clang_rt
 	}
