@@ -56,7 +56,7 @@ PatchFile-MD5: ecaf94589ea651deb3afa9d634ddc050
 PatchFile2: %n-clang.patch
 PatchFile2-MD5: c81342d20cea8ef1e2871d47c76d4155
 PatchFile3: %n-compiler-rt.patch
-PatchFile3-MD5: 1830baf5e1ed12c73044edb04bab01ab
+PatchFile3-MD5: 9f9d427bb5d2c32071ab85060f2e6fa9
 PatchFile4: %n-polly.patch
 PatchFile4-MD5: f7ccc7bed1f45b478d696536260269b3
 PatchFile5: %n-libcxx.patch
@@ -155,10 +155,6 @@ if ($1 == "cmd.append(exec_path)") {
 	  sed -i.orig3 -e 's|AddPath("/usr/include/c++/v1"|AddPath("'"$cxx_incdir"'"|' \
 		tools/clang/lib/Frontend/InitHeaderSearch.cpp
 	}
-
-	# adjust clang openmp linkage test
-	sed -i.orig -e 's|"-liomp5" "-lomptarget"|"-L%p/opt/llvm-3.5/lib" "-liomp5" "-lomptarget"|g' \
-		tools/clang/test/OpenMP/target_driver_and_codegen.c
 
 	# add experimental cmake support to openmp
 	pushd ../openmp-%v.src
@@ -351,7 +347,7 @@ EOF
 	# fix_llvm_config_build_variables # not needed b/c not using libc++ yet
 	# first make fails, but we have to run it first and then fix some deps
 	make -k || make -j1 VERBOSE=1
-	asm_link_clang_rt
+	#asm_link_clang_rt
 	make
 	# tests hardcode the .dylib extension for modules
 	pushd lib
@@ -466,7 +462,7 @@ then
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	asm_link_clang_rt
+	#asm_link_clang_rt
 	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
@@ -520,7 +516,7 @@ then
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	asm_link_clang_rt
+	#asm_link_clang_rt
 	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
@@ -740,7 +736,7 @@ else
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	asm_link_clang_rt
+	#asm_link_clang_rt
 	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
