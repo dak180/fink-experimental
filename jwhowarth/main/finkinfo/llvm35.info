@@ -56,7 +56,7 @@ PatchFile-MD5: ecaf94589ea651deb3afa9d634ddc050
 PatchFile2: %n-clang.patch
 PatchFile2-MD5: c81342d20cea8ef1e2871d47c76d4155
 PatchFile3: %n-compiler-rt.patch
-PatchFile3-MD5: 9f9d427bb5d2c32071ab85060f2e6fa9
+PatchFile3-MD5: 604e134790f984d636669c2ef5732667
 PatchFile4: %n-polly.patch
 PatchFile4-MD5: f7ccc7bed1f45b478d696536260269b3
 PatchFile5: %n-libcxx.patch
@@ -279,10 +279,17 @@ EOF
 	powerpc64) clang_arch=ppc64 ;;
 	i386) cxxabi_arch=i686 ;;
 	esac
+	case "$clang_arch" in
+	ppc) other_arch=ppc64 ;;
+	ppc64) other_arch=ppc ;;
+	i386) other_arch=x86_64 ;;
+	x86_64) other_arch=i386 ;;
+	esac
 	# script to assemble/link in missing .S units into libclang_rt
 	asm_link_clang_rt() {
 		# $CC already set
-		arch=$clang_arch
+		# $1 is $clang_arch or $other_arch
+		arch=$1
 		builddir=projects/compiler-rt/lib
 		crtsrcdir=$llvm_abs_srcdir/projects/compiler-rt
 		objdir=CMakeFiles/clang_rt.builtins-$arch.dir/$arch
@@ -290,6 +297,11 @@ EOF
 		libcrt=$libdir/libclang_rt.builtins-$arch.a
 		. $crtsrcdir/lib/link-asm-libclang_rt.sh
 		assemble_clang_rt
+	}
+	# link both 32b and 64b builtin libs
+	asm_link_clang_rts() {
+		asm_link_clang_rt $clang_arch
+		asm_link_clang_rt $other_arch
 	}
 
 	# need to fix llvm-config to not point to build-dir, but instead
@@ -347,7 +359,7 @@ EOF
 	# fix_llvm_config_build_variables # not needed b/c not using libc++ yet
 	# first make fails, but we have to run it first and then fix some deps
 	make -k || make -j1 VERBOSE=1
-	asm_link_clang_rt
+	asm_link_clang_rts
 	make
 	# tests hardcode the .dylib extension for modules
 	pushd lib
@@ -462,7 +474,7 @@ then
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	asm_link_clang_rt
+	asm_link_clang_rts
 	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
@@ -516,7 +528,7 @@ then
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	asm_link_clang_rt
+	asm_link_clang_rts
 	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
@@ -736,7 +748,7 @@ else
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	asm_link_clang_rt
+	asm_link_clang_rts
 	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
