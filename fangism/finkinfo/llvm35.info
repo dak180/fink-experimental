@@ -292,7 +292,7 @@ EOF
 		arch=$1
 		builddir=projects/compiler-rt/lib
 		crtsrcdir=$llvm_abs_srcdir/projects/compiler-rt
-		objdir=CMakeFiles/clang_rt.$arch.dir/$arch
+		objdir=CMakeFiles/clang_rt.builtins-$arch.dir/$arch
 		libdir=../../../lib/clang/$version/lib/darwin
 		libcrt=$libdir/libclang_rt.builtins-$arch.a
 		. $crtsrcdir/lib/link-asm-libclang_rt.sh
