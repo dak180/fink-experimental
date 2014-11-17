@@ -1270,7 +1270,9 @@ SplitOff12: <<
 		!%p/opt/llvm-3.5/lib/libLLVMLinker.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMLTO.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMMC.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMMCAnalysis.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMMCDisassembler.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMLineEditor.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMMCJIT.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMMCParser.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMObjCARCOpts.dylib
@@ -1280,7 +1282,9 @@ SplitOff12: <<
 		!%p/opt/llvm-3.5/lib/libLLVMPowerPCAsmPrinter.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMPowerPCCodeGen.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMPowerPCDesc.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMPowerPCDisassembler.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMPowerPCInfo.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMProfileData.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMRuntimeDyld.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMScalarOpts.dylib
 		!%p/opt/llvm-3.5/lib/libLLVMSelectionDAG.dylib
