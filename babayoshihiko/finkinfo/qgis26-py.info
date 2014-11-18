@@ -70,15 +70,16 @@ PatchScript: <<
     perl -pi -e 's|sys.path = |sys.path = \[\\\"%p/lib/qt4-mac/lib/python'%type_raw[python]'/site-packages\\\", " + newpaths.join( "," ) + "] + sys.path" ); //|' src/python/qgspythonutilsimpl.cpp
     perl -pi -e 's|\.app|-py%type_pkg[python]-%v.app|' CMakeLists.txt
     
-    # 2.6.0
-    perl -pi -e "s|Qsci/qsciglobal.h|qsciglobal.h|g" cmake/FindQScintilla.cmake
     
     # 2.0.0
     perl -pi -e "s|^.*osascript.*$|#|g" images/icons/mac/browser/CMakeLists.txt
     
     # Python related fixes
-    perl -pi -e "s|from PyQt4 import pyqtconfig||" python/console/console.py
-    perl -pi -e "s|pyqtconfig\.Configuration\(\)\.qt_version >= 0x40700|true|" python/console/console.py
+    # perl -pi -e "s|from PyQt4 import pyqtconfig||" python/console/console.py
+    # perl -pi -e "s|pyqtconfig\.Configuration\(\)\.qt_version >= 0x40700|true|" python/console/console.py
+
+    # 2.6.0
+    perl -pi -e "s|Qsci/qsciglobal.h|qsciglobal.h|g" cmake/FindQScintilla.cmake
     
     # SIP related fixes
     perl -pi -e "s/SET\(SIP_TAGS\)/SET(SIP_TAGS WS_MACX Qt_4_8_6)/" cmake/SIPMacros.cmake
@@ -141,7 +142,8 @@ CompileScript: <<
 #!/bin/bash -ev
 	QGIS_VER=2.6
 	QGIS_DIR=Applications/QGIS-py%type_pkg[python]-%v.app/Contents
-	LOADBLES='qgis_analysis qgis_core qgis_gui qgis_networkanalysis qgisgrass qgissqlanyconnection'
+	LOADBLES='qgis_analysis qgis_core qgis_gui qgis_networkanalysis qgisgrass'
+	#  qgissqlanyconnection
 	
 	export QTDIR=%p/lib/qt4-mac
 	export PYTHONPATH=%p/lib/qt4-mac/lib/python%type_raw[python]/site-packages:$PYTHONPATH
@@ -223,7 +225,7 @@ CompileScript: <<
 	echo '#!/bin/sh' >QGIS
 	echo 'export PYTHONPATH=%p/lib/qt4-mac/lib/python'%type_raw[python]'/site-packages:$PYTHONPATH' >>QGIS
 	echo 'export PATH=%p/lib/qt4-mac/lib/python'%type_raw[python]'/bin:$PATH' >>QGIS
-	echo 'export QGIS_PLUGINPATH=%p/share/qgis24-py'%type_pkg[python]'/plugins' >>QGIS
+	echo 'export QGIS_PLUGINPATH=%p/share/qgis26-py'%type_pkg[python]'/plugins' >>QGIS
 	echo ". %p/bin/init.sh && %p/$QGIS_DIR/MacOS/QGIS.exe" >>QGIS
 	chmod 555 QGIS
 		# 1.8.0
@@ -265,7 +267,6 @@ CompileScript: <<
 	pushd $QGIS_DIR/Resources/python/qgis
 	for libname in *.so
 	do
-	    otool -L $libname
 		install_name_tool -id %p/$QGIS_DIR/Resources/python/qgis/$libname $libname
 		for loadable in ${LOADBLES}
 		do
@@ -311,14 +312,14 @@ InstallScript: <<
 #!/bin/bash -ev
 	# Uses AppBundles which copies files from the build directory.
 	echo "Completed the building process..."
-	mkdir -p %i/share/qgis24-py%type_pkg[python]
+	mkdir -p %i/share/qgis26-py%type_pkg[python]
 	
 	# 1.6.0 Plugins are now managed by their own package (e.g. qgis-plugin-ftools)
 	# 2.4.0 Defaults plugins are installed
-	mv %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins %i/share/qgis24-py%type_pkg[python]/plugins
-	ln -s %p/share/qgis24-py%type_pkg[python]/plugins %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins
+	mv %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins %i/share/qgis26-py%type_pkg[python]/plugins
+	ln -s %p/share/qgis26-py%type_pkg[python]/plugins %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins
 		
-	chmod 0777 %i/share/qgis24-py%type_pkg[python]/plugins/processing/tests/data/*
+	chmod 0777 %i/share/qgis26-py%type_pkg[python]/plugins/processing/tests/data/*
 <<
 
 AppBundles: Applications/QGIS-py%type_pkg[python]-%v.app
@@ -330,8 +331,8 @@ SplitOff: <<
 	qt4-base-mac-qtcore-shlibs (>=4.8.6-1), 
 	python%type_pkg[python], 
 	sip-py%type_pkg[python] (>=4.16.1-1), pyqt4-mac-py%type_pkg[python] (>=4.11-1), 
-	qscintilla2.11-qt4-mac-shlibs (>= 2.8.1-1),
-	qscintilla2-qt4-mac-py%type_pkg[python] (>= 2.8.1-1),
+	qscintilla2.11-qt4-mac-shlibs (>= 2.8.4-1),
+	qscintilla2-qt4-mac-py%type_pkg[python] (>= 2.8.4-1),
 	gsl-shlibs,
 	xerces-c31-shlibs,
 	libgeos3.4.2-shlibs,
@@ -348,41 +349,51 @@ SplitOff: <<
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/2.6/qgis_gui
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/2.6/qgis_networkanalysis
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/Versions/2.6/qgisgrass
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/Versions/2.6/qgissqlanyconnection
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.*.dylib
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/qgis/crssync
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/PlugIns/qgis/*.so
   <<
+	# Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/Versions/2.6/qgissqlanyconnection
   Shlibs: <<
 	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/2.6/qgis_analysis               2.6.0 %n (>= 2.6.0-1)
 	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/2.6/qgis_core                       2.6.0 %n (>= 2.6.0-1)
 	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/2.6/qgis_gui                         2.6.0 %n (>= 2.6.0-1)
 	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/2.6/qgis_networkanalysis 2.6.0 %n (>= 2.6.0-1)
 	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/Versions/2.6/qgisgrass                       2.6.0 %n (>= 2.6.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/Versions/2.6/qgissqlanyconnection 2.6.0 %n (>= 2.6.0-1)
 	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.2.6.0.dylib                                         2.6.0 %n (>= 2.6.0-1)
   <<
+	# %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/Versions/2.6/qgissqlanyconnection 2.6.0 %n (>= 2.6.0-1)
 # End of SplitOff
 <<
 
 SplitOff2: <<
   Package: %N-dev
   Description: Header files for QGIS
+  BuildDependsOnly: true
   Depends: %N-shlibs (=%v-%r)
   Files: <<
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/Current
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/Current
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/Current
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/Current
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/Versions/Current
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/qgis_analysis
+    Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/Current
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Headers
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Resources
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/qgis_core
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/Current
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Headers
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Resources
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/qgis_gui
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/Current
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Headers
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Resources
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/qgis_networkanalysis
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/Current
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Headers
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Resources
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/Versions/Current
+	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/Resources
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/qgisgrass
-	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/qgissqlanyconnection
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.dylib
   <<
+	# Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/qgissqlanyconnection
 # End of SplitOff
 <<
 
