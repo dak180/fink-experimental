@@ -2,7 +2,7 @@ Info2: <<
 Package: texlive%type_pkg[-nox]
 Type: -nox (boolean)
 Version: 0.20140523
-Revision: 0alpha2
+Revision: 0alpha3
 GCC: 4.0
 Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
@@ -70,29 +70,6 @@ UseMaxBuildJobs: true
 #PatchFile-MD5: a4b2213b3f05131aba6520202e2157a4
 PatchScript: <<
 #!/bin/bash -ev
-#sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -d texlive -p1
-
- # Change the directory to be installed
-# for file in `find texlive -name Makefile.in`; do \
-#  sed -i.bak -e 's|/texmf/|/share/texmf/|' \
-#             -e 's|\(texmfdir = \)${prefix}|\1${datadir}|' \
-#             -e 's|/texmf-dist/|/share/texmf-dist/|' ${file} ; done
-
-# sed -i.bak -e 's|\(texconfdir = \)${prefix}|\1${datadir}|' \
-#            -e 's|\(REL=\).. \(TYPE=\)|\1../share \2|'      \
-#   texlive/texk/tetex/Makefile.in
-
-# taking back...
-# sed -i.bak2 -e 's|/share/texmf-dist/|/texmf-dist/|' \
-#             -e 's|/share/texmf/|/texmf/|' \
-#  texlive/texk/xdvik/Makefile.in
-
- # Force configure to believe that Carbon API is unavailable. (from MacPorts)
-#if [ %m = 'x86_64' ]; then
-# perl -pi -e 's|(kpse_cv_have_Carbon=)yes|\1no|' texlive/texk/web2c/configure
-# perl -pi -e 's|(kpse_cv_have_Carbon=)yes|\1no|' texlive/texk/xdv2pdf/configure
-#fi
-
  # Install pxdvik
  sed -i.bak -e 's|tex4htk|pxdvik|g' texlive/configure
  sed -i.bak -e 's|tex4htk|pxdvik|g' texlive/texk/configure
@@ -125,16 +102,6 @@ PatchScript: <<
                                      texlive/texk/pxdvik/texmf/pxdvi.cfg
  perl -pi -e "s/(GothicBBB-Medium\t)ipag.ttf/\1HiraKakuPro-W3.otf/" \
                                      texlive/texk/pxdvik/texmf/pxdvi.cfg
-
- # add kanji cmaps
-# mkdir -p                                texmf/web2c
-# cp %p/share/texmf-dist/web2c/updmap.cfg texmf/web2c
-# echo '#!/bin/bash'                           >> ptex-cmap.sh
-# echo '. ./common.sh'                         >> ptex-cmap.sh
-# echo 'MAP=$TEXMF/fonts/map/dvipdfm/ptexlive' >> ptex-cmap.sh
-# sed -n '53,115p' ptexlive/4extract-texmf.sh  >> ptex-cmap.sh
-# chmod +x                                        ptex-cmap.sh
-#                                               ./ptex-cmap.sh
 
  ##### Apply patches taken from upstream svn
  
@@ -357,7 +324,7 @@ SplitOff: <<
     mv -f %p/etc/texmf-config/web2c/fmtutil.cnf{,.finksave.${time_date}}
   fi
   if [ -f %p/etc/texmf-config/web2c/updmap.cfg ]; then
-   if [ ! "`grep updmap-hdr.cfg %p/etc/texmf-config/web2c/updmap.cfg`" ]; then
+   if [ ! "`grep @kanjiVariant@ %p/etc/texmf-config/web2c/updmap.cfg`" ]; then
     # This updmap.cfg is not from texlive-texmf! Delete it!
     time_date="`date +%%Y%%m%%d%%H%%M`"
     mv -f %p/etc/texmf-config/web2c/updmap.cfg{,.finksave.${time_date}}
@@ -395,6 +362,6 @@ DescPackaging: <<
 Allow ghostscript to satisfy Depends on -nox build.
 <<
 License: Restrictive/Distributable
-Maintainer: Todai Fink Team <fink@sodan.ecc.u-tokyo.ac.jp>
+Maintainer: Tomoaki Okayama <okayama@users.sourceforge.net>
 Homepage: http://www.tug.org/texlive/
 <<
