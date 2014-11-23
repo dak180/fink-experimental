@@ -1,6 +1,6 @@
-diff -Naur texlive-20080816-source.orig/texk/kpathsea/texmf.cnf texlive-20080816-source/texk/kpathsea/texmf.cnf
---- texlive-20080816-source.orig/texk/kpathsea/texmf.cnf	2008-07-27 06:39:36.000000000 +0900
-+++ texlive-20080816-source/texk/kpathsea/texmf.cnf	2009-05-10 21:31:18.000000000 +0900
+diff -Naur texlive-20140525-texmf.orig/web2c/texmf.cnf texlive-20140525-texmf/texk/kpathsea/texmf.cnf
+--- texlive-20140525-texmf.orig/web2c/texmf.cnf	2008-07-27 06:39:36.000000000 +0900
++++ texlive-20140525-texmf/web2c/texmf.cnf	2009-05-10 21:31:18.000000000 +0900
 @@ -51,7 +51,7 @@
  % Redistributors will probably want $SELFAUTODIR/share, i.e., /usr/share.
  % Kpathsea sets SELFAUTOLOC (the directory with the binary),
