@@ -143,7 +143,7 @@ ConfigureParams: <<
  (%type_raw[-nox] = -nox) --without-x 
  (%type_raw[-nox] = -nox) --disable-xdvik
  (%type_raw[-nox] = -nox) --disable-pxdvik
- (%type_raw[-nox] = -nox) --disable-pdfopen
+ (%type_raw[-nox] = -nox) --disable-xpdfopen
 <<
 InfoTest: 	TestScript: cd texlive/Work; make -k check || exit 2
 CompileScript: <<
