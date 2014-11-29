@@ -2,7 +2,7 @@ Info2: <<
 Package: texlive%type_pkg[-nox]
 Type: -nox (boolean)
 Version: 0.20140523
-Revision: 0alpha3
+Revision: 0beta2
 GCC: 4.0
 Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
@@ -54,20 +54,16 @@ TarFilesRename: texlive-20140523-source:texlive
 Source2: http://tutimura.ath.cx/~nob/tex/ptexlive/ptexlive-20100711.tar.gz
 Source2-MD5: 2dbd0ab5290bf6dfb0b2b04a813df89f
 Tar2FilesRename: ptexlive-20100711:ptexlive
-Source3: http://sourceforge.jp/projects/eptex/wiki/TeX_Live_2011/attach/tl11supp-111101.tar.xz
-Source3-MD5: 5faa742af438292971415bc088580353
+Source3: http://www.preining.info/software/build-tlptexlive-20140507.zip
+Source3-MD5: 2001631c7542f64867e952e5d4b113e2
 Source4: http://hnd.jp.asi.finkmirrors.net/pkgdists/xdvik-20090903-texlive2009_2012.patch.gz
 Source4-MD5: 720aa3dfd0e8d42524f28cdf4bd7247c
-Source5: http://hnd.jp.asi.finkmirrors.net/pkgdists/pmpost-makeconf-tl11.diff.gz
-Source5-MD5: 0c25f072f252a42a9c4774ffe6378b31
+Source5: ftp://tug.org/historic/systems/texlive/2012/texlive-20120701-source.tar.xz
+Source5-MD5: 1d38be7dac26440fd022a4708f454a2b
 #Source6: xdvik-20090903-texlive2009.diff
 #Source6-MD5: e5f2afeb2c9893ab500f21f8efbf052b
-Source6: ftp://tug.org/historic/systems/texlive/2012/texlive-20120701-source.tar.xz
-Source6-MD5: 1d38be7dac26440fd022a4708f454a2b
 NoSourceDirectory: true
 UseMaxBuildJobs: true
-#PatchFile: texlive.patch
-#PatchFile-MD5: a4b2213b3f05131aba6520202e2157a4
 PatchScript: <<
 #!/bin/bash -ev
  # Install pxdvik
@@ -103,48 +99,14 @@ PatchScript: <<
  perl -pi -e "s/(GothicBBB-Medium\t)ipag.ttf/\1HiraKakuPro-W3.otf/" \
                                      texlive/texk/pxdvik/texmf/pxdvi.cfg
 
- ##### Apply patches taken from upstream svn
- 
- sed -i.bak -e "s|\(TLSRCDIR=\)/opt/home-supp/tl11|\1`pwd`/tl11|" \
-            -e "s|\(TMPDIR=\)/tmp|\1`pwd`|" \
-            -e 's|texlive-$TLV-source|texlive|' tl11/common.sh
+ # remove XFILESEARCHPATH
+ sed -i.bak -e 's|\(XFILESEARCHPATH=\)|#\1|' texlive/texk/{p,}xdvik/xdvi-sh.in
 
- sed -n -e "1,4p"   -e "8,18p"  \
-        -e "34,38p" -e "45,61p" \
-         tl11/scripts/unpack.sh > tl11/unpack.sh
-                       
- sed -i.bak 's|^# \(zpatch\)|\1|' tl11/unpack.sh
- chmod +x                         tl11/unpack.sh
-# pushd tl11 &&    FLG_PMPOST=TRUE    ./unpack.sh
-# popd
-#
-# gzcat pmpost-makeconf-tl11.diff.gz | patch -p1 -d texlive
-# perl -pi.bak -e 's|(#include <errno.h>)|#include <kpathsea/kpathsea.h>\n\1|' \
-#                         texlive/texk/web2c/pmplibdir/jmp.ch
-# perl -pi.bak1 -e 's|const char\*s|string s|' \
-#                         texlive/texk/web2c/pmplibdir/jmppsw.ch
-# perl -pi.bak -e 's|const char \*s|string s|' \
-#                         texlive/texk/web2c/pmplibdir/jmppsw.ch
-# perl -pi.bak -e 's|(char kanjioption)|#include <ptexenc/ptexenc.h>\n\1|' \
-#                         texlive/texk/web2c/pmplibdir/pmpost.ch
-# mv                      texlive/texk/web2c/pmplibdir/psvgout.ch{,.bak}
-# echo '@x'                           >> texlive/texk/web2c/pmplibdir/psvgout.ch
-# echo '#include <stdio.h>'           >> texlive/texk/web2c/pmplibdir/psvgout.ch
-# echo '@y'                           >> texlive/texk/web2c/pmplibdir/psvgout.ch
-# echo '#include <ptexenc/ptexenc.h>' >> texlive/texk/web2c/pmplibdir/psvgout.ch
-# echo '#include <stdio.h>'           >> texlive/texk/web2c/pmplibdir/psvgout.ch
-# echo '@z'                           >> texlive/texk/web2c/pmplibdir/psvgout.ch
-# echo ''                             >> texlive/texk/web2c/pmplibdir/psvgout.ch
-# cat texlive/texk/web2c/pmplibdir/psvgout.ch.bak \
-#                                     >> texlive/texk/web2c/pmplibdir/psvgout.ch
- #####
-
-# echo "f  kanjix.map" >> texlive/texk/dvipdfmx/dvipdfmx-19*/data/dvipdfmx.cfg
-
- # adjust for Mac, and sync with pxdvik
- sed -i.bak -e 's|firefox|open|' \
-            -e 's|kinput2|uim|'    texlive/texk/pxdvik/texmf/XDvi
- cp texlive/texk/pxdvik/texmf/XDvi texlive/texk/xdvik/texmf/XDvi
+ # apply pmpost patches
+ patch -p1 -d texlive < build-tlptexlive-20140507/patches/ac-ctie
+ patch -p1 -d texlive < build-tlptexlive-20140507/patches/pmpost-mp1.902
+ patch -p1 -d texlive < build-tlptexlive-20140507/patches/upmpost-mp1.902
+ patch -p1 -d texlive < build-tlptexlive-20140507/patches/reautoconf-stuff
 
  # wrapper for jbibtex
  echo '#!/bin/sh'    >> jbibtex
@@ -191,10 +153,7 @@ CompileScript: <<
  mkdir texlive/Work
  pushd texlive/Work && ../configure %c && make
  popd
- # make kpathsea
- #pushd texlive/texk/kpathsea && ./configure %c && make
- #popd
- #fink-package-precedence --no-libs --depfile-ext='\.d' .
+#fink-package-precedence --no-libs --depfile-ext='\.d' .
  fink-package-precedence .
 <<
 InstallScript: <<
@@ -204,14 +163,6 @@ InstallScript: <<
  pushd texlive/Work && make install-strip DESTDIR=%d run_texlinks=/usr/bin/true
  popd
 
- # install kpathsea
-# pushd texlive/texk/kpathsea && make install-strip DESTDIR=%d
-# popd
-#echo "Removing files that belong to the libkpathsea6 package..."
-#
-# rm -R %i/include
-# rm -R %i/lib
-
  # install jbibtex and jmpost
  install -m 755 jbibtex %i/bin
  install -m 755 jmpost  %i/bin
@@ -219,8 +170,6 @@ InstallScript: <<
  # install tlpkg dir
  install -m 755 -d                               %i/share/tlpkg/TeXLive
  install -m 644 texlive/texk/tests/TeXLive/*.pm  %i/share/tlpkg/TeXLive
-
-#%p/bin/mktexlsr %i/share/texmf
 
 echo "Setting up symlinks ..."
  export DYLD_LIBRARY_PATH="%b/texk/kpathsea/SHARED" PATH=%i/bin:$PATH TEXMFMAIN=%p/share/texmf-dist ; texlinks --cnffile %i/share/texmf-dist/web2c/fmtutil.cnf --verbose %i/bin
@@ -260,10 +209,6 @@ if [ "%type_raw[-nox]" == "." ]; then
  ln -s %p/lib/X11/fonts/appleotf %i/share/texmf-dist/fonts/opentype
  ln -s %p/lib/X11/fonts/applettf %i/share/texmf-dist/fonts/truetype
 fi
-
-#echo "Install kanji cmaps ..."
-#mv texmf/web2c/updmap.cfg           %i/share/texmf-dist/web2c
-#mv texmf/fonts/map/dvipdfm/ptexlive %i/share/texmf-dist/fonts/map/dvipdfmx
 <<
 DocFiles: texlive/README
 SplitOff: <<
@@ -310,7 +255,6 @@ SplitOff: <<
  Files: bin etc share/info share/man share/texmf-dist share/texmf-local share/tlpkg var
  InfoDocs: web2c.info dvips.info dvipng.info
  DocFiles: texlive/README
-# ConfFiles: %p/share/texmf/web2c/texmf.cnf
  PreInstScript: <<
   echo "Removing any leftover files from obsolete teTeX installations ..."
   rm -f %p/etc/texmf.local/web2c/*
@@ -336,9 +280,7 @@ if [ -e %p/bin/xdvik ] ; then
   update-alternatives --install %p/bin/xdvi xdvi %p/bin/xdvik 30 --slave %p/share/man/man1/xdvi.1 xdvi.1 %p/share/man/man1/xdvik.1
 fi
   mktexlsr %p/share/texmf-dist %p/etc/texmf-config %p/etc/texmf.local
-  if [ -d %p/share/texmf ]; then
-    mktexlsr %p/share/texmf
-  fi
+  # we don't use %p/share/texmf anymore!
 
   updmap-sys --nomkmap --nohash --syncwithtrees
   

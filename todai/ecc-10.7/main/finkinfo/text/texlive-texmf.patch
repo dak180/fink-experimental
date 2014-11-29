@@ -51,7 +51,20 @@ diff -Naur texlive-20140525-texmf.orig/web2c/texmf.cnf texlive-20140525-texmf/te
  
  % On some systems, there will be a system tree which contains all the font
  % files that may be created as well as the formats.  For example
-@@ -325,7 +325,7 @@
+@@ -217,10 +217,11 @@
+ TEXINPUTS.eptex         = .;$TEXMF/tex/{ptex,plain,generic,}//
+ TEX.pmpost = eptex
+ 
+-% (e)up(La)TeX.
++% (e)up(La)TeX, and for upmpost.
+ TEXINPUTS.uplatex = .;$TEXMF/tex/{uplatex,platex,latex,generic,}//
+ TEXINPUTS.uptex   = .;$TEXMF/tex/{uptex,ptex,plain,generic,}//
+ TEXINPUTS.euptex  = .;$TEXMF/tex/{uptex,ptex,plain,generic}//
++TEX.upmpost = euptex
+ 
+ % pBibTeX bibliographies and style files.
+ BIBINPUTS.pbibtex       = .;$TEXMF/{pbibtex,bibtex}/bib//
+@@ -325,7 +326,7 @@
  % OSFONTDIR is to provide a convenient hook for allowing TeX to find
  % fonts installed on the system (outside of TeX).  An empty default
  % value would add "//" to the search paths, so we give it a dummy value.
@@ -60,7 +73,7 @@ diff -Naur texlive-20140525-texmf.orig/web2c/texmf.cnf texlive-20140525-texmf/te
  
  % PostScript Type 1 outline fonts.
  T1FONTS = .;$TEXMF/fonts/type1//;$OSFONTDIR//
-@@ -370,14 +370,14 @@
+@@ -370,14 +371,14 @@
  PDFTEXCONFIG = .;$TEXMF/pdftex/{$progname,}//
  
  % Used by DMP (ditroff-to-mpx), called by makempx -troff.
@@ -78,7 +91,7 @@ diff -Naur texlive-20140525-texmf.orig/web2c/texmf.cnf texlive-20140525-texmf/te
  
  % Default settings for the fontconfig library as used by the Windows
  % versions of xetex/xdvipdfmx.  Not used by xetex on Unixish systems.
-@@ -435,7 +435,7 @@
+@@ -435,7 +436,7 @@
  LUAINPUTS = .;$TEXMF/scripts/{$progname,$engine,}/{lua,}//;$TEXMF/tex/{luatex,plain,generic,}//
  
  % Lua needs to look for binary lua libraries distributed with packages.
