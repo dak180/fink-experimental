@@ -2,7 +2,7 @@ Info2: <<
 Package: texlive%type_pkg[-nox]
 Type: -nox (boolean)
 Version: 0.20140523
-Revision: 0beta3
+Revision: 0beta4
 GCC: 4.0
 Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
@@ -236,7 +236,7 @@ SplitOff: <<
   ptexenc1-shlibs (>= 1.3.2-0),
   t1lib5-nox-shlibs,
   teckit-shlibs,nkf,
-  texlive-texmf,
+  texlive-texmf (>= 0.20140525-0),
   zziplib13-shlibs
  <<
  Conflicts: <<
