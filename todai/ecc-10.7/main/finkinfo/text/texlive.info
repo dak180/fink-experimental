@@ -191,13 +191,13 @@ echo "Creating a TEXMFCONFIG tree ..."
 echo "Removing files that are supplied in the texlive-texmf package ..."
  mv -f  %i/share/texmf-dist texmf-dist.conflict
 
+if [ "%type_raw[-nox]" == "." ]; then
 echo "Moving files from texmf to texmf-dist dir ..."
  mv -f %i/share/texmf texmf.obsolete
  mkdir -p                                   %i/share/texmf-dist/xdvi
  mv -f texmf.obsolete/xdvi/pxdvi.cfg        %i/share/texmf-dist/xdvi
  mv -f texmf.obsolete/xdvi/xdvi-ptex.sample %i/share/texmf-dist/xdvi
 
-if [ "%type_raw[-nox]" == "." ]; then
 echo "Preparing xdvi for the alternatives system ..."
  mv %i/bin/xdvi %i/bin/xdvik
  mv %i/share/man/man1/xdvi.1 %i/share/man/man1/xdvik.1
