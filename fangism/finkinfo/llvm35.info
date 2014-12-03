@@ -917,8 +917,12 @@ EOF
 <<
 InstallScript: <<
 	#!/bin/sh -ev
+	darwin_vers=`uname -r | cut -d. -f1`
 	# "brv" = branch version, 3.5
 	brv=3.5
+	# optional: de-rpath shared library dependencies
+	de_rpath_deps=1
+
 	# need 'make' link
 	pushd ../opt-bin
 	  export PATH=`pwd`:$PATH
@@ -949,8 +953,8 @@ InstallScript: <<
 	# boilerplate script for fixing post-cmake-install install_names
 	# expect to find in lib/
 	# libc++ will be in %p/lib and %p/include/c++/v1
-	# for stem in opt/llvm-$brv lib/c++
-	for stem in lib/c++
+	# for stem in lib/c++
+	for stem in opt/llvm-$brv lib/c++
 	do
 	  iprefix=%i/$stem
 	  prefix=%p/$stem
@@ -976,11 +980,16 @@ InstallScript: <<
 		do
 		  # prefix absolute paths to llvm/clang's lib installation
 		  # caution: assumes dependent libraries are in same dir
+		  db=`basename $d`
 		  case $d in
 	  # NOTE: libc++ shared library lives in different prefix!
 		  *stage*/lib/libc++*)
 		    install_name_tool -change "$d" "$libcxx_install_dir/libc++.1.0.dylib" $b ;;
 		  /*) ;;
+		  @rpath/*) test $de_rpath_deps = 0 ||
+		    install_name_tool -change "@rpath/$db" "$prefix/lib/$db" $b ;;
+		  @loader_path/*) test $de_rpath_deps = 0 ||
+		    install_name_tool -change "@loader_path/../lib/$db" "$prefix/lib/$d" $b ;;
 		  *) install_name_tool -change "$d" "$prefix/lib/$d" $b ;;
 		  esac
 		done
@@ -989,9 +998,6 @@ InstallScript: <<
 	  done
 	  popd
 	done
-# no longer need this, linking is now relative to @rpath
-if false
-then
 	# for binaries and plug-in modules
 	for stem in opt/llvm-$brv
 	do
@@ -1002,24 +1008,36 @@ then
 	  do
 		if test ! -L $f
 		then
+		# check that executable is binary, not script/text
+		ft=`file $f | cut -d: -f2-`
+		if echo "$ft" | grep Mach-O
+		then
+		# darwin10 cctools introduced install_name -delete_rpath
+		test $de_rpath_deps = 0 || test $darwin_vers -lt 10 ||
+		  install_name_tool -delete_rpath "@executable_path/../lib" $f
 		deplibs=`otool -L $f | sed 1d | awk '{print $1;}' | tr '\n' ' '`
 		for d in $deplibs
 		do
+		  db=`basename $d`
 		  # consider substituting with relative @executable_path/../lib ?
 		  case $d in
 	# NOTE: libc++ shared library lives in different prefix!
 		  *stage*/lib/libc++*)
 		    install_name_tool -change "$d" "$libcxx_install_dir/libc++.1.0.dylib" $f ;;
 		  /*) ;;
-		  @*) ;;
+		# de-rpath libs
+		  @rpath/*) test $de_rpath_deps = 0 ||
+		    install_name_tool -change "@rpath/$db" "$prefix/lib/$db" $f ;;
+		  @loader_path/*) test $de_rpath_deps = 0 ||
+		    install_name_tool -change "@loader_path/../lib/$db" "$prefix/lib/$d" $f ;;
 		  *) install_name_tool -change "$d" "$prefix/lib/$d" $f ;;
 		  esac
 		done
 		fi
+		fi
 	  done
 	  popd
 	done
-fi
 
 	stem=opt/llvm-$brv
 	iprefix=%i/$stem
