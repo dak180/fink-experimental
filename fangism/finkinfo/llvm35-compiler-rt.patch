@@ -73,7 +73,7 @@ index f35a096..05392ae 100644
 -  x86_64 i386 powerpc64 arm aarch64 mips)
 -filter_available_targets(ASAN_SUPPORTED_ARCH x86_64 i386 powerpc64 arm mips)
 +  x86_64 i386 ppc64 ppc arm aarch64 mips)
-+filter_available_targets(ASAN_SUPPORTED_ARCH x86_64 i386 ppc64 ppc arm mips)
++filter_available_targets(ASAN_SUPPORTED_ARCH x86_64 i386 arm mips)
  filter_available_targets(DFSAN_SUPPORTED_ARCH x86_64)
  filter_available_targets(LSAN_SUPPORTED_ARCH x86_64)
  filter_available_targets(MSAN_SUPPORTED_ARCH x86_64)
