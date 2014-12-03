@@ -1407,6 +1407,13 @@ openmp runtime is installed privately under clang's per-version resource dir.
 
 Built with shared-libraries to reduce the binary size and peak disk usage.
 Targets enabled in CompileScript: X86, PowerPC, ARM.
+
+The upstream build system now produces @rpath-linked libraries and binaries,
+however, the InstallScript "de-rpaths" the install_name ids to 
+satisfy packaging requirements.  There is also an optional step of
+de-rpath-ing dylib *dependencies* that is controlled by the de_rpath_deps
+variable.  Binaries work either way, but de-rpathing dependencies
+closer resembles the packaging in earlier versions, llvm34.  
 <<
 DescPort: <<
 Most of the patches are maintained at fangism's powerpc-darwin8 branches
@@ -1420,6 +1427,8 @@ On darwin>9 and x86 architectures, the package build is done as a
 3-stage bootstrap (self-host), now including a built libc++.  
 Should stage 2 vs. 3 of bootstrap miscompare, a 4th stage is done, 
 and then compared against stage 3 (only expected on darwin10).  
+To accelerate testing, a user may also disable the bootstrap by 
+setting do_bootstrap=0 in the CompileScript.
 
 	*** LLVM/Clang-3.5 still has some codegen issues for PowerPC
 	*** It is NOT considered production quality for PowerPC
