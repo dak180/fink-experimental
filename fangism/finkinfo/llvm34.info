@@ -49,7 +49,7 @@ SourceDirectory: llvm-%v.src
 UseMaxBuildJobs: true
 
 PatchFile: %n.patch
-PatchFile-MD5: f0666216fb23fa2873e2299fc92fdea4
+PatchFile-MD5: c0909cfa8c2719bdadd6cec81609626d
 PatchFile2: %n-clang.patch
 PatchFile2-MD5: fd4e1ca160cc22e33f7c6d8fb3d8fe1d
 PatchFile3: %n-compiler-rt.patch
