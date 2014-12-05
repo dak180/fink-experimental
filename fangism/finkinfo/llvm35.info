@@ -699,18 +699,19 @@ fi
 	echo "Objects that differ ($1 vs. $2):"
 	for f in "${diffs[@]}"
 	do echo "  examining: $f"
+	  loc_err=0
 	  mkdir -p `dirname compare/$f`
 	  case $f in
 	  *.inc|*.h|*.gen) diff -u {$1,$2}/$f > compare/$f.diff ||
 	    diff_size compare/$f.diff ||
-	    resolve_path_diffs {$1,$2}/$f $1 $2 || err=1 ;;
+	    resolve_path_diffs {$1,$2}/$f $1 $2 || loc_err=1 ;;
 	  tools/llvm-config/CMakeFiles/llvm-config.dir/llvm-config.cpp.o)
 	    echo "  $f -- OK: asm sensitive to \$builddir" ;;
 	  lib/Support/CMakeFiles/LLVMSupport.dir/CommandLine.cpp.o)
 	    echo "  $f -- OK: __DATE__, __TIME__ cpp macros in strings" ;;
-	  *.o) resolve_obj_diffs $1 $2 $f || err=1 ;;
+	  *.o) resolve_obj_diffs $1 $2 $f || loc_err=1 ;;
 	  esac
-	  test "$err" = 0 || unresolved_diffs=("${unresolved_diffs[@]}" $f)
+	  test "$loc_err" = 0 || err=1 && unresolved_diffs=("${unresolved_diffs[@]}" $f)
 	done
 	if test "$err" = 1
 	then echo "UNRESOLVED DIFFS ($1 vs. $2):"
@@ -953,7 +954,6 @@ InstallScript: <<
 	# boilerplate script for fixing post-cmake-install install_names
 	# expect to find in lib/
 	# libc++ will be in %p/lib and %p/include/c++/v1
-	# for stem in lib/c++
 	for stem in opt/llvm-$brv lib/c++
 	do
 	  iprefix=%i/$stem
