@@ -136,23 +136,23 @@ if ($1 == "cmd.append(exec_path)") {
 	test -d /usr/lib/c++/v1 ||
 	test "$darwin_vers" -lt 11 ||
 	{
-	  clang_path=`xcrun -find clang`
-	  pushd `dirname $clang_path`
+	  sys_clang_path=`xcrun -find clang`
+	  pushd `dirname $sys_clang_path`
 	  if test -d ../lib/c++/v1
 	  then
 	    cd ../lib/c++/v1
-	    cxx_incdir=`pwd`
+	    sys_cxx_incdir=`pwd`
 	  elif test -d ../include/c++/v1
 	  then
 	    cd ../include/c++/v1
-	    cxx_incdir=`pwd`
+	    sys_cxx_incdir=`pwd`
 	  else
-	    echo "Unable to find libc++ headers relative to $clang_path (from xcrun)."
+	    echo "Unable to find libc++ headers relative to $sys_clang_path (from xcrun)."
 	    exit 1
 	  fi
 	  popd
-	  echo "Found system libc++ headers in: $cxx_incdir"
-	  sed -i.orig3 -e 's|AddPath("/usr/include/c++/v1"|AddPath("'"$cxx_incdir"'"|' \
+	  echo "Found system libc++ headers in: $sys_cxx_incdir"
+	  sed -i.orig3 -e 's|AddPath("/usr/include/c++/v1"|AddPath("'"$sys_cxx_incdir"'"|' \
 		tools/clang/lib/Frontend/InitHeaderSearch.cpp
 	}
 
@@ -461,10 +461,10 @@ then
 # if not bootstrapping libc++, use system C++ library (buried in XCode)
 #	if test "$darwin_vers" -ge 13
 #	then
-#		clang_path=`xcrun -find clang`
-#		cxx_incdir=`dirname $clang_path`/../lib/c++/v1
+#		sys_clang_path=`xcrun -find clang`
+#		sys_cxx_incdir=`dirname $sys_clang_path`/../lib/c++/v1
 #		STAGE2_CMAKE_OPTIONS=( "${STAGE2_CMAKE_OPTIONS[@]}" \
-#			-DCMAKE_CXX_FLAGS:STRING="-cxx-isystem $cxx_incdir" )
+#			-DCMAKE_CXX_FLAGS:STRING="-cxx-isystem $sys_cxx_incdir" )
 #	fi
 	mkdir -p ../build/stage2
 	pushd ../build/stage2
