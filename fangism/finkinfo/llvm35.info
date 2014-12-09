@@ -463,8 +463,7 @@ then
 #	then
 #		sys_clang_path=`xcrun -find clang`
 #		sys_cxx_incdir=`dirname $sys_clang_path`/../lib/c++/v1
-#		STAGE2_CMAKE_OPTIONS=( "${STAGE2_CMAKE_OPTIONS[@]}" \
-#			-DCMAKE_CXX_FLAGS:STRING="-cxx-isystem $sys_cxx_incdir" )
+#		libcxx_srcdir="$sys_cxx_incdir"
 #	fi
 	stage23_cxx_flags="-std=c++11 -stdlib=libc++ -cxx-isystem $libcxx_srcdir"
 	# reuse CC and CXX from stage 1.5
