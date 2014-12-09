@@ -18,8 +18,8 @@ BuildDepends: <<
 	ocaml,
 	system-java-dev
 <<
-Conflicts: ppl, ppl9, ppl10
-Replaces: ppl, ppl9, ppl10
+Conflicts: ppl, ppl9, ppl10, ppl11, ppl12
+Replaces: ppl, ppl9, ppl10, ppl11, ppl12
 GCC: 4.0
 Source: ftp://ftp.cs.unipr.it/pub/ppl/releases/%v/ppl-%v.tar.bz2
 Source-MD5: 98be3e1a272bd5337fbadabb0d3f3d20
