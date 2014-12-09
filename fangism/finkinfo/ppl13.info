@@ -70,6 +70,8 @@ PatchScript: <<
 	i386 ) sed -i.orig '/\$(JAVA)/s|-classpath|-d32 &|' $file ;;
 	x64_64 ) ;;
 	esac
+	# don't mistake 10.10 for 10.2!
+	sed -i.orig -e 's|10\.\[012\]\*|10.[012][,.]*|g' configure
 <<
 UseMaxBuildJobs: true
 CompileScript: <<
