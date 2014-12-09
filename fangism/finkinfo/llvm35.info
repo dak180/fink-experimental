@@ -202,9 +202,10 @@ CompileScript: <<
 		-DLLVM_LIT_ARGS:STRING=-v \
 		-DPYTHON_EXECUTABLE:FILEPATH=$fink_root/bin/python2.7 )
 	LLVM_CMAKE_OPTIONS=( -DLLVM_ENABLE_ASSERTIONS:BOOL=$enable_assertions )
-#	LLVM_CMAKE_OPTIONS=( "${LLVM_CMAKE_OPTIONS[@]}" \
-#		-DCMAKE_OSX_SYSROOT:STRING=/ \
-#		-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING= )
+	test "$darwin_vers" -ge 10 ||
+	LLVM_CMAKE_OPTIONS=( "${LLVM_CMAKE_OPTIONS[@]}" \
+		-DCMAKE_OSX_SYSROOT:STRING=/ \
+		-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING= )
 
 	# always build the native archs' backends
 #	case "$build_arch" in
@@ -387,22 +388,24 @@ EOF
 	FINK_LDFLAGS=( "$LDFLAGS" )
 	# beyond stage1, use the following flags for both libc++ and llvm
 	STAGE2_COMMON_LDFLAGS=()
-	# darwin8: stage2+ needs odcctools
+	# darwin8: stage2+ needs odcctools for linking and -no-integrated-as
+	cctools_path=$fink_root/lib/odcctools/bin
 	if test $darwin_vers -le 8
-	then STAGE2_COMMON_LDFLAGS=( "-B$fink_root/lib/odcctools/bin" )
+	then STAGE2_COMMON_LDFLAGS=( "-B$cctools_path" )
 	fi
+
+	case "$build_arch" in
+	# PowerPC is not ready for -integrated-as yet
+	powerpc*) int_as_flag="-no-integrated-as -B$cctools_path" ;;
+	esac
 
 	echo "######## START of BOOTSTRAP STAGE 1.5: building libc++ with stage 1 clang++"
 	export CCACHE_COMPILERCHECK=content
 	export CC=cc-st1-clang
 	export CXX=cc-st1-clang++
-	LIBCXX_CMAKE_OPTIONS=()
-	case "$build_arch" in
-	# PowerPC is not ready for -integrated-as yet
-	powerpc*) flags="$flags -no-integrated-as" ;;
-	esac
+	LIBCXX_CMAKE_OPTIONS=( -DCMAKE_BUILD_TYPE:STRING=$build_type )
 	if test $darwin_vers -le 10
-	then flags="$flags -DDARWIN_LIBSUPCXX=$darwin_vers"
+	then flags="$int_as_flag -DDARWIN_LIBSUPCXX=$darwin_vers"
 		abi=libsupc++
 		if test -f /usr/include/c++/4.2.1/cxxabi.h
 		then sys_cxxabi_root=/usr/include/c++/4.2.1
@@ -454,10 +457,7 @@ if test $do_bootstrap = 1
 then
 
 	echo "######## START of BOOTSTRAP STAGE 2: building llvm/clang with stage 1 clang"
-	# reuse CC and CXX from stage 1.5
-	STAGE2_CMAKE_OPTIONS=( \
-		-DCMAKE_CXX_FLAGS="-std=c++11 -stdlib=libc++ -cxx-isystem $libcxx_abs_srcdir/include" )
-	STAGE2_LLVM_LDFLAGS=( "-L$libcxx_stage_dir" )
+	libcxx_srcdir="$libcxx_abs_srcdir/include"
 # if not bootstrapping libc++, use system C++ library (buried in XCode)
 #	if test "$darwin_vers" -ge 13
 #	then
@@ -466,6 +466,11 @@ then
 #		STAGE2_CMAKE_OPTIONS=( "${STAGE2_CMAKE_OPTIONS[@]}" \
 #			-DCMAKE_CXX_FLAGS:STRING="-cxx-isystem $sys_cxx_incdir" )
 #	fi
+	stage23_cxx_flags="-std=c++11 -stdlib=libc++ -cxx-isystem $libcxx_srcdir"
+	# reuse CC and CXX from stage 1.5
+	STAGE2_CMAKE_OPTIONS=( \
+		-DCMAKE_CXX_FLAGS="$stage23_cxx_flags $int_as_flag" )
+	STAGE2_LLVM_LDFLAGS=( "-L$libcxx_stage_dir" )
 	mkdir -p ../build/stage2
 	pushd ../build/stage2
 	echo "LLVM_CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LLVM_CMAKE_OPTIONS[@]} ${STAGE2_CMAKE_OPTIONS[@]}"
@@ -474,7 +479,7 @@ then
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	asm_link_clang_rts
+	export CCAS_FLAGS="$int_as_flag" ; asm_link_clang_rts
 	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
@@ -528,7 +533,7 @@ then
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	asm_link_clang_rts
+	export CCAS_FLAGS="$int_as_flag" ; asm_link_clang_rts
 	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
@@ -749,7 +754,7 @@ else
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	asm_link_clang_rts
+	export CCAS_FLAGS="$int_as_flag" ; asm_link_clang_rts
 	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
