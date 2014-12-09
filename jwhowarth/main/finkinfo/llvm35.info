@@ -1,13 +1,13 @@
 Info3: <<
 Package: llvm35
-Version: 3.5.0
+Version: 3.5.1
 Revision: 0
 Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
 
 BuildDepends: <<
-	fink (>= 0.38.3), 
+	fink (>= 0.32), 
 # for xz
 	cmake (>= 2.8.10.2-1), 
 	# on darwin11+, for libc++
@@ -15,7 +15,7 @@ BuildDepends: <<
 # ccache is optional, for accelerating rebuilds
 #	ccache,
 # polly plug-in needs isl,gmp
-	isl2 (>=0.14), 
+	isl2 (>=0.13), 
 	gmp5,
 # build scripts need python2.7
 	python27,
@@ -33,17 +33,17 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.xz
-Source-MD5: d6987305a1a0e58e128c1374cd3b8fef
+Source-MD5: b9a1897aff431e1b889325957013ecdd
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.xz
-Source2-MD5: 27718dd13c7df83e15f997116bbb4aef
+Source2-MD5: 87456ee08880f4361ec7fb3ae9eba20e
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.xz
-Source3-MD5: 02624d2a9144278c3808c00dbbab56c8
+Source3-MD5: 066c04e7e5ebb6fd2ebab1bc4132e9b1
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.xz
-Source4-MD5: 2ee0167c7ed7c85026cdb18ad6f4ade8
+Source4-MD5: ac06a19cac7406384395c2d96d0ca779
 Source5: http://llvm.org/releases/%v/libcxx-%v.src.tar.xz
-Source5-MD5: d7b72d65307c677e1ed29a9c425e0421
+Source5-MD5: c867a1992fb7d7cdb79056e054628eab
 Source6: http://llvm.org/releases/%v/openmp-%v.src.tar.xz
-Source6-MD5: 13eb389377b4803c8f6ec0d3eab189fd
+Source6-MD5: 438f952a0fc72e6184fd2fc25435b0fe
 # Source7: http://llvm.org/releases/3.5/test-suite-3.5.src.tar.xz
 # Source7-MD5: 
 # libcxxabi is not needed, use system's libc++abi or libsupc++
@@ -56,13 +56,13 @@ PatchFile-MD5: ecaf94589ea651deb3afa9d634ddc050
 PatchFile2: %n-clang.patch
 PatchFile2-MD5: c81342d20cea8ef1e2871d47c76d4155
 PatchFile3: %n-compiler-rt.patch
-PatchFile3-MD5: 604e134790f984d636669c2ef5732667
+PatchFile3-MD5: 0b65933168696622caa414fc1a1444e5
 PatchFile4: %n-polly.patch
 PatchFile4-MD5: f7ccc7bed1f45b478d696536260269b3
 PatchFile5: %n-libcxx.patch
 PatchFile5-MD5: a96f721f07ce9cdfa501db751000b7af
 PatchFile6: %n-clang-omp.patch
-PatchFile6-MD5: 8b4c22de63790420416d0bc3a9361c0d
+PatchFile6-MD5: 7fd8a33a3d95d695d0c17c78bd29f3e1
 PatchFile7: %n-clang-iomp5.patch
 PatchFile7-MD5: ee4a8910c21e6ceb60393813d2fb0f1e
 PatchFile8: %n-openmp-r219214.patch
@@ -136,23 +136,23 @@ if ($1 == "cmd.append(exec_path)") {
 	test -d /usr/lib/c++/v1 ||
 	test "$darwin_vers" -lt 11 ||
 	{
-	  clang_path=`xcrun -find clang`
-	  pushd `dirname $clang_path`
+	  sys_clang_path=`xcrun -find clang`
+	  pushd `dirname $sys_clang_path`
 	  if test -d ../lib/c++/v1
 	  then
 	    cd ../lib/c++/v1
-	    cxx_incdir=`pwd`
+	    sys_cxx_incdir=`pwd`
 	  elif test -d ../include/c++/v1
 	  then
 	    cd ../include/c++/v1
-	    cxx_incdir=`pwd`
+	    sys_cxx_incdir=`pwd`
 	  else
-	    echo "Unable to find libc++ headers relative to $clang_path (from xcrun)."
+	    echo "Unable to find libc++ headers relative to $sys_clang_path (from xcrun)."
 	    exit 1
 	  fi
 	  popd
-	  echo "Found system libc++ headers in: $cxx_incdir"
-	  sed -i.orig3 -e 's|AddPath("/usr/include/c++/v1"|AddPath("'"$cxx_incdir"'"|' \
+	  echo "Found system libc++ headers in: $sys_cxx_incdir"
+	  sed -i.orig3 -e 's|AddPath("/usr/include/c++/v1"|AddPath("'"$sys_cxx_incdir"'"|' \
 		tools/clang/lib/Frontend/InitHeaderSearch.cpp
 	}
 
@@ -461,10 +461,10 @@ then
 # if not bootstrapping libc++, use system C++ library (buried in XCode)
 #	if test "$darwin_vers" -ge 13
 #	then
-#		clang_path=`xcrun -find clang`
-#		cxx_incdir=`dirname $clang_path`/../lib/c++/v1
+#		sys_clang_path=`xcrun -find clang`
+#		sys_cxx_incdir=`dirname $sys_clang_path`/../lib/c++/v1
 #		STAGE2_CMAKE_OPTIONS=( "${STAGE2_CMAKE_OPTIONS[@]}" \
-#			-DCMAKE_CXX_FLAGS:STRING="-cxx-isystem $cxx_incdir" )
+#			-DCMAKE_CXX_FLAGS:STRING="-cxx-isystem $sys_cxx_incdir" )
 #	fi
 	mkdir -p ../build/stage2
 	pushd ../build/stage2
@@ -699,18 +699,19 @@ fi
 	echo "Objects that differ ($1 vs. $2):"
 	for f in "${diffs[@]}"
 	do echo "  examining: $f"
+	  loc_err=0
 	  mkdir -p `dirname compare/$f`
 	  case $f in
 	  *.inc|*.h|*.gen) diff -u {$1,$2}/$f > compare/$f.diff ||
 	    diff_size compare/$f.diff ||
-	    resolve_path_diffs {$1,$2}/$f $1 $2 || err=1 ;;
+	    resolve_path_diffs {$1,$2}/$f $1 $2 || loc_err=1 ;;
 	  tools/llvm-config/CMakeFiles/llvm-config.dir/llvm-config.cpp.o)
 	    echo "  $f -- OK: asm sensitive to \$builddir" ;;
 	  lib/Support/CMakeFiles/LLVMSupport.dir/CommandLine.cpp.o)
 	    echo "  $f -- OK: __DATE__, __TIME__ cpp macros in strings" ;;
-	  *.o) resolve_obj_diffs $1 $2 $f || err=1 ;;
+	  *.o) resolve_obj_diffs $1 $2 $f || loc_err=1 ;;
 	  esac
-	  test "$err" = 0 || unresolved_diffs=("${unresolved_diffs[@]}" $f)
+	  test "$loc_err" = 0 || err=1 && unresolved_diffs=("${unresolved_diffs[@]}" $f)
 	done
 	if test "$err" = 1
 	then echo "UNRESOLVED DIFFS ($1 vs. $2):"
@@ -917,8 +918,12 @@ EOF
 <<
 InstallScript: <<
 	#!/bin/sh -ev
+	darwin_vers=`uname -r | cut -d. -f1`
 	# "brv" = branch version, 3.5
 	brv=3.5
+	# optional: de-rpath shared library dependencies
+	de_rpath_deps=1
+
 	# need 'make' link
 	pushd ../opt-bin
 	  export PATH=`pwd`:$PATH
@@ -949,8 +954,7 @@ InstallScript: <<
 	# boilerplate script for fixing post-cmake-install install_names
 	# expect to find in lib/
 	# libc++ will be in %p/lib and %p/include/c++/v1
-	# for stem in opt/llvm-$brv lib/c++
-	for stem in lib/c++
+	for stem in opt/llvm-$brv lib/c++
 	do
 	  iprefix=%i/$stem
 	  prefix=%p/$stem
@@ -976,11 +980,16 @@ InstallScript: <<
 		do
 		  # prefix absolute paths to llvm/clang's lib installation
 		  # caution: assumes dependent libraries are in same dir
+		  db=`basename $d`
 		  case $d in
 	  # NOTE: libc++ shared library lives in different prefix!
 		  *stage*/lib/libc++*)
 		    install_name_tool -change "$d" "$libcxx_install_dir/libc++.1.0.dylib" $b ;;
 		  /*) ;;
+		  @rpath/*) test $de_rpath_deps = 0 ||
+		    install_name_tool -change "@rpath/$db" "$prefix/lib/$db" $b ;;
+		  @loader_path/*) test $de_rpath_deps = 0 ||
+		    install_name_tool -change "@loader_path/../lib/$db" "$prefix/lib/$d" $b ;;
 		  *) install_name_tool -change "$d" "$prefix/lib/$d" $b ;;
 		  esac
 		done
@@ -989,9 +998,6 @@ InstallScript: <<
 	  done
 	  popd
 	done
-# no longer need this, linking is now relative to @rpath
-if false
-then
 	# for binaries and plug-in modules
 	for stem in opt/llvm-$brv
 	do
@@ -1002,24 +1008,36 @@ then
 	  do
 		if test ! -L $f
 		then
+		# check that executable is binary, not script/text
+		ft=`file $f | cut -d: -f2-`
+		if echo "$ft" | grep Mach-O
+		then
+		# darwin10 cctools introduced install_name -delete_rpath
+		test $de_rpath_deps = 0 || test $darwin_vers -lt 10 ||
+		  install_name_tool -delete_rpath "@executable_path/../lib" $f
 		deplibs=`otool -L $f | sed 1d | awk '{print $1;}' | tr '\n' ' '`
 		for d in $deplibs
 		do
+		  db=`basename $d`
 		  # consider substituting with relative @executable_path/../lib ?
 		  case $d in
 	# NOTE: libc++ shared library lives in different prefix!
 		  *stage*/lib/libc++*)
 		    install_name_tool -change "$d" "$libcxx_install_dir/libc++.1.0.dylib" $f ;;
 		  /*) ;;
-		  @*) ;;
+		# de-rpath libs
+		  @rpath/*) test $de_rpath_deps = 0 ||
+		    install_name_tool -change "@rpath/$db" "$prefix/lib/$db" $f ;;
+		  @loader_path/*) test $de_rpath_deps = 0 ||
+		    install_name_tool -change "@loader_path/../lib/$db" "$prefix/lib/$d" $f ;;
 		  *) install_name_tool -change "$d" "$prefix/lib/$d" $f ;;
 		  esac
 		done
 		fi
+		fi
 	  done
 	  popd
 	done
-fi
 
 	stem=opt/llvm-$brv
 	iprefix=%i/$stem
@@ -1117,32 +1135,32 @@ SplitOff5: <<
 		tools/clang/README.txt
 	<<
 	Shlibs: <<
-	 	@rpath/libclang.3.5.dylib 1.0.0 %n (>= 3.5-0)
-		!@rpath/libclangAnalysis.dylib
-		!@rpath/libclangARCMigrate.dylib
-		!@rpath/libclangAST.dylib
-		!@rpath/libclangASTMatchers.dylib
-		!@rpath/libclangBasic.dylib
-		!@rpath/libclangCodeGen.dylib
-		!@rpath/libclangDriver.dylib
-		!@rpath/libclangDynamicASTMatchers.dylib
-		!@rpath/libclangEdit.dylib
-		!@rpath/libclangFormat.dylib
-		!@rpath/libclangFrontend.dylib
-		!@rpath/libclangFrontendTool.dylib
-		!@rpath/libclangIndex.dylib
-		!@rpath/libclangLex.dylib
-		!@rpath/libclangParse.dylib
-		!@rpath/libclangRewrite.dylib
-		!@rpath/libclangRewriteFrontend.dylib
-		!@rpath/libclangSema.dylib
-		!@rpath/libclangSerialization.dylib
-		!@rpath/libclangStaticAnalyzerCheckers.dylib
-		!@rpath/libclangStaticAnalyzerCore.dylib
-		!@rpath/libclangStaticAnalyzerFrontend.dylib
-		!@rpath/libclangTooling.dylib
-		!@rpath/libclang_rt.asan_osx_dynamic.dylib
-		!@rpath/libclang_rt.asan_iossim_dynamic.dylib
+	 	%p/opt/llvm-3.5/lib/libclang.3.5.dylib 1.0.0 %n (>= 3.5-0)
+		!%p/opt/llvm-3.5/lib/libclangAnalysis.dylib
+		!%p/opt/llvm-3.5/lib/libclangARCMigrate.dylib
+		!%p/opt/llvm-3.5/lib/libclangAST.dylib
+		!%p/opt/llvm-3.5/lib/libclangASTMatchers.dylib
+		!%p/opt/llvm-3.5/lib/libclangBasic.dylib
+		!%p/opt/llvm-3.5/lib/libclangCodeGen.dylib
+		!%p/opt/llvm-3.5/lib/libclangDriver.dylib
+		!%p/opt/llvm-3.5/lib/libclangDynamicASTMatchers.dylib
+		!%p/opt/llvm-3.5/lib/libclangEdit.dylib
+		!%p/opt/llvm-3.5/lib/libclangFormat.dylib
+		!%p/opt/llvm-3.5/lib/libclangFrontend.dylib
+		!%p/opt/llvm-3.5/lib/libclangFrontendTool.dylib
+		!%p/opt/llvm-3.5/lib/libclangIndex.dylib
+		!%p/opt/llvm-3.5/lib/libclangLex.dylib
+		!%p/opt/llvm-3.5/lib/libclangParse.dylib
+		!%p/opt/llvm-3.5/lib/libclangRewrite.dylib
+		!%p/opt/llvm-3.5/lib/libclangRewriteFrontend.dylib
+		!%p/opt/llvm-3.5/lib/libclangSema.dylib
+		!%p/opt/llvm-3.5/lib/libclangSerialization.dylib
+		!%p/opt/llvm-3.5/lib/libclangStaticAnalyzerCheckers.dylib
+		!%p/opt/llvm-3.5/lib/libclangStaticAnalyzerCore.dylib
+		!%p/opt/llvm-3.5/lib/libclangStaticAnalyzerFrontend.dylib
+		!%p/opt/llvm-3.5/lib/libclangTooling.dylib
+		!%p/opt/llvm-3.5/lib/clang/%v/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
+		!%p/opt/llvm-3.5/lib/clang/%v/lib/darwin/libclang_rt.asan_iossim_dynamic.dylib
 		(%m != powerpc) %p/opt/llvm-3.5/lib/libiomp5.dylib 5.0.0 %n (>= 3.5.0-0)
 	<<
 <<
@@ -1193,7 +1211,7 @@ SplitOff9: <<
 	Description: Shared libraries for Polly loop optimizer
 	Depends: <<
 		%N-shlibs (= %v-%r),
-		isl2-shlibs (>= 0.14), 
+		isl2-shlibs (>= 0.13), 
 	#	cloog-org2-shlibs (>= 0.18),
 		libgmpxx5-shlibs,
 		gmp5-shlibs
@@ -1205,7 +1223,7 @@ SplitOff9: <<
 	DocFiles: tools/polly/LICENSE.txt tools/polly/CREDITS.txt
 	Shlibs: <<
 		!%p/opt/llvm-3.5/lib/LLVMPolly.so
-		!@rpath/libPolly.dylib
+		!%p/opt/llvm-3.5/lib/libPolly.dylib
 	<<
 <<
 SplitOff10: <<
@@ -1244,66 +1262,66 @@ SplitOff12: <<
 	<<
 	DocFiles: *.TXT README.txt
 	Shlibs: <<
-		!@rpath/libLTO.dylib
-		!@rpath/BugpointPasses.dylib
-		!@rpath/LLVMHello.dylib
-		!@rpath/libLLVMARMAsmParser.dylib
-		!@rpath/libLLVMARMAsmPrinter.dylib
-		!@rpath/libLLVMARMCodeGen.dylib
-		!@rpath/libLLVMARMDesc.dylib
-		!@rpath/libLLVMARMDisassembler.dylib
-		!@rpath/libLLVMARMInfo.dylib
-		!@rpath/libLLVMAnalysis.dylib
-		!@rpath/libLLVMAsmParser.dylib
-		!@rpath/libLLVMAsmPrinter.dylib
-		!@rpath/libLLVMBitReader.dylib
-		!@rpath/libLLVMBitWriter.dylib
-		!@rpath/libLLVMCodeGen.dylib
-		!@rpath/libLLVMCore.dylib
-		!@rpath/libLLVMDebugInfo.dylib
-		!@rpath/libLLVMExecutionEngine.dylib
-		!@rpath/libLLVMInstCombine.dylib
-		!@rpath/libLLVMInstrumentation.dylib
-		!@rpath/libLLVMInterpreter.dylib
-		!@rpath/libLLVMIRReader.dylib
-		!@rpath/libLLVMJIT.dylib
-		!@rpath/libLLVMLinker.dylib
-		!@rpath/libLLVMLTO.dylib
-		!@rpath/libLLVMMC.dylib
-		!@rpath/libLLVMMCAnalysis.dylib
-		!@rpath/libLLVMMCDisassembler.dylib
-		!@rpath/libLLVMLineEditor.dylib
-		!@rpath/libLLVMMCJIT.dylib
-		!@rpath/libLLVMMCParser.dylib
-		!@rpath/libLLVMObjCARCOpts.dylib
-		!@rpath/libLLVMObject.dylib
-		!@rpath/libLLVMOption.dylib
-		!@rpath/libLLVMPowerPCAsmParser.dylib
-		!@rpath/libLLVMPowerPCAsmPrinter.dylib
-		!@rpath/libLLVMPowerPCCodeGen.dylib
-		!@rpath/libLLVMPowerPCDesc.dylib
-		!@rpath/libLLVMPowerPCDisassembler.dylib
-		!@rpath/libLLVMPowerPCInfo.dylib
-		!@rpath/libLLVMProfileData.dylib
-		!@rpath/libLLVMRuntimeDyld.dylib
-		!@rpath/libLLVMScalarOpts.dylib
-		!@rpath/libLLVMSelectionDAG.dylib
-		!@rpath/libLLVMSupport.dylib
-		!@rpath/libLLVMTableGen.dylib
-		!@rpath/libLLVMTarget.dylib
-		!@rpath/libLLVMTransformUtils.dylib
-		!@rpath/libLLVMVectorize.dylib
-		!@rpath/libLLVMipa.dylib
-		!@rpath/libLLVMipo.dylib
-		!@rpath/libLLVMX86AsmParser.dylib
-		!@rpath/libLLVMX86AsmPrinter.dylib
-		!@rpath/libLLVMX86CodeGen.dylib
-		!@rpath/libLLVMX86Desc.dylib
-		!@rpath/libLLVMX86Disassembler.dylib
-		!@rpath/libLLVMX86Info.dylib
-		!@rpath/libLLVMX86Utils.dylib
-		!@rpath/libgtest.dylib
-		!@rpath/libgtest_main.dylib
+		!%p/opt/llvm-3.5/lib/libLTO.dylib
+		!%p/opt/llvm-3.5/lib/BugpointPasses.dylib
+		!%p/opt/llvm-3.5/lib/LLVMHello.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMARMAsmParser.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMARMAsmPrinter.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMARMCodeGen.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMARMDesc.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMARMDisassembler.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMARMInfo.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMAnalysis.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMAsmParser.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMAsmPrinter.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMBitReader.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMBitWriter.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMCodeGen.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMCore.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMDebugInfo.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMExecutionEngine.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMInstCombine.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMInstrumentation.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMInterpreter.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMIRReader.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMJIT.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMLinker.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMLTO.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMMC.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMMCAnalysis.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMMCDisassembler.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMLineEditor.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMMCJIT.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMMCParser.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMObjCARCOpts.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMObject.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMOption.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMPowerPCAsmParser.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMPowerPCAsmPrinter.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMPowerPCCodeGen.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMPowerPCDesc.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMPowerPCDisassembler.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMPowerPCInfo.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMProfileData.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMRuntimeDyld.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMScalarOpts.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMSelectionDAG.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMSupport.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMTableGen.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMTarget.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMTransformUtils.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMVectorize.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMipa.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMipo.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMX86AsmParser.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMX86AsmPrinter.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMX86CodeGen.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMX86Desc.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMX86Disassembler.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMX86Info.dylib
+		!%p/opt/llvm-3.5/lib/libLLVMX86Utils.dylib
+		!%p/opt/llvm-3.5/lib/libgtest.dylib
+		!%p/opt/llvm-3.5/lib/libgtest_main.dylib
 	<<
 <<
 SplitOff13: <<
@@ -1389,6 +1407,13 @@ openmp runtime is installed privately under clang's per-version resource dir.
 
 Built with shared-libraries to reduce the binary size and peak disk usage.
 Targets enabled in CompileScript: X86, PowerPC, ARM.
+
+The upstream build system now produces @rpath-linked libraries and binaries,
+however, the InstallScript "de-rpaths" the install_name ids to 
+satisfy packaging requirements.  There is also an optional step of
+de-rpath-ing dylib *dependencies* that is controlled by the de_rpath_deps
+variable.  Binaries work either way, but de-rpathing dependencies
+closer resembles the packaging in earlier versions, llvm34.  
 <<
 DescPort: <<
 Most of the patches are maintained at fangism's powerpc-darwin8 branches
@@ -1402,6 +1427,8 @@ On darwin>9 and x86 architectures, the package build is done as a
 3-stage bootstrap (self-host), now including a built libc++.  
 Should stage 2 vs. 3 of bootstrap miscompare, a 4th stage is done, 
 and then compared against stage 3 (only expected on darwin10).  
+To accelerate testing, a user may also disable the bootstrap by 
+setting do_bootstrap=0 in the CompileScript.
 
 	*** LLVM/Clang-3.5 still has some codegen issues for PowerPC
 	*** It is NOT considered production quality for PowerPC
