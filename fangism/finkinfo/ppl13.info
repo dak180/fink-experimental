@@ -60,9 +60,9 @@ PatchScript: <<
 	echo ".NOTPARALLEL: check-am" >> $file
 	# move pkglibdir to a versioned dir to avoid shlib conflict
 	file=interfaces/Java/jni/Makefile.in
-	sed -i.orig -e '/^pkglibdir =/s|$|-0.12|' $file
+	sed -i.orig -e '/^pkglibdir =/s|$|-%v|' $file
 	file=interfaces/Java/Makefile.in
-	sed -i.orig -e '/^pkglibdir =/s|$|-0.12|' $file
+	sed -i.orig -e '/^pkglibdir =/s|$|-%v|' $file
 	# use consistent architecture for testing, override default as needed
 	file=interfaces/Java/tests/Makefile.in
 	case "%m" in
@@ -146,12 +146,12 @@ SplitOff: <<
   Files: <<
     %p/lib/libppl.13*.dylib
     %p/lib/libppl_c.4*.dylib
-    %p/lib/ppl-0.12
+    %p/lib/ppl-1.1
   <<
   Shlibs: <<
     %p/lib/libppl.13.dylib 14.0.0 %n (>= 1.1-1)
     %p/lib/libppl_c.4.dylib 5.0.0 %n (>= 0.11-1)
-    !%p/lib/ppl-0.12/libppl_java.jnilib
+    !%p/lib/ppl-1.1/libppl_java.jnilib
   <<
   DocFiles: <<
 	BUGS
