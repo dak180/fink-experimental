@@ -33,7 +33,7 @@ ConfigureParams: <<
 	--infodir=%p/share/info \
 	--disable-static \
 	--with-gmp-include=%p/include \
-	--with-gmp-lib=%p/lib \
+	--with-gmp-lib=%p/lib/gmp5 \
 	--enable-pch \
 	$disable_fpmath \
 	--with-java="$JAVA_HOME" \
