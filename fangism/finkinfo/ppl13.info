@@ -28,6 +28,7 @@ GCC: 4.0
 Source: ftp://ftp.cs.unipr.it/pub/ppl/releases/%v/ppl-%v.tar.bz2
 Source-MD5: 98be3e1a272bd5337fbadabb0d3f3d20
 ConfigureParams: <<
+	--libdir='${prefix}/lib/ppl13' \
 	--mandir=%p/share/man \
 	--infodir=%p/share/info \
 	--disable-static \
@@ -62,11 +63,14 @@ PatchScript: <<
 	# files compiled here are VERY taxing on memory, so we serialize
 	file=tests/MIP_Problem/Makefile.in
 	echo ".NOTPARALLEL: check-am" >> $file
+	if false
+	then
 	# move pkglibdir to a versioned dir to avoid shlib conflict
 	file=interfaces/Java/jni/Makefile.in
-	sed -i.orig -e '/^pkglibdir =/s|$|-%v|' $file
+	sed -i.orig -e '/^pkglibdir =/s|$|13|' $file
 	file=interfaces/Java/Makefile.in
-	sed -i.orig -e '/^pkglibdir =/s|$|-%v|' $file
+	sed -i.orig -e '/^pkglibdir =/s|$|13|' $file
+	fi
 	# use consistent architecture for testing, override default as needed
 	file=interfaces/Java/tests/Makefile.in
 	case "%m" in
@@ -133,6 +137,12 @@ InstallScript: <<
 	#!/bin/sh -ev
 	cd build
 	make install DESTDIR=%d
+	# Convenience symlinks of .la/.dylib files from %p/%lib to %p/lib/ppl13
+	# so most packages will find them w/o requiring passing --with-ppl-...=
+	ln -s %p/lib/%n/libppl.la %i/lib/libppl.la
+	ln -s %p/lib/%n/libppl_c.la %i/lib/libppl_c.la
+	ln -s %p/lib/%n/libppl.13.dylib %i/lib/libppl.dylib
+	ln -s %p/lib/%n/libppl_c.4.dylib %i/lib/libppl_c.dylib
 <<
 DocFiles: <<
 	BUGS
@@ -152,14 +162,15 @@ SplitOff: <<
 	libgmpxx5-shlibs
   <<
   Files: <<
-    %p/lib/libppl.13*.dylib
-    %p/lib/libppl_c.4*.dylib
-    %p/lib/ppl-1.1
+    %p/lib/%N/libppl.13*.dylib
+    %p/lib/%N/libppl_c.4*.dylib
+    %p/lib/%N/ppl/libppl_java.jnilib
+    %p/lib/%N/ppl/ppl_java.jar
   <<
   Shlibs: <<
-    %p/lib/libppl.13.dylib 14.0.0 %n (>= 1.1-1)
-    %p/lib/libppl_c.4.dylib 5.0.0 %n (>= 0.11-1)
-    !%p/lib/ppl-1.1/libppl_java.jnilib
+    %p/lib/%N/libppl.13.dylib 14.0.0 %n (>= 1.1-1)
+    %p/lib/%N/libppl_c.4.dylib 5.0.0 %n (>= 1.1-1)
+    !%p/lib/%N/ppl/libppl_java.jnilib
   <<
   DocFiles: <<
 	BUGS
