@@ -27,6 +27,8 @@ Replaces: ppl, ppl9, ppl10, ppl11, ppl12
 GCC: 4.0
 Source: ftp://ftp.cs.unipr.it/pub/ppl/releases/%v/ppl-%v.tar.bz2
 Source-MD5: 98be3e1a272bd5337fbadabb0d3f3d20
+PatchFile: %n.patch
+PatchFile-MD5: 1e3762768d50e72b2449ea4b6d31ff94
 ConfigureParams: <<
 	--libdir='${prefix}/lib/ppl13' \
 	--mandir=%p/share/man \
@@ -48,6 +50,8 @@ ConfigureParams: <<
 <<
 PatchScript: <<
 	#!/bin/sh -ev
+	darwin_vers=`uname -r | cut -d. -f1`
+	test "$darwin_vers" -gt 8 || %{default_script}
 	# g++-4.0.1 rejects template instantiating w/ anonymous enums -- fangism
 	# this was fixed in ppl-0.11; the following patch doesn't do anything
 	# file=src/meta_programming.hh
