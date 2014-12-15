@@ -3,18 +3,16 @@ Package: gcc50
 Version: 5.0.0
 Revision: 1000
 #Source: ftp://gcc.gnu.org/pub/gcc/releases/gcc-%v/gcc-%v.tar.bz2
-Source: ftp://gcc.gnu.org/pub/gcc/snapshots/5-20141112/gcc-5-20141112.tar.bz2
-Source-MD5: b1b8e357e2d91279c8840a968326d0d8
+Source: ftp://gcc.gnu.org/pub/gcc/snapshots/5-20141214/gcc-5-20141214.tar.bz2
+Source-MD5: 69a91740ac1f0f1929a0ca26e83f4691
 Source2: ftp://sourceware.org/pub/java/ecj-4.5.jar
 Source2-MD5: d7cd6a27c8801e66cbaa964a039ecfdb
 PatchFile: %n.patch
 PatchFile-MD5: c36a7d9ebcd2ad4226d66e93bfb2fa3c 
-PatchFile2: PR63534_comment50.patch
-PatchFile2-MD5: 3a94771c39b46672528341c06d2dde10
-PatchFile3: gcc5-isl-update.patch
-PatchFile3-MD5: 0a00eb5174a8dd6c3203aaa36c41a60d
-PatchFile4: gcc5-darwin-libatomic.patch
-PatchFile4-MD5: bd8597b5d5c1c297fe4d0e24384ad6e2
+PatchFile2: gcc5-darwin-libatomic.patch
+PatchFile2-MD5: c2bae9774b7fa2e49408ed1bb0c5adab 
+PatchFile3: gcc5-PR63810.patch
+PatchFile3-MD5: 63915c8199dbc48e70c33971ead594c7
 Type: -64bit .
 NoSetCPPFLAGS: True
 NoSetLDFLAGS: True
@@ -58,7 +56,7 @@ CompileScript: <<
  mkdir ../darwin_objdir
  cd ../darwin_objdir
  #../gcc-%v/configure %c
- ../gcc-5-20141112/configure %c
+ ../gcc-5-20141214/configure %c
  # Use bootstrap-lean to reduce disk usage.
  # Note that this causes plugin testsuite failures
  # since the plugin headers must come from prev-gcc.
