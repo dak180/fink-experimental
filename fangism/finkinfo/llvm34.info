@@ -988,6 +988,7 @@ InstallScript: <<
 	#!/bin/sh -ev
 	# "brv" = branch version, 3.4
 	brv=3.4
+	darwin_vers=`uname -r | cut -d. -f1`
 	# need 'make' link
 	pushd ../opt-bin
 	  export PATH=`pwd`:$PATH
@@ -1104,8 +1105,11 @@ InstallScript: <<
 
 	# need symlink /usr/bin/ld so libLTO.dylib can be found relative to @executable_path
 	pushd $iprefix/bin
-		test -x /usr/bin/ld && ln -s /usr/bin/ld .
-		# shouldn't this be odcctools' ld for darwin8?
+		if test "$darwin_vers" -le 8
+		then clang_linker=%p/lib/odcctools/bin/ld
+		else clang_linker=/usr/bin/ld
+		fi
+		test -x $clang_linker && ln -s $clang_linker ld
 	popd
 
 # convenient clang symlinks
