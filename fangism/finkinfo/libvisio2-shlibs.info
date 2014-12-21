@@ -1,0 +1,94 @@
+Package: libvisio2-shlibs
+Version: 0.1.0
+Revision: 1
+Homepage: http://www.freedesktop.org/wiki/Software/libvisio
+Maintainer: David Fang <fangism@users.sourceforge.net>
+Description: Library for Visio diagrams
+License: LGPL
+Source: https://github.com/LibreOffice/libvisio/archive/libvisio-%v.tar.gz
+Source-MD5: 283757added7c4f6f36db60eac1d82e7
+SourceDirectory: libvisio-libvisio-%v
+BuildDepends: <<
+	automake1.14,
+	autoconf2.6,
+	libtool2,
+	doxygen,
+	fink-package-precedence,
+	boost1.55-nopython,
+	libiconv-dev,
+	libicu48-dev,
+	librevenge,
+	libxml2,
+	libwpd-0.9-dev (>= 0.9),
+	libwpg-0.2-dev (>= 0.2),
+	pkgconfig (>= 0.20)
+<<
+Depends: <<
+	libicu48-shlibs,
+	librevenge-shlibs,
+	libwpd-0.9-shlibs (>= 0.9),
+	libwpg-0.2-shlibs (>= 0.2),
+	libxml2-shlibs
+<<
+PatchScript: <<
+	#!/bin/sh -ev
+	./autogen.sh
+<<
+SetCPPFLAGS: -I%p/opt/boost-1_55/include
+# doesn't actually link to boost
+ConfigureParams: <<
+	--mandir=%i/share/man \
+	--infodir=%p/share/info \
+	--enable-shared \
+	--disable-static \
+	--disable-werror
+<<
+CompileScript: <<
+	#!/bin/sh -ev
+	%{default_script}
+	fink-package-precedence .
+<<
+# there doesn't seem to be any tests
+InfoTest: TestScript: make -k check || exit 2
+InstallScript: <<
+	#!/bin/sh -ev
+	make DESTDIR=%d install
+<<
+Shlibs: <<
+	%p/lib/libvisio-0.1.1.dylib	2.0.0 %n (>= 0.1.0-1)
+<<
+DocFiles: AUTHORS COPYING.* HACKING NEWS README
+SplitOff: <<
+Package: libvisio-bin
+Depends: %N (= %v-%r)
+Conflicts: libvisio
+Replaces: libvisio
+DocFiles: AUTHORS COPYING.* HACKING NEWS README
+Files: bin
+<<
+SplitOff2: <<
+Package: libvisio2-dev
+Depends: %N (= %v-%r)
+Conflicts: libvisio-dev
+Replaces: libvisio-dev
+BuildDependsOnly: true
+DocFiles: AUTHORS COPYING.* HACKING NEWS README
+Files: <<
+	include
+	lib/libvisio-0.1.dylib
+	lib/*.la
+	lib/pkgconfig
+	share/doc/libvisio/html
+<<
+<<
+DescDetail: <<
+Libvisio is library providing ability to interpret and import visio diagrams 
+into various applications.  You can find it being used in libreoffice.
+<<
+DescUsage: <<
+libvisio-bin comes with 2 programs: vsd2raw, vsd2xhtml
+<<
+DescPackaging: <<
+The doxygen-generated library HTML is included with the -dev splitoff.
+libvisio-bin replaces the old libvisio (which contained executables in bin)
+<<
