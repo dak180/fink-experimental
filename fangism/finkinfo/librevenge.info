@@ -18,7 +18,7 @@ BuildDependsOnly: true
 # system's zlib
 GCC: 4.0
 
-Source: mirror:sourceforge:libwpd/%n/%n-%v.tar.bz2
+Source: mirror:sourceforge:libwpd/%n-%v.tar.bz2
 Source-MD5: 69c367c6b0a360411965a1c409a0b6c1
 
 UseMaxBuildJobs: true
@@ -26,7 +26,7 @@ UseMaxBuildJobs: true
 ConfigureParams: --disable-static --disable-weffc -disable-werror -C
 # what? no configure flag for --with-boost=?
 SetCPPFLAGS: -I%p/opt/boost-1_55/include
-SetLDFLAGS: -I%p/opt/boost-1_55/lib
+SetLDFLAGS: -L%p/opt/boost-1_55/lib
 CompileScript: <<
 	#!/bin/sh -ev
 	%{default_script}
