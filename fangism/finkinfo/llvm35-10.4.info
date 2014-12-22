@@ -115,6 +115,8 @@ PatchScript: <<
 	pushd projects/compiler-rt
 	  $patch_filter %{PatchFile3} | patch -p1
 	  sed -i.orig -e '/http.*Article/s|^|// |' lib/asan/asan_malloc_mac.cc
+	  test "$darwin_vers" -gt 9 || sed -i.orig -e 's|__bzero|bzero|g' lib/sanitizer_common/sanitizer_common_interceptors.inc
+	  # or do actual symbol check on nm /usr/lib/libc.dylib /usr/lib/system/libsystem_c.dylib
 	popd
 	pushd ../libcxx-%v.src
 	  $patch_filter %{PatchFile5} | patch -p1
