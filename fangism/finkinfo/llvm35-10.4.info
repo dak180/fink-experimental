@@ -60,7 +60,7 @@ PatchFile-MD5: ecaf94589ea651deb3afa9d634ddc050
 PatchFile2: %n-clang.patch
 PatchFile2-MD5: c81342d20cea8ef1e2871d47c76d4155
 PatchFile3: %n-compiler-rt.patch
-PatchFile3-MD5: 0b65933168696622caa414fc1a1444e5
+PatchFile3-MD5: f89188d1b52e50e144a67ae34b33ae92
 PatchFile4: %n-polly.patch
 PatchFile4-MD5: f7ccc7bed1f45b478d696536260269b3
 PatchFile5: %n-libcxx.patch
@@ -81,6 +81,7 @@ PatchScript: <<
 	darwin_vers=`uname -r | cut -d. -f1`
 	osx_version=`sw_vers -productVersion | cut -d. -f-2`
 
+	llvm_abs_srcdir=%b
 	# manual unpack for pre-xz fink
 	if test "$darwin_vers" -lt 9
 	then
@@ -88,7 +89,9 @@ PatchScript: <<
 	  do xz -dc $a-%v.src.tar.xz | tar xvf -
 	  done
 	  cd llvm-%v.src
+	  llvm_abs_srcdir="$llvm_abs_srcdir/llvm-%v.src"
 	fi
+	build_root="$llvm_abs_srcdir/../build"
 
 	# cmake build ties subproject dirs together into one build
 	pushd tools
@@ -178,7 +181,7 @@ if ($1 == "cmd.append(exec_path)") {
 	  sed -i.orig -e '/message-converter/s|--enum=|--enum-file=|' \
 		-e '/message-converter/s|--default=|--default-file=|' \
 		runtime/CMakeLists.txt
-	  sed -i.orig -e 's|= gcc|= %b/../build/last/bin/clang-3.5|g' testsuite/Makefile
+	  sed -i.orig -e "s|= gcc|= $build_root/last/bin/clang-3.5|g" testsuite/Makefile
 	popd
 	
 # needed for gcc-fsf-4.x only
@@ -199,10 +202,11 @@ CompileScript: <<
 	brv=3.5
 	darwin_vers=`uname -r | cut -d. -f1`
 	osx_version=`sw_vers -productVersion | cut -d. -f-2`
-	llvm_abs_srcdir=%b
-	libcxx_abs_srcdir=$llvm_abs_srcdir/../libcxx-%v.src
+	llvm_abs_srcdir=b
+	test "$darwin_vers" -gt 8 || llvm_abs_srcdir="$llvm_abs_srcdir/llvm-%v.src"
+	libcxx_abs_srcdir="$llvm_abs_srcdir/../libcxx-%v.src"
 	libcxx_rel_srcdir=../../libcxx-%v.src
-	build_root=$llvm_abs_srcdir/../build
+	build_root="$llvm_abs_srcdir/../build"
 	relsrcdir=../../llvm-%v.src
 	# LLVM_ENABLE_ASSERTIONS:OFF and LIBCXX_ENABLE_ASSERTIONS:OFF
 	# for production compiler build
@@ -327,7 +331,7 @@ EOF
 	esac
 	# script to assemble/link in missing .S units into libclang_rt
 	asm_link_clang_rt() {
-		# $CC already set
+		# $CC, $CCAS_FLAGS already set
 		# $1 is $clang_arch or $other_arch
 		arch=$1
 		builddir=projects/compiler-rt/lib
@@ -350,8 +354,8 @@ EOF
 	# libc++ in the bootstrap process.
 	# Keep this path in sync with libcxx_install_dir elsewhere in this file.
 	fix_llvm_config_build_variables() {
-		sed -i.orig -e '/LLVM_CXXFLAGS/s|%b[^ ]*/include|%p/include/c++/v1|' \
-			-e '/LLVM_LDFLAGS/s|%b[^ ]*/lib|%p/lib/c++|' \
+		sed -i.orig -e "/LLVM_CXXFLAGS/s|$llvm_abs_srcdir[^ ]*/include|%p/include/c++/v1|" \
+			-e '/LLVM_LDFLAGS/s|$llvm_abs_srcdir[^ ]*/lib|%p/lib/c++|' \
 			tools/llvm-config/BuildVariables.inc
 	}
 
@@ -390,6 +394,11 @@ EOF
 	then STAGE1_AS_FLAGS=( "${STAGE1_AS_FLAGS[@]}" -no-integrated-as )
 	fi
 
+	case "$build_arch" in
+	# PowerPC is not ready for -integrated-as yet
+	powerpc*) int_as_flag="-no-integrated-as -B$cctools_path" ;;
+	esac
+
 	STAGE1_CXX_OPTIONS="-fno-common \
 		${STAGE1_LIBCXX_FLAGS[@]} \
 		${STAGE1_AS_FLAGS[@]}"
@@ -414,7 +423,7 @@ EOF
 	# fix_llvm_config_build_variables # not needed b/c not using libc++ yet
 	# first make fails, but we have to run it first and then fix some deps
 	make -k || make -j1 VERBOSE=1
-	asm_link_clang_rts
+	export CCAS_FLAGS="$int_as_flag" ; asm_link_clang_rts
 	make
 	# tests hardcode the .dylib extension for modules
 	pushd lib
@@ -447,11 +456,6 @@ EOF
 	if test $darwin_vers -le 8
 	then STAGE2_COMMON_LDFLAGS=( "-B$cctools_path" )
 	fi
-
-	case "$build_arch" in
-	# PowerPC is not ready for -integrated-as yet
-	powerpc*) int_as_flag="-no-integrated-as -B$cctools_path" ;;
-	esac
 
 	echo "######## START of BOOTSTRAP STAGE 1.5: building libc++ with stage 1 clang++"
 	export CCACHE_COMPILERCHECK=content
@@ -880,8 +884,8 @@ fi
 	    done
 	    make fat
 	    # install to build dir first
-	    install -m 755 ../exports/mac_32e/lib/libiomp5.dylib %b/../build/last/lib
-	    install -m 644 omp.h %b/../build/last/lib/clang/%v/include
+	    install -m 755 ../exports/mac_32e/lib/libiomp5.dylib "$build_root/last/lib"
+	    install -m 644 omp.h "$build_root/last/lib/clang/%v/include"
 	  popd
 	popd
 	fi
