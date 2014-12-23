@@ -355,7 +355,7 @@ EOF
 	# Keep this path in sync with libcxx_install_dir elsewhere in this file.
 	fix_llvm_config_build_variables() {
 		sed -i.orig -e "/LLVM_CXXFLAGS/s|$llvm_abs_srcdir[^ ]*/include|%p/include/c++/v1|" \
-			-e '/LLVM_LDFLAGS/s|$llvm_abs_srcdir[^ ]*/lib|%p/lib/c++|' \
+			-e "/LLVM_LDFLAGS/s|$llvm_abs_srcdir[^ ]*/lib|%p/lib/c++|" \
 			tools/llvm-config/BuildVariables.inc
 	}
 
