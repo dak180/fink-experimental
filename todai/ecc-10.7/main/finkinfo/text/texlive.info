@@ -2,7 +2,7 @@ Info2: <<
 Package: texlive%type_pkg[-nox]
 Type: -nox (boolean)
 Version: 0.20140523
-Revision: 0beta4
+Revision: 0rc1
 GCC: 4.0
 Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
@@ -12,13 +12,13 @@ BuildDepends: <<
  (%type_raw[-nox] = .) openmotif4,
  (%type_raw[-nox] = .) poppler46-xpdf,
  (%type_raw[-nox] = .) poppler46,
+ (%type_raw[-nox] = .) libiconv-dev,
  (%type_raw[-nox] = .) x11, 
  (%type_raw[-nox] = .) xmkmf (>= 1.0.2-3),
  fink (>= 0.32.2),
  fink-package-precedence,
  fontconfig2-dev (>= 2.10.0-1),
  freetype219 (>= 2.2.1-4),
- libiconv-dev,
  libicu48-dev,
  libjpeg9 (>= 9-3),
  libkpathsea6 (>= 6.2.0-0),
@@ -223,13 +223,14 @@ SplitOff: <<
   (%type_raw[-nox] = .) ghostscript, 
   (%type_raw[-nox] = .) openmotif4-shlibs,
   (%type_raw[-nox] = .) poppler46-shlibs,
+  (%type_raw[-nox] = .) libiconv,
   (%type_raw[-nox] = .) x11-shlibs,
   (%type_raw[-nox] = .) x11, 
   fontconfig2-shlibs (>= 2.10.0-1),
   freetype219-shlibs (>= 2.4.11-1),
   libicu48-shlibs,
   libkpathsea6-shlibs (>= 6.2.0-0),
-  libkpathsea6-bin (>= 6.2.0-0),
+  kpathsea (>= 6.2.0-0),
   libpaper1-shlibs,
   libpng16-shlibs,
   pixman-shlibs,
