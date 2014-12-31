@@ -1,8 +1,8 @@
 Package: libkpathsea6
 Version: 6.2.0
-Revision: 0alpha2
+Revision: 0beta1
 Description: Headers of path search library for TeX
-BuildDepends: texlive-texmf | tetex-texmf, fink (>= 0.32)
+BuildDepends: texlive-texmf, fink (>= 0.32)
 BuildDependsOnly: true
 Depends: %N-shlibs (= %v-%r)
 Conflicts: tetex-dev, ptex-dev, libkpathsea4
@@ -39,13 +39,13 @@ SplitOff: <<
  DocFiles: texlive/texk/kpathsea/README
 <<
 SplitOff2: <<
- Package: %N-bin
+ Package: kpathsea
  Description: Path search library for TeX
  Files: bin share/info share/man
  DocFiles: texlive/texk/kpathsea/README
  InfoDocs: kpathsea.info
  Depends: %N-shlibs (= %v-%r)
- Replaces: texlive-base (<< 0.20110705-107)
+ Replaces: texlive-base (<< 0.20110705-107), texlive-nox-base (<< 0.20110705-107), libkpathsea6-bin
 <<
 License: LGPL
 Maintainer: Tomoaki Okayama <okayama@users.sourceforge.net>
