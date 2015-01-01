@@ -1,6 +1,6 @@
 Package: texlive-texmf
 Version: 0.20140525
-Revision: 0beta2
+Revision: 0rc1
 BuildDepends: fink (>= 0.32)
 Conflicts:tetex-texmf
 Replaces: tetex-texmf, texlive-base (<= 0.20080816-3), texlive-nox-base (<= 0.20080816-3)
@@ -8,7 +8,7 @@ Provides: tetex-texmf, breqn, chess-tex, cm-super, ctan-other-misc, ctan-support
 Source: http://hnd.jp.asi.finkmirrors.net/pkgdists/texlive-%v-texmf-delpdf.tar.xz
 Source-MD5: 340fbc6e35371335a5523d70d65ea8ab
 PatchFile: %n.patch
-PatchFile-MD5: 7f2ce9a9f41ef2b5622b842b3efe8b31
+PatchFile-MD5: a8dae99642147e55464e453577f00f8d
 PatchScript: <<
  sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -d texmf-dist -p1
 

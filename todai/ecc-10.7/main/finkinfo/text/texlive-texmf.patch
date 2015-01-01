@@ -100,3 +100,10 @@ diff -Naur texlive-20140525-texmf.orig/web2c/texmf.cnf texlive-20140525-texmf/te
  
  % Architecture independent executables.
  TEXMFSCRIPTS = $TEXMF/scripts/{$progname,$engine,}//
+@@ -780,3 +781,6 @@
+ % Guess input encoding (SJIS vs. Unicode, etc.) in pTeX and friends?
+ % Default is 0, to not guess.
+ guess_input_kanji_encoding = 1
++
++% for ptex filter
++PTEX_IN_FILTER = @PREFIX@/bin/nkf -w
