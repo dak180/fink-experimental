@@ -78,6 +78,10 @@ for glut cannot have "BuildDepends: glut|freeglut" and "Depends:
 glut-shlibs|freeglut-shlibs" in their info file, but need to pick one
 self-consistently.
 
+Created new freeglut2 package that C/R's on freeglut due to upstream
+brute force fix for http://sourceforge.net/p/freeglut/bugs/51 and
+http://sourceforge.net/p/freeglut/bugs/213.
+
 Drop building shared libraries as freeglut since they are now buried.
 
 <<
