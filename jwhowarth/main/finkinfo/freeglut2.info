@@ -31,7 +31,6 @@ CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=%p \
 		-DOPENGL_INCLUDE_DIR="/usr/X11R6/include" \
  	        -DOPENGL_gl_LIBRARY="/usr/X11R6/lib/libGL.dylib" \
       	 	-DOPENGL_glu_LIBRARY="/usr/X11R6/lib/libGLU.dylib" \
-		-DFREEGLUT_REPLACE_GLUT=OFF \
 	 	-DFREEGLUT_BUILD_SHARED_LIBS=ON \
 		-DFREEGLUT_BUILD_STATIC_LIBS=OFF \
 		-DFREEGLUT_BUILD_DEMOS=ON \
@@ -48,19 +47,17 @@ cd build
 perl -pi -e 's|.PHONY|#.PHONY|g' Makefile
 make -j1 install/fast DESTDIR="%d"
 mkdir -p %i/lib/freeglut2
-mv %i/lib/libfreeglut.3.10.0.dylib %i/lib/freeglut2/libfreeglut.3.10.0.dylib
-mv %i/lib/libfreeglut.3.dylib  %i/lib/freeglut2/libfreeglut.3.dylib
-ln -s %p/lib/freeglut2/libfreeglut.3.dylib %i/lib/freeglut2/libglut.dylib
-ln -s %p/lib/freeglut2/libfreeglut.3.dylib %i/lib/libglut.dylib
-ln -s %p/include/GL/freeglut_ext.h %i/include/GL/glut_ext.h
-ln -s %p/include/GL/freeglut_std.h %i/include/GL/glut_std.h
+mv %i/lib/libglut.3.10.0.dylib %i/lib/freeglut2/libglut.3.10.0.dylib
+mv %i/lib/libglut.3.dylib  %i/lib/freeglut2/libglut.3.dylib
+# provide full path for symlink
+ln -sf %p/lib/freeglut2/libglut.3.dylib %i/lib/libglut.dylib 
 mv  %i/share/pkgconfig %i/lib/pkgconfig
 <<
 SplitOff: <<
  Package: %N-shlibs
  Depends: libgl, x11
- Files: lib/freeglut2/libfreeglut.3*.dylib
- Shlibs: %p/lib/freeglut2/libfreeglut.3.dylib 3.0.0 %n (>= 3.0.0-1)
+ Files: lib/freeglut2/libglut.3*.dylib
+ Shlibs: %p/lib/freeglut2/libglut.3.dylib 3.0.0 %n (>= 3.0.0-1)
  DocFiles: AUTHORS COPYING ChangeLog NEWS README TODO
 <<
 Description: Opengl utility toolkit
@@ -81,13 +78,8 @@ for glut cannot have "BuildDepends: glut|freeglut" and "Depends:
 glut-shlibs|freeglut-shlibs" in their info file, but need to pick one
 self-consistently.
 
-This package builds the freeglut libraries named as freeglut rather than
-glut to allow the co-existance with glut since the shared library versioning
-is identical. I have adopted the use of symlinks for the libraries and 
-headers to allow freeglut to used as a drop in replace for glut without
-requiring changes in the source code of programs which require glut.
+Drop building shared libraries as freeglut since they are now buried.
 
-Patch fixes crash in flightgear (taken from RH's Fedora 7 package).
 <<
 License: OSI-Approved
 Homepage: http://freeglut.sourceforge.net/
