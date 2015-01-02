@@ -23,8 +23,8 @@ CompileScript: <<
 #!/bin/bash -efv
 mkdir build
 cd build
-CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=%p/lib/freeglut2 \
-		-DCMAKE_INSTALL_NAME_DIR=%p/lib/freeglut2/lib \
+CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=%p \
+		-DCMAKE_INSTALL_NAME_DIR=%p/lib/freeglut2 \
                 -DCMAKE_VERBOSE_MAKEFILE=ON \
                 -DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_COLOR_MAKEFILE=ON \
@@ -47,23 +47,20 @@ InstallScript: <<
 cd build
 perl -pi -e 's|.PHONY|#.PHONY|g' Makefile
 make -j1 install/fast DESTDIR="%d"
-ln -s %p/lib/freeglut2/lib/libfreeglut.3.dylib %i/lib/freeglut2/lib/libglut.dylib
-ln -s %p/lib/freeglut2/lib/libfreeglut.3.dylib %i/lib/libglut.dylib
-ln -s %p/lib/freeglut2/lib/libfreeglut.3.dylib %i/lib/libfreeglut.dylib
-# unbury headers
-mv  %i/lib/freeglut2/include %i/include
+mkdir -p %i/lib/freeglut2
+mv %i/lib/libfreeglut.3.10.0.dylib %i/lib/freeglut2/libfreeglut.3.10.0.dylib
+mv %i/lib/libfreeglut.3.dylib  %i/lib/freeglut2/libfreeglut.3.dylib
+ln -s %p/lib/freeglut2/libfreeglut.3.dylib %i/lib/freeglut2/libglut.dylib
+ln -s %p/lib/freeglut2/libfreeglut.3.dylib %i/lib/libglut.dylib
 ln -s %p/include/GL/freeglut_ext.h %i/include/GL/glut_ext.h
 ln -s %p/include/GL/freeglut_std.h %i/include/GL/glut_std.h
-perl -pi -e 's|prefix=%p/lib/freeglut2|prefix=%p|g' %i/lib/freeglut2/share/pkgconfig/freeglut.pc
-perl -pi -e 's|libdir=\${prefix}/lib|libdir=\${prefix}/lib/freeglut2/lib|g' %i/lib/freeglut2/share/pkgconfig/freeglut.pc
-mv  %i/lib/freeglut2/share/pkgconfig %i/lib/pkgconfig
-rmdir %i/lib/freeglut2/share
+mv  %i/share/pkgconfig %i/lib/pkgconfig
 <<
 SplitOff: <<
  Package: %N-shlibs
  Depends: libgl, x11
- Files: lib/freeglut2/lib/libfreeglut.3*.dylib
- Shlibs: %p/lib/freeglut2/lib/libfreeglut.3.dylib 3.0.0 %n (>= 3.0.0-1)
+ Files: lib/freeglut2/libfreeglut.3*.dylib
+ Shlibs: %p/lib/freeglut2/libfreeglut.3.dylib 3.0.0 %n (>= 3.0.0-1)
  DocFiles: AUTHORS COPYING ChangeLog NEWS README TODO
 <<
 Description: Opengl utility toolkit
