@@ -18,6 +18,8 @@ PatchScript: <<
   #!/bin/bash -efv
   %{default_script}
   perl -pi -e 's|HOST_NAME_MAX|_POSIX_HOST_NAME_MAX|' src/x11/fg_window_x11.c
+  perl -pi -e 's,LIBRARY DESTINATION lib,LIBRARY DESTINATION lib/freeglut2,' CMakeLists.txt
+  perl -pi -e 's,DESTINATION share/pkgconfig,DESTINATION lib/pkgconfig,' CMakeLists.txt
 <<
 CompileScript: <<
 #!/bin/bash -efv
@@ -46,12 +48,8 @@ InstallScript: <<
 cd build
 perl -pi -e 's|.PHONY|#.PHONY|g' Makefile
 make -j1 install/fast DESTDIR="%d"
-mkdir -p %i/lib/freeglut2
-mv %i/lib/libglut.3.10.0.dylib %i/lib/freeglut2/libglut.3.10.0.dylib
-mv %i/lib/libglut.3.dylib  %i/lib/freeglut2/libglut.3.dylib
 # provide full path for symlink
 ln -sf %p/lib/freeglut2/libglut.3.dylib %i/lib/libglut.dylib 
-mv  %i/share/pkgconfig %i/lib/pkgconfig
 <<
 SplitOff: <<
  Package: %N-shlibs
