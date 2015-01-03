@@ -2,7 +2,7 @@ Info2: <<
 Package: texlive%type_pkg[-nox]
 Type: -nox (boolean)
 Version: 0.20140523
-Revision: 0rc1
+Revision: 0rc2
 GCC: 4.0
 Description: Bundle package for TeX Live
 Depends: %N-base (= %v-%r), texinfo, debianutils, texi2html
@@ -274,6 +274,10 @@ SplitOff: <<
     time_date="`date +%%Y%%m%%d%%H%%M`"
     mv -f %p/etc/texmf-config/web2c/updmap.cfg{,.finksave.${time_date}}
    fi
+  fi
+  if [ -f %p/share/texmf/web2c/texmf.cnf ]; then
+    time_date="`date +%%Y%%m%%d%%H%%M`"
+    mv -f %p/share/texmf/web2c/texmf.cnf %p/etc/texmf-config/web2c/texmf.cnf.finksave.${time_date}
   fi
  <<
  PostInstScript: <<
