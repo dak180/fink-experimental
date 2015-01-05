@@ -5,7 +5,7 @@ Maintainer: Jack Howarth <howarth.at.fink@gmail.com>
 Source: mirror:sourceforge:freeglut/freeglut-%v.tar.gz
 Source-MD5: d19288127d53e1bd55e9aa7c05125220
 PatchFile: %n.patch
-PatchFile-MD5: 632abf1692669ee6313aa6beb617f483
+PatchFile-MD5: 46a48305d713e23e225a89f61f6a7444 
 SourceDirectory: freeglut-%v
 Depends: %N-shlibs (= %v-%r), glew1.11-shlibs
 BuildDepends: fink (>= 0.24.12), glew1.11, x11-dev
@@ -18,7 +18,6 @@ PatchScript: <<
   #!/bin/bash -efv
   %{default_script}
   perl -pi -e 's|HOST_NAME_MAX|_POSIX_HOST_NAME_MAX|' src/x11/fg_window_x11.c
-  perl -pi -e 's,LIBRARY DESTINATION lib,LIBRARY DESTINATION lib/freeglut2,' CMakeLists.txt
   perl -pi -e 's,DESTINATION share/pkgconfig,DESTINATION lib/pkgconfig,' CMakeLists.txt
 <<
 CompileScript: <<
@@ -27,6 +26,7 @@ mkdir build
 cd build
 CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=%p \
 		-DCMAKE_INSTALL_NAME_DIR=%p/lib/freeglut2 \
+		-DCMAKE_INSTALL_LIBDIR=%p/lib/freeglut2 \
                 -DCMAKE_VERBOSE_MAKEFILE=ON \
                 -DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_COLOR_MAKEFILE=ON \
@@ -48,8 +48,9 @@ InstallScript: <<
 cd build
 perl -pi -e 's|.PHONY|#.PHONY|g' Makefile
 make -j1 install/fast DESTDIR="%d"
-# provide full path for symlink
-ln -sf %p/lib/freeglut2/libglut.3.dylib %i/lib/libglut.dylib 
+# provide symlink for packages not using pkgconfig
+# to prevent accidental linkages on X11's glut
+ln -s freeglut2/libglut.3.dylib %i/lib/libglut.dylib
 <<
 SplitOff: <<
  Package: %N-shlibs
