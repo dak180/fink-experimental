@@ -1,7 +1,7 @@
 Info3: <<
 Package: llvm35
 Version: 3.5.1
-Revision: 0
+Revision: 1
 Description: Modular and reusable compiler
 License: BSD
 Maintainer: David Fang <fangism@users.sourceforge.net>
@@ -33,17 +33,17 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.xz
-Source-MD5: b9a1897aff431e1b889325957013ecdd
+Source-MD5: 2d3d8004f38852aa679e5945b8ce0b14
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.xz
-Source2-MD5: 87456ee08880f4361ec7fb3ae9eba20e
+Source2-MD5: 93f9532f8f7e6f1d8e5c1116907051cb
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.xz
-Source3-MD5: 066c04e7e5ebb6fd2ebab1bc4132e9b1
+Source3-MD5: d626cfb8a9712cb92b820798ab5bc1f8
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.xz
-Source4-MD5: ac06a19cac7406384395c2d96d0ca779
+Source4-MD5: b02e005a54e0911ccd8b7f1ca039cb51
 Source5: http://llvm.org/releases/%v/libcxx-%v.src.tar.xz
-Source5-MD5: c867a1992fb7d7cdb79056e054628eab
+Source5-MD5: 406f09b1dab529f3f7879f4d548329d2
 Source6: http://llvm.org/releases/%v/openmp-%v.src.tar.xz
-Source6-MD5: 438f952a0fc72e6184fd2fc25435b0fe
+Source6-MD5: 121ddb10167d7fc38b1f7e4b029cf059
 # Source7: http://llvm.org/releases/3.5/test-suite-3.5.src.tar.xz
 # Source7-MD5: 
 # libcxxabi is not needed, use system's libc++abi or libsupc++
@@ -62,7 +62,7 @@ PatchFile4-MD5: f7ccc7bed1f45b478d696536260269b3
 PatchFile5: %n-libcxx.patch
 PatchFile5-MD5: a96f721f07ce9cdfa501db751000b7af
 PatchFile6: %n-clang-omp.patch
-PatchFile6-MD5: 7fd8a33a3d95d695d0c17c78bd29f3e1
+PatchFile6-MD5: fa3d84690b274fb9c70da6ceae17223a
 PatchFile7: %n-clang-iomp5.patch
 PatchFile7-MD5: ee4a8910c21e6ceb60393813d2fb0f1e
 PatchFile8: %n-openmp-r219214.patch
@@ -189,7 +189,7 @@ CompileScript: <<
 	build_root=$llvm_abs_srcdir/../build
 	relsrcdir=../../llvm-%v.src
 	# LLVM_ENABLE_ASSERTIONS:OFF and LIBCXX_ENABLE_ASSERTIONS:OFF
- 	# for production compiler build
+	# for production compiler build
 	enable_assertions=OFF
 
 	# Do not want -DNDEBUG, cause linker errors (undef symbols)
@@ -202,9 +202,10 @@ CompileScript: <<
 		-DLLVM_LIT_ARGS:STRING=-v \
 		-DPYTHON_EXECUTABLE:FILEPATH=$fink_root/bin/python2.7 )
 	LLVM_CMAKE_OPTIONS=( -DLLVM_ENABLE_ASSERTIONS:BOOL=$enable_assertions )
-#	LLVM_CMAKE_OPTIONS=( "${LLVM_CMAKE_OPTIONS[@]}" \
-#		-DCMAKE_OSX_SYSROOT:STRING=/ \
-#		-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING= )
+	test "$darwin_vers" -ge 10 ||
+	LLVM_CMAKE_OPTIONS=( "${LLVM_CMAKE_OPTIONS[@]}" \
+		-DCMAKE_OSX_SYSROOT:STRING=/ \
+		-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING= )
 
 	# always build the native archs' backends
 #	case "$build_arch" in
@@ -387,22 +388,24 @@ EOF
 	FINK_LDFLAGS=( "$LDFLAGS" )
 	# beyond stage1, use the following flags for both libc++ and llvm
 	STAGE2_COMMON_LDFLAGS=()
-	# darwin8: stage2+ needs odcctools
+	# darwin8: stage2+ needs odcctools for linking and -no-integrated-as
+	cctools_path=$fink_root/lib/odcctools/bin
 	if test $darwin_vers -le 8
-	then STAGE2_COMMON_LDFLAGS=( "-B$fink_root/lib/odcctools/bin" )
+	then STAGE2_COMMON_LDFLAGS=( "-B$cctools_path" )
 	fi
+
+	case "$build_arch" in
+	# PowerPC is not ready for -integrated-as yet
+	powerpc*) int_as_flag="-no-integrated-as -B$cctools_path" ;;
+	esac
 
 	echo "######## START of BOOTSTRAP STAGE 1.5: building libc++ with stage 1 clang++"
 	export CCACHE_COMPILERCHECK=content
 	export CC=cc-st1-clang
 	export CXX=cc-st1-clang++
-	LIBCXX_CMAKE_OPTIONS=()
-	case "$build_arch" in
-	# PowerPC is not ready for -integrated-as yet
-	powerpc*) flags="$flags -no-integrated-as" ;;
-	esac
+	LIBCXX_CMAKE_OPTIONS=( -DCMAKE_BUILD_TYPE:STRING=$build_type )
 	if test $darwin_vers -le 10
-	then flags="$flags -DDARWIN_LIBSUPCXX=$darwin_vers"
+	then flags="$int_as_flag -DDARWIN_LIBSUPCXX=$darwin_vers"
 		abi=libsupc++
 		if test -f /usr/include/c++/4.2.1/cxxabi.h
 		then sys_cxxabi_root=/usr/include/c++/4.2.1
@@ -454,18 +457,19 @@ if test $do_bootstrap = 1
 then
 
 	echo "######## START of BOOTSTRAP STAGE 2: building llvm/clang with stage 1 clang"
-	# reuse CC and CXX from stage 1.5
-	STAGE2_CMAKE_OPTIONS=( \
-		-DCMAKE_CXX_FLAGS="-std=c++11 -stdlib=libc++ -cxx-isystem $libcxx_abs_srcdir/include" )
-	STAGE2_LLVM_LDFLAGS=( "-L$libcxx_stage_dir" )
+	libcxx_srcdir="$libcxx_abs_srcdir/include"
 # if not bootstrapping libc++, use system C++ library (buried in XCode)
 #	if test "$darwin_vers" -ge 13
 #	then
 #		sys_clang_path=`xcrun -find clang`
 #		sys_cxx_incdir=`dirname $sys_clang_path`/../lib/c++/v1
-#		STAGE2_CMAKE_OPTIONS=( "${STAGE2_CMAKE_OPTIONS[@]}" \
-#			-DCMAKE_CXX_FLAGS:STRING="-cxx-isystem $sys_cxx_incdir" )
+#		libcxx_srcdir="$sys_cxx_incdir"
 #	fi
+	stage23_cxx_flags="-std=c++11 -stdlib=libc++ -cxx-isystem $libcxx_srcdir"
+	# reuse CC and CXX from stage 1.5
+	STAGE2_CMAKE_OPTIONS=( \
+		-DCMAKE_CXX_FLAGS="$stage23_cxx_flags $int_as_flag" )
+	STAGE2_LLVM_LDFLAGS=( "-L$libcxx_stage_dir" )
 	mkdir -p ../build/stage2
 	pushd ../build/stage2
 	echo "LLVM_CMAKE_OPTIONS = ${COMMON_CMAKE_OPTIONS[@]} ${LLVM_CMAKE_OPTIONS[@]} ${STAGE2_CMAKE_OPTIONS[@]}"
@@ -474,7 +478,7 @@ then
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	asm_link_clang_rts
+	export CCAS_FLAGS="$int_as_flag" ; asm_link_clang_rts
 	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
@@ -528,7 +532,7 @@ then
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	asm_link_clang_rts
+	export CCAS_FLAGS="$int_as_flag" ; asm_link_clang_rts
 	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
@@ -749,7 +753,7 @@ else
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	asm_link_clang_rts
+	export CCAS_FLAGS="$int_as_flag" ; asm_link_clang_rts
 	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
@@ -820,7 +824,7 @@ InfoTest: <<
 		# bash 4.3 good enough on darwin13
 		coreutils
 	<<
- 	TestScript: <<
+	TestScript: <<
 	#!/bin/sh -ev
 	darwin_vers=`uname -r | cut -d. -f1`
 
@@ -964,7 +968,7 @@ InstallScript: <<
 		if test ! -L $f
 		then
 		dir=`dirname $f | sed -e 's|^\.\/||'`
-                b=`basename $f`
+		b=`basename $f`
 		pushd $dir 2> /dev/null
 		if test "$dir" = "."
 		then iname="$prefix/$b"
