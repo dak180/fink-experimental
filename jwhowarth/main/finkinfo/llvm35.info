@@ -67,6 +67,8 @@ PatchFile7: %n-clang-iomp5.patch
 PatchFile7-MD5: ee4a8910c21e6ceb60393813d2fb0f1e
 PatchFile8: %n-openmp-r219214.patch
 PatchFile8-MD5: ce5bb00dd597263d838cdcd897dbe4c8 
+PatchFile9: %n-disable-rpath.patch
+PatchFile9-MD5: 18ea530441da6807d1d4143e3eeda110
 
 PatchScript: <<
 	#!/bin/sh -ev
@@ -89,6 +91,7 @@ PatchScript: <<
 
 	patch_filter="sed -e s|@FINK_PREFIX@|%p|g -e s|@DARWIN_VERSION@|$darwin_vers|g"
 	$patch_filter %{PatchFile} | patch -p1
+	$patch_filter %{PatchFile9} | patch -p1
 	pushd tools/clang
 	  # Apply clang-omp merge before clang patch
 	  $patch_filter %{PatchFile6} | patch -p1
@@ -926,7 +929,8 @@ InstallScript: <<
 	# "brv" = branch version, 3.5
 	brv=3.5
 	# optional: de-rpath shared library dependencies
-	de_rpath_deps=1
+	# deprecated in favor of Makefile.rules patch to disable rpath use
+	de_rpath_deps=0
 
 	# need 'make' link
 	pushd ../opt-bin
