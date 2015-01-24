@@ -67,8 +67,6 @@ PatchFile7: %n-clang-iomp5.patch
 PatchFile7-MD5: ee4a8910c21e6ceb60393813d2fb0f1e
 PatchFile8: %n-openmp-r219214.patch
 PatchFile8-MD5: ce5bb00dd597263d838cdcd897dbe4c8 
-PatchFile9: %n-disable-rpath.patch
-PatchFile9-MD5: 18ea530441da6807d1d4143e3eeda110
 
 PatchScript: <<
 	#!/bin/sh -ev
@@ -930,7 +928,7 @@ InstallScript: <<
 	brv=3.5
 	# optional: de-rpath shared library dependencies
 	# deprecated in favor of Makefile.rules patch to disable rpath use
-	de_rpath_deps=0
+	de_rpath_deps=1
 
 	# need 'make' link
 	pushd ../opt-bin
