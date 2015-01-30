@@ -17,12 +17,15 @@ Conflicts: wxgtk2.8-py27
 Replaces: wxgtk2.8-py27
 Source: mirror:sourceforge:wxpython/%v/wxPython-src-%v.tar.bz2
 Source-MD5: 922b02ff2c0202a7bf1607c98bbbbc04
+PatchFile: wxpython300-py.patch
+PatchFile-MD5: 8a3b3c6477efdb337a9d8d450a2853a1
 SourceDirectory: wxPython-src-%v/wxPython
 GCC: 4.0
 CompileScript: <<
 #!/bin/sh -ev
-	export CFLAGS="`pkg-config --cflags gtk+-2.0` `pkg-config --cflags glib-2.0` `pkg-config --cflags cairo` $CFLAGS"
-	%p/bin/python%type_raw[python] setup.py WXPORT=gtk2 WX_CONFIG=%p/lib/wxwidgets300-gtk2/wx/config/gtk2-unicode-3.0 build_ext
+	perl -pi -e 's|DEFAULT_DEFAULT_wxUSE_OSX_COCOA=1|DEFAULT_DEFAULT_wxUSE_GTK=1|g' ../configure
+	perl -pi -e 's|wxUSE_MACOSX_VERSION_MIN=10.5|wxUSE_MACOSX_VERSION_MIN=10.10|g' ../configure
+	%p/bin/python%type_raw[python] build-wxpython.py WXPORT=gtk2 WX_CONFIG=%p/lib/wxwidgets300-gtk2/wx/config/gtk2-unicode-3.0 build_ext
 	fink-package-precedence --dep='\.d$' .
 <<
 InstallScript: <<
