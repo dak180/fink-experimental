@@ -23,6 +23,8 @@ SourceDirectory: wxPython-src-%v/wxPython
 GCC: 4.0
 CompileScript: <<
 #!/bin/sh -ev
+	perl -pi -e 's|PLATFORM_MACOSX=1|PLATFORM_MACOSX=0|g' ../configure
+	perl -pi -e 's|PLATFORM_UNIX=0|PLATFORM_UNIX=1|g' ../configure
 	perl -pi -e 's|DEFAULT_DEFAULT_wxUSE_OSX_COCOA=1|DEFAULT_DEFAULT_wxUSE_GTK=1|g' ../configure
 	perl -pi -e 's|wxUSE_MACOSX_VERSION_MIN=10.5|wxUSE_MACOSX_VERSION_MIN=10.10|g' ../configure
 	%p/bin/python%type_raw[python] build-wxpython.py WXPORT=gtk2 WX_CONFIG=%p/lib/wxwidgets300-gtk2/wx/config/gtk2-unicode-3.0 build_ext
