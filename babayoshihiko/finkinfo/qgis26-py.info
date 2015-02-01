@@ -4,7 +4,7 @@ Package: qgis26-py%type_pkg[python]
 Type: python (3.4 2.7)
 
 Version: 2.6.1
-Revision: 0.1
+Revision: 0.2
 Description: User friendly Open Source GIS
 License: GPL
 Homepage: http://qgis.org
@@ -33,7 +33,7 @@ in /Applications/Fink.
 <<
 
 # Dependencies.
-Depends: %n-shlibs (=%v-%r), gdal-py%type_pkg[python], psycopg2-py%type_pkg[python]
+Depends: fink (>= 0.30.0), %n-shlibs (=%v-%r), gdal-py%type_pkg[python], psycopg2-py%type_pkg[python]
 BuildDepends: << 
 	fink (>= 0.28), cmake, bison,
 	gsl,
@@ -58,13 +58,16 @@ BuildConflicts: libspatialite1
 # Unpack Phase.
 Source: http://qgis.org/downloads/qgis-%v.tar.bz2
 Source-MD5: e6d4233b5f8d4c7a77e289a9c794089f
-#PatchFile: qgis24-processing.patch
-#PatchFile-MD5: b7902b461cae40cbc4a6a64d2538d48f
-#PatchFile: qgis24-2to3.patch
-#PatchFile2-MD5: ae7a7f40a86f7aac941b916be6f8fdf5
+PatchFile: qgis26-processing.patch
+PatchFile-MD5: cec43a43b0236a479c1dc64d8f172aa4
+PatchFile2: qgis26-python.patch
+PatchFile2-MD5: a258d7803e534359afb0c19683f5bc6e
+#PatchFile3: qgis24-2to3.patch
+#PatchFile3-MD5: ae7a7f40a86f7aac941b916be6f8fdf5
 PatchScript: <<
 #!/bin/bash -ev
-    # sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+    sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+    patch -p1 < %{PatchFile2}
 
     # Find Fink's PyQt4
     perl -pi -e 's|sys.path = |sys.path = \[\\\"%p/lib/qt4-mac/lib/python'%type_raw[python]'/site-packages\\\", " + newpaths.join( "," ) + "] + sys.path" ); //|' src/python/qgspythonutilsimpl.cpp
@@ -74,10 +77,6 @@ PatchScript: <<
     # 2.0.0
     perl -pi -e "s|^.*osascript.*$|#|g" images/icons/mac/browser/CMakeLists.txt
     
-    # Python related fixes
-    # perl -pi -e "s|from PyQt4 import pyqtconfig||" python/console/console.py
-    # perl -pi -e "s|pyqtconfig\.Configuration\(\)\.qt_version >= 0x40700|true|" python/console/console.py
-
     # 2.6.0
     perl -pi -e "s|Qsci/qsciglobal.h|qsciglobal.h|g" cmake/FindQScintilla.cmake
     
@@ -355,14 +354,14 @@ SplitOff: <<
   <<
 	# Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/Versions/2.6/qgissqlanyconnection
   Shlibs: <<
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/2.6/qgis_analysis               2.6.0 %n (>= 2.6.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/2.6/qgis_core                       2.6.0 %n (>= 2.6.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/2.6/qgis_gui                         2.6.0 %n (>= 2.6.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/2.6/qgis_networkanalysis 2.6.0 %n (>= 2.6.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/Versions/2.6/qgisgrass                       2.6.0 %n (>= 2.6.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.2.6.0.dylib                                         2.6.0 %n (>= 2.6.0-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/2.6/qgis_analysis               2.6.1 %n (>= 2.6.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/2.6/qgis_core                       2.6.1 %n (>= 2.6.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/2.6/qgis_gui                         2.6.1 %n (>= 2.6.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/2.6/qgis_networkanalysis 2.6.1 %n (>= 2.6.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass.framework/Versions/2.6/qgisgrass                       2.6.1 %n (>= 2.6.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.2.6.1.dylib                                         2.6.1 %n (>= 2.6.1-1)
   <<
-	# %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/Versions/2.6/qgissqlanyconnection 2.6.0 %n (>= 2.6.0-1)
+	# %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgissqlanyconnection.framework/Versions/2.6/qgissqlanyconnection 2.6.1 %n (>= 2.6.1-1)
 # End of SplitOff
 <<
 
