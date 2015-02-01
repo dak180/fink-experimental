@@ -1,6 +1,6 @@
 Info3: <<
 Package: llvm35
-Version: 3.5.0
+Version: 3.5.1
 Revision: 1
 Description: Modular and reusable compiler
 License: BSD
@@ -33,17 +33,17 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.xz
-Source-MD5: d6987305a1a0e58e128c1374cd3b8fef
+Source-MD5: 2d3d8004f38852aa679e5945b8ce0b14
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.xz
-Source2-MD5: 27718dd13c7df83e15f997116bbb4aef
+Source2-MD5: 93f9532f8f7e6f1d8e5c1116907051cb
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.xz
-Source3-MD5: 02624d2a9144278c3808c00dbbab56c8
+Source3-MD5: d626cfb8a9712cb92b820798ab5bc1f8
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.xz
-Source4-MD5: 2ee0167c7ed7c85026cdb18ad6f4ade8
+Source4-MD5: b02e005a54e0911ccd8b7f1ca039cb51
 Source5: http://llvm.org/releases/%v/libcxx-%v.src.tar.xz
-Source5-MD5: d7b72d65307c677e1ed29a9c425e0421
+Source5-MD5: 406f09b1dab529f3f7879f4d548329d2
 Source6: http://llvm.org/releases/%v/openmp-%v.src.tar.xz
-Source6-MD5: 13eb389377b4803c8f6ec0d3eab189fd
+Source6-MD5: 121ddb10167d7fc38b1f7e4b029cf059
 # Source7: http://llvm.org/releases/3.5/test-suite-3.5.src.tar.xz
 # Source7-MD5: 
 # libcxxabi is not needed, use system's libc++abi or libsupc++
@@ -53,7 +53,7 @@ SourceDirectory: llvm-%v.src
 UseMaxBuildJobs: true
 
 PatchFile: %n.patch
-PatchFile-MD5: ecaf94589ea651deb3afa9d634ddc050
+PatchFile-MD5: 85f6186c1644c67b7f5015a12c3ac9d7
 PatchFile2: %n-clang.patch
 PatchFile2-MD5: c81342d20cea8ef1e2871d47c76d4155
 PatchFile3: %n-compiler-rt.patch
@@ -63,7 +63,7 @@ PatchFile4-MD5: f7ccc7bed1f45b478d696536260269b3
 PatchFile5: %n-libcxx.patch
 PatchFile5-MD5: a96f721f07ce9cdfa501db751000b7af
 PatchFile6: %n-clang-omp.patch
-PatchFile6-MD5: 8b4c22de63790420416d0bc3a9361c0d
+PatchFile6-MD5: fa3d84690b274fb9c70da6ceae17223a
 PatchFile7: %n-clang-iomp5.patch
 PatchFile7-MD5: ee4a8910c21e6ceb60393813d2fb0f1e
 PatchFile8: %n-openmp-r219214.patch
@@ -1487,8 +1487,9 @@ closer resembles the packaging in earlier versions, llvm34.
 DescPort: <<
 Most of the patches are maintained at fangism's powerpc-darwin8 branches
 of the llvm, clang, compiler-rt projects hosted at github:
-	https://github.com/fangism/llvm/compare/release-3.5.0...powerpc-darwin8-rel-3.5.0.diff
-	https://github.com/fangism/clang/compare/release-3.5.0...powerpc-darwin8-rel-3.5.0.diff
+	https://github.com/fangism/llvm/compare/release-3.5.1...powerpc-darwin8-rel-3.5.1.diff
+	https://github.com/fangism/clang/compare/release-3.5.1...powerpc-darwin8-rel-3.5.1.diff
+The following did not change since 3.5.0:
 	https://github.com/fangism/compiler-rt/compare/release-3.5.0...powerpc-darwin8-rel-3.5.0.diff
 	https://github.com/fangism/libcxx/compare/release-3.5.0...powerpc-darwin8-rel-3.5.0.diff
 
