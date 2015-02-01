@@ -3,7 +3,7 @@ Info2: <<
 Package: qgis26-py%type_pkg[python]
 Type: python (3.4 2.7)
 
-Version: 2.6.0
+Version: 2.6.1
 Revision: 0.1
 Description: User friendly Open Source GIS
 License: GPL
@@ -57,7 +57,7 @@ BuildConflicts: libspatialite1
 
 # Unpack Phase.
 Source: http://qgis.org/downloads/qgis-%v.tar.bz2
-Source-MD5: 5540e0648caf261a264c2370be484163
+Source-MD5: e6d4233b5f8d4c7a77e289a9c794089f
 #PatchFile: qgis24-processing.patch
 #PatchFile-MD5: b7902b461cae40cbc4a6a64d2538d48f
 #PatchFile: qgis24-2to3.patch
