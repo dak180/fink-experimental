@@ -1,154 +1,39 @@
-diff -uNr wxPython/build-wxpython.py wxPython.new/build-wxpython.py
---- wxPython/build-wxpython.py	2014-11-27 16:15:14.000000000 -0500
-+++ wxPython.new/build-wxpython.py	2015-01-30 00:19:08.000000000 -0500
-@@ -228,11 +228,11 @@
-     dll_type = "u" + dll_type
+--- wxPython/src/osx_cocoa/_core.py	2014-10-13 18:37:52.000000000 -0400
++++ wxPython.new/src/osx_cocoa/_core.py	2015-01-31 13:07:01.000000000 -0500
+@@ -8579,21 +8579,21 @@
+         wx.PyApp.__init__(self)
  
- build_base = 'build'
--if sys.platform.startswith("darwin"):
--    if options.osx_cocoa:
--        build_base += '/cocoa'
--    else:
--        build_base += '/carbon'
-+#if sys.platform.startswith("darwin"):
-+#    if options.osx_cocoa:
-+#        build_base += '/cocoa'
-+#    else:
-+#        build_base += '/carbon'
-         
- # Clean the wxPython build files and other things created or copied by previous builds.
- # Cleaning of the wxWidgets build files is done below.
-@@ -287,11 +287,11 @@
-     if options.build_dir != "":
-         WXPY_BUILD_DIR = os.path.abspath(options.build_dir)
- 
--    if sys.platform.startswith("darwin"):
--        port = "carbon"
--        if options.osx_cocoa:
--            port = "cocoa"
--        WXPY_BUILD_DIR = os.path.join(WXPY_BUILD_DIR, port)
-+#    if sys.platform.startswith("darwin"):
-+#        port = "carbon"
-+#        if options.osx_cocoa:
-+#            port = "cocoa"
-+#        WXPY_BUILD_DIR = os.path.join(WXPY_BUILD_DIR, port)
- 
-     DESTDIR = options.installdir
-     PREFIX = options.prefix
-@@ -352,13 +352,13 @@
-     else:
-         build_options.append("--no_config")
- 
--if sys.platform.startswith("darwin") and options.osx_cocoa:
--    build_options.append("--osx_cocoa")
--    wxpy_build_options.append("WXPORT=osx_cocoa")
+         # make sure we can create a GUI
+-        if not self.IsDisplayAvailable():
+-            
+-            if wx.Platform == "__WXMAC__":
+-                msg = """This program needs access to the screen.
+-Please run with a Framework build of python, and only when you are
+-logged in on the main display of your Mac."""
+-                
+-            elif wx.Platform == "__WXGTK__":
+-                msg ="Unable to access the X Display, is $DISPLAY set properly?"
 -
--if sys.platform.startswith("darwin") and options.osx_carbon:
--    build_options.append("--osx_carbon")
--    wxpy_build_options.append("WXPORT=osx_carbon")
-+#if sys.platform.startswith("darwin") and options.osx_cocoa:
-+#    build_options.append("--osx_cocoa")
-+#    wxpy_build_options.append("WXPORT=osx_cocoa")
-+
-+#if sys.platform.startswith("darwin") and options.osx_carbon:
-+#    build_options.append("--osx_carbon")
-+#    wxpy_build_options.append("WXPORT=osx_carbon")
- 
- if not sys.platform.startswith("win") and options.install:
-     build_options.append('--installdir=%s' % DESTDIR)
-diff -uNr wxPython/config.py wxPython.new/config.py
---- wxPython/config.py	2014-10-13 18:37:51.000000000 -0400
-+++ wxPython.new/config.py	2015-01-30 00:24:32.000000000 -0500
-@@ -249,7 +249,7 @@
- 
- # change the PORT default for wxMac
- if sys.platform[:6] == "darwin":
--    WXPORT = 'osx_carbon'
-+    WXPORT = 'gtk2'
- 
- # and do the same for wxMSW, just for consistency
- if os.name == 'nt':
-@@ -1049,16 +1049,27 @@
- 
- 
-     if sys.platform[:6] == "darwin":
--        WXPLAT = '__WXMAC__'
--    
--        if WXPORT == 'osx_carbon':
-+        # WXPLAT = '__WXMAC__'
-+   	# 
-+        # if WXPORT == 'osx_carbon':
-         # Flags and such for a Darwin (Max OS X) build of Python
--            GENDIR = 'osx_carbon'
--            WXPLAT2 = '__WXOSX_CARBON__'
--        else:
--            GENDIR = 'osx_cocoa'
--            WXPLAT2 = '__WXOSX_COCOA__'
-+        #   GENDIR = 'osx_carbon'
-+        #    WXPLAT2 = '__WXOSX_CARBON__'
-+        #else:
-+        #    GENDIR = 'osx_cocoa'
-+        #    WXPLAT2 = '__WXOSX_COCOA__'
-+
-+	GENDIR = WXPORT
-+	WXPLAT = '__WXGTK__'
-+	GENDIR = 'gtk' # no code differences so use the same generated sources
-+	portcfg = os.popen('pkg-config gtk+-2.0 --cflags', 'r').read()[:-1]
-+
-+	# Move the various -I, -D, etc. flags we got from the *config scripts
-+	# into the distutils lists.
-+	cflags = adjustCFLAGS(cflags, defines, includes)
-+	lflags = adjustLFLAGS(lflags, libdirs, libs)
- 
-+	
-         libs = ['stdc++']
-         NO_SCRIPTS = 1
-         if ARCH != "":
-diff -uNr wxPython/wx/build/config.py wxPython.new/wx/build/config.py
---- wxPython/wx/build/config.py	2014-10-13 18:37:51.000000000 -0400
-+++ wxPython.new/wx/build/config.py	2015-01-30 00:23:19.000000000 -0500
-@@ -249,7 +249,7 @@
- 
- # change the PORT default for wxMac
- if sys.platform[:6] == "darwin":
--    WXPORT = 'osx_carbon'
-+    WXPORT = 'gtk2'
- 
- # and do the same for wxMSW, just for consistency
- if os.name == 'nt':
-@@ -1049,15 +1049,27 @@
- 
- 
-     if sys.platform[:6] == "darwin":
--        WXPLAT = '__WXMAC__'
--    
--        if WXPORT == 'osx_carbon':
-+        # WXPLAT = '__WXMAC__'
-+   	# 
-+        #if WXPORT == 'osx_carbon':
-         # Flags and such for a Darwin (Max OS X) build of Python
--            GENDIR = 'osx_carbon'
--            WXPLAT2 = '__WXOSX_CARBON__'
--        else:
--            GENDIR = 'osx_cocoa'
--            WXPLAT2 = '__WXOSX_COCOA__'
-+        #    GENDIR = 'osx_carbon'
-+        #    WXPLAT2 = '__WXOSX_CARBON__'
-+        #else:
-+        #    GENDIR = 'osx_cocoa'
-+        #    WXPLAT2 = '__WXOSX_COCOA__'
-+
-+	GENDIR = WXPORT
-+	WXPLAT = '__WXGTK__'
-+	GENDIR = 'gtk' # no code differences so use the same generated sources
-+	portcfg = os.popen('pkg-config gtk+-2.0 --cflags', 'r').read()[:-1]
-+
-+	# Move the various -I, -D, etc. flags we got from the *config scripts
-+	# into the distutils lists.
-+	cflags = adjustCFLAGS(cflags, defines, includes)
-+	lflags = adjustLFLAGS(lflags, libdirs, libs)
-+
-+	cflags += portcfg.split()
- 
-         libs = ['stdc++']
-         NO_SCRIPTS = 1
+-            else:
+-                msg = "Unable to create GUI"
+-                # TODO: more description is needed for wxMSW...
+-
+-            raise SystemExit(msg)
++#        if not self.IsDisplayAvailable():
++#            
++#            if wx.Platform == "__WXMAC__":
++#                msg = """This program needs access to the screen.
++# Please run with a Framework build of python, and only when you are
++# logged in on the main display of your Mac."""
++#                
++#            elif wx.Platform == "__WXGTK__":
++#                msg ="Unable to access the X Display, is $DISPLAY set properly?"
++#
++#            else:
++#                msg = "Unable to create GUI"
++#                # TODO: more description is needed for wxMSW...
++#
++#            raise SystemExit(msg)
+         
+         # This has to be done before OnInit
+         self.SetUseBestVisual(useBestVisual)
