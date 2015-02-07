@@ -2,39 +2,39 @@ Info2: <<
 
 Package: wxpython300-py%type_pkg[python]
 Version: 3.0.2.0
-Revision: 1
+Revision: 3
 Type: python (2.7)
 Maintainer: Jack Howarth <howarth.at.fink@gmail.com>
 BuildDepends: <<
 	fink-package-precedence,
-	wxwidgets300-gtk2
+	wxwidgets300-osxcocoa
 <<
 Depends: <<
 	python%type_pkg[python],
-	wxwidgets300-gtk2-shlibs
+	wxversion,
+	wxwidgets300-osxcocoa-shlibs
 <<
-Conflicts: wxgtk2.8-py27
-Replaces: wxgtk2.8-py27
 Source: mirror:sourceforge:wxpython/%v/wxPython-src-%v.tar.bz2
 Source-MD5: 922b02ff2c0202a7bf1607c98bbbbc04
 PatchFile: wxpython300-py.patch
-PatchFile-MD5: 8a3b3c6477efdb337a9d8d450a2853a1
+PatchFile-MD5: 823af5dbed6e16cfd82043b6215a49f6
 SourceDirectory: wxPython-src-%v/wxPython
 GCC: 4.0
 CompileScript: <<
 #!/bin/sh -ev
-	perl -pi -e 's|PLATFORM_MACOSX=1|PLATFORM_MACOSX=0|g' ../configure
-	perl -pi -e 's|PLATFORM_UNIX=0|PLATFORM_UNIX=1|g' ../configure
-	perl -pi -e 's|DEFAULT_DEFAULT_wxUSE_OSX_COCOA=1|DEFAULT_DEFAULT_wxUSE_GTK=1|g' ../configure
-	perl -pi -e 's|wxUSE_MACOSX_VERSION_MIN=10.5|wxUSE_MACOSX_VERSION_MIN=10.10|g' ../configure
-	%p/bin/python%type_raw[python] build-wxpython.py WXPORT=gtk2 WX_CONFIG=%p/lib/wxwidgets300-gtk2/wx/config/gtk2-unicode-3.0 build_ext
+	%p/bin/python%type_raw[python] setup.py WXPORT=osx_cocoa WX_CONFIG=%p/lib/wxwidgets300-osxcocoa/wx/config/osx_cocoa-unicode-3.0 build_ext
 	fink-package-precedence --dep='\.d$' .
 <<
 InstallScript: <<
-	%p/bin/python%type_raw[python] setup.py WXPORT=gtk2 WX_CONFIG=%p/lib/wxwidgets300-gtk2/wx/config/gtk2-unicode-3.0 install --root=%d
+	%p/bin/python%type_raw[python] setup.py WXPORT=osx_cocoa WX_CONFIG=%p/lib/wxwidgets300-osxcocoa/wx/config/osx_cocoa-unicode-3.0 install --root=%d
 	mkdir -p %i/share/doc/%n
 	cp -R %b/demo %i/share/doc/%n
 	cp -R %b/samples %i/share/doc/%n
+	/usr/bin/find %i -type f -name "*.py" -exec perl -pi -e 's|/usr/bin/env python|%p/bin/python%type_raw[python]|g' {} \;
+
+	mv %i/lib/python%type_raw[python]/site-packages/wx.pth %i/lib/python%type_raw[python]/site-packages/wx3.0.pth
+	ln -s %p/lib/python%type_raw[python]/site-packages/wx3.0.pth %i/lib/python%type_raw[python]/site-packages/wx.pth
+
 <<
 
 Description: Python bindings for the wxGTK library
@@ -51,9 +51,14 @@ DescDetail: <<
     the wxPython runtime support libraries.
 <<
 DescPackaging: <<
-Keep the version of this in sync with that of wxpython300.
-Cocoa variant not created as wxpython demands a framework-based python
-at run-time.
+Keep the version of this in sync with that of wxwidgets300-osxcocoa.
+A gtk2 variant is not available as upstream wxPython no longer supports
+osx-gtk2 builds in configure and the underlying code is highly bit-rotted.
+Disable check for Framework build of python in src/osx_cocoa/_core.py.
+<<
+DescUsage: <<
+The demos can be run by executing the command...
+'%p/share/doc/wxpython300-py%type_pkg[python]/demo/demo.py'.
 <<
 DocFiles: ../docs/preamble.txt ../docs/gpl.txt ../docs/licence.txt ../docs/lgpl.txt docs/*.txt
 License: GPL
@@ -61,12 +66,34 @@ Homepage: http://www.wxpython.org/
 
 SplitOff: <<
 	Package: wxpython300-py%type_pkg[python]-dev
-	Conflicts: wxpython-py23-dev, wxpython-py24-dev, wxpython-py25-dev, wxpython-py26-dev, wxpython-py27-dev, wxgtk2.8-py27-dev
-	Replaces: wxpython-py23-dev, wxpython-py24-dev, wxpython-py25-dev, wxpython-py26-dev, wxpython-py27-dev, wxgtk2.8-py-dev
+	Conflicts: << 
+		wxpython-py23-dev,
+		wxpython-py24-dev,
+		wxpython-py25-dev,
+		wxpython-py26-dev,
+		wxpython-py27-dev,
+		wxgtk2.8-py27-dev
+	<<
+	Replaces: <<
+		wxpython-py23-dev,
+		wxpython-py24-dev,
+		wxpython-py25-dev,
+		wxpython-py26-dev,
+		wxpython-py27-dev,
+		wxgtk2.8-py-dev,
+		wxpython300-py%type_pkg[python] (<= 3.0.2.0-2)
+	<<
 	Depends: wxpython300-py%type_pkg[python] (= %v-%r)
 	BuildDependsOnly: true
-	Files: include
+	Files: include lib/python%type_raw[python]/site-packages/wx.pth
 	DocFiles: ../docs/preamble.txt ../docs/gpl.txt ../docs/licence.txt ../docs/lgpl.txt docs/*.txt
+<<
+
+SplitOff2: <<
+        Package: wxversion
+        Depends: python%type_pkg[python]
+        Files: lib/python%type_raw[python]/site-packages/wxversion.py*
+        DocFiles: ../docs/preamble.txt ../docs/gpl.txt ../docs/licence.txt ../docs/lgpl.txt docs/*.txt
 <<
 
 <<
