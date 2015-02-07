@@ -127,7 +127,7 @@ SplitOff: <<
 		wxpython300-py27-dev,
 		wxgtk2.8-py%type_pkg[python] (<= 2.8.12.1-5)
 	<<
-	Depends: wxgtk2.8-py%type_pkg[python] (= %v-%r)
+	Depends: wxgtk2.8-py%type_pkg[python] (= %v-%r), wxversion
 	BuildDependsOnly: true
 	Files: include lib/python%type_raw[python]/site-packages/wx.pth
 	DocFiles: ../docs/preamble.txt ../docs/gpl.txt ../docs/licence.txt ../docs/lgpl.txt docs/*.txt
