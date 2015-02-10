@@ -2,11 +2,11 @@ Info2: <<
 Package: grass70%type_pkg[gui]
 Type: gui (-x11)
 Version: 7.0.0
-Revision: 0.6
+Revision: 0.8
 
 Description: Powerful GIS software
 License: GPL
-Homepage: http://grass.osgeo.org/grass64/
+Homepage: http://grass.osgeo.org/
 Maintainer:BABA Yoshihiko <babayoshihiko@mac.com>
 DescDetail: Very Powerful Geographical Information System with CLI and GUI. 
 DescUsage: Just type double click GRASS-7.0.app in %p/Applications.
@@ -38,8 +38,8 @@ BuildDepends: <<
   (%type_pkg[gui] = -x11) wxgtk2.8, (%type_pkg[gui] = -x11) wxgtk2.8-py27-dev
 <<
 
-Source: http://grass.osgeo.org/grass70/source/grass-%{v}beta3.tar.gz
-Source-MD5: 79f48713a1c7e5e26ff46ca34f358869
+Source: http://grass.osgeo.org/grass70/source/grass-%{v}RC2.tar.gz
+Source-MD5: 6a288da3d204581286de952e4debb6d2
 
 
 # Patch Phase.
@@ -78,7 +78,7 @@ SetLDFLAGS: -L%p/lib -lcurses
 ConfigureParams: << 
   --with-curses \
   --with-freetype \
-  --with-freetype-includes=%p/lib/freetype219/include/freetype2 \
+  --with-freetype-includes=%p/include/freetype2 \
   --with-freetype-libs=%p/lib/freetype219/lib \
   --with-gdal=%p/bin/gdal-config \
   --with-proj --with-proj-includes=%p/include --with-proj-libs=%p/lib --with-proj-share=%p/share/proj \
@@ -147,7 +147,7 @@ CompileScript: <<
                   dbmibase dbmiclient dbmidriver dbstubs dgl dig2 display driver dspf g3d \
                   gis gmath gpde gproj htmldriver imagery interpdata interpfl iortho lidar \
                   linkm lrs manage neta pngdriver psdriver qtree raster rli rowio rtree \
-                  segment shape sim sites sqlp stats symb temporal vector vedit 
+                  segment shape sim sqlp stats symb temporal vector vedit 
     do
       install_name_tool -id %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_${libname}.dylib \
                                 %b/dist.x86_64-apple-darwin${DARWIN_VER}/lib/libgrass_${libname}.dylib
@@ -195,56 +195,55 @@ SplitOff2: <<
 
   Files: Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_*.dylib
   Shlibs: <<
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_arraystats.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_bitmap.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_btree.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_btree2.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_cairodriver.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_ccmath.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_cdhc.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_cluster.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_datetime.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_dbmibase.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_dbmiclient.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_dbmidriver.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_dbstubs.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_dgl.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_dig2.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_display.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_driver.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_dspf.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_g3d.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_gis.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_gmath.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_gpde.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_gproj.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_htmldriver.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_imagery.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_interpdata.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_interpfl.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_iortho.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_lidar.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_linkm.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_lrs.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_manage.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_neta.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_pngdriver.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_psdriver.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_qtree.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_raster.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_rli.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_rowio.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_rtree.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_segment.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_shape.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_sim.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_sites.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_sqlp.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_stats.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_symb.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_temporal.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_vector.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
-    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_vedit.%{v}beta3.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_arraystats.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_bitmap.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_btree.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_btree2.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_cairodriver.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_ccmath.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_cdhc.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_cluster.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_datetime.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_dbmibase.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_dbmiclient.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_dbmidriver.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_dbstubs.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_dgl.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_dig2.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_display.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_driver.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_dspf.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_g3d.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_gis.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_gmath.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_gpde.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_gproj.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_htmldriver.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_imagery.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_interpdata.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_interpfl.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_iortho.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_lidar.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_linkm.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_lrs.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_manage.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_neta.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_pngdriver.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_psdriver.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_qtree.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_raster.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_rli.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_rowio.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_rtree.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_segment.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_shape.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_sim.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_sqlp.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_stats.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_symb.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_temporal.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_vector.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
+    %p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_vedit.%{v}RC2.dylib  7.0.0 %n (>=7.0.0-0.1)
 
     !%p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_arraystats.dylib
     !%p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_bitmap.dylib
@@ -289,7 +288,6 @@ SplitOff2: <<
     !%p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_segment.dylib
     !%p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_shape.dylib
     !%p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_sim.dylib
-    !%p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_sites.dylib
     !%p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_sqlp.dylib
     !%p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_stats.dylib
     !%p/Applications/GRASS-7.0.app/Contents/MacOS/lib/libgrass_symb.dylib
