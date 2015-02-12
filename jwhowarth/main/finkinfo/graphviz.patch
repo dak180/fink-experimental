@@ -6,7 +6,7 @@ diff -uNr graphviz-2.38.0.orig/configure graphviz-2.38.0/configure
  	    fi
              RUBY_LIBS="-L`$RUBY $srcdir/config/config_ruby.rb lib` `$RUBY -rrbconfig -e \"puts Config::CONFIG['LIBRUBYARG_SHARED']\"`"
 -            RUBY_INSTALL_DIR="`$RUBY $srcdir/config/config_ruby.rb vendorarchdir`"
-+            RUBY_INSTALL_DIR="@FINKPREFIX@/lib/graphviz/ruby"
++            RUBY_INSTALL_DIR="@FINKPREFIX@/lib/graphviz238/graphviz/ruby"
  	    if test "x$RUBY_INSTALL_DIR" = "x"; then
  	  	  RUBY_INSTALL_DIR="`$RUBY $srcdir/config/config_ruby.rb sitearchdir`"
  	    fi
