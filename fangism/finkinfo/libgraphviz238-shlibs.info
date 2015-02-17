@@ -251,6 +251,7 @@ SplitOff: <<
 		Don't know what these are about...
 	<<
 	DocFiles: AUTHORS COPYING ChangeLog INSTALL NEWS README
+	PostInstScript: %p/bin/dot -c
 <<
 SplitOff2: <<
 	Package: libgraphviz238%type_pkg[var]-dev
@@ -296,7 +297,6 @@ SplitOff2: <<
 	<<
 	DocFiles: AUTHORS COPYING ChangeLog INSTALL NEWS README
 <<
-PostInstScript: %p/bin/dot -c
 PostRmScript: rm -f %p/lib/graphviz-2.38/graphvz/config*
 DocFiles: AUTHORS COPYING ChangeLog INSTALL NEWS README
 # there are more doc files
