@@ -13,8 +13,6 @@ Source-MD5: 7ffaacc7ea79ca39d4958a6378071365
 Source2: http://ftp.de.debian.org/debian/pool/main/a/ann/ann_%v+doc-5.debian.tar.xz
 Source2-MD5: 95c01680996b49655420ab7e76e131ce
 
-DocFiles: Copyright.txt License.txt ReadMe.txt doc/ANNmanual.pdf
-
 PatchScript: <<
 	#!/bin/sh -ev
 	files="autotools-files consider-pts-null annkFRSearch-default-argument clang-ftbfs"
@@ -28,12 +26,11 @@ PatchScript: <<
 CompileScript: <<
 	#!/bin/sh -ev
 	touch aclocal.m4
-	touch NEWS README AUTHORS ChangeLog
 	mkdir -p cfg
 	libtoolize --automake
 	autoheader
 	aclocal -I m4 --install 
-	automake --force-missing --add-missing
+	automake --foreign --add-missing
 	autoconf 
 	./configure %c
 	make
@@ -43,6 +40,13 @@ InstallScript: <<
 	#!/bin/sh -ev
 	mkdir -p %i/bin %i/lib/pkgconfig %i/include
 	make install DESTDIR=%d
+
+	install -d %i/share/man/man1
+	files="ann2fig ann_sample ann_test"
+	for f in $files; do
+		 pod2man --center="User Commands" --release="ANN 1.1.1" < ../debian/$f.pod > $f.1
+		 install -m 644 $f.1 %i/share/man/man1
+	done
 
 # create pkg-config file
 cat << EOF > %i/lib/pkgconfig/ann.pc
@@ -63,13 +67,25 @@ EOF
 
 SplitOff: <<
 Package: %n-dev
+Conflicts: %n (<= 1.1.2-2)
+Replaces: %n (<= 1.1.2-2)
 Depends: %n (= %v-%r)
 BuildDependsOnly: false
 Files: <<
 include
 lib/libann.{a,dylib,la}
 <<
+DocFiles: Copyright.txt License.txt ReadMe.txt 
+<<
+
+SplitOff2: <<
+Package: ann-tools
+Conflicts: %n (<= 1.1.2-2)
+Replaces: %n (<= 1.1.2-2)
+Depends: %n (= %v-%r)
+Files: bin share/man/man1
+DocFiles: Copyright.txt License.txt ReadMe.txt 
 <<
 
 Shlibs: %p/lib/libann.0.dylib 1.0.0 %n (>= 1.2.2-3)
-
+DocFiles: Copyright.txt License.txt ReadMe.txt doc/ANNmanual.pdf
