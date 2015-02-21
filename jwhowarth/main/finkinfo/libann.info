@@ -66,11 +66,10 @@ EOF
 <<
 
 SplitOff: <<
-Package: %n-dev
-Conflicts: %n (<= 1.1.2-2)
-Replaces: %n (<= 1.1.2-2)
-Depends: %n (= %v-%r)
-BuildDependsOnly: false
+Package: %N-dev
+Replaces: %N (<= 1.1.2-2)
+Depends: %N (= %v-%r)
+BuildDependsOnly: true
 Files: <<
 include
 lib/libann.{a,dylib,la}
@@ -80,9 +79,8 @@ DocFiles: Copyright.txt License.txt ReadMe.txt
 
 SplitOff2: <<
 Package: ann-tools
-Conflicts: %n (<= 1.1.2-2)
-Replaces: %n (<= 1.1.2-2)
-Depends: %n (= %v-%r)
+Replaces: %N (<= 1.1.2-2)
+Depends: %N (= %v-%r)
 Files: bin share/man/man1
 DocFiles: Copyright.txt License.txt ReadMe.txt 
 <<
