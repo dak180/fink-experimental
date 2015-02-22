@@ -42,7 +42,7 @@ InstallScript: <<
 	install -d %i/share/man/man1
 	files="ann2fig ann_sample ann_test"
 	for f in $files; do
-		 pod2man --center="User Commands" --release="ANN 1.1.1" < ../debian/$f.pod > $f.1
+		 pod2man --center="User Commands" --release="ANN 1.1.2" ../debian/$f.pod > $f.1
 		 install -m 644 $f.1 %i/share/man/man1
 	done
 
