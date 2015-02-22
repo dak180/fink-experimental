@@ -21,6 +21,19 @@ PatchScript: <<
 	done
 	sed -i -e 's|AC_CXX_HAVE_STD||g' -e 's|AC_CXX_HAVE_STL||g' -e 's|AC_CXX_TYPENAME||g' ./configure.ac
 <<
+
+InfoTest: <<
+	TestDepends: coreutils
+	TestScript: <<
+		#!/bin/sh -ev
+		mv ../debian/tests tests
+		cd tests
+		sed -i -e 's|g++ |g++ -I%b/include -L%b/src/.libs |' -e 's|mktemp|gmktemp|' build1 build2
+		./build1
+		./build2
+	<<
+<<
+
 CompileScript: <<
 	#!/bin/sh -ev
 	touch aclocal.m4
