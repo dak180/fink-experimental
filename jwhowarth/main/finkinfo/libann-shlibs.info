@@ -36,7 +36,7 @@ CompileScript: <<
 
 InstallScript: <<
 	#!/bin/sh -ev
-	mkdir -p %i/bin %i/lib/pkgconfig %i/include
+	mkdir -p %i/bin %i/lib/pkgconfig %i/include %i/share/doc/ann-tools
 	make install DESTDIR=%d
 
 	install -d %i/share/man/man1
@@ -44,6 +44,11 @@ InstallScript: <<
 	for f in $files; do
 		 pod2man --center="User Commands" --release="ANN 1.1.2" ../debian/$f.pod > $f.1
 		 install -m 644 $f.1 %i/share/man/man1
+	done
+
+	files="data.pts query.pts sample.save"
+	for f in $files; do
+		install -m 644 sample/$f %i/share/doc/ann-tools
 	done
 
 # create pkg-config file
@@ -82,7 +87,7 @@ Package: ann-tools
 Conflicts: libann (<= 1.1.2-2)
 Replaces: libann (<= 1.1.2-2)
 Depends: %N (= %v-%r)
-Files: bin share/man/man1
+Files: bin share/man/man1 share/doc/ann-tools
 DocFiles: Copyright.txt License.txt ReadMe.txt 
 <<
 
