@@ -6,7 +6,7 @@ License: LGPL
 
 Description: Approximate nearest neighbour library for C++
 
-BuildDepends: automake1.14, fink (>= 0.32)
+BuildDepends: automake1.14, libtool2, fink (>= 0.32)
 Conflicts: libann (<= 1.1.2-2)
 Replaces: libann (<= 1.1.2-2)
 
@@ -21,9 +21,7 @@ PatchScript: <<
 	for f in $files ; do
 		patch -p1 < %b/../debian/patches/$f.diff
 	done
-	perl -pi -e 's|AC_CXX_HAVE_STD||g' configure.ac
-	perl -pi -e 's|AC_CXX_HAVE_STL||g' configure.ac
-	perl -pi -e 's|AC_CXX_TYPENAME||g' configure.ac
+	sed -i -e 's|AC_CXX_HAVE_STD||g' -e 's|AC_CXX_HAVE_STL||g' -e 's|AC_CXX_TYPENAME||g' ./configure.ac
 <<
 CompileScript: <<
 	#!/bin/sh -ev
