@@ -7,8 +7,6 @@ License: LGPL
 Description: Approximate nearest neighbour library for C++
 
 BuildDepends: automake1.14, libtool2, fink (>= 0.32)
-Conflicts: libann (<= 1.1.2-2)
-Replaces: libann (<= 1.1.2-2)
 
 Source: http://www.cs.umd.edu/~mount/ANN/Files/%v/ann_%v.tar.gz
 Source-MD5: 7ffaacc7ea79ca39d4958a6378071365
@@ -59,7 +57,7 @@ Name: ann
 Description: Library for searching Approximate Nearest Neighbors
 Version: %v
 Requires:
-Libs: -L\${libdir} -lANN
+Libs: -L\${libdir} -lann
 Cflags: -I\${includedir}
 EOF
 
@@ -74,6 +72,7 @@ BuildDependsOnly: true
 Files: <<
 include
 lib/libann.{a,dylib,la}
+lib/pkgconfig/ann.pc
 <<
 DocFiles: Copyright.txt License.txt ReadMe.txt doc/ANNmanual.pdf
 <<
