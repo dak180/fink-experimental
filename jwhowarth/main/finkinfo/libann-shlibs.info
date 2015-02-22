@@ -29,8 +29,7 @@ InfoTest: <<
 		mv ../debian/tests tests
 		cd tests
 		sed -i -e 's|g++ |g++ -I%b/include -L%b/src/.libs |' -e 's|mktemp|gmktemp|' build1 build2
-		./build1
-		./build2
+		./build1; ./build2 || exit 2
 	<<
 <<
 
