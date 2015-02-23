@@ -16,7 +16,7 @@ nam-US: http://www.graphviz.org/pub/graphviz
 <<
 SourceDirectory: graphviz-%v
 Source-MD5: 5b6a829b2ac94efcd5fa3c223ed6d3ae
-PatchFile: %N.patch
+PatchFile: libgraphviz238-shlibs.patch
 PatchFile-MD5: 92bc8875f8970c50370828d6e02537aa
 PatchScript: <<
 	#!/bin/sh -ev
