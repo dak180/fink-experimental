@@ -57,14 +57,14 @@ BuildDepends: <<
 # Unpack Phase.
 Source: http://qgis.org/downloads/qgis-%v.tar.bz2
 Source-MD5: 796befc46597d5d5f9a68b5647500d96
-# PatchFile: qgis26-processing.patch
-# PatchFile-MD5: cec43a43b0236a479c1dc64d8f172aa4
-# PatchFile2: qgis26-python.patch
-# PatchFile2-MD5: a258d7803e534359afb0c19683f5bc6e
+PatchFile: qgis28-processing.patch
+PatchFile-MD5: f3e494bba6c5505e591ad324c5b5e13d
+PatchFile2: qgis28-python.patch
+PatchFile2-MD5: 7b292431a13288d09bcac729f0bee93c
 PatchScript: <<
 #!/bin/bash -ev
-    # sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
-    # patch -p1 < %{PatchFile2}
+    sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+    patch -p1 < %{PatchFile2}
     
     # Find Fink's PyQt4
     perl -pi -e 's|sys.path = |sys.path = \[\\\"%p/lib/qt4-mac/lib/python'%type_raw[python]'/site-packages\\\", " + newpaths.join( "," ) + "] + sys.path" ); //|' src/python/qgspythonutilsimpl.cpp
@@ -179,7 +179,7 @@ CompileScript: <<
 	echo '#!/bin/sh' >QGIS
 	echo 'export PYTHONPATH=%p/lib/qt4-mac/lib/python'%type_raw[python]'/site-packages:$PYTHONPATH' >>QGIS
 	echo 'export PATH=%p/lib/qt4-mac/lib/python'%type_raw[python]'/bin:$PATH' >>QGIS
-	echo 'export QGIS_PLUGINPATH=%p/share/qgis26-py'%type_pkg[python]'/plugins' >>QGIS
+	echo 'export QGIS_PLUGINPATH=%p/share/qgis28-py'%type_pkg[python]'/plugins' >>QGIS
 	echo ". %p/bin/init.sh && %p/$QGIS_DIR/MacOS/QGIS.exe" >>QGIS
 	chmod 555 QGIS
 		# 1.8.0
@@ -266,14 +266,14 @@ InstallScript: <<
 #!/bin/bash -ev
 	# Uses AppBundles which copies files from the build directory.
 	echo "Completed the building process..."
-	mkdir -p %i/share/qgis26-py%type_pkg[python]
+	mkdir -p %i/share/qgis28-py%type_pkg[python]
 	
 	# 1.6.0 Plugins are now managed by their own package (e.g. qgis-plugin-ftools)
 	# 2.4.0 Defaults plugins are installed
-	mv %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins %i/share/qgis26-py%type_pkg[python]/plugins
-	ln -s %p/share/qgis26-py%type_pkg[python]/plugins %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins
+	mv %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins %i/share/qgis28-py%type_pkg[python]/plugins
+	ln -s %p/share/qgis28-py%type_pkg[python]/plugins %b/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Resources/python/plugins
 		
-	chmod 0777 %i/share/qgis26-py%type_pkg[python]/plugins/processing/tests/data/*
+	chmod 0777 %i/share/qgis28-py%type_pkg[python]/plugins/processing/tests/data/*
 <<
 
 AppBundles: Applications/QGIS-py%type_pkg[python]-%v.app
