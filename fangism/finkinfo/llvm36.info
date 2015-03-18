@@ -1197,7 +1197,7 @@ SplitOff5: <<
 	Files: <<
 		opt/llvm-3.6/lib/libclang*
 		opt/llvm-3.6/lib/clang/%v/lib
-		(%m != powerpc) opt/llvm-3.6/lib/libiomp5.dylib
+#		(%m != powerpc) opt/llvm-3.6/lib/libiomp5.dylib
 	<<
 	DocFiles: <<
 		tools/clang/*.TXT
@@ -1231,9 +1231,10 @@ SplitOff5: <<
 		!%p/opt/llvm-3.6/lib/libclangStaticAnalyzerCore.dylib
 		!%p/opt/llvm-3.6/lib/libclangStaticAnalyzerFrontend.dylib
 		!%p/opt/llvm-3.6/lib/libclangTooling.dylib
+		!%p/opt/llvm-3.6/lib/libclangToolingCore.dylib
 		!%p/opt/llvm-3.6/lib/clang/%v/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
 		!%p/opt/llvm-3.6/lib/clang/%v/lib/darwin/libclang_rt.asan_iossim_dynamic.dylib
-		(%m != powerpc) %p/opt/llvm-3.6/lib/libiomp5.dylib 5.0.0 %n (>= 3.6.0-0)
+#		(%m != powerpc) %p/opt/llvm-3.6/lib/libiomp5.dylib 5.0.0 %n (>= 3.6.0-0)
 	<<
 <<
 SplitOff6: <<
