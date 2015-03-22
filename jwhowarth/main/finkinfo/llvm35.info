@@ -89,7 +89,6 @@ PatchScript: <<
 
 	patch_filter="sed -e s|@FINK_PREFIX@|%p|g -e s|@DARWIN_VERSION@|$darwin_vers|g"
 	$patch_filter %{PatchFile} | patch -p1
-	$patch_filter %{PatchFile9} | patch -p1
 	pushd tools/clang
 	  # Apply clang-omp merge before clang patch
 	  $patch_filter %{PatchFile6} | patch -p1
