@@ -1,7 +1,7 @@
 Info2: <<
 Package: gcc5
 Version: 5.0.0
-Revision: 1000
+Revision: 1
 #Source: ftp://gcc.gnu.org/pub/gcc/releases/gcc-%v/gcc-%v.tar.bz2
 Source: ftp://gcc.gnu.org/pub/gcc/snapshots/5-20150322/gcc-5-20150322.tar.bz2
 Source-MD5: 5503ae72eb8455c66f27361ff86f6e7b
