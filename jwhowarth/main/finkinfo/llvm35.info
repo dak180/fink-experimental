@@ -63,7 +63,7 @@ PatchFile4-MD5: f7ccc7bed1f45b478d696536260269b3
 PatchFile5: %n-libcxx.patch
 PatchFile5-MD5: a96f721f07ce9cdfa501db751000b7af
 PatchFile6: %n-clang-omp.patch
-PatchFile6-MD5: a18dea6937c4b10d4307ed81777228f6
+PatchFile6-MD5: 9943ae2985d0971623fd3f2d36ca6b1e
 PatchFile7: %n-clang-iomp5.patch
 PatchFile7-MD5: ee4a8910c21e6ceb60393813d2fb0f1e
 PatchFile8: %n-openmp-r231781.patch
