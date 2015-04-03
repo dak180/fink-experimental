@@ -10,21 +10,24 @@ BuildDepends: <<
 	fink (>= 0.24.12-1),
 	flag-sort,
 	fink-package-precedence,
-	ilmbase2,
+	ilmbase22,
 	x11-dev
 <<
-# InheritedBuildDepends: ilmbase
 Conflicts: openexr-dev, libopenexr6
 Replaces: openexr-dev, libopenexr6
 BuildDependsOnly: true
-BuildConflicts: libopenexr6
 GCC: 4.0
 
 Source: http://download.savannah.nongnu.org/releases/openexr/openexr-%v.tar.gz
 Source-MD5: b64e931c82aa3790329c21418373db4e
 SourceDirectory: openexr-%v
 PatchScript: <<
- perl -pi -e "s|-Wno-long-double||g" configure
+	perl -pi -e "s|-Wno-long-double||g" configure
+	# disable use of -rpath
+	# fix Makefiles for examples and tests
+	sed -i.orig  -e '/^LDADD =/s|-L||g' \
+		-e '/^LDADD =/s|IlmImf[a-z]*|&/lib&.la|g' IlmImfExamples/Makefile.in IlmImfTest/Makefile.in
+	perl -pi -e 's|-L\$\(top_builddir\)/IlmImf \@ILMBASE_LIBS\@ -lIlmImf|\$\(top_builddir\)/IlmImf/libIlmImf.la \@ILMBASE_LIBS\@|g' IlmImfUtil/Makefile.in 
 <<
 # flag-sort to prevent compiling/linking against own installed library
 SetCC: flag-sort -r gcc
@@ -42,7 +45,6 @@ CompileScript: <<
 	fink-package-precedence --prohibit-bdep=openexr-dev,%n .
 <<
 InfoTest: <<
-#	TestConflicts: libopenexr6
 	TestSource: https://raw.githubusercontent.com/openexr/openexr/master/OpenEXR/IlmImfTest/comp_dwaa_v1.exr
 	TestSource-MD5: 9be99dee4dcd8ee610f91b702349fcee
 	TestSource2: https://raw.githubusercontent.com/openexr/openexr/master/OpenEXR/IlmImfTest/comp_dwaa_v2.exr
@@ -73,7 +75,7 @@ DocFiles: AUTHORS COPYING ChangeLog INSTALL LICENSE NEWS README* doc/*.pdf
 SplitOff: <<
 	Package: %N-shlibs
 	Description: Shared libraries for OpenEXR development
-	Depends: ilmbase-shlibs, x11-shlibs
+	Depends: ilmbase22-shlibs, x11-shlibs
 	DocFiles: AUTHORS COPYING ChangeLog INSTALL LICENSE NEWS README*
 	Files: <<
 		lib/libIlmImf-2_2.22.dylib
