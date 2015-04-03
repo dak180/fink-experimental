@@ -10,7 +10,7 @@ BuildDepends: <<
 	fink (>= 0.24.12-1),
 	flag-sort,
 	fink-package-precedence,
-	ilmbase22,
+	ilmbase12,
 	x11-dev
 <<
 Conflicts: openexr-dev, libopenexr6
@@ -75,7 +75,7 @@ DocFiles: AUTHORS COPYING ChangeLog INSTALL LICENSE NEWS README* doc/*.pdf
 SplitOff: <<
 	Package: %N-shlibs
 	Description: Shared libraries for OpenEXR development
-	Depends: ilmbase22-shlibs, x11-shlibs
+	Depends: ilmbase12-shlibs, x11-shlibs
 	DocFiles: AUTHORS COPYING ChangeLog INSTALL LICENSE NEWS README*
 	Files: <<
 		lib/libIlmImf-2_2.22.dylib
