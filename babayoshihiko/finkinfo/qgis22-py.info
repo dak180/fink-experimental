@@ -4,7 +4,7 @@ Package: qgis22-py%type_pkg[python]
 Type: python (3.3 2.7)
 
 Version: 2.2.0
-Revision: 3.1
+Revision: 3.2
 Description: User friendly Open Source GIS
 License: GPL
 Homepage: http://qgis.org
@@ -38,7 +38,6 @@ BuildDepends: <<
 	fink (>= 0.28), cmake, bison,
 	gsl,
 	qt4-base-mac (>=4.8.6-4), qt4-base-mac-linguist (>=4.8.6-4), 
-	qtwebkit-mac,
 	sip-py%type_pkg[python]-bin, pyqt4-mac-py%type_pkg[python], 
 	qscintilla2.11-qt4-mac,
 	xerces-c31-dev,
