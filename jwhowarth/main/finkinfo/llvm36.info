@@ -62,6 +62,8 @@ PatchFile4: %n-polly.patch
 PatchFile4-MD5: ff0df5b623d372dbab73229a445ae417
 PatchFile5: %n-libcxx.patch
 PatchFile5-MD5: 32427770d4b114d97ccb0787f673be50
+PatchFile6: %n-polly-hack.patch
+PatchFile6-MD5: 0fe951994a04937c7022873e4ba5d7b5 
 # PatchFile6: %n-clang-omp.patch
 # PatchFile6-MD5: fa3d84690b274fb9c70da6ceae17223a
 # PatchFile7: %n-clang-iomp5.patch
@@ -111,6 +113,10 @@ PatchScript: <<
 	popd
 	pushd tools/polly
 	  $patch_filter %{PatchFile4} | patch -p1
+	  if test "$darwin_vers" -lt 12
+	  then
+	    $patch_filter %{PatchFile6} | patch -p1
+	  fi
 	popd
 	pushd projects/compiler-rt
 	  $patch_filter %{PatchFile3} | patch -p1
