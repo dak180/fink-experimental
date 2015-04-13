@@ -1,10 +1,11 @@
 Info2: <<
 Package: gcc5
-Version: 5.0.0
+Version: 5.0.1
 Revision: 1
 #Source: ftp://gcc.gnu.org/pub/gcc/releases/gcc-%v/gcc-%v.tar.bz2
-Source: ftp://gcc.gnu.org/pub/gcc/snapshots/5-20150322/gcc-5-20150322.tar.bz2
-Source-MD5: 5503ae72eb8455c66f27361ff86f6e7b
+#Source: ftp://gcc.gnu.org/pub/gcc/snapshots/5-20150412/gcc-5-20150412.tar.bz2
+Source:  ftp://gcc.gnu.org/pub/gcc/snapshots/5.1.0-RC-20150412/gcc-5.1.0-RC-20150412.tar.bz2
+Source-MD5: 37cdc2eb0adf92e421c0841748ac1471
 Source2: ftp://sourceware.org/pub/java/ecj-4.9.jar
 Source2-MD5: 7339f199ba11c941890031fd9981d7be
 PatchFile: %n.patch
@@ -52,9 +53,9 @@ ConfigureParams: <<
 	--with-isl=%p \
 	--with-mpc=%p \
 	--with-system-zlib \
-	--x-includes=/usr/X11R6/include \
-	--x-libraries=/usr/X11R6/lib \
-	--program-suffix=-fsf-5
+	--x-includes=/usr/X11/include \
+	--x-libraries=/usr/X11/lib \
+	--program-suffix=-fsf-5 
 <<
 InfoTest: <<
 	TestDepends: <<
@@ -89,8 +90,18 @@ CompileScript: <<
 	mv ../ecj-4.9.jar ecj.jar
 	mkdir ../darwin_objdir
 	cd ../darwin_objdir
-	#../gcc-%v/configure %c
-	../gcc-5-20150322/configure %c
+	# check for incompatible clang
+	clangvers=`clang --version | cut -d\  -f4`
+	$(`dpkg --compare-versions $clangvers '>>' 6.0`) && clangcheck='y'
+	if [ "$clangcheck" = "y" ]; then
+		#../gcc-%v/configure %c
+		#../gcc-5-20150412/configure %c --with-build-config=bootstrap-debug
+		../gcc-5.1.0-RC-20150412/configure %c --with-build-config=bootstrap-debug
+	else
+		#../gcc-%v/configure %c
+		#../gcc-5-20150412/configure %c
+		../gcc-5.1.0-RC-20150412/configure %c
+	fi
 	# Use bootstrap-lean to reduce disk usage.
 	# Note that this causes plugin testsuite failures
 	# since the plugin headers must come from prev-gcc.
