@@ -3,9 +3,9 @@ Package: gcc5
 Version: 5.0.1
 Revision: 1
 #Source: ftp://gcc.gnu.org/pub/gcc/releases/gcc-%v/gcc-%v.tar.bz2
-#Source: ftp://gcc.gnu.org/pub/gcc/snapshots/5-20150412/gcc-5-20150412.tar.bz2
-Source:  ftp://gcc.gnu.org/pub/gcc/snapshots/5.1.0-RC-20150412/gcc-5.1.0-RC-20150412.tar.bz2
-Source-MD5: 37cdc2eb0adf92e421c0841748ac1471
+Source: ftp://gcc.gnu.org/pub/gcc/snapshots/5-20150414/gcc-5-20150414.tar.bz2
+#Source:  ftp://gcc.gnu.org/pub/gcc/snapshots/5.1.0-RC-20150412/gcc-5.1.0-RC-20150412.tar.bz2
+Source-MD5: 507c64c7f1ad23c5770df9fe497c327c
 Source2: ftp://sourceware.org/pub/java/ecj-4.9.jar
 Source2-MD5: 7339f199ba11c941890031fd9981d7be
 PatchFile: %n.patch
@@ -55,7 +55,7 @@ ConfigureParams: <<
 	--with-system-zlib \
 	--x-includes=/usr/X11/include \
 	--x-libraries=/usr/X11/lib \
-	--program-suffix=-fsf-5 
+	--program-suffix=-fsf-5  --enable-checking=release
 <<
 InfoTest: <<
 	TestDepends: <<
@@ -95,12 +95,12 @@ CompileScript: <<
 	$(`dpkg --compare-versions $clangvers '>>' 6.0`) && clangcheck='y'
 	if [ "$clangcheck" = "y" ]; then
 		#../gcc-%v/configure %c
-		#../gcc-5-20150412/configure %c --with-build-config=bootstrap-debug
-		../gcc-5.1.0-RC-20150412/configure %c --with-build-config=bootstrap-debug
+		../gcc-5-20150414/configure %c --with-build-config=bootstrap-debug
+		#../gcc-5.1.0-RC-20150412/configure %c --with-build-config=bootstrap-debug
 	else
 		#../gcc-%v/configure %c
-		#../gcc-5-20150412/configure %c
-		../gcc-5.1.0-RC-20150412/configure %c
+		../gcc-5-20150414/configure %c
+		#../gcc-5.1.0-RC-20150412/configure %c
 	fi
 	# Use bootstrap-lean to reduce disk usage.
 	# Note that this causes plugin testsuite failures
