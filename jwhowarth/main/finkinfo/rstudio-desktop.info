@@ -6,7 +6,7 @@ License: GPL
 Homepage: http://rstudio.org
 Maintainer: BABA Yoshihiko <babayoshihiko@mac.com>
 Depends: <<
-  r-base (>= 3.1.3), r-base (<< 3.2.0), r-base31, r-base31-shlibs,
+  r-base (>= 3.2.0), r-base32, r-base32-shlibs,
   boost1.53.nopython-shlibs,
   libiconv, libpng16-shlibs
 <<
@@ -15,7 +15,7 @@ BuildDepends: <<
   fink-package-precedence,
   fink (>= 0.30.0), cmake, 
   boost1.53.nopython,
-  r-base (>=3.1.0), r-base31-dev,
+  r-base (>=3.2.0), r-base32-dev,
   libiconv-dev, libpng16
 <<
 
@@ -56,15 +56,19 @@ PatchScript: <<
 		# apply ugly ugly libc++ hacks for now
 		patch -p1  < %{PatchFile2}
 	fi
+	# fix Rinterface.h to extern R_running_as_main_program to avoid duplicate symbols
+	mkdir fixincludes
+	cp %p/Library/Frameworks/R.framework/Versions/3.2/Resources/include/Rinterface.h fixincludes/Rinterface.h
+	perl -pi -e 's|int R_running_as_main_program|extern int R_running_as_main_program|' fixincludes/Rinterface.h
 <<
 
 GCC: 4.0
-SetCXXFLAGS: -I%p/Library/Frameworks/R.framework/Versions/3.1/Resources/include
-SetLDFLAGS: %p/Library/Frameworks/R.framework/Versions/3.1/Resources/lib/libR.dylib
+SetCXXFLAGS: -I%b/fixincludes -I%p/Library/Frameworks/R.framework/Versions/3.2/Resources/include
+SetLDFLAGS: %p/Library/Frameworks/R.framework/Versions/3.2/Resources/lib/libR.dylib
 CompileScript: <<
 #!/bin/bash -ev
   # make sure the R from r-base never gets used during the build
-  export PATH="%p/Library/Frameworks/R.framework/Versions/3.1/Resources/bin:%p/bin:/bin:/usr/bin:/sbin:/usr/sbin"
+  export PATH="%p/Library/Frameworks/R.framework/Versions/3.2/Resources/bin:%p/bin:/bin:/usr/bin:/sbin:/usr/sbin"
   # Move Source2-5 files
   # See dependencies/osx/install-dependencies-osx
   mkdir -p src/gwt/lib/gin/1.5
@@ -97,7 +101,7 @@ CompileScript: <<
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=%b/Applications \
         -DCMAKE_VERBOSE_MAKEFILE=TRUE \
-        -DLIBR_LIBRARIES=%p/Library/Frameworks/R.framework/Versions/3.1/Resources/lib \
+        -DLIBR_LIBRARIES=%p/Library/Frameworks/R.framework/Versions/3.2/Resources/lib \
         ..
 
 #	code builds under boost 1.55 but crashes on launch
