@@ -47,8 +47,8 @@ PatchFile: %n.patch
 PatchFile-MD5: 0680426a6cf9968fc25fb61aa89e7983
 PatchFile2: %n-libc++.patch
 PatchFile2-MD5: a74e82deec036ceebd9cc9fa64e2ce07
-PatchFile3: %n-boost.patch
-PatchFile3-MD5: 49505e6b4b26aa387d2ed0ae9381c632 
+PatchFile3: %n-cxx11.patch
+PatchFile3-MD5: 7e8b297369ec1cd6b86c02e2e070efa0 
 PatchScript: <<
 	#!/bin/sh -ev
 	sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
@@ -70,7 +70,7 @@ PatchScript: <<
 <<
 
 GCC: 4.0
-SetCXXFLAGS: -I%b/fixincludes -I%p/Library/Frameworks/R.framework/Versions/3.2/Resources/include -DBOOST_SIGNALS_NO_DEPRECATION_WARNING
+SetCXXFLAGS: -I%b/fixincludes -I%p/Library/Frameworks/R.framework/Versions/3.2/Resources/include -DBOOST_SIGNALS_NO_DEPRECATION_WARNING -std=c++11
 SetLDFLAGS: %p/Library/Frameworks/R.framework/Versions/3.2/Resources/lib/libR.dylib
 CompileScript: <<
 #!/bin/bash -ev
