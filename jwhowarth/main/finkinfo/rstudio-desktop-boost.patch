@@ -1,0 +1,27 @@
+diff -uNr rstudio-0.98.1103.orig/src/cpp/core/CMakeLists.txt rstudio-0.98.1103/src/cpp/core/CMakeLists.txt
+--- rstudio-0.98.1103.orig/src/cpp/core/CMakeLists.txt	2015-03-06 17:12:51.000000000 -0500
++++ rstudio-0.98.1103/src/cpp/core/CMakeLists.txt	2015-04-20 09:33:29.000000000 -0400
+@@ -242,6 +242,9 @@
+ 
+ endif()
+ 
++# avoid https://svn.boost.org/trac/boost/ticket/10785
++set_source_files_properties(system/file_monitor/MacFileMonitor.cpp PROPERTIES COMPILE_FLAGS -std=c++11)
++
+ # define include dirs
+ set(CORE_INCLUDE_DIRS ${CORE_INCLUDE_DIRS} include)
+ 
+diff -uNr rstudio-0.98.1103.orig/src/cpp/session/CMakeLists.txt rstudio-0.98.1103/src/cpp/session/CMakeLists.txt
+--- rstudio-0.98.1103.orig/src/cpp/session/CMakeLists.txt	2015-03-06 17:12:51.000000000 -0500
++++ rstudio-0.98.1103/src/cpp/session/CMakeLists.txt	2015-04-20 09:32:06.000000000 -0400
+@@ -136,6 +136,10 @@
+    ${CMAKE_CURRENT_BINARY_DIR}/SessionAddins.cpp
+ )
+ 
++# avoid https://svn.boost.org/trac/boost/ticket/10785
++set_source_files_properties(modules/SessionGit.cpp PROPERTIES COMPILE_FLAGS -std=c++11)
++set_source_files_properties(modules/SessionSVN.cpp PROPERTIES COMPILE_FLAGS -std=c++11)
++
+ # platform specific source files
+ if(UNIX)
+    set(SESSION_SOURCE_FILES ${SESSION_SOURCE_FILES}
