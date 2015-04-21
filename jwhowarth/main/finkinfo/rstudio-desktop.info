@@ -6,17 +6,24 @@ License: GPL
 Homepage: http://rstudio.org
 Maintainer: BABA Yoshihiko <babayoshihiko@mac.com>
 Depends: <<
-  r-base (>= 3.2.0), r-base32, r-base32-shlibs,
   boost1.58-nopython-shlibs,
-  libiconv, libpng16-shlibs
+  libiconv,
+  libpng16-shlibs,
+  r-base (>= 3.2.0),
+  r-base32,
+  r-base32-shlibs
 <<
 BuildDepends: << 
   ant,
-  fink-package-precedence,
-  fink (>= 0.30.0), cmake, 
   boost1.58-nopython,
-  r-base (>=3.2.0), r-base32-dev,
-  libiconv-dev, libpng16
+  cmake,
+  fink (>= 0.30.0),
+  fink-package-precedence,
+  libiconv-dev,
+  libpng16,
+  r-base (>=3.2.0),
+  r-base32-dev,
+  system-java16
 <<
 
 Source: https://github.com/rstudio/rstudio/archive/v%v.tar.gz
@@ -52,13 +59,11 @@ PatchFile3-MD5: 7e8b297369ec1cd6b86c02e2e070efa0
 PatchScript: <<
 	#!/bin/sh -ev
 	sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
-	if [ "`uname -r | cut -d. -f1`" -ge "13" ]; then
-		# default to proper c++ lib
-		perl -pi -e 's|stdlib=libstdc|stdlib=libc|g' src/cpp/CMakeLists.txt
-		# apply ugly ugly libc++ hacks for now
-		patch -p1  < %{PatchFile2}
-		patch -p1  < %{PatchFile3}
-	fi
+	# default to proper c++ lib
+	perl -pi -e 's|stdlib=libstdc|stdlib=libc|g' src/cpp/CMakeLists.txt
+	# apply ugly ugly libc++ hacks for now
+	patch -p1  < %{PatchFile2}
+	patch -p1  < %{PatchFile3}
 	# fix Rinterface.h to extern R_running_as_main_program to avoid duplicate symbols
 	mkdir fixincludes
 	cp %p/Library/Frameworks/R.framework/Versions/3.2/Resources/include/Rinterface.h fixincludes/Rinterface.h
