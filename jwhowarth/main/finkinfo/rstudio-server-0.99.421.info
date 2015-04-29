@@ -69,8 +69,6 @@ PatchFile-MD5: 0680426a6cf9968fc25fb61aa89e7983
 PatchScript: <<
 	#!/bin/sh -ev
 	sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
-	# default to proper c++ lib
-	perl -pi -e 's|stdlib=libstdc|stdlib=libc|g' src/cpp/CMakeLists.txt
 <<
 
 GCC: 4.0
@@ -140,7 +138,5 @@ InstallScript: <<
 DescPackaging: <<
 Manually install components into %p/opt/rstudio-server/bin.
 
-Backport upstream libc++ compile fixes from rstudio github.
-Switched to boost 1.55 and preemptively applied gentoo fix for 1.56 and later.
-Apply fixes for -std=c++11 build against boost1.58.
+Switched to boost 1.55.
 <<

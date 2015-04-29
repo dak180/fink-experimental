@@ -64,12 +64,10 @@ Source11-MD5: e6790a3ee6c371968eba865fc0a84daf
 # includes fix for boost and apple headers both using "common" words
 # for tokens and parameters
 PatchFile: %n.patch
-PatchFile-MD5: 0680426a6cf9968fc25fb61aa89e7983
+PatchFile-MD5: 0680426a6cf9968fc25fb61aa89e7983 
 PatchScript: <<
 	#!/bin/sh -ev
 	sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
-	# default to proper c++ lib
-	perl -pi -e 's|stdlib=libstdc|stdlib=libc|g' src/cpp/CMakeLists.txt
 <<
 
 GCC: 4.0
@@ -130,7 +128,7 @@ InstallScript: <<
   echo "test"
 <<
 Shlibs: <<
-	@rpath/libclang.dylib 1.0.0 %n (>= 0.99.408-1)
+	@rpath/libclang.dylib 1.0.0 %n (>= 0.99.421-1)
 <<
 DescPackaging: <<
 Upstream has abandoned QT on darwin as of v0.98.475 in favor of the WebKit framework...
@@ -140,9 +138,5 @@ so unnecessary Depends/BuildDepends on qt/webit are purged.
 Synced with newest r-base package. If the user doesn't have the r-base package
 installed, fink will install the r-base from the latest R release causing the
 wrong symlinks to be installed for the designated r-base release.
-
-Backport upstream libc++ compile fixes from rstudio github.
-Switched to boost 1.55 and preemptively applied gentoo fix for 1.56 and later.
-Apply fixes for -std=c++11 build against boost1.58.
 <<
 AppBundles: Applications/RStudio.app
