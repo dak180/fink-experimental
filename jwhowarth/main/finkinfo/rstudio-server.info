@@ -64,13 +64,15 @@ Source11-MD5: e6790a3ee6c371968eba865fc0a84daf
 # includes fix for boost and apple headers both using "common" words
 # for tokens and parameters
 PatchFile: rstudio-desktop.patch
-PatchFile-MD5: 0680426a6cf9968fc25fb61aa89e7983
+PatchFile-MD5: a670aa04ce3632c2f5e6258d14eb9608 
 
 PatchScript: <<
 	#!/bin/sh -ev
-	sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+	sed 's|@PREFIX@|%p|g' < %{PatchFile} | sed "s|@MAJOR@|`echo %v | cut -d. -f2`|g" | sed "s|@MINOR@|`echo %v | cut -d. -f3`|g" | patch -p1
 	# default to proper c++ lib
 	perl -pi -e 's|stdlib=libstdc|stdlib=libc|g' src/cpp/CMakeLists.txt
+	# __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES hack no longer required in boost 1.58
+	perl -pi -e 's|#define __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES 0||' src/cpp/desktop-mac/MainFrameController.mm
 <<
 
 GCC: 4.0
