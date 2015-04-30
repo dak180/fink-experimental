@@ -116,7 +116,7 @@ CompileScript: <<
         -DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_PREFIX_PATH=%p \
         -DCMAKE_VERBOSE_MAKEFILE=TRUE \
-        -DLIBR_LIBRARIES=%p/Library/Frameworks/R.framework/Versions/3.1/Resources/lib \
+        -DLIBR_LIBRARIES=%p/Library/Frameworks/R.framework/Versions/3.2/Resources/lib \
 	-DBOOST_ROOT=%p/opt/boost-1_55 \
         ..
 

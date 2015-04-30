@@ -64,10 +64,10 @@ Source11-MD5: e6790a3ee6c371968eba865fc0a84daf
 # includes fix for boost and apple headers both using "common" words
 # for tokens and parameters
 PatchFile: %n.patch
-PatchFile-MD5: 0680426a6cf9968fc25fb61aa89e7983 
+PatchFile-MD5: a670aa04ce3632c2f5e6258d14eb9608 
 PatchScript: <<
 	#!/bin/sh -ev
-	sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
+	sed 's|@PREFIX@|%p|g' < %{PatchFile} | sed "s|@MAJOR@|`echo %v | cut -d. -f2`|g" | sed "s|@MINOR@|`echo %v | cut -d. -f3`|g" | patch -p1
 <<
 
 GCC: 4.0
@@ -128,7 +128,7 @@ InstallScript: <<
   echo "test"
 <<
 Shlibs: <<
-	@rpath/libclang.dylib 1.0.0 %n (>= 0.99.421-1)
+	@rpath/libclang.dylib 1.0.0 %n (>= 0.99.408-1)
 <<
 DescPackaging: <<
 Upstream has abandoned QT on darwin as of v0.98.475 in favor of the WebKit framework...
