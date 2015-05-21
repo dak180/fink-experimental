@@ -1,0 +1,152 @@
+Package: llvm37
+Version: 3.7.0
+Revision: 100
+Description: Modular and reusable compiler
+License: BSD
+Maintainer: Benjamin Reed <llvm@fink.raccoonfink.com>
+Distribution: 10.8, 10.9, 10.10
+BuildDepends: cmake (>= 2.8.2-1), fink (>= 0.38.3)
+BuildConflicts: isl, isl2
+InfoTest: 	<<
+#	TestConflicts: cloog, cloog-org, cloog-org2
+	TestScript: <<
+		#!/bin/sh -ev
+		pushd build
+#			/usr/bin/make check-all || exit 2
+#			/usr/bin/make check || exit 2
+		popd
+		pushd build/tools/polly/test
+#			/usr/bin/make polly-test || exit 0
+		popd
+	<<
+<<
+
+Source: http://llvm.org/releases/%v/llvm-%v.src.tar.bz2
+Source-MD5: 6936ff6abe6ee95d049ca96ba8b1eba8 
+Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.bz2
+Source2-MD5: 1fd3309db6cd0b4c2566b777339c84b7
+Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.bz2
+Source3-MD5: eb84404a9c74554b254573791a4ab28b
+Source4: http://llvm.org/releases/%v/polly-%v.src.tar.bz2
+Source4-MD5: 8375d506f7874a9c03f84062d697ab97
+#Source5: http://llvm.org/releases/%v/test-suite-%v.src.tar.bz2
+#Source5-MD5: db3155484708dc01760a1e224c1bdc3f 
+Source6: http://llvm.org/releases/%v/libcxx-%v.src.tar.bz2
+Source6-MD5: 5a36fd27164560133afaa7b03ee477e1 
+Source7: http://llvm.org/releases/%v/openmp-%v.src.tar.bz2
+Source7-MD5: 39c6d3c8bdba4bd592ec6438098a9808 
+Source8: http://llvm.org/releases/%v/clang-tools-extra-%v.src.tar.bz2
+Source8-MD5: 2f31195812db21799a84077dedd62ea2
+PatchFile: llvm37-clang-iomp5.patch
+PatchFile-MD5: 8bef41bba3870c4f0825d57d244119d9
+
+BuildDependsOnly: false
+UseMaxBuildJobs: true
+PatchScript: <<
+	#!/bin/sh -ev
+	brv=3.7
+	pushd ../cfe-%v.src
+	sed -e "s|@FINK_PREFIX@|%p|g" -e "s|@BRV@|3.7|g" < %{PatchFile} | patch -p1
+	popd
+<<
+CompileScript: <<
+	#!/bin/sh -ev
+
+	brv=3.7
+
+	case "%m" in
+	x86_64)
+	CMAKE_OPTIONS="-DLLVM_BUILD_32_BITS:BOOL=OFF -DLLVM_TARGETS_TO_BUILD=X86"
+	;;
+	powerpc)
+	CMAKE_OPTIONS="-DLLVM_BUILD_32_BITS:BOOL=ON -DLLVM_TARGETS_TO_BUILD=PowerPC"
+	;;
+	*)
+	CMAKE_OPTIONS="-DLLVM_BUILD_32_BITS:BOOL=ON -DLLVM_TARGETS_TO_BUILD=X86"
+	esac
+	
+	mv ../cfe-%v.src tools/clang
+	mv ../compiler-rt-%v.src projects/compiler-rt
+	mv ../libcxx-%v.src projects/libcxx
+	mv ../openmp-%v.src projects/openmp
+#	mv ../test-suite-%v.src projects/test-suite
+	mv ../polly-%v.src tools/polly
+	mv ../clang-tools-extra-%v.src tools/clang/tools/extra
+
+	if [ "`uname -r | cut -d. -f1`" -lt "12" ]; then
+		perl -pi -e 's|list\(APPEND SANITIZER_COMMON_SUPPORTED_DARWIN_OS iossim\)||g' projects/compiler-rt/CMakeLists.txt
+	fi
+
+	mkdir build
+
+	pushd build
+        cmake $CMAKE_OPTIONS -DCMAKE_INSTALL_PREFIX=%p/opt/llvm-$brv \
+		-DLLVM_ENABLE_ASSERTIONS=OFF -DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_OSX_SYSROOT:STRING=/ -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING="" \
+		-DLLVM_ENABLE_LIBCXX=ON -DLIBCXX_LIBCPPABI_VERSION="" -DENABLE_CLANG_OPENMP=ON ..
+	/usr/bin/make VERBOSE=1
+<<
+
+InstallScript: <<
+#!/bin/sh -ev
+
+	brv=3.7
+
+	pushd build
+		/usr/bin/make -j1 install/fast DESTDIR="%d"
+	popd
+
+        # need symlink /usr/bin/ld so libLTO.dylib can be found relative to @executable_path
+        pushd %i/opt/llvm-$brv/bin
+        test -x /usr/bin/ld && ln -s /usr/bin/ld .
+        popd
+
+	install_name_tool -id "%p/opt/llvm-$brv/lib/libclang.3.7.dylib" "%i/opt/llvm-$brv/lib/libclang.3.7.dylib"
+	install_name_tool -id "%p/opt/llvm-$brv/lib/BugpointPasses.dylib" "%i/opt/llvm-$brv/lib/BugpointPasses.dylib"
+	install_name_tool -id "%p/opt/llvm-$brv/lib/LLVMHello.dylib" "%i/opt/llvm-$brv/lib/LLVMHello.dylib"
+	install_name_tool -id "%p/opt/llvm-$brv/lib/libLTO.dylib" "%i/opt/llvm-$brv/lib/libLTO.dylib"
+        install_name_tool -id "%p/opt/llvm-$brv/lib/clang/%v/lib/darwin/libclang_rt.asan_osx_dynamic.dylib" "%i/opt/llvm-$brv/lib/clang/%v/lib/darwin/libclang_rt.asan_osx_dynamic.dylib"
+	install_name_tool -id "%p/opt/llvm-$brv/lib/clang/%v/lib/darwin/libclang_rt.ubsan_osx_dynamic.dylib" "%i/opt/llvm-$brv/lib/clang/%v/lib/darwin//libclang_rt.ubsan_osx_dynamic.dylib"
+	install_name_tool -id "%p/opt/llvm-$brv/lib/clang/%v/lib/darwin/libclang_rt.asan_iossim_dynamic.dylib" "%i/opt/llvm-$brv/lib/clang/%v/lib/darwin/libclang_rt.asan_iossim_dynamic.dylib"
+	install_name_tool -id "%p/opt/llvm-$brv/lib/clang/%v/lib/darwin/libclang_rt.ubsan_iossim_dynamic.dylib" "%i/opt/llvm-$brv/lib/clang/%v/lib/darwin//libclang_rt.ubsan_iossim_dynamic.dylib"
+
+
+	install_name_tool -id "%p/opt/llvm-$brv/lib/libiomp5.dylib" "%i/opt/llvm-$brv/lib/libiomp5.dylib"
+
+	# Don't package libc++ as it defaults to the /usr/lib/libc++.1.dylib on linkages for -stdlib=libc++
+	# Same for BugpointPasses.dylib and LLVMHello.dylib in 3.5
+	rm -fr %i/opt/llvm-$brv/lib/libc++.*dylib
+	rm -fr %i/opt/llvm-$brv/lib/BugpointPasses.dylib
+	rm -fr %i/opt/llvm-$brv/lib/LLVMHello.dylib
+
+	rm %i/opt/llvm-$brv/lib/libclang.dylib 
+
+# convenient clang symlinks
+        mkdir -p %i/bin
+        pushd %i/bin
+          ln -s %p/opt/llvm-$brv/bin/clang clang-3.7
+          ln -s %p/opt/llvm-$brv/bin/clang++ clang++-3.7
+        popd
+	
+<<
+DocFiles: *.TXT README.txt
+Shlibs: <<
+	 	%p/opt/llvm-3.7/lib/libclang.3.7.dylib 1.0.0 %n (>= 3.7-0)
+		!%p/opt/llvm-3.7/lib/libLTO.dylib
+		%p/opt/llvm-3.7/lib/clang/%v/lib/darwin/libclang_rt.asan_osx_dynamic.dylib 0.0.0 %n (>= 3.2-1)
+		%p/opt/llvm-3.7/lib/clang/%v/lib/darwin/libclang_rt.ubsan_osx_dynamic.dylib  0.0.0 %n (>= 3.7-1)
+		%p/opt/llvm-3.7/lib/libiomp5.dylib 5.0.0  %n (>= 3.7-1)
+		%p/opt/llvm-3.7/lib/clang/%v/lib/darwin/libclang_rt.asan_iossim_dynamic.dylib 0.0.0 %n (>= 3.4-1)
+		%p/opt/llvm-3.7/lib/clang/%v/lib/darwin/libclang_rt.ubsan_iossim_dynamic.dylib  0.0.0 %n (>= 3.7-1)
+<<
+Homepage: http://llvm.org/
+DescDetail: <<
+The LLVM Project is a collection of modular and reusable compiler and
+toolchain technologies.  Despite its name, LLVM has little to do with
+traditional virtual machines, though it does provide helpful libraries
+that can be used to build them.
+<<
+DescUsage: <<
+Currently llvm 3.5svn defaults -fopenmp to libGOMP and emits -lgomp. To emit
+-liomp5. Flip this for fink.
+<<

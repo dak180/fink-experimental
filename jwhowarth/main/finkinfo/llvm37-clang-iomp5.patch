@@ -1,0 +1,38 @@
+--- cfe-3.7.0.src/lib/Driver/Tools.cpp.orig	2015-05-21 07:16:12.000000000 -0400
++++ cfe-3.7.0.src/lib/Driver/Tools.cpp	2015-05-21 07:18:11.000000000 -0400
+@@ -6305,6 +6305,8 @@
+       CmdArgs.push_back("-lgomp");
+       break;
+     case LibIOMP5:
++      // Help clang find libiomp5.dylib
++      CmdArgs.push_back("-L@FINK_PREFIX@/opt/llvm-@BRV@/lib");
+       CmdArgs.push_back("-liomp5");
+       break;
+     case LibUnknown:
+@@ -6313,6 +6315,8 @@
+       break;
+     }
+   } else if (Args.hasArg(options::OPT_fopenmp)) {
++    // Help clang find libiomp5.dylib
++    CmdArgs.push_back("-L@FINK_PREFIX@/opt/llvm-@BRV@/lib");
+     CmdArgs.push_back(getDefaultOpenMPLibFlag());
+   }
+ 
+@@ -8029,6 +8033,8 @@
+           CmdArgs.push_back("-lrt");
+           break;
+         case LibIOMP5:
++	  // Help clang find libiomp5.dylib
++	  CmdArgs.push_back("-L@FINK_PREFIX@/opt/llvm-@BRV@/lib");
+           CmdArgs.push_back("-liomp5");
+           break;
+         case LibUnknown:
+@@ -8037,6 +8043,8 @@
+           break;
+         }
+       } else if (Args.hasArg(options::OPT_fopenmp)) {
++	// Help clang find libiomp5.dylib
++	CmdArgs.push_back("-L@FINK_PREFIX@/opt/llvm-@BRV@/lib");
+         CmdArgs.push_back(getDefaultOpenMPLibFlag());
+       } else {
+         WantPthread = Args.hasArg(options::OPT_pthread) ||
