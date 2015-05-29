@@ -22,23 +22,23 @@ InfoTest: 	<<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.bz2
-Source-MD5: 6936ff6abe6ee95d049ca96ba8b1eba8 
+Source-MD5: 5985f5f7e9d4e9bf7339d898c6482fc8 
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.bz2
-Source2-MD5: 1fd3309db6cd0b4c2566b777339c84b7
+Source2-MD5: ff485b334a35b85f99fef2c23396eadd
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.bz2
-Source3-MD5: eb84404a9c74554b254573791a4ab28b
+Source3-MD5: 06f760b825a0a9acc2795dfb9740627c 
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.bz2
-Source4-MD5: 8375d506f7874a9c03f84062d697ab97
+Source4-MD5: 4847a95821ac6d8aa949185a4da55761
 #Source5: http://llvm.org/releases/%v/test-suite-%v.src.tar.bz2
-#Source5-MD5: db3155484708dc01760a1e224c1bdc3f 
+#Source5-MD5: db3155484708dc01760a1e224c1bdc3f
 Source6: http://llvm.org/releases/%v/libcxx-%v.src.tar.bz2
-Source6-MD5: 5a36fd27164560133afaa7b03ee477e1 
+Source6-MD5: 02e68d8d5766b4ffbeaae90d58840040
 Source7: http://llvm.org/releases/%v/openmp-%v.src.tar.bz2
-Source7-MD5: 39c6d3c8bdba4bd592ec6438098a9808 
+Source7-MD5: 29b5219e4077e86d226d847c2bfa5309 
 Source8: http://llvm.org/releases/%v/clang-tools-extra-%v.src.tar.bz2
-Source8-MD5: 2f31195812db21799a84077dedd62ea2
+Source8-MD5: c6ab8df38c08e3fe6c4c66c950dcedad
 PatchFile: llvm37-clang-iomp5.patch
-PatchFile-MD5: 8bef41bba3870c4f0825d57d244119d9
+PatchFile-MD5: 6a9d11e0ce4759cd5bc93ead8616d0b3
 
 BuildDependsOnly: false
 UseMaxBuildJobs: true
@@ -47,6 +47,7 @@ PatchScript: <<
 	brv=3.7
 	pushd ../cfe-%v.src
 	sed -e "s|@FINK_PREFIX@|%p|g" -e "s|@BRV@|3.7|g" < %{PatchFile} | patch -p1
+	perl -pi -e 's|libgomp|libiomp5|g' CMakeLists.txt
 	popd
 <<
 CompileScript: <<
@@ -81,7 +82,7 @@ CompileScript: <<
 
 	pushd build
         cmake $CMAKE_OPTIONS -DCMAKE_INSTALL_PREFIX=%p/opt/llvm-$brv \
-		-DLLVM_ENABLE_ASSERTIONS=OFF -DCMAKE_BUILD_TYPE=Release \
+		-DLLVM_ENABLE_ASSERTIONS=OFF -DCMAKE_BUILD_TYPE=Release -DLIBOMP_OSX_ARCHITECTURES="x86_64;i386" \
 		-DCMAKE_OSX_SYSROOT:STRING=/ -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING="" \
 		-DLLVM_ENABLE_LIBCXX=ON -DLIBCXX_LIBCPPABI_VERSION="" -DENABLE_CLANG_OPENMP=ON ..
 	/usr/bin/make VERBOSE=1
