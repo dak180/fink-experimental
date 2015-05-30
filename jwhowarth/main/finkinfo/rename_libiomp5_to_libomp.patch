@@ -1,0 +1,1214 @@
+diff -uNr openmp-3.7.0.src.orig/offload/Makefile openmp-3.7.0.src/offload/Makefile
+--- openmp-3.7.0.src.orig/offload/Makefile	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/offload/Makefile	2015-05-30 11:32:36.000000000 -0400
+@@ -15,8 +15,8 @@
+ # build_dir - path to build directory
+ # mpss_dir - path to root directory of mpss
+ # mpss_version - version of the mpss (e.g., version "3.3.x" would be "33")
+-# libiomp_host_dir - path to host libiomp directory (unnecessary if compiler_host is icc)
+-# libiomp_target_dir - path to target libiomp directory (unnecesarry if compiler_target is icc)
++# libomp_host_dir - path to host libomp directory (unnecessary if compiler_host is icc)
++# libomp_target_dir - path to target libomp directory (unnecesarry if compiler_target is icc)
+ # omp_header_dir - path to omp.h (unnecessary if compiler_host and compiler_target are icc)
+ # os_host - host operating system
+ # os_target - target operating system
+@@ -107,16 +107,16 @@
+   opts_common+=-I$(imported_dir)
+ endif
+ 
+-opts_liboffload=-shared -Wl,-soname,liboffload.so.5 -ldl -lstdc++ -liomp5
++opts_liboffload=-shared -Wl,-soname,liboffload.so.5 -ldl -lstdc++ -lomp
+ 
+ opts_liboffload_host=$(opts_liboffload) -L$(coi_lib_host) -lcoi_host -L$(myo_dir)/lib -lmyo-client
+-ifneq ($(libiomp_host_dir), )
+-  opts_liboffload_host+=-L$(libiomp_host_dir)
++ifneq ($(libomp_host_dir), )
++  opts_liboffload_host+=-L$(libomp_host_dir)
+ endif
+ 
+ opts_liboffload_target=$(opts_liboffload) -L$(coi_lib_device) -lcoi_device -L$(myo_dir)/lib -lmyo-service
+-ifneq ($(libiomp_target_dir), )
+-  opts_liboffload_target+=-L$(libiomp_target_dir)
++ifneq ($(libomp_target_dir), )
++  opts_liboffload_target+=-L$(libomp_target_dir)
+ endif
+ 
+ options_host?=
+@@ -212,8 +212,8 @@
+ 	@echo "build_dir = $(build_dir)"
+ 	@echo "mpss_dir = $(mpss_dir)"
+ 	@echo "mpss_version = $(mpss_version)"
+-	@echo "libiomp_host_dir = $(libiomp_host_dir)"
+-	@echo "libiomp_target_dir = $(libiomp_target_dir)"
++	@echo "libomp_host_dir = $(libomp_host_dir)"
++	@echo "libomp_target_dir = $(libomp_target_dir)"
+ 	@echo "omp_header_dir = $(omp_header_dir)"
+ 	@echo "os_host = $(os_host)"
+ 	@echo "os_target = $(os_target)"
+diff -uNr openmp-3.7.0.src.orig/offload/README.txt openmp-3.7.0.src/offload/README.txt
+--- openmp-3.7.0.src.orig/offload/README.txt	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/offload/README.txt	2015-05-30 11:32:36.000000000 -0400
+@@ -63,11 +63,11 @@
+ 		      Stack install directory.  By default, this will take on
+ 		      the value of operating system's root directory.
+ 
+-libiomp_host_dir:     The path to the host Intel(R) OpenMP* Runtime Library.
++libomp_host_dir:     The path to the host Intel(R) OpenMP* Runtime Library.
+ 		      This option is required when the host compiler is other
+ 		      than icc.
+ 
+-libiomp_target_dir:   The path to the target Intel(R) OpenMP* Runtime
++libomp_target_dir:   The path to the target Intel(R) OpenMP* Runtime
+ 		      Library.  This option is required when the target
+ 		      compiler is other than icc.
+ 
+diff -uNr openmp-3.7.0.src.orig/runtime/Build_With_CMake.txt openmp-3.7.0.src/runtime/Build_With_CMake.txt
+--- openmp-3.7.0.src.orig/runtime/Build_With_CMake.txt	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/Build_With_CMake.txt	2015-05-30 11:32:36.000000000 -0400
+@@ -123,7 +123,7 @@
+ Build type can be Release, Debug, or RelWithDebInfo.
+ 
+ -DLIBOMP_VERSION=5|4
+-libiomp5 version can be 5 or 4.
++libomp version can be 5 or 4.
+ 
+ -DLIBOMP_OMP_VERSION=40|30
+ OpenMP version can be either 40 or 30.
+@@ -159,10 +159,10 @@
+ -DLIBOMP_TEST_EXECSTACK=on|off -- Should the stack be checked for executability?
+ -DLIBOMP_TEST_INSTR=on|off     -- Should the Intel(R) MIC Libraries be checked
+                             for correct instruction set?
+--DLIBOMP_TEST_DEPS=on|off      -- Should libiomp5's dependencies be checked?
++-DLIBOMP_TEST_DEPS=on|off      -- Should libomp's dependencies be checked?
+ -DLIBOMP_MICRO_TESTS=off|on          -- Should any of the above tests be done?
+ If -DLIBOMP_MICRO_TESTS=on is specified, the user can then call:
+-$ make libiomp-micro-tests
++$ make libomp-micro-tests
+ which runs the tests.
+ 
+ ============================================
+@@ -185,9 +185,9 @@
+ ===================================
+ -DLIBOMP_USE_BUILDPL_RULES=false|true
+ Should the build imitate build.pl's build process.
+-When this is true, the Unix* Release builds will build libiomp5
++When this is true, the Unix* Release builds will build libomp
+ with -O2 and -g flags activated (same as RelWithDebInfo). Then,
+-the debug info is stripped out of the library and put into libiomp5.dbg
++the debug info is stripped out of the library and put into libomp.dbg
+ This is done for interaction with Intel(R) Parallel Amplifier.
+ 
+ -DLIBOMP_USE_ADAPTIVE_LOCKS=true|false       
+@@ -231,7 +231,7 @@
+ 
+ - Build the library (architecture determined by probing compiler) using the
+   Intel(R) C Compiler and the Intel(R) C++ Compiler. Also, create the fortran modules using
+-  the Intel(R) Fortran Compiler, enabling the libiomp-micro-tests target and using similar rules that build.pl 
++  the Intel(R) Fortran Compiler, enabling the libomp-micro-tests target and using similar rules that build.pl 
+   would use to build the library.
+ cmake -DCMAKE_C_COMPILER=icc -DCMAKE_CXX_COMPILER=icpc -DCMAKE_Fortran_COMPILER=ifort -DLIBOMP_MICRO_TESTS=on -DLIBOMP_FORTRAN_MODULES=on -DLIBOMP_USE_BUILDPL_RULES=on ..
+ 
+diff -uNr openmp-3.7.0.src.orig/runtime/CMakeLists.txt openmp-3.7.0.src/runtime/CMakeLists.txt
+--- openmp-3.7.0.src.orig/runtime/CMakeLists.txt	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/CMakeLists.txt	2015-05-30 11:58:39.000000000 -0400
+@@ -10,7 +10,7 @@
+ #
+ 
+ ################
+-# CMAKE libiomp5
++# CMAKE libomp
+ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+ 
+ #########
+@@ -25,7 +25,7 @@
+ set(LIBOMP_STANDALONE_BUILD FALSE)
+ if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}" OR 
+    "${CMAKE_SOURCE_DIR}/runtime" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
+-    project(libiomp C CXX)
++    project(libomp C CXX)
+     set(LIBOMP_STANDALONE_BUILD TRUE)
+ endif()
+ 
+@@ -66,7 +66,7 @@
+ # ----------------------------
+ # Right now, this build system considers os=lin to mean "Unix-like that is not MAC"
+ # Apple goes first because CMake considers Mac to be a Unix based 
+-# operating system, while libiomp5 considers it a special case
++# operating system, while libomp considers it a special case
+ if(${APPLE})
+     set(temp_os mac)
+ elseif(${UNIX})
+@@ -87,7 +87,7 @@
+ set(LIBOMP_LIB_TYPE normal CACHE STRING
+     "Performance,Profiling,Stubs library (normal/profile/stubs)")
+ set(LIBOMP_VERSION 5 CACHE STRING 
+-    "Produce libguide (version 4) or libiomp5 (version 5)")
++    "Produce libguide (version 4) or libomp (version 5)")
+ set(LIBOMP_OMP_VERSION 41 CACHE STRING 
+     "The OpenMP version (41/40/30)")
+ set(LIBOMP_MIC_ARCH knc CACHE STRING 
+@@ -149,7 +149,7 @@
+ set(LIBOMP_FFLAGS "" CACHE STRING 
+     "Appended user specified Fortran compiler flags.  These are only used if LIBOMP_FORTRAN_MODULES==true.")
+ 
+-# Should the libiomp5 library and generated headers be copied into the original source exports/ directory
++# Should the libomp library and generated headers be copied into the original source exports/ directory
+ # Turning this to false aids parallel builds to not interfere with each other.
+ set(LIBOMP_COPY_EXPORTS true CACHE STRING
+     "Should exports be copied into source exports/ directory?")
+@@ -288,7 +288,7 @@
+     "*INCOMPLETE* The quad precision data type (e.g., for gcc, __float128)")
+ 
+ # - Should the orignal build rules for builds be used? (cmake/OriginalBuildRules.cmake).  This setting is off by default.
+-# - This always compiles with -g.  And if it is a release build, the debug info is stripped out via objcopy and put into libiomp5.dbg.
++# - This always compiles with -g.  And if it is a release build, the debug info is stripped out via objcopy and put into libomp.dbg.
+ set(LIBOMP_USE_BUILDPL_RULES false CACHE BOOL
+     "Should the build follow build.pl rules/recipes?")
+ 
+@@ -382,8 +382,7 @@
+ set(tools_dir "${CMAKE_CURRENT_SOURCE_DIR}/tools") 
+ set(export_dir "${CMAKE_CURRENT_SOURCE_DIR}/exports") 
+ set(export_ptf_dir "${export_dir}/${platform}${suffix}")
+-set(export_cmn_dir1 "${export_dir}/common${suffix}/include") 
+-set(export_cmn_dir2 "${export_dir}/common${suffix}/include_compat") 
++set(export_cmn_dir "${export_dir}/common${suffix}/include") 
+ set(export_inc_dir "${export_ptf_dir}/include") 
+ set(export_mod_dir "${export_ptf_dir}/include_compat")
+ _export_lib_dir(${platform} export_lib_dir)  # set exports directory (relative to build_dir) e.g., ../exports/lin_32e/lib/
+@@ -397,48 +396,40 @@
+ 
+ ############################
+ # Setting final library name
+-set(lib_item "libiomp")
++set(lib_item "libomp")
+ if(${PROFILE_LIBRARY})
+     set(lib_item "${lib_item}prof")
+ endif()
+ if(${STUBS_LIBRARY})
+     set(lib_item "${lib_item}stubs")
+ endif()
+-set(lib_item "${lib_item}${LIBOMP_VERSION}")
+-if(${WINDOWS})
+-    set(lib_item "${lib_item}md")
+-endif()
+ set(LIBOMP_LIB_NAME "${lib_item}" CACHE STRING "OMP library name")
+ set(lib_ext "${dll}")
+ # ${lib_file} is real library name:
+-# libiomp5.so    for Linux
+-# libiomp5.dylib for Mac
+-# libiomp5md.dll for Windows
++# libomp.so    for Linux
++# libomp.dylib for Mac
++# libomp.dll   for Windows
+ set(lib_file "${LIBOMP_LIB_NAME}${lib_ext}")
+ 
+ ########################################
+ # Setting export file names
+ if(${WINDOWS})
+-    set(imp_file "${lib_item}${lib}") # this is exported (libiomp5md.lib)
++    set(imp_file "${lib_item}${lib}") # this is exported (libomp.lib)
+     set(def_file "${lib_item}.def") # this is not exported
+-    set(rc_file  "${lib_item}.rc")  # this is not exported
+     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR 
+         "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo" OR 
+         ${LIBOMP_USE_BUILDPL_RULES})
+-        set(pdb_file "${lib_file}.pdb") # this is exported if it exists (libiomp5md.dll.pdb)
++        set(pdb_file "${lib_file}.pdb") # this is exported if it exists (libomp.dll.pdb)
+     endif()
+ endif()
+ set(export_lib_files "${lib_file}" "${imp_file}" "${pdb_file}") 
+-set(export_inc_files "iomp_lib.h")
+ set(export_mod_files "omp_lib.mod" "omp_lib_kinds.mod")
+-set(export_cmn_files1 "omp.h" "omp_lib.h" "omp_lib.f" "omp_lib.f90")
+-set(export_cmn_files2 "iomp.h")
++set(export_cmn_files "omp.h" "omp_lib.h" "omp_lib.f" "omp_lib.f90")
+ 
+ if(${LIBOMP_OMPT_SUPPORT})
+-    set(export_cmn_files1 ${export_cmn_files1} "ompt.h")
++    set(export_cmn_files ${export_cmn_files} "ompt.h")
+ endif()
+ 
+-set(export_cmn_files "${export_cmn_files1}" "${export_cmn_files2}")
+ if("${export_lib_fat_dir}")
+     set(export_lib_fat_files "${lib_file}" "${imp_file}")
+ endif()
+@@ -593,8 +584,7 @@
+ 
+ ####################
+ # --- Create all ---
+-add_custom_target(lib ALL DEPENDS iomp5)
+-add_custom_target(inc ALL DEPENDS ${export_inc_files})
++add_custom_target(lib ALL DEPENDS omp)
+ if(${LIBOMP_FORTRAN_MODULES})
+     add_custom_target(mod ALL DEPENDS ${export_mod_files})
+ endif()
+@@ -607,24 +597,17 @@
+ # --- Put headers in convenient locations post build ---
+ if(${LIBOMP_COPY_EXPORTS})
+     add_custom_command(TARGET common POST_BUILD 
+-        COMMAND ${CMAKE_COMMAND} -E make_directory ${export_cmn_dir1}
+-        COMMAND ${CMAKE_COMMAND} -E make_directory ${export_cmn_dir2}
+-        COMMAND ${CMAKE_COMMAND} -E copy omp.h ${export_cmn_dir1}
+-        COMMAND ${CMAKE_COMMAND} -E copy omp_lib.h ${export_cmn_dir1}
+-        COMMAND ${CMAKE_COMMAND} -E copy omp_lib.f ${export_cmn_dir1}
+-        COMMAND ${CMAKE_COMMAND} -E copy omp_lib.f90 ${export_cmn_dir1}
+-        COMMAND ${CMAKE_COMMAND} -E copy iomp.h ${export_cmn_dir2}
++        COMMAND ${CMAKE_COMMAND} -E make_directory ${export_cmn_dir}
++        COMMAND ${CMAKE_COMMAND} -E copy omp.h ${export_cmn_dir}
++        COMMAND ${CMAKE_COMMAND} -E copy omp_lib.h ${export_cmn_dir}
++        COMMAND ${CMAKE_COMMAND} -E copy omp_lib.f ${export_cmn_dir}
++        COMMAND ${CMAKE_COMMAND} -E copy omp_lib.f90 ${export_cmn_dir}
+     )
+     if(${LIBOMP_OMPT_SUPPORT})
+         add_custom_command(TARGET common POST_BUILD
+-            COMMAND ${CMAKE_COMMAND} -E make_directory ${export_cmn_dir1}
+-            COMMAND ${CMAKE_COMMAND} -E copy ompt.h ${export_cmn_dir1}
++            COMMAND ${CMAKE_COMMAND} -E copy ompt.h ${export_cmn_dir}
+         )
+     endif()
+-    add_custom_command(TARGET inc POST_BUILD
+-        COMMAND ${CMAKE_COMMAND} -E make_directory ${export_inc_dir}
+-        COMMAND ${CMAKE_COMMAND} -E copy iomp_lib.h ${export_inc_dir}
+-    )
+     if(${LIBOMP_FORTRAN_MODULES})
+         add_custom_command(TARGET mod POST_BUILD
+             COMMAND ${CMAKE_COMMAND} -E make_directory ${export_mod_dir}
+@@ -644,8 +627,8 @@
+ 
+ # For Windows, there is a definitions file (.def) and resource file (.res) created using generate-def.pl and rc.exe respectively.
+ if(${WINDOWS})
+-    add_custom_target(needed-windows-files DEPENDS ${build_dir}/${def_file} ${build_dir}/${rc_file})
+-    list(APPEND lib_src_files ${build_dir}/${rc_file})
++    add_custom_target(needed-windows-files DEPENDS ${build_dir}/${def_file} ${build_dir}/libomp.rc)
++    list(APPEND lib_src_files ${build_dir}/libomp.rc)
+ endif()
+ 
+ # Remove any cmake-automatic linking of libraries by linker, This is so linux 
+@@ -657,40 +640,40 @@
+ endif()
+ 
+ # --- ${lib_file} rule ---
+-add_library(iomp5 SHARED ${lib_src_files})
+-set_target_properties(iomp5 PROPERTIES 
++add_library(omp SHARED ${lib_src_files})
++set_target_properties(omp PROPERTIES 
+     PREFIX "" SUFFIX ""        # Take control 
+     OUTPUT_NAME "${lib_file}"  # of output name
+     LINK_FLAGS  "${LD_FLAGS}"
+     LINKER_LANGUAGE C          # use C Compiler for linking step
+-    SKIP_BUILD_RPATH true      # have Mac linker -install_name just be "-install_name libiomp5.dylib"
++    SKIP_BUILD_RPATH true      # have Mac linker -install_name just be "-install_name libomp.dylib"
+ )
+ 
+-# --- Copy libiomp into exports directory post build ---
++# --- Copy libomp into exports directory post build ---
+ if(${WINDOWS})
+-    get_target_property(LIBOMP_OUTPUT_DIRECTORY iomp5 RUNTIME_OUTPUT_DIRECTORY)
++    get_target_property(LIBOMP_OUTPUT_DIRECTORY omp RUNTIME_OUTPUT_DIRECTORY)
+ else()
+-    get_target_property(LIBOMP_OUTPUT_DIRECTORY iomp5 LIBRARY_OUTPUT_DIRECTORY)
++    get_target_property(LIBOMP_OUTPUT_DIRECTORY omp LIBRARY_OUTPUT_DIRECTORY)
+ endif()
+ if(NOT LIBOMP_OUTPUT_DIRECTORY)
+     set(LIBOMP_OUTPUT_DIRECTORY ${build_dir})
+ endif()
+ 
+ if(${LIBOMP_COPY_EXPORTS})
+-    add_custom_command(TARGET iomp5 POST_BUILD
++    add_custom_command(TARGET omp POST_BUILD
+         COMMAND ${CMAKE_COMMAND} -E make_directory ${export_lib_dir}
+         COMMAND ${CMAKE_COMMAND} -E copy ${LIBOMP_OUTPUT_DIRECTORY}/${lib_file} ${export_lib_dir}
+     )
+ endif()
+ 
+ # Linking command will include libraries in LD_LIB_FLAGS
+-target_link_libraries(iomp5 ${LD_LIB_FLAGS} ${CMAKE_DL_LIBS})
++target_link_libraries(omp ${LD_LIB_FLAGS} ${CMAKE_DL_LIBS})
+ 
+ # Create *.inc and omp.h before compiling any sources
+-add_dependencies(iomp5 needed-headers)
++add_dependencies(omp needed-headers)
+ if(${WINDOWS})
+ # Create .def and .rc file before compiling any sources
+-    add_dependencies(iomp5 needed-windows-files)
++    add_dependencies(omp needed-windows-files)
+ endif()
+ 
+ # Set the compiler flags for each type of source
+@@ -747,23 +730,23 @@
+     # It is then "re-linked" to include kmp_import.c which prevents linking of both Visual Studio OpenMP and newly built OpenMP
+     if(NOT "${imp_file}" STREQUAL "")
+         set(generated_import_file ${lib_file}${lib})
+-        add_library(iomp5imp STATIC ${generated_import_file} ${imp_src_files})
++        add_library(ompimp STATIC ${generated_import_file} ${imp_src_files})
+         set_source_files_properties(${generated_import_file} PROPERTIES GENERATED TRUE EXTERNAL_OBJECT TRUE)
+-        set_target_properties(iomp5imp PROPERTIES
++        set_target_properties(ompimp PROPERTIES
+             PREFIX "" SUFFIX ""
+             OUTPUT_NAME "${imp_file}"
+             STATIC_LIBRARY_FLAGS "${AR_FLAGS}"
+             LINKER_LANGUAGE C
+             SKIP_BUILD_RPATH true
+         )
+-        add_custom_command(TARGET iomp5imp PRE_BUILD COMMAND ${CMAKE_COMMAND} -E remove -f ${imp_file})
+-        add_dependencies(iomp5imp iomp5)
+-        get_target_property(LIBOMPIMP_OUTPUT_DIRECTORY iomp5imp ARCHIVE_OUTPUT_DIRECTORY)
++        add_custom_command(TARGET ompimp PRE_BUILD COMMAND ${CMAKE_COMMAND} -E remove -f ${imp_file})
++        add_dependencies(ompimp omp)
++        get_target_property(LIBOMPIMP_OUTPUT_DIRECTORY ompimp ARCHIVE_OUTPUT_DIRECTORY)
+         if(NOT LIBOMPIMP_OUTPUT_DIRECTORY)
+             set(LIBOMPIMP_OUTPUT_DIRECTORY ${build_dir})
+         endif()
+         if(${LIBOMP_COPY_EXPORTS})
+-            add_custom_command(TARGET iomp5imp POST_BUILD 
++            add_custom_command(TARGET ompimp POST_BUILD 
+                 COMMAND ${CMAKE_COMMAND} -E make_directory ${export_lib_dir}
+                 COMMAND ${CMAKE_COMMAND} -E copy ${LIBOMPIMP_OUTPUT_DIRECTORY}/${imp_file} ${export_lib_dir}
+             )
+@@ -780,14 +763,6 @@
+         )
+     endif()
+ 
+-    # --- Create $(rc_file) ---
+-    if(NOT "${rc_file}" STREQUAL "")
+-        add_custom_command(
+-            OUTPUT  ${rc_file}
+-            COMMAND ${CMAKE_COMMAND} -E copy libiomp.rc ${rc_file}
+-            DEPENDS libiomp.rc
+-        )
+-    endif()
+ endif()
+ 
+ ######################################################
+@@ -810,21 +785,21 @@
+ # - Only perform if ${tests} == true (specify when invoking: cmake -Dtests=on ...)
+ if(${LIBOMP_MICRO_TESTS})
+     include(MicroTests)
+-    add_custom_target(libiomp-micro-tests)
++    add_custom_target(libomp-micro-tests)
+     if(NOT ${MIC} AND ${LIBOMP_TEST_TOUCH})
+-        add_dependencies(libiomp-micro-tests libiomp-test-touch)
++        add_dependencies(libomp-micro-tests libomp-test-touch)
+     endif()
+     if(${LINUX} AND ${LIBOMP_TEST_RELO})
+-        add_dependencies(libiomp-micro-tests libiomp-test-relo)
++        add_dependencies(libomp-micro-tests libomp-test-relo)
+     endif()
+     if(${LINUX} AND ${LIBOMP_TEST_EXECSTACK})
+-        add_dependencies(libiomp-micro-tests libiomp-test-execstack)
++        add_dependencies(libomp-micro-tests libomp-test-execstack)
+     endif()
+     if(${MIC} AND ${LIBOMP_TEST_INSTR})
+-        add_dependencies(libiomp-micro-tests libiomp-test-instr)
++        add_dependencies(libomp-micro-tests libomp-test-instr)
+     endif()
+     if(${LIBOMP_TEST_DEPS}) 
+-        add_dependencies(libiomp-micro-tests libiomp-test-deps)
++        add_dependencies(libomp-micro-tests libomp-test-deps)
+     endif()
+ endif()
+ 
+@@ -863,12 +838,14 @@
+ # - 'file' is generated using expand-vars.pl and 'file'.var
+ # - Any .h .f .f90 .rc files should be created with this recipe
+ macro(expand_vars_recipe file_dir filename)
+-    get_source_file_property(extra_ev_flags ${filename} COMPILE_DEFINITIONS)
++    set(extra_ev_flags)
++    get_source_file_property(extra_ev_flags ${filename} EV_COMPILE_DEFINITIONS)
+     if("${extra_ev_flags}" MATCHES "NOTFOUND")
+         set(extra_ev_flags)
+     else()
+         string_to_list("${extra_ev_flags}" extra_ev_flags)
+     endif()
++    message(STATUS "extra_ev_flags = ${extra_ev_flags}")
+     if(NOT "${filename}" STREQUAL "")
+         add_custom_command(
+             OUTPUT  ${filename}
+@@ -878,24 +855,16 @@
+     endif()
+ endmacro()
+ string_to_list("${ev_flags}" ev_flags)
+-# omp_lib.h  : ev-flags += -D KMP_INT_PTR_KIND="int_ptr_kind()"
+-set_source_files_properties(omp_lib.h PROPERTIES COMPILE_DEFINITIONS "-D KMP_INT_PTR_KIND=\"int_ptr_kind()\"") 
+-# iomp_lib.h : ev-flags += -D KMP_INT_PTR_KIND=$(if $(filter 32,$(arch)),4,8)
+-if(${IA32}) # 32 bit archs
+-    set_source_files_properties(iomp_lib.h PROPERTIES COMPILE_DEFINITIONS "-D KMP_INT_PTR_KIND=4") 
+-else()
+-    set_source_files_properties(iomp_lib.h PROPERTIES COMPILE_DEFINITIONS "-D KMP_INT_PTR_KIND=8") 
+-endif()
+-# libiomp.rc : ev-flags += -D KMP_FILE=$(lib_file)
+-set_source_files_properties(libiomp.rc PROPERTIES COMPILE_DEFINITIONS "-D KMP_FILE=${lib_file}") 
++# iomp_lib.h  : ev-flags += -D KMP_INT_PTR_KIND="int_ptr_kind()"
++set_source_files_properties(omp_lib.h PROPERTIES EV_COMPILE_DEFINITIONS "-D KMP_INT_PTR_KIND=\"int_ptr_kind()\"") 
++# libomp.rc : ev-flags += -D KMP_FILE=$(lib_file)
++set_source_files_properties(libomp.rc PROPERTIES EV_COMPILE_DEFINITIONS "-D KMP_FILE=${lib_file}") 
+ expand_vars_recipe(${src_dir}/include/${LIBOMP_OMP_VERSION} omp.h)
+ expand_vars_recipe(${src_dir}/include/${LIBOMP_OMP_VERSION} ompt.h)
+ expand_vars_recipe(${src_dir}/include/${LIBOMP_OMP_VERSION} omp_lib.h)
+ expand_vars_recipe(${src_dir}/include/${LIBOMP_OMP_VERSION} omp_lib.f)
+ expand_vars_recipe(${src_dir}/include/${LIBOMP_OMP_VERSION} omp_lib.f90)
+-expand_vars_recipe(${src_dir}/include/${LIBOMP_OMP_VERSION} iomp.h)
+-expand_vars_recipe(${src_dir}/include/${LIBOMP_OMP_VERSION} iomp_lib.h)
+-expand_vars_recipe(${src_dir} libiomp.rc)
++expand_vars_recipe(${src_dir} libomp.rc)
+ 
+ ####################################################################
+ # Print configuration after all variables are set.
+@@ -930,7 +899,7 @@
+ 
+ ####################################################################
+ # Install rules
+-# We want to install libiomp5 in DESTDIR/CMAKE_INSTALL_PREFIX/lib
++# We want to install libomp in DESTDIR/CMAKE_INSTALL_PREFIX/lib
+ # We want to install headers in DESTDIR/CMAKE_INSTALL_PREFIX/include
+ if(${LIBOMP_STANDALONE_BUILD})
+     set(LIBOMP_HEADERS_INSTALL_PATH include)
+@@ -939,17 +908,30 @@
+     set(LIBOMP_HEADERS_INSTALL_PATH lib${LIBOMP_LIBDIR_SUFFIX}/clang/${CLANG_VERSION}/include)
+ endif()
+ if(${WINDOWS})
+-    install(TARGETS iomp5 RUNTIME DESTINATION bin)
++    install(TARGETS omp RUNTIME DESTINATION bin)
+     if(NOT "${imp_file}" STREQUAL "")
+-        install(TARGETS iomp5imp ARCHIVE DESTINATION lib${LIBOMP_LIBDIR_SUFFIX})
++        install(TARGETS ompimp ARCHIVE DESTINATION lib${LIBOMP_LIBDIR_SUFFIX})
+     endif()
+-else()
+-    install(TARGETS iomp5 LIBRARY DESTINATION lib${LIBOMP_LIBDIR_SUFFIX}) 
++    # Create aliases (regular copies) of the library for backwards compatibility
++    set(LIBOMP_ALIASES "libiomp5md")
++    foreach(alias IN LISTS LIBOMP_ALIASES)
++        install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E copy \"${lib_file}\" \"${alias}${dll}\"
++            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)")
++        install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E copy \"${imp_file}\" \"${alias}${lib}\"
++            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/lib${LIBOMP_LIBDIR_SUFFIX})")
++    endforeach()
++else()
++    install(TARGETS omp LIBRARY DESTINATION lib${LIBOMP_LIBDIR_SUFFIX}) 
++    # Create aliases (symlinks) of the library for backwards compatibility
++    set(LIBOMP_ALIASES "libgomp;libiomp5")
++    foreach(alias IN LISTS LIBOMP_ALIASES)
++        install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \"${lib_file}\" \"${alias}${dll}\"
++            WORKING_DIRECTORY \$ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/lib${LIBOMP_LIBDIR_SUFFIX})")
++    endforeach()
+ endif()
+ install(
+     FILES 
+     ${build_dir}/omp.h 
+-    ${build_dir}/iomp.h 
+     DESTINATION ${LIBOMP_HEADERS_INSTALL_PATH}
+ )
+ if(${LIBOMP_OMPT_SUPPORT})
+diff -uNr openmp-3.7.0.src.orig/runtime/Makefile openmp-3.7.0.src/runtime/Makefile
+--- openmp-3.7.0.src.orig/runtime/Makefile	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/Makefile	2015-05-30 11:32:36.000000000 -0400
+@@ -49,7 +49,7 @@
+ 
+ 
+ 
+-libiomp5_path=$(shell $(omp_root)/tools/check-openmp.pl)
++libomp_path=$(shell $(omp_root)/tools/check-openmp.pl)
+ test_path=$(shell $(omp_root)/tools/check-openmp-test.pl)
+ 
+ # Please do not change this rule.
+@@ -60,10 +60,10 @@
+ 	@$(Verb) if which llvm-lit &> /dev/null; then \
+         if [ -d "$(omp_root)$(SLASH)..$(SLASH)testsuite$(SLASH)LLVM-IR" ] ; then \
+ 			export TESTSUITE_TEMP=$(realpath $(omp_root))$(SLASH)tmp ; \
+-			export LIBRARY_PATH=$(libiomp5_path):$(LIBRARY_PATH) ; \
+-			export C_INCLUDE_PATH=$(libiomp5_path)$(SLASH)..$(SLASH)..$(SLASH)common$(SLASH)include:$(C_INCLUDE_PATH) ; \
+-			export LD_LIBRARY_PATH=$(libiomp5_path):$(LD_LIBRARY_PATH) ; \
+-			export DYLD_LIBRARY_PATH=$(libiomp5_path):$(DYLD_LIBRARY_PATH) ; \
++			export LIBRARY_PATH=$(libomp_path):$(LIBRARY_PATH) ; \
++			export C_INCLUDE_PATH=$(libomp_path)$(SLASH)..$(SLASH)..$(SLASH)common$(SLASH)include:$(C_INCLUDE_PATH) ; \
++			export LD_LIBRARY_PATH=$(libomp_path):$(LD_LIBRARY_PATH) ; \
++			export DYLD_LIBRARY_PATH=$(libomp_path):$(DYLD_LIBRARY_PATH) ; \
+ 			cd $(omp_root)$(SLASH)..$(SLASH)testsuite ; \
+ 			make ctest ; \
+ 			python adding_xfails.py ; \
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/BuildPLRules.cmake openmp-3.7.0.src/runtime/cmake/BuildPLRules.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/BuildPLRules.cmake	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/BuildPLRules.cmake	2015-05-30 11:32:36.000000000 -0400
+@@ -11,31 +11,31 @@
+ 
+ ###############################################################################
+ # This file contains additional build rules that correspond to build.pl's rules.
+-# Building libiomp5.dbg is linux only, Windows will build libiomp5md.dll.pdb
++# Building libomp.dbg is linux only, Windows will build libompmd.dll.pdb
+ # This file is only active if ${LIBOMP_USE_BUILDPL_RULES} is true.
+ #
+ #                        ######### BUILD DEPENDENCIES ##########
+ #
+-#        exports/.../libiomp5.so                        exports/.../libiomp5.dbg
++#        exports/.../libomp.so                        exports/.../libomp.dbg
+ #        [copy]  |                                                 | [copy]
+ #                |                                                 |
+-#           ./libiomp5.so                                     ./libiomp5.dbg
++#           ./libomp.so                                     ./libomp.dbg
+ #    [copy]    /  OR  \____________ [copy]                         | [copy]
+ #             /                    \                               |
+-#    ./unstripped/libiomp5.so   ./stripped/libiomp5.so   ./unstripped/libiomp5.dbg
++#    ./unstripped/libomp.so   ./stripped/libomp.so   ./unstripped/libomp.dbg
+ #           /                                \                /
+ #          / [linking]                        \[strip]       /[strip and store]
+ #         /                                    \            /
+-#     ${objs} (maybe compiled with -g)     ./unstripped/libiomp5.so (library with debug info in it)
++#     ${objs} (maybe compiled with -g)     ./unstripped/libomp.so (library with debug info in it)
+ #                                                    |
+ #                                                    | [linking]
+ #                                                    |
+ #                                                 ${objs} (always compiled with -g)
+ #
+-# For icc Linux builds, we always include debugging information via -g and create libiomp5.dbg 
++# For icc Linux builds, we always include debugging information via -g and create libomp.dbg 
+ # so that Intel(R) Parallel Amplifier can use the .dbg file.
+-# For icc Windows builds, we always include debugging information via -Zi and create libiomp5.pdb
+-# in a fashion similar to libiomp5.dbg
++# For icc Windows builds, we always include debugging information via -Zi and create libomp.pdb
++# in a fashion similar to libomp.dbg
+ # For icc Mac builds, we don't bother with the debug info.
+ 
+ # We build library in unstripped directory
+@@ -77,7 +77,7 @@
+     add_custom_command(
+         OUTPUT  ${build_dir}/unstripped/${dbg_file}
+         COMMAND ${CMAKE_OBJCOPY} --only-keep-debug ${build_dir}/unstripped/${lib_file} ${build_dir}/unstripped/${dbg_file} 
+-        DEPENDS iomp5
++        DEPENDS omp
+     )
+     
+ else()
+@@ -89,21 +89,21 @@
+ 
+ # Windows specific command to move around debug info files post-build
+ if(NOT "${pdb_file}" STREQUAL "" AND ${RELEASE_BUILD})
+-    add_custom_command(TARGET iomp5 POST_BUILD
++    add_custom_command(TARGET omp POST_BUILD
+         COMMAND ${CMAKE_COMMAND} -E rename ${pdb_file} ${pdb_file}.nonstripped
+         COMMAND ${CMAKE_COMMAND} -E rename ${pdb_file}.stripped ${pdb_file}
+     )
+ endif()
+ 
+-# Have icc build libiomp5 in unstripped directory
+-set_target_properties(iomp5 PROPERTIES 
++# Have icc build libomp in unstripped directory
++set_target_properties(omp PROPERTIES 
+     LIBRARY_OUTPUT_DIRECTORY "${build_dir}/unstripped" 
+     RUNTIME_OUTPUT_DIRECTORY "${build_dir}/unstripped"
+     ARCHIVE_OUTPUT_DIRECTORY "${build_dir}"
+ )
+ 
+ # Always use RelWithDebInfo flags for Release builds when using the build.pl's build rules (use -g -O2 instead of just -O3)
+-# The debug info is then stripped out at the end of the build and put into libiomp5.dbg for Linux
++# The debug info is then stripped out at the end of the build and put into libomp.dbg for Linux
+ if(${RELEASE_BUILD} AND NOT ${MAC})
+     set(CMAKE_C_FLAGS_RELEASE   ${CMAKE_C_FLAGS_RELWITHDEBINFO}  )
+     set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/CommonFlags.cmake openmp-3.7.0.src/runtime/cmake/CommonFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/CommonFlags.cmake	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/CommonFlags.cmake	2015-05-30 11:32:36.000000000 -0400
+@@ -113,7 +113,7 @@
+             # For now, always include --version-script flag on Unix systems.
+             append_linker_flags("-Wl,--version-script=${src_dir}/exports_so.txt") # Use exports_so.txt as version script to create versioned symbols for ELF libraries
+             append_linker_flags("-Wl,-z,noexecstack") #  Marks the object as not requiring executable stack.
+-            append_linker_flags("-Wl,--as-needed")    #  Only adds library dependencies as they are needed. (if libiomp5 actually uses a function from the library, then add it)
++            append_linker_flags("-Wl,--as-needed")    #  Only adds library dependencies as they are needed. (if libomp actually uses a function from the library, then add it)
+             if(NOT ${STUBS_LIBRARY})
+                 append_linker_flags("-Wl,--warn-shared-textrel") #  Warn if the linker adds a DT_TEXTREL to a shared object.
+                 append_linker_flags("-Wl,-fini=__kmp_internal_end_fini") # When creating an ELF executable or shared object, call NAME when the 
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/Intel/AsmFlags.cmake openmp-3.7.0.src/runtime/cmake/Intel/AsmFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/Intel/AsmFlags.cmake	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/Intel/AsmFlags.cmake	2015-05-30 11:32:36.000000000 -0400
+@@ -30,7 +30,7 @@
+         elseif(${INTEL64})
+             append_asm_flags("-D _M_AMD64")
+         endif()
+-        # CMake prefers the /MD flags when compiling Windows sources, but libiomp5 needs to use /MT instead
++        # CMake prefers the /MD flags when compiling Windows sources, but libomp needs to use /MT instead
+         # So we replace these /MD instances with /MT within the CMAKE_*_FLAGS variables and put that out to the CACHE.
+         # replace_md_with_mt() is in HelperFunctions.cmake
+         replace_md_with_mt(CMAKE_ASM_MASM_FLAGS)
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/Intel/CFlags.cmake openmp-3.7.0.src/runtime/cmake/Intel/CFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/Intel/CFlags.cmake	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/Intel/CFlags.cmake	2015-05-30 11:32:36.000000000 -0400
+@@ -74,7 +74,7 @@
+             endif()
+         endif()
+     endif()
+-    # CMake prefers the /MD flags when compiling Windows sources, but libiomp5 needs to use /MT instead
++    # CMake prefers the /MD flags when compiling Windows sources, but libomp needs to use /MT instead
+     # So we replace these /MD instances with /MT within the CMAKE_*_FLAGS variables and put that out to the CACHE.
+     # replace_md_with_mt() is in HelperFunctions.cmake
+     if(${WINDOWS})
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/MSVC/AsmFlags.cmake openmp-3.7.0.src/runtime/cmake/MSVC/AsmFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/MSVC/AsmFlags.cmake	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/MSVC/AsmFlags.cmake	2015-05-30 11:32:36.000000000 -0400
+@@ -26,7 +26,7 @@
+     elseif(${INTEL64})
+         append_asm_flags("-D _M_AMD64")
+     endif()
+-    # CMake prefers the /MD flags when compiling Windows sources, but libiomp5 needs to use /MT instead
++    # CMake prefers the /MD flags when compiling Windows sources, but libomp needs to use /MT instead
+     # So we replace these /MD instances with /MT within the CMAKE_*_FLAGS variables and put that out to the CACHE.
+     # replace_md_with_mt() is in HelperFunctions.cmake
+     replace_md_with_mt(CMAKE_ASM_MASM_FLAGS)
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/MSVC/CFlags.cmake openmp-3.7.0.src/runtime/cmake/MSVC/CFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/MSVC/CFlags.cmake	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/MSVC/CFlags.cmake	2015-05-30 11:32:36.000000000 -0400
+@@ -28,7 +28,7 @@
+         append_c_and_cxx_flags("-arch:ia32") # Tells the compiler which features it may target (ia32)
+         append_c_and_cxx_flags("-Oy-") # equivalent to -fno-omit-frame-pointer
+     endif()
+-    # CMake prefers the /MD flags when compiling Windows sources, but libiomp5 needs to use /MT instead
++    # CMake prefers the /MD flags when compiling Windows sources, but libomp needs to use /MT instead
+     # So we replace these /MD instances with /MT within the CMAKE_*_FLAGS variables and put that out to the CACHE.
+     # replace_md_with_mt() is in HelperFunctions.cmake
+     replace_md_with_mt(CMAKE_C_FLAGS)
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/MicroTests.cmake openmp-3.7.0.src/runtime/cmake/MicroTests.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/MicroTests.cmake	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/MicroTests.cmake	2015-05-30 11:32:36.000000000 -0400
+@@ -15,13 +15,13 @@
+ # the library just created in ${build_dir}/, there are currently
+ # five micro-tests: 
+ # (1) test-touch 
+-#    - Compile and run a small program using newly created libiomp5 library
++#    - Compile and run a small program using newly created libomp library
+ #    - Fails if test-touch.c does not compile or if test-touch.c does not run after compilation
+ #    - Program dependencies: gcc or g++, grep, bourne shell
+ #    - Available for all Linux,Mac,Windows builds.  Not available on Intel(R) MIC Architecture builds.
+ # (2) test-relo
+ #    - Tests dynamic libraries for position-dependent code (can not have any position dependent code)
+-#    - Fails if TEXTREL is in output of readelf -d libiomp5.so command
++#    - Fails if TEXTREL is in output of readelf -d libomp.so command
+ #    - Program dependencies: readelf, grep, bourne shell
+ #    - Available for Linux, Intel(R) MIC Architecture dynamic library builds. Not available otherwise.
+ # (3) test-execstack 
+@@ -35,7 +35,7 @@
+ #    - Program dependencies: perl, objdump 
+ #    - Available for Intel(R) MIC Architecture builds. Not available otherwise.
+ # (5) test-deps      
+-#    - Tests newly created libiomp5 for library dependencies
++#    - Tests newly created libomp for library dependencies
+ #    - Fails if sees a dependence not listed in td_exp variable below
+ #    - Program dependencies: perl, (linux)readelf, (mac)otool[64], (windows)link.exe
+ #    - Available for Linux,Mac,Windows, Intel(R) MIC Architecture dynamic builds and Windows static builds. Not available otherwise.
+@@ -58,7 +58,7 @@
+ add_suffix("/.success"  regular_test_touch_items)
+ # test-touch : ${test_touch_items}/.success
+ set(ldeps "${regular_test_touch_items}")
+-add_custom_target(libiomp-test-touch DEPENDS ${ldeps})
++add_custom_target(libomp-test-touch DEPENDS ${ldeps})
+ 
+ if(${WINDOWS})
+     # pick test-touch compiler
+@@ -138,7 +138,7 @@
+ endif()
+ 
+ # test-relo 
+-add_custom_target(libiomp-test-relo DEPENDS test-relo/.success)
++add_custom_target(libomp-test-relo DEPENDS test-relo/.success)
+ add_custom_command(
+     OUTPUT  test-relo/.success
+     COMMAND ${CMAKE_COMMAND} -E make_directory ${build_dir}/test-relo
+@@ -149,7 +149,7 @@
+ )
+ 
+ # test-execstack
+-add_custom_target(libiomp-test-execstack DEPENDS test-execstack/.success)
++add_custom_target(libomp-test-execstack DEPENDS test-execstack/.success)
+ add_custom_command(
+     OUTPUT  test-execstack/.success
+     COMMAND ${CMAKE_COMMAND} -E make_directory ${build_dir}/test-execstack
+@@ -159,7 +159,7 @@
+ )
+ 
+ # test-instr
+-add_custom_target(libiomp-test-instr DEPENDS test-instr/.success)
++add_custom_target(libomp-test-instr DEPENDS test-instr/.success)
+ add_custom_command(
+     OUTPUT  test-instr/.success
+     COMMAND ${CMAKE_COMMAND} -E make_directory ${build_dir}/test-instr
+@@ -169,7 +169,7 @@
+ )
+ 
+ # test-deps
+-add_custom_target(libiomp-test-deps DEPENDS test-deps/.success)
++add_custom_target(libomp-test-deps DEPENDS test-deps/.success)
+ set(td_exp)
+ if(${FREEBSD})
+     set(td_exp libc.so.7 libthr.so.3 libunwind.so.5)
+diff -uNr openmp-3.7.0.src.orig/runtime/doc/doxygen/libomp_interface.h openmp-3.7.0.src/runtime/doc/doxygen/libomp_interface.h
+--- openmp-3.7.0.src.orig/runtime/doc/doxygen/libomp_interface.h	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/doc/doxygen/libomp_interface.h	2015-05-30 11:33:13.000000000 -0400
+@@ -208,7 +208,7 @@
+  - @ref THREADPRIVATE functions to support thread private data, copyin etc
+  - @ref SYNCHRONIZATION functions to support `omp critical`, `omp barrier`, `omp master`, reductions etc
+  - @ref ATOMIC_OPS functions to support atomic operations
+- - @ref STATS_GATHERING macros to support developer profiling of libiomp5
++ - @ref STATS_GATHERING macros to support developer profiling of libomp
+  - Documentation on tasking has still to be written...
+ 
+ @section SEC_EXAMPLES Examples
+@@ -321,12 +321,12 @@
+ These functions support copyin/out and thread private data.
+ 
+ @defgroup STATS_GATHERING Statistics Gathering from OMPTB
+-These macros support profiling the libiomp5 library.  Use --stats=on when building with build.pl to enable
+-and then use the KMP_* macros to profile (through counts or clock ticks) libiomp5 during execution of an OpenMP program.
++These macros support profiling the libomp library.  Use --stats=on when building with build.pl to enable
++and then use the KMP_* macros to profile (through counts or clock ticks) libomp during execution of an OpenMP program.
+ 
+ @section sec_stats_env_vars Environment Variables
+ 
+-This section describes the environment variables relevent to stats-gathering in libiomp5
++This section describes the environment variables relevent to stats-gathering in libomp
+ 
+ @code
+ KMP_STATS_FILE
+diff -uNr openmp-3.7.0.src.orig/runtime/src/exports_so.txt openmp-3.7.0.src/runtime/src/exports_so.txt
+--- openmp-3.7.0.src.orig/runtime/src/exports_so.txt	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/src/exports_so.txt	2015-05-30 11:32:36.000000000 -0400
+@@ -11,7 +11,7 @@
+ #//===----------------------------------------------------------------------===//
+ #
+ 
+-# This is version script for OMP RTL shared library (libiomp5*.so)
++# This is version script for OMP RTL shared library (libomp*.so)
+ 
+ VERSION {
+ 
+diff -uNr openmp-3.7.0.src.orig/runtime/src/kmp_affinity.cpp openmp-3.7.0.src/runtime/src/kmp_affinity.cpp
+--- openmp-3.7.0.src.orig/runtime/src/kmp_affinity.cpp	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/src/kmp_affinity.cpp	2015-05-30 11:32:36.000000000 -0400
+@@ -123,7 +123,7 @@
+ //
+ // Unfortunately, my attempts to reproduce it in a smaller example have
+ // failed - I'm not sure what the prospects are of getting it fixed
+-// properly - but we need a reproducer smaller than all of libiomp.
++// properly - but we need a reproducer smaller than all of libomp.
+ //
+ // Work around the problem by avoiding inline constructors in such builds.
+ // We do this for all platforms, not just Linux* OS - non-inline functions are
+diff -uNr openmp-3.7.0.src.orig/runtime/src/kmp_ftn_entry.h openmp-3.7.0.src/runtime/src/kmp_ftn_entry.h
+--- openmp-3.7.0.src.orig/runtime/src/kmp_ftn_entry.h	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/src/kmp_ftn_entry.h	2015-05-30 11:32:36.000000000 -0400
+@@ -1088,7 +1088,7 @@
+     These following sections create function aliases (dummy symbols) for the omp_* routines.
+     These aliases will then be versioned according to how libgomp ``versions'' its
+     symbols (OMP_1.0, OMP_2.0, OMP_3.0, ...) while also retaining the
+-    default version which libiomp5 uses: VERSION (defined in exports_so.txt)
++    default version which libomp uses: VERSION (defined in exports_so.txt)
+     If you want to see the versioned symbols for libgomp.so.1 then just type:
+ 
+     objdump -T /path/to/libgomp.so.1 | grep omp_
+diff -uNr openmp-3.7.0.src.orig/runtime/src/kmp_ftn_os.h openmp-3.7.0.src/runtime/src/kmp_ftn_os.h
+--- openmp-3.7.0.src.orig/runtime/src/kmp_ftn_os.h	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/src/kmp_ftn_os.h	2015-05-30 11:32:36.000000000 -0400
+@@ -475,7 +475,7 @@
+ #define KMP_API_NAME_GOMP_TASKYIELD                      GOMP_taskyield
+ 
+ // All GOMP_4.0 symbols 
+-// TODO: As of 2013-10-14, none of the GOMP_4.0 functions are implemented in libiomp5
++// TODO: As of 2013-10-14, none of the GOMP_4.0 functions are implemented in libomp
+ #define KMP_API_NAME_GOMP_BARRIER_CANCEL                 GOMP_barrier_cancel
+ #define KMP_API_NAME_GOMP_CANCEL                         GOMP_cancel
+ #define KMP_API_NAME_GOMP_CANCELLATION_POINT             GOMP_cancellation_point
+diff -uNr openmp-3.7.0.src.orig/runtime/src/kmp_gsupport.c openmp-3.7.0.src/runtime/src/kmp_gsupport.c
+--- openmp-3.7.0.src.orig/runtime/src/kmp_gsupport.c	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/src/kmp_gsupport.c	2015-05-30 11:32:36.000000000 -0400
+@@ -1212,7 +1212,7 @@
+ #ifndef KMP_DEBUG
+ static
+ #endif /* KMP_DEBUG */
+-kmp_int32 __kmp_gomp_to_iomp_cancellation_kind(int gomp_kind) {
++kmp_int32 __kmp_gomp_to_omp_cancellation_kind(int gomp_kind) {
+     kmp_int32 cncl_kind = 0;
+     switch(gomp_kind) {
+       case 1:
+@@ -1241,7 +1241,7 @@
+     MKLOC(loc, "GOMP_cancellation_point");
+     KA_TRACE(20, ("GOMP_cancellation_point: T#%d\n", gtid));
+ 
+-    kmp_int32 cncl_kind = __kmp_gomp_to_iomp_cancellation_kind(which);
++    kmp_int32 cncl_kind = __kmp_gomp_to_omp_cancellation_kind(which);
+ 
+     return __kmpc_cancellationpoint(&loc, gtid, cncl_kind);
+ }
+@@ -1273,7 +1273,7 @@
+     MKLOC(loc, "GOMP_cancel");
+     KA_TRACE(20, ("GOMP_cancel: T#%d\n", gtid));
+ 
+-    kmp_int32 cncl_kind = __kmp_gomp_to_iomp_cancellation_kind(which);
++    kmp_int32 cncl_kind = __kmp_gomp_to_omp_cancellation_kind(which);
+ 
+     if(do_cancel == FALSE) {
+         return xexpand(KMP_API_NAME_GOMP_CANCELLATION_POINT)(which);
+diff -uNr openmp-3.7.0.src.orig/runtime/src/kmp_i18n.c openmp-3.7.0.src/runtime/src/kmp_i18n.c
+--- openmp-3.7.0.src.orig/runtime/src/kmp_i18n.c	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/src/kmp_i18n.c	2015-05-30 11:32:36.000000000 -0400
+@@ -89,7 +89,7 @@
+ 
+ #define KMP_I18N_NULLCAT ((nl_catd)( -1 ))
+ static nl_catd       cat  = KMP_I18N_NULLCAT;    // !!! Shall it be volatile?
+-static char const *  name = ( KMP_VERSION_MAJOR == 4 ? "libguide.cat" : "libiomp5.cat" );
++static char const *  name = ( KMP_VERSION_MAJOR == 4 ? "libguide.cat" : "libomp.cat" );
+ 
+ /*
+     Useful links:
+@@ -258,7 +258,7 @@
+ 
+ #define KMP_I18N_NULLCAT  NULL
+ static HMODULE       cat  = KMP_I18N_NULLCAT;    // !!! Shall it be volatile?
+-static char const *  name = ( KMP_VERSION_MAJOR == 4 ? "libguide40ui.dll" : "libiomp5ui.dll" );
++static char const *  name = ( KMP_VERSION_MAJOR == 4 ? "libguide40ui.dll" : "libompui.dll" );
+ 
+ static kmp_i18n_table_t  table             = { 0, NULL };
+     // Messages formatted by FormatMessage() should be freed, but catgets() interface assumes
+@@ -400,12 +400,12 @@
+ 	// __kmp_i18n_catgets() will not try to open catalog but will return default message.
+         /*
+          If message catalog for another architecture found (e.g. OpenMP RTL
+-	 for IA-32 architecture opens libiomp5ui.dll for Intel(R) 64)
++	 for IA-32 architecture opens libompui.dll for Intel(R) 64)
+ 	 Windows* OS returns error 193 (ERROR_BAD_EXE_FORMAT). However,
+          FormatMessage fails to return a message for this error, so user
+ 	 will see:
+ 
+-         OMP: Warning #2: Cannot open message catalog "1041\libiomp5ui.dll":
++         OMP: Warning #2: Cannot open message catalog "1041\libompui.dll":
+          OMP: System error #193: (No system error message available)
+          OMP: Info #3: Default messages will be used.
+ 
+@@ -477,7 +477,7 @@
+     Additional mess comes from message catalog: Our catalog source en_US.mc file (generated by
+     message-converter.pl) contains only "\n" characters, but en_US_msg_1033.bin file (produced by
+     mc.exe) may contain "\r\n" or just "\n". This mess goes from en_US_msg_1033.bin file to
+-    message catalog, libiomp5ui.dll. For example, message
++    message catalog, libompui.dll. For example, message
+ 
+         Error
+ 
+diff -uNr openmp-3.7.0.src.orig/runtime/src/kmp_import.c openmp-3.7.0.src/runtime/src/kmp_import.c
+--- openmp-3.7.0.src.orig/runtime/src/kmp_import.c	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/src/kmp_import.c	2015-05-30 11:32:36.000000000 -0400
+@@ -15,9 +15,9 @@
+ 
+ /*
+     ------------------------------------------------------------------------------------------------
+-    Object generated from this source file is linked to Windows* OS DLL import library (libiomp5md.lib)
++    Object generated from this source file is linked to Windows* OS DLL import library (libompmd.lib)
+     only! It is not a part of regular static or dynamic OpenMP RTL. Any code that just needs to go
+-    in the libiomp5md.lib (but not in libiomp5mt.lib and libiomp5md.dll) should be placed in this
++    in the libompmd.lib (but not in libompmt.lib and libompmd.dll) should be placed in this
+     file.
+     ------------------------------------------------------------------------------------------------
+ */
+diff -uNr openmp-3.7.0.src.orig/runtime/src/kmp_runtime.c openmp-3.7.0.src/runtime/src/kmp_runtime.c
+--- openmp-3.7.0.src.orig/runtime/src/kmp_runtime.c	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/src/kmp_runtime.c	2015-05-30 11:32:36.000000000 -0400
+@@ -5614,7 +5614,7 @@
+ #if KMP_OS_UNIX && KMP_DYNAMIC_LIB
+ 
+ // 2009-09-08 (lev): It looks the destructor does not work. In simple test cases destructors work
+-// perfectly, but in real libiomp5.so I have no evidence it is ever called. However, -fini linker
++// perfectly, but in real libomp.so I have no evidence it is ever called. However, -fini linker
+ // option in makefile.mk works fine.
+ 
+ __attribute__(( destructor ))
+diff -uNr openmp-3.7.0.src.orig/runtime/src/kmp_version.h openmp-3.7.0.src/runtime/src/kmp_version.h
+--- openmp-3.7.0.src.orig/runtime/src/kmp_version.h	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/src/kmp_version.h	2015-05-30 11:32:36.000000000 -0400
+@@ -27,7 +27,7 @@
+ /*
+     Using "magic" prefix in all the version strings is rather convenient to get static version info
+     from binaries by using standard utilities "strings" and "grep", e. g.:
+-        $ strings libiomp5.so | grep "@(#)"
++        $ strings libomp.so | grep "@(#)"
+     gives clean list of all version strings in the library. Leading zero helps to keep version
+     string separate from printable characters which may occurs just before version string.
+ */
+diff -uNr openmp-3.7.0.src.orig/runtime/src/libomp.rc.var openmp-3.7.0.src/runtime/src/libomp.rc.var
+--- openmp-3.7.0.src.orig/runtime/src/libomp.rc.var	1969-12-31 19:00:00.000000000 -0500
++++ openmp-3.7.0.src/runtime/src/libomp.rc.var	2015-05-30 11:32:36.000000000 -0400
+@@ -0,0 +1,70 @@
++// libomp.rc.var
++
++//
++////===----------------------------------------------------------------------===//
++////
++////                     The LLVM Compiler Infrastructure
++////
++//// This file is dual licensed under the MIT and the University of Illinois Open
++//// Source Licenses. See LICENSE.txt for details.
++////
++////===----------------------------------------------------------------------===//
++//
++
++#include "winres.h"
++
++LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US    // English (U.S.) resources
++#pragma code_page(1252)
++
++VS_VERSION_INFO VERSIONINFO
++    // Parts of FILEVERSION and PRODUCTVERSION are 16-bit fields, entire build date yyyymmdd
++    // does not fit into one version part, so we need to split it into yyyy and mmdd:
++    FILEVERSION    $KMP_VERSION_MAJOR,$KMP_VERSION_MINOR,${{ our $KMP_VERSION_BUILD; int( $KMP_VERSION_BUILD / 10000 ) . "," . ( $KMP_VERSION_BUILD % 10000 ) }}
++    PRODUCTVERSION $KMP_VERSION_MAJOR,$KMP_VERSION_MINOR,${{ our $KMP_VERSION_BUILD; int( $KMP_VERSION_BUILD / 10000 ) . "," . ( $KMP_VERSION_BUILD % 10000 ) }}
++    FILEFLAGSMASK  VS_FFI_FILEFLAGSMASK
++    FILEFLAGS      0
++    #if $KMP_DIAG || $KMP_DEBUG_INFO
++        | VS_FF_DEBUG
++    #endif
++    #if $KMP_VERSION_BUILD == 0
++        | VS_FF_PRIVATEBUILD | VS_FF_PRERELEASE
++    #endif
++    FILEOS          VOS_NT_WINDOWS32    // Windows* Server* 2003, XP*, 2000, or NT*
++    FILETYPE        VFT_DLL
++    BEGIN
++        BLOCK "StringFileInfo"
++        BEGIN
++            BLOCK "040904b0"            // U.S. English, Unicode (0x04b0 == 1200)
++            BEGIN
++
++                // FileDescription and LegalCopyright should be short.
++                VALUE "FileDescription",  "Intel(R) OpenMP* Runtime Library${{ our $MESSAGE_CATALOG; $MESSAGE_CATALOG ? " Message Catalog" : "" }}\0"
++                // Following values may be relatively long.
++                VALUE "CompanyName",      "Intel Corporation\0"
++                // VALUE "LegalTrademarks",  "\0"  // Not used for now.
++                VALUE "ProductName",      "Intel(R) OpenMP* Runtime Library\0"
++                VALUE "ProductVersion",   "$KMP_VERSION_MAJOR.$KMP_VERSION_MINOR\0"
++                VALUE "FileVersion",      "$KMP_VERSION_BUILD\0"
++                VALUE "InternalName",     "$KMP_FILE\0"
++                VALUE "OriginalFilename", "$KMP_FILE\0"
++                VALUE "Comments",
++                    "Intel(R) OpenMP* ${{ our ( $MESSAGE_CATALOG, $KMP_TYPE ); $MESSAGE_CATALOG ? "Runtime Library Message Catalog" : "$KMP_TYPE Library" }} "
++                    "version $KMP_VERSION_MAJOR.$KMP_VERSION_MINOR.$KMP_VERSION_BUILD "
++                    "for $KMP_ARCH architecture built on $KMP_BUILD_DATE.\0"
++                #if $KMP_VERSION_BUILD == 0
++                    VALUE "PrivateBuild",
++                        "This is a development build for internal testing purposes only. "
++                        "Do not distribute it outside of Intel.\0"
++                #endif
++                // VALUE "SpecialBuild",     "\0"    // Not used for now.
++
++            END
++        END
++        BLOCK "VarFileInfo"
++        BEGIN
++            VALUE "Translation", ${{ our ( $MESSAGE_CATALOG, $LANGUAGE ); $MESSAGE_CATALOG ? $LANGUAGE : 1033 }}, 1200
++            // 1033 -- U.S. English, 1200 -- Unicode
++        END
++    END
++
++// end of file //
+diff -uNr openmp-3.7.0.src.orig/runtime/src/makefile.mk openmp-3.7.0.src/runtime/src/makefile.mk
+--- openmp-3.7.0.src.orig/runtime/src/makefile.mk	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/src/makefile.mk	2015-05-30 11:32:36.000000000 -0400
+@@ -764,7 +764,7 @@
+                         lib_asm_items =
+                         gd-flags += -D shim
+                         # for some reason, test-touch-md is able to work with
+-                        # the build compiler's version of libiomp5md.dll, but
++                        # the build compiler's version of libompmd.dll, but
+                         # test-touch-mt can't load it.
+                         do_test_touch_mt := 0
+                     endif
+@@ -803,7 +803,7 @@
+         _lib_item += _stats
+     endif
+ else
+-    _lib_item = libiomp
++    _lib_item = libomp
+     ifeq "$(LIB_TYPE)" "prof"
+         _lib_item += prof
+     endif
+@@ -851,12 +851,12 @@
+ # --- Output files ---
+ 
+ out_lib_files  = $(addprefix $(out_lib_dir),$(lib_file) $(imp_file) $(pdb_file) $(dbg_file))
+-out_inc_files  = $(addprefix $(out_ptf_dir)include_compat/,iomp_lib.h)
++out_inc_files  = $(addprefix $(out_ptf_dir)include_compat/,omp_lib.h)
+ out_mod_files  = \
+     $(addprefix $(out_ptf_dir)include/,omp_lib.mod omp_lib_kinds.mod)
+ out_cmn_files  = \
+     $(addprefix $(out_cmn_dir)include/,omp.h omp_lib.h omp_lib.f omp_lib.f90) \
+-    $(addprefix $(out_cmn_dir)include_compat/,iomp.h)
++    $(addprefix $(out_cmn_dir)include_compat/,omp.h)
+ ifeq "$(OMPT_SUPPORT)" "on"
+     out_cmn_files  += $(addprefix $(out_cmn_dir)include/,ompt.h)
+ endif
+@@ -1042,7 +1042,7 @@
+     lib_file_deps = $(if $(linked_in_libs),required/.objs,$(lib_obj_files))
+ endif
+ ifeq "$(os)" "mac"
+-    lib_file_deps = iomp$(obj)
++    lib_file_deps = omp$(obj)
+ endif
+ ifeq "$(os)" "win"
+     lib_file_deps = $(if $(linked_in_libs),wiped/.objs,$(lib_obj_files))
+@@ -1149,21 +1149,21 @@
+     # These targets are under condition because of some OS X*-specific ld and nm options. For
+     # example, GNU nm does not accept -j, GNU ld does not know -filelist.
+ 
+-    # iomp.o is a big object file including all the OMP RTL object files and object files from
++    # omp.o is a big object file including all the OMP RTL object files and object files from
+     # external libraries (like libirc). It is partially linked, references to external symbols
+     # (e. g. references to libirc) already resolved, symbols defined in external libraries are
+     # hidden by using -unexported-symbol-list and -non_global_symbols_strip_list linker options
+     # (both options are required).
+     # AC: 2012-04-12: after MAC machines upgrade compiler fails to create object, so use linker instead
+ ifeq "$(mac_os_new)" "1"
+-    iomp$(obj) : $(lib_obj_files) external-symbols.lst external-objects.lst .rebuild
++    omp$(obj) : $(lib_obj_files) external-symbols.lst external-objects.lst .rebuild
+ 	    $(target)
+ 	    ld -r -unexported_symbols_list external-symbols.lst \
+ 		-non_global_symbols_strip_list external-symbols.lst \
+ 		-filelist external-objects.lst \
+ 		-o $@ $(obj_deps_files)
+ else
+-    iomp$(obj) : $(lib_obj_files) external-symbols.lst external-objects.lst .rebuild
++    omp$(obj) : $(lib_obj_files) external-symbols.lst external-objects.lst .rebuild
+ 	    $(target)
+ 	    $(c) -r -nostartfiles -static-intel  -no-intel-extensions \
+ 		-Wl,-unexported_symbols_list,external-symbols.lst \
+@@ -1173,7 +1173,7 @@
+ endif
+ 
+     # external-objects.lst is a list of object files extracted from external libraries, which should
+-    # be linked into iomp.o. kmp_dummy.o is added to the list to avoid empty list -- OS X* utilities
++    # be linked into omp.o. kmp_dummy.o is added to the list to avoid empty list -- OS X* utilities
+     # nm and ld do not like empty lists.
+     external-objects.lst : $(lib_obj_files) $(addsuffix /.objs,$(linked_in_libs)) kmp_dummy$(obj) \
+ 	$(tools_dir)required-objects.pl .rebuild
+@@ -1234,10 +1234,10 @@
+ 	$(target)
+ 	$(perl) $(tools_dir)generate-def.pl $(gd-flags) -o $@ $<
+ 
+-libiomp.rc : libiomp.rc.var kmp_version.c
+-libiomp.rc : ev-flags += -D KMP_FILE=$(lib_file)
++libomp.rc : libomp.rc.var kmp_version.c
++libomp.rc : ev-flags += -D KMP_FILE=$(lib_file)
+ 
+-$(rc_file) : libiomp.rc .rebuild
++$(rc_file) : libomp.rc .rebuild
+ 	$(target)
+ 	$(cp) $< $@
+ 
+@@ -1540,7 +1540,7 @@
+ omp_lib.mod : omp_lib_kinds.mod
+ 
+ omp_lib.h  : ev-flags += -D KMP_INT_PTR_KIND="int_ptr_kind()"
+-iomp_lib.h : ev-flags += -D KMP_INT_PTR_KIND=$(if $(filter 32,$(arch)),4,8)
++omp_lib.h : ev-flags += -D KMP_INT_PTR_KIND=$(if $(filter 32,$(arch)),4,8)
+ 
+ # --------------------------------------------------------------------------------------------------
+ # Common files.
+diff -uNr openmp-3.7.0.src.orig/runtime/tools/check-depends.pl openmp-3.7.0.src/runtime/tools/check-depends.pl
+--- openmp-3.7.0.src.orig/runtime/tools/check-depends.pl	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/tools/check-depends.pl	2015-05-30 11:32:36.000000000 -0400
+@@ -77,14 +77,14 @@
+ # --------------------------------------------------------------------------------------------------
+ # Another Linux* OS version of get_deps() parses output of readelf:
+ #
+-# $ readelf -d exports/lin_32e/lib/libiomp5.so
++# $ readelf -d exports/lin_32e/lib/libomp.so
+ #
+ # Dynamic segment at offset 0x87008 contains 24 entries:
+ #   Tag        Type                         Name/Value
+ #  0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+ #  0x0000000000000001 (NEEDED)             Shared library: [libdl.so.2]
+ #  0x0000000000000001 (NEEDED)             Shared library: [libpthread.so.0]
+-#  0x000000000000000e (SONAME)             Library soname: [libiomp5.so]
++#  0x000000000000000e (SONAME)             Library soname: [libomp.so]
+ #  0x000000000000000d (FINI)               0x51caa
+ #  0x0000000000000004 (HASH)               0x158
+ #  0x0000000000000005 (STRTAB)             0x9350
+@@ -149,8 +149,8 @@
+ # OS X* version of get_deps() parses output of otool:
+ #
+ # $ otool -L libname.dylib
+-# exports/mac_32/lib.thin/libiomp5.dylib:
+-#        libiomp5.dylib (compatibility version 5.0.0, current version 5.0.0)
++# exports/mac_32/lib.thin/libomp.dylib:
++#        libomp.dylib (compatibility version 5.0.0, current version 5.0.0)
+ #        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 88.1.3)
+ #
+ sub get_deps_otool($) {
+@@ -207,7 +207,7 @@
+ # > link -dump -dependents libname.dll
+ # Microsoft (R) COFF/PE Dumper Version 8.00.40310.39
+ # Copyright (C) Microsoft Corporation.  All rights reserved.
+-# Dump of file S:\Projects.OMP\users\omalyshe\omp\libomp\exports\win_64\lib\libiomp5md.dll
++# Dump of file S:\Projects.OMP\users\omalyshe\omp\libomp\exports\win_64\lib\libompmd.dll
+ # File Type: DLL
+ #   Image has the following dependencies:
+ #     KERNEL32.dll
+@@ -470,7 +470,7 @@
+ 
+ Just print library dependencies (Windows* OS):
+ 
+-    > check-depends.pl exports/win_32/lib/libiomp5.dll
++    > check-depends.pl exports/win_32/lib/libomp.dll
+     check-depends.pl: (i) Dependencies:
+     check-depends.pl: (i)     kernel32.dll
+ 
+@@ -483,7 +483,7 @@
+ 
+ Check the library does not have any dependencies (OS X*):
+ 
+-    $ check-depends.pl --expected=none exports/mac_32/lib/libiomp5.dylib
++    $ check-depends.pl --expected=none exports/mac_32/lib/libomp.dylib
+     check-depends.pl: (i) Dependencies:
+     check-depends.pl: (i)     /usr/lib/libSystem.B.dylib
+     check-depends.pl: (x) Unexpected dependencies:
+diff -uNr openmp-3.7.0.src.orig/runtime/tools/check-execstack.pl openmp-3.7.0.src/runtime/tools/check-execstack.pl
+--- openmp-3.7.0.src.orig/runtime/tools/check-execstack.pl	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/tools/check-execstack.pl	2015-05-30 11:32:36.000000000 -0400
+@@ -136,9 +136,9 @@
+ 
+ =head1 EXAMPLES
+ 
+-Check libiomp5.so library:
++Check libomp.so library:
+ 
+-    $ check-execstack.pl libiomp5.so
++    $ check-execstack.pl libomp.so
+ 
+ =cut
+ 
+diff -uNr openmp-3.7.0.src.orig/runtime/tools/check-instruction-set.pl openmp-3.7.0.src/runtime/tools/check-instruction-set.pl
+--- openmp-3.7.0.src.orig/runtime/tools/check-instruction-set.pl	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/tools/check-instruction-set.pl	2015-05-30 11:32:36.000000000 -0400
+@@ -132,9 +132,9 @@
+             # Empty line.
+             # Ignore.
+         } elsif ( $line =~ m{^In archive (.*?):\s*$} ) {
+-            # In archive libiomp5.a:
++            # In archive libomp.a:
+         } elsif ( $line =~ m{^(?:.*?):\s*file format (.*?)\s*$} ) {
+-            # libiomp5.so:     file format elf64-x86-64-freebsd
++            # libomp.so:     file format elf64-x86-64-freebsd
+             # kmp_ftn_cdecl.o:     file format elf64-x86-64
+             my $fmt = $1;
+             if ( bad_fmt( $fmt ) ) {
+diff -uNr openmp-3.7.0.src.orig/runtime/tools/required-objects.pl openmp-3.7.0.src/runtime/tools/required-objects.pl
+--- openmp-3.7.0.src.orig/runtime/tools/required-objects.pl	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/runtime/tools/required-objects.pl	2015-05-30 11:32:36.000000000 -0400
+@@ -145,7 +145,7 @@
+             die "nm reported unknown object file:\n    $line\n";
+         }; # if
+         # AC: exclude some libc symbols from renaming, otherwise we have problems
+-        #     in tests for gfortran + static libiomp on Lin_32.
++        #     in tests for gfortran + static libomp on Lin_32.
+         #     These symbols came from libtbbmalloc.a
+         if ( $target_os eq "lin" ) {
+             if ( $symbol =~ m{__i686} ) {
+diff -uNr openmp-3.7.0.src.orig/testsuite/bin/header openmp-3.7.0.src/testsuite/bin/header
+--- openmp-3.7.0.src.orig/testsuite/bin/header	2015-05-30 10:56:01.000000000 -0400
++++ openmp-3.7.0.src/testsuite/bin/header	2015-05-30 11:32:36.000000000 -0400
+@@ -1,4 +1,4 @@
+-; RUN: %clang -liomp5 -lm %s -o %t && %t 2>&1 | FileCheck %s
++; RUN: %clang -lomp -lm %s -o %t && %t 2>&1 | FileCheck %s
+ ; CHECK-NOT: Test failed
+ ; CHECK: Directive worked without errors
+ 

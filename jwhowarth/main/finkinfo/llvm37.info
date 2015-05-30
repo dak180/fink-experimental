@@ -22,23 +22,25 @@ InfoTest: 	<<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.bz2
-Source-MD5: 5985f5f7e9d4e9bf7339d898c6482fc8 
+Source-MD5: c3596d847be15b06c592258894cb02af
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.bz2
-Source2-MD5: ff485b334a35b85f99fef2c23396eadd
+Source2-MD5: bfd073adca33bc58c05dc7bc20fd326a 
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.bz2
-Source3-MD5: 06f760b825a0a9acc2795dfb9740627c 
+Source3-MD5: 25a06f30c6eb68ee91a74fa05c86b607 
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.bz2
-Source4-MD5: 4847a95821ac6d8aa949185a4da55761
+Source4-MD5: 70cef9034e44d0eb20628e1ac9fcd088
 #Source5: http://llvm.org/releases/%v/test-suite-%v.src.tar.bz2
 #Source5-MD5: db3155484708dc01760a1e224c1bdc3f
 Source6: http://llvm.org/releases/%v/libcxx-%v.src.tar.bz2
-Source6-MD5: 02e68d8d5766b4ffbeaae90d58840040
+Source6-MD5: 05fabebd4a6700ecb471fbbc25c52880
 Source7: http://llvm.org/releases/%v/openmp-%v.src.tar.bz2
-Source7-MD5: 29b5219e4077e86d226d847c2bfa5309 
+Source7-MD5: dc4daf7db384a2d54f92455aa3afb037
 Source8: http://llvm.org/releases/%v/clang-tools-extra-%v.src.tar.bz2
 Source8-MD5: c6ab8df38c08e3fe6c4c66c950dcedad
 PatchFile: llvm37-clang-iomp5.patch
-PatchFile-MD5: 6a9d11e0ce4759cd5bc93ead8616d0b3
+PatchFile-MD5: b7c12a877d513e5cd259281d3b05af76
+PatchFile2: rename_libiomp5_to_libomp.patch
+PatchFile2-MD5: 42019ddba6879533880ad4658097059d
 
 BuildDependsOnly: false
 UseMaxBuildJobs: true
@@ -47,7 +49,10 @@ PatchScript: <<
 	brv=3.7
 	pushd ../cfe-%v.src
 	sed -e "s|@FINK_PREFIX@|%p|g" -e "s|@BRV@|3.7|g" < %{PatchFile} | patch -p1
-	perl -pi -e 's|libgomp|libiomp5|g' CMakeLists.txt
+	perl -pi -e 's|libgomp|libomp|g' CMakeLists.txt
+	popd
+	pushd ../openmp-%v.src
+	patch -p1 < %{PatchFile2} 
 	popd
 <<
 CompileScript: <<
@@ -112,7 +117,7 @@ InstallScript: <<
 	install_name_tool -id "%p/opt/llvm-$brv/lib/clang/%v/lib/darwin/libclang_rt.ubsan_iossim_dynamic.dylib" "%i/opt/llvm-$brv/lib/clang/%v/lib/darwin//libclang_rt.ubsan_iossim_dynamic.dylib"
 
 
-	install_name_tool -id "%p/opt/llvm-$brv/lib/libiomp5.dylib" "%i/opt/llvm-$brv/lib/libiomp5.dylib"
+	install_name_tool -id "%p/opt/llvm-$brv/lib/libomp.dylib" "%i/opt/llvm-$brv/lib/libomp.dylib"
 
 	# Don't package libc++ as it defaults to the /usr/lib/libc++.1.dylib on linkages for -stdlib=libc++
 	# Same for BugpointPasses.dylib and LLVMHello.dylib in 3.5
@@ -136,7 +141,7 @@ Shlibs: <<
 		!%p/opt/llvm-3.7/lib/libLTO.dylib
 		%p/opt/llvm-3.7/lib/clang/%v/lib/darwin/libclang_rt.asan_osx_dynamic.dylib 0.0.0 %n (>= 3.2-1)
 		%p/opt/llvm-3.7/lib/clang/%v/lib/darwin/libclang_rt.ubsan_osx_dynamic.dylib  0.0.0 %n (>= 3.7-1)
-		%p/opt/llvm-3.7/lib/libiomp5.dylib 5.0.0  %n (>= 3.7-1)
+		%p/opt/llvm-3.7/lib/libomp.dylib 5.0.0  %n (>= 3.7-1)
 		%p/opt/llvm-3.7/lib/clang/%v/lib/darwin/libclang_rt.asan_iossim_dynamic.dylib 0.0.0 %n (>= 3.4-1)
 		%p/opt/llvm-3.7/lib/clang/%v/lib/darwin/libclang_rt.ubsan_iossim_dynamic.dylib  0.0.0 %n (>= 3.7-1)
 <<
@@ -149,5 +154,5 @@ that can be used to build them.
 <<
 DescUsage: <<
 Currently llvm 3.5svn defaults -fopenmp to libGOMP and emits -lgomp. To emit
--liomp5. Flip this for fink.
+-lomp. Flip this for fink.
 <<
