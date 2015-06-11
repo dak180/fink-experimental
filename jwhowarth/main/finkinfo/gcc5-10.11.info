@@ -5,8 +5,12 @@ Revision: 200
 Distribution: 10.11
 Source: ftp://gcc.gnu.org/pub/gcc/releases/gcc-%v/gcc-%v.tar.bz2
 Source-MD5: d5525b1127d07d215960e6051c5da35e
+Source2: ftp://sourceware.org/pub/java/ecj-4.9.jar
+Source2-MD5: 7339f199ba11c941890031fd9981d7be
 PatchFile: %n.patch
 PatchFile-MD5: c7c9be9f1fffaa1008247a419e771134
+PatchFile2:  %n-libjava-multilib.patch
+PatchFile2-MD5: 8fe320daea48a4a6939c5f3621c4f766
 Type: -64bit .
 NoSetCPPFLAGS: True
 NoSetLDFLAGS: True
@@ -44,7 +48,7 @@ ConfigureParams: <<
 	--prefix=%p/lib/gcc5 \
 	--mandir=%p/share/man \
 	--infodir=%p/lib/gcc5/info \
-	--enable-languages=c,c++,fortran,lto \
+	--enable-languages=c,c++,fortran,lto,java \
 	--with-gmp=%p \
 	--with-libiconv-prefix=%p \
 	--with-isl=%p \
@@ -52,7 +56,7 @@ ConfigureParams: <<
 	--with-system-zlib \
 	--x-includes=$X11DIR/include \
 	--x-libraries=$X11DIR/lib \
-	--program-suffix=-fsf-5
+	--program-suffix=-fsf-5 --disable-libjava-multilib
 <<
 InfoTest: <<
 	TestDepends: <<
@@ -70,7 +74,7 @@ InfoTest: <<
                fi
 	<<
 <<
-InfoDocs: gcc.info gfortran.info cpp.info gccinstall.info libgomp.info cppinternals.info gccint.info libitm.info libquadmath.info
+InfoDocs: cp-tools.info gcc.info gfortran.info cpp.info gccinstall.info libgomp.info cppinternals.info gccint.info gcj.info
 CompileScript: <<
 	#!/bin/bash -ev
 	set +x
@@ -84,6 +88,7 @@ CompileScript: <<
 	fi
 	set -x
 	ulimit -s `ulimit -s`
+	mv ../ecj-4.9.jar ecj.jar
 	mkdir ../darwin_objdir
 	cd ../darwin_objdir
 	darwin_vers=`uname -r | cut -d. -f1`
@@ -121,8 +126,7 @@ InstallScript: <<
 		ln -s %p/lib/gcc5/bin/$binfile-fsf-5 %i/bin/$binfile-5
 		ln -s %p/lib/gcc5/bin/$binfile-fsf-5 %i/bin/$binfile-fsf-5
 	done
-
-	binfiles="gfortran"
+	binfiles="aot-compile gappletviewer gc-analyze gcj gcj-dbtool gcjh gfortran gij gjar gjarsigner gjavah gkeytool gnative2ascii gorbd grmic grmid grmiregistry gserialver gtnameserv jcf-dump jv-convert rebuild-gcj-db"
 	for binfile in $binfiles ; do
 		ln -s %p/lib/gcc5/bin/$binfile-fsf-5 %i/lib/gcc5/bin/$binfile
 		ln -s %p/lib/gcc5/bin/$binfile-fsf-5 %i/bin/$binfile
@@ -140,11 +144,11 @@ InstallScript: <<
 	for man1file in $man1files ; do
 		ln -s %p/share/man/man1/$man1file-fsf-5.1 %i/share/man/man1/$man1file-5.1
 	done
-	man1files="gfortran"
+	man1files="aot-compile gappletviewer gc-analyze gcj-dbtool gcj gcjh gfortran gij gjar gjarsigner gjavah gjdoc gkeytool gnative2ascii gorbd grmic grmid grmiregistry gserialver gtnameserv jcf-dump jv-convert rebuild-gcj-db"
 	for man1file in $man1files ; do
 		ln -s %p/share/man/man1/$man1file-fsf-5.1 %i/share/man/man1/$man1file.1
 	done
-	
+
 	# Rename manpages with -fsf-5 suffix and create symlinks to old names. 
 	man7files="fsf-funding gfdl gpl"
 	for man7file in $man7files ; do
@@ -189,6 +193,9 @@ SplitOff: <<
 		lib/gcc5/lib/libstdc++.6*.dylib
 		lib/gcc5/lib/libgcc_s.1*.dylib
 		lib/gcc5/lib/libgcc_ext.1*.dylib
+		lib/gcc5/lib/libgcj.16*.dylib
+		lib/gcc5/lib/libgcj-tools.16*.dylib
+		lib/gcc5/lib/libgij.16*.dylib
 		lib/gcc5/lib/libitm.1*.dylib
 		lib/gcc5/lib/libssp.0*.dylib
 		lib/gcc5/lib/libgomp.1*.dylib
@@ -198,6 +205,7 @@ SplitOff: <<
 		lib/gcc5/lib/libasan.2*.dylib
 		lib/gcc5/lib/libubsan.0*.dylib
 		lib/gcc5/lib/libcilkrts.5*.dylib
+		lib/gcc5/lib/gcj-%v-16
 		lib/gcc5/lib/i386/libgfortran.3*.dylib
 		lib/gcc5/lib/i386/libitm.1*.dylib
 		lib/gcc5/lib/i386/libstdc++.6*.dylib
@@ -214,6 +222,9 @@ SplitOff: <<
 		%p/lib/gcc5/lib/libgfortran.3.dylib 4.0.0 %n (>= 5.1.0-1)
 		%p/lib/gcc5/lib/libstdc++.6.dylib 7.0.0 %n (>= 5.1.0-1) 
 		%p/lib/gcc5/lib/libgcc_s.1.dylib 1.0.0 %n (>= 5.1.0-1) 
+		%p/lib/gcc5/lib/libgcj.16.dylib 17.0.0 %n (>= 5.1.0-1)
+		%p/lib/gcc5/lib/libgcj-tools.16.dylib  17.0.0 %n (>= 5.1.0-1) 
+		%p/lib/gcc5/lib/libgij.16.dylib 17.0.0 %n (>= 5.1.0-1) 
 		%p/lib/gcc5/lib/libitm.1.dylib 2.0.0 %n (>= 5.1.0-1)
 		%p/lib/gcc5/lib/libssp.0.dylib 1.0.0 %n (>= 5.1.0-1) 
 		%p/lib/gcc5/lib/libgomp.1.dylib 2.0.0 %n (>= 5.1.0-1) 
@@ -223,6 +234,7 @@ SplitOff: <<
 		%p/lib/gcc5/lib/libasan.2.dylib 3.0.0  %n (>= 5.1.0-1)
 		%p/lib/gcc5/lib/libubsan.0.dylib 1.0.0 %n (>= 5.1.0-1)
 		%p/lib/gcc5/lib/libcilkrts.5.dylib 6.0.0 %n (>= 5.1.0-1)
+		%p/lib/gcc5/lib/gcj-%v-16/libjvm.dylib 0.0.0 %n (>= 5.1.0-1) 
 		%p/lib/gcc5/lib/i386/libgfortran.3.dylib 4.0.0 %n (>= 5.1.0-1) 32
 		%p/lib/gcc5/lib/i386/libitm.1.dylib 2.0.0 %n (>= 5.1.0-1) 32
 		%p/lib/gcc5/lib/i386/libstdc++.6.dylib 7.0.0 %n (>= 5.1.0-1) 32
