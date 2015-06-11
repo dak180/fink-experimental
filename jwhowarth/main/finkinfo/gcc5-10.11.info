@@ -9,8 +9,6 @@ Source2: ftp://sourceware.org/pub/java/ecj-4.9.jar
 Source2-MD5: 7339f199ba11c941890031fd9981d7be
 PatchFile: %n.patch
 PatchFile-MD5: c7c9be9f1fffaa1008247a419e771134
-PatchFile2:  %n-libjava-multilib.patch
-PatchFile2-MD5: 8fe320daea48a4a6939c5f3621c4f766
 Type: -64bit .
 NoSetCPPFLAGS: True
 NoSetLDFLAGS: True
@@ -56,7 +54,7 @@ ConfigureParams: <<
 	--with-system-zlib \
 	--x-includes=$X11DIR/include \
 	--x-libraries=$X11DIR/lib \
-	--program-suffix=-fsf-5 --disable-libjava-multilib
+	--program-suffix=-fsf-5
 <<
 InfoTest: <<
 	TestDepends: <<
@@ -75,6 +73,12 @@ InfoTest: <<
 	<<
 <<
 InfoDocs: cp-tools.info gcc.info gfortran.info cpp.info gccinstall.info libgomp.info cppinternals.info gccint.info gcj.info
+PatchScript: <<
+	#!/bin/bash -ev
+	%{default_script}
+	perl -pi -e 's,filds mem; fists mem,filds (%%ebp); fists (%%ebp),g' gcc/configure
+	perl -pi -e 's,fildq mem; fistpq mem,fildq (%%ebp); fistpq (%%ebp),g' gcc/configure
+<<
 CompileScript: <<
 	#!/bin/bash -ev
 	set +x
@@ -207,6 +211,9 @@ SplitOff: <<
 		lib/gcc5/lib/libcilkrts.5*.dylib
 		lib/gcc5/lib/gcj-%v-16
 		lib/gcc5/lib/i386/libgfortran.3*.dylib
+		lib/gcc5/lib/i386/libgcj.16*.dylib
+		lib/gcc5/lib/i386/libgcj-tools.16*.dylib
+		lib/gcc5/lib/i386/libgij.16*.dylib
 		lib/gcc5/lib/i386/libitm.1*.dylib
 		lib/gcc5/lib/i386/libstdc++.6*.dylib
 		lib/gcc5/lib/i386/libssp.0*.dylib
@@ -217,6 +224,7 @@ SplitOff: <<
 		lib/gcc5/lib/i386/libasan.2*.dylib
 		lib/gcc5/lib/i386/libubsan.0*.dylib
 		lib/gcc5/lib/i386/libcilkrts.5*.dylib
+		lib/gcc5/lib/i386/gcj-%v-16
 	<<
 	Shlibs: <<
 		%p/lib/gcc5/lib/libgfortran.3.dylib 4.0.0 %n (>= 5.1.0-1)
@@ -236,6 +244,9 @@ SplitOff: <<
 		%p/lib/gcc5/lib/libcilkrts.5.dylib 6.0.0 %n (>= 5.1.0-1)
 		%p/lib/gcc5/lib/gcj-%v-16/libjvm.dylib 0.0.0 %n (>= 5.1.0-1) 
 		%p/lib/gcc5/lib/i386/libgfortran.3.dylib 4.0.0 %n (>= 5.1.0-1) 32
+		%p/lib/gcc5/lib/i386/libgcj.16.dylib 17.0.0 %n (>= 5.1.0-1) 32
+		%p/lib/gcc5/lib/i386/libgcj-tools.16.dylib  17.0.0 %n (>= 5.1.0-1) 32
+		%p/lib/gcc5/lib/i386/libgij.16.dylib 17.0.0 %n (>= 5.1.0-1) 32
 		%p/lib/gcc5/lib/i386/libitm.1.dylib 2.0.0 %n (>= 5.1.0-1) 32
 		%p/lib/gcc5/lib/i386/libstdc++.6.dylib 7.0.0 %n (>= 5.1.0-1) 32
 		%p/lib/gcc5/lib/i386/libssp.0.dylib 1.0.0 %n (>= 5.1.0-1) 32
@@ -246,6 +257,7 @@ SplitOff: <<
 		%p/lib/gcc5/lib/i386/libasan.2.dylib 3.0.0  %n (>= 5.1.0-1) 32
 		%p/lib/gcc5/lib/i386/libubsan.0.dylib 1.0.0 %n (>= 5.1.0-1) 32
 		%p/lib/gcc5/lib/i386/libcilkrts.5.dylib 6.0.0 %n (>= 5.1.0-1) 32
+		%p/lib/gcc5/lib/i386/gcj-%v-16/libjvm.dylib 0.0.0 %n (>= 5.1.0-1) 32
 	<<
 <<
 SplitOff2: <<
