@@ -14,9 +14,6 @@ BuildDepends: <<
 	xcode (>= 4.6),
 # ccache is optional, for accelerating rebuilds
 #	ccache,
-# polly plug-in needs isl,gmp
-	isl2 (>=0.14), 
-	gmp5,
 # build scripts need python2.7
 	python27,
 	libncurses5-dev,
@@ -33,17 +30,17 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.bz2
-Source-MD5: d11d88f48797ad1230bec68b58ac4ec0 
+Source-MD5: a07aa951d3749bd212abf0b7c62616ea 
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.bz2
-Source2-MD5: 9c2a3135b6aedccc335ca261969cab60
+Source2-MD5: 856dc01fc418f1a11388f52678add7d8
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.bz2
-Source3-MD5: 0488361e92707170a2fb34ec7186e19c
+Source3-MD5: cd74daa1226e036c884a1ec507bdad67
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.bz2
-Source4-MD5: a4419e2e6d34b8d20cd95f6f6835b782 
+Source4-MD5: 34628a5e4e5fb27dac8215632672c37d 
 Source5: http://llvm.org/releases/%v/libcxx-%v.src.tar.bz2
-Source5-MD5: f9c340f2d400d7f516f01bc0be617996 
+Source5-MD5: 02eea03d568453634beac971d7cc1153 
 Source6: http://llvm.org/releases/%v/openmp-%v.src.tar.bz2
-Source6-MD5: 7eecbc53b821fcf25ed0cf98a4996f58
+Source6-MD5: 050163f89d925c6bebba03b6e75c24bd 
 # Source7: http://llvm.org/releases/%v/test-suite-%v.src.tar.xz
 # Source7-MD5: 
 # libcxxabi is not needed, use system's libc++abi or libsupc++
@@ -1276,11 +1273,7 @@ SplitOff9: <<
 	Package: polly37-shlibs
 	Description: Shared libraries for Polly loop optimizer
 	Depends: <<
-		%N-shlibs (= %v-%r),
-		isl2-shlibs (>= 0.14), 
-	#	cloog-org2-shlibs (>= 0.18),
-		libgmpxx5-shlibs,
-		gmp5-shlibs
+		%N-shlibs (= %v-%r)
 	<<
 	Files: <<
 		opt/llvm-3.7/lib/LLVMPolly.so
