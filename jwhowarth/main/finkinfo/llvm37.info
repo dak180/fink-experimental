@@ -30,17 +30,17 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.bz2
-Source-MD5: a07aa951d3749bd212abf0b7c62616ea 
+Source-MD5: 0aaddf46e637cc3e124331cc8ae4b474
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.bz2
-Source2-MD5: 856dc01fc418f1a11388f52678add7d8
+Source2-MD5: dd3f7b42dc73e681b00e94ec96608c70
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.bz2
-Source3-MD5: cd74daa1226e036c884a1ec507bdad67
+Source3-MD5: 414d2084d0162cdbcd356dcfec3e9e9e
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.bz2
-Source4-MD5: 34628a5e4e5fb27dac8215632672c37d 
+Source4-MD5: 66601f250cb8563e5c76f6fe0bafdeee
 Source5: http://llvm.org/releases/%v/libcxx-%v.src.tar.bz2
-Source5-MD5: 02eea03d568453634beac971d7cc1153 
+Source5-MD5: a9544ca4b80d57536704506558f84aa8
 Source6: http://llvm.org/releases/%v/openmp-%v.src.tar.bz2
-Source6-MD5: 050163f89d925c6bebba03b6e75c24bd 
+Source6-MD5: 4a210270fc6e3fde2867b83d912ebe74
 # Source7: http://llvm.org/releases/%v/test-suite-%v.src.tar.xz
 # Source7-MD5: 
 # libcxxabi is not needed, use system's libc++abi or libsupc++
@@ -127,7 +127,7 @@ PatchScript: <<
 	  # or do actual symbol check on nm /usr/lib/libc.dylib /usr/lib/system/libsystem_c.dylib
 	popd
 	pushd ../libcxx-%v.src
-	  if test "$darwin_vers" -lt 13
+	  if test "$darwin_vers" -lt 11
 	  then
 	    $patch_filter %{PatchFile5} | patch -p1
 	  fi
@@ -483,6 +483,12 @@ EOF
 		abi_includes="$sys_cxxabi_root;$sys_cxxabi_root/$cxxabi_arch-apple-darwin$darwin_vers"
 		LIBCXX_CMAKE_OPTIONS=( "${LIBCXX_CMAKE_OPTIONS[@]}" \
 			-DLIBCXX_LIBSUPCXX_INCLUDE_PATHS="$abi_includes" )
+	elif test $darwin_vers -le 12
+	then    abi=libcxxabi
+		abi_includes=/usr/include
+		LIBCXX_CMAKE_OPTIONS=( "${LIBCXX_CMAKE_OPTIONS[@]}" \
+			-DLIBCXX_LIBCPPABI_VERSION="" \
+			-DLIBCXX_LIBCXXABI_INCLUDE_PATHS="$abi_includes" )
 	else	abi=libcxxabi
 		abi_includes=/usr/include
 		LIBCXX_CMAKE_OPTIONS=( "${LIBCXX_CMAKE_OPTIONS[@]}" \
@@ -1532,6 +1538,9 @@ Drop building libclang_rt.asan_iossim_dynamic.dylib as it now requires targettin
 changes to 3.6.1 as the testsuite conversion is unlikely to be completed in time
 for the 3.7.0 release. Also conceptually using -S -emit-llvm doesn't exercise the
 functionality of the openmp library. Added llvm37-openmp-cmake.patch to apply
-proposed over-haul of the openmp's cmake until upstream commits.
+proposed over-haul of the openmp's cmake until upstream commits. For darwin11/12,
+pass -DLIBCXX_LIBCPPABI_VERSION="" on LIBCXX_CMAKE_OPTIONS as work-around for
+https://llvm.org/bugs/show_bug.cgi?id=23439. Only apply llvm37-libcxx.patch on
+darwin10 and earlier.
 <<
 <<
