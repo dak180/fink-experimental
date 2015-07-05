@@ -57,8 +57,8 @@ PatchFile3: %n-compiler-rt.patch
 PatchFile3-MD5: 92ceb63b5c854507028d7e80190646c6
 PatchFile4: %n-polly.patch
 PatchFile4-MD5: 3667aedcd5a76805c7209b469030cc26
-#PatchFile5: %n-libcxx.patch
-#PatchFile5-MD5: 32427770d4b114d97ccb0787f673be50
+PatchFile5: %n-libcxx.patch
+PatchFile5-MD5: 583ca4f6ad00b403bc4f0c8af02b187b
 #PatchFile6: %n-clang-omp.patch
 #PatchFile6-MD5: 8067f4cc1f58030f7746521d58c776c2 
 PatchFile7: %n-clang-iomp5.patch
@@ -127,7 +127,10 @@ PatchScript: <<
 	  # or do actual symbol check on nm /usr/lib/libc.dylib /usr/lib/system/libsystem_c.dylib
 	popd
 	pushd ../libcxx-%v.src
-	  #$patch_filter %{PatchFile5} | patch -p1
+	  if test "$darwin_vers" -lt 13
+	  then
+	    $patch_filter %{PatchFile5} | patch -p1
+	  fi
 	  # add a timeout to libc++ test, in case of hanging
 	  mv test/lit.cfg{,.orig}
 	  awk '{
