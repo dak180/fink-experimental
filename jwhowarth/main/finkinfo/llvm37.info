@@ -30,19 +30,21 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.bz2
-Source-MD5: 0aaddf46e637cc3e124331cc8ae4b474
+Source-MD5: 9930908414f563b50ada4e2924fb7fbc
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.bz2
-Source2-MD5: dd3f7b42dc73e681b00e94ec96608c70
+Source2-MD5: 3246bc8bf2d3684625ce7021d30474cb
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.bz2
-Source3-MD5: 414d2084d0162cdbcd356dcfec3e9e9e
+Source3-MD5: a8f636226760b6ffdf80e806ad9ad1c1
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.bz2
-Source4-MD5: 66601f250cb8563e5c76f6fe0bafdeee
+Source4-MD5: 6a4f32e369803cd292e220697c67eb18
 Source5: http://llvm.org/releases/%v/libcxx-%v.src.tar.bz2
-Source5-MD5: a9544ca4b80d57536704506558f84aa8
+Source5-MD5: 0630790e55fa3714f39cbf6d28b62923
 Source6: http://llvm.org/releases/%v/openmp-%v.src.tar.bz2
-Source6-MD5: 4a210270fc6e3fde2867b83d912ebe74
-# Source7: http://llvm.org/releases/%v/test-suite-%v.src.tar.xz
-# Source7-MD5: 
+Source6-MD5: 67bf870de8b80c3626ebdc022934c0c1
+Source7:  http://llvm.org/releases/%v/clang-tools-extra-%v.src.tar.bz2
+Source7-MD5: 8fbb057c33095fa350f011244fed28b0
+# Source8: http://llvm.org/releases/%v/test-suite-%v.src.tar.xz
+# Source8-MD5: 
 # libcxxabi is not needed, use system's libc++abi or libsupc++
 
 SourceDirectory: llvm-%v.src
@@ -94,6 +96,7 @@ PatchScript: <<
 	# cmake build ties subproject dirs together into one build
 	pushd tools
 	  ln -f -s ../../cfe-%v.src ./clang
+	  ln -f -s ../../clang-tools-extra-%v.src ./clang/tools/extra
 	  ln -f -s ../../polly-%v.src ./polly
 	popd
 	pushd projects
@@ -912,6 +915,9 @@ InfoTest: <<
 	echo "******** Running included clang tests ... ********"
 	{ make -k TESTARGS=-v check-clang 2>&1 || : ;} | tee clang-%v-check.log
 
+	echo "******** Running included clang-tools tests ... ********"
+	{ make -k TESTARGS=-v check-clang-tools 2>&1 || : ;} | tee clang-tools-%v-check.log
+
 	echo "******** Running included polly tests ... ********"
 	( cd tools/polly/test ; make -k TESTARGS=-v polly-test 2>&1 || : ;) | tee polly-%v-check.log
 
@@ -1160,14 +1166,42 @@ InstallScript: <<
 <<
 SplitOff: <<
 	Package: clang37-tools
-	Depends: clang37-shlibs (= %v-%r)
+	Depends: clang37-shlibs (= %v-%r), clang37-tools-shlibs (= %v-%r)
 	Description: Extra tools for clang, such as formatting
 	Files: <<
 		opt/llvm-3.7/bin/*clang-format*
+		opt/llvm-3.7/bin/clang-apply-replacements
+		opt/llvm-3.7/bin/clang-modernize
+		opt/llvm-3.7/bin/clang-rename
+		opt/llvm-3.7/bin/clang-tidy
 		opt/llvm-3.7/share/clang
 	<<
 <<
 SplitOff2: <<
+	Package: clang37-tools-shlibs
+	Depends: %N-shlibs (= %v-%r), clang37-shlibs (= %v-%r)
+	Description: Shared libraries for clang compiler tools
+	Files: <<
+		opt/llvm-3.7/lib/libclangApplyReplacements*.dylib
+		opt/llvm-3.7/lib/libclangQuery*.dylib
+		opt/llvm-3.7/lib/libclangRename*.dylib
+		opt/llvm-3.7/lib/libclangTidy*.dylib
+		opt/llvm-3.7/lib/libmodernizeCore*.dylib
+	<<
+	Shlibs: <<
+		!%p/opt/llvm-3.7/lib/libclangApplyReplacements.3.7.0.dylib
+		!%p/opt/llvm-3.7/lib/libclangQuery.3.7.0.dylib
+		!%p/opt/llvm-3.7/lib/libclangRename.3.7.0.dylib
+		!%p/opt/llvm-3.7/lib/libclangTidy.3.7.0.dylib
+		!%p/opt/llvm-3.7/lib/libclangTidyGoogleModule.3.7.0.dylib
+		!%p/opt/llvm-3.7/lib/libclangTidyLLVMModule.3.7.0.dylib
+		!%p/opt/llvm-3.7/lib/libclangTidyMiscModule.3.7.0.dylib
+		!%p/opt/llvm-3.7/lib/libclangTidyReadabilityModule.3.7.0.dylib
+		!%p/opt/llvm-3.7/lib/libclangTidyUtils.3.7.0.dylib
+		!%p/opt/llvm-3.7/lib/libmodernizeCore.3.7.0.dylib
+	<<
+<<
+SplitOff3: <<
 	Package: clang37-docs
 	Description: Documenation for clang and related tools
 	Files: <<
