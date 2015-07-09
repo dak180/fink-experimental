@@ -30,19 +30,19 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.bz2
-Source-MD5: 2396d704bd691e344de1694721bb5013
+Source-MD5: ffedb47f7f0fab3340766ed68f7330e6
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.bz2
-Source2-MD5: ffae2a143c5d70a931c21ea297c59f86
+Source2-MD5: d3fe62074d4dc8bd4374a2996a36926a
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.bz2
-Source3-MD5: b05996564c8d8916c5bb9fa0ca8da18f
+Source3-MD5: d935024ce28b24da804fa37f1e8bb328
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.bz2
-Source4-MD5: 3416621a2599c7b95d82c1fb0293d2fb
+Source4-MD5: 838c60cd6ab64b79ff1c398e4c0cf640
 Source5: http://llvm.org/releases/%v/libcxx-%v.src.tar.bz2
-Source5-MD5: f89458df0b5966b5070a65f48f0266db 
+Source5-MD5: fb3e44c4590fb6f9955335ec38b63b10
 Source6: http://llvm.org/releases/%v/openmp-%v.src.tar.bz2
-Source6-MD5: 7eecbc53b821fcf25ed0cf98a4996f58 
+Source6-MD5: b9d0961a98f8924f8c2c02666ce18838
 Source7:  http://llvm.org/releases/%v/clang-tools-extra-%v.src.tar.bz2
-Source7-MD5: 1680054f1a5c2ce0361abdef0ef2d5e7
+Source7-MD5: b665ca934c696ee584334f41848d8a4f
 # Source8: http://llvm.org/releases/%v/test-suite-%v.src.tar.xz
 # Source8-MD5: 
 # libcxxabi is not needed, use system's libc++abi or libsupc++
@@ -66,7 +66,7 @@ PatchFile5-MD5: 583ca4f6ad00b403bc4f0c8af02b187b
 PatchFile7: %n-clang-iomp5.patch
 PatchFile7-MD5: e5e0216c5190bb07e75179c20ac8a574
 PatchFile8: %n-openmp-cmake.patch
-PatchFile8-MD5: 2f7733700e9467b8e1d4f2a1e25acca9
+PatchFile8-MD5: 0ca7cd6c5c2783ee38a8d9d145da312f
 PatchFile9: %n-openmp-testsuite.patch
 PatchFile9-MD5: 98bde19e3d84e052404c1c8a3dd72202
 

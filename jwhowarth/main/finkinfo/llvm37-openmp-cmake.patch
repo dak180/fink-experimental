@@ -2,7 +2,7 @@ Index: runtime/CMakeLists.txt
 ===================================================================
 --- runtime/CMakeLists.txt
 +++ runtime/CMakeLists.txt
-@@ -9,131 +9,97 @@
+@@ -9,135 +9,97 @@
  #//===----------------------------------------------------------------------===//
  #
  
@@ -182,6 +182,10 @@ Index: runtime/CMakeLists.txt
      "For Mac builds, semicolon separated list of architectures to build for universal fat binary.")
  set(CMAKE_OSX_ARCHITECTURES ${LIBOMP_OSX_ARCHITECTURES})
  
+-# - Code that allows the OpenMP library to conveniently interface with debuggers
+-set(LIBOMP_USE_DEBUGGER false CACHE BOOL
+-    "Enable debugger interface code?")
+-
 -# OMPT-support
 -set(LIBOMP_OMPT_SUPPORT false CACHE BOOL
 -    "OMPT-support?")
@@ -196,7 +200,7 @@ Index: runtime/CMakeLists.txt
  set(LIBOMP_CFLAGS "" CACHE STRING
      "Appended user specified C compiler flags.")
  set(LIBOMP_CXXFLAGS "" CACHE STRING
-@@ -146,83 +112,21 @@
+@@ -150,83 +112,21 @@
      "Appended user specified linker flags.")
  set(LIBOMP_LIBFLAGS "" CACHE STRING
      "Appended user specified linked libs flags. (e.g., -lm)")
@@ -289,7 +293,7 @@ Index: runtime/CMakeLists.txt
  
  # Architecture
  set(IA32 FALSE)
-@@ -232,9 +136,10 @@
+@@ -236,9 +136,10 @@
  set(PPC64BE FALSE)
  set(PPC64LE FALSE)
  set(PPC64 FALSE)
@@ -302,7 +306,7 @@ Index: runtime/CMakeLists.txt
      set(INTEL64 TRUE)
  elseif("${LIBOMP_ARCH}" STREQUAL "arm") # ARM architecture
      set(ARM TRUE)
-@@ -251,16 +156,19 @@
+@@ -255,16 +156,19 @@
  endif()
  
  # Set some flags based on build_type
@@ -326,7 +330,7 @@ Index: runtime/CMakeLists.txt
  endif()
  
  # Include itt notify interface? Right now, always.
-@@ -278,327 +186,117 @@
+@@ -282,328 +186,122 @@
      set(STUBS_LIBRARY TRUE)
  endif()
  
@@ -343,21 +347,16 @@ Index: runtime/CMakeLists.txt
 -    "*INCOMPLETE* Does the compiler support a 128-bit floating point type?")
 -set(LIBOMP_COMPILER_QUAD_TYPE "" CACHE STRING
 -    "*INCOMPLETE* The quad precision data type (e.g., for gcc, __float128)")
--
--# - Should the orignal build rules for builds be used? (cmake/OriginalBuildRules.cmake).  This setting is off by default.
--# - This always compiles with -g.  And if it is a release build, the debug info is stripped out via objcopy and put into libomp.dbg.
--set(LIBOMP_USE_BUILDPL_RULES false CACHE BOOL
--    "Should the build follow build.pl rules/recipes?")
 +# Setting directory names
 +set(LIBOMP_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 +set(LIBOMP_SRC_DIR ${LIBOMP_BASE_DIR}/src)
 +set(LIBOMP_TOOLS_DIR ${LIBOMP_BASE_DIR}/tools)
 +set(LIBOMP_INC_DIR ${LIBOMP_SRC_DIR}/include/${LIBOMP_OMP_VERSION})
  
--# - Should the build use the predefined linker flags (OS-dependent) in CommonFlags.cmake?
--# - these predefined linker flags should work for Windows, Mac, and True Linux for the most popular compilers/linkers
--set(LIBOMP_USE_PREDEFINED_LINKER_FLAGS true CACHE BOOL
--    "Should the build use the predefined linker flags in CommonFlags.cmake?")
+-# - Should the orignal build rules for builds be used? (cmake/OriginalBuildRules.cmake).  This setting is off by default.
+-# - This always compiles with -g.  And if it is a release build, the debug info is stripped out via objcopy and put into libomp.dbg.
+-set(LIBOMP_USE_BUILDPL_RULES false CACHE BOOL
+-    "Should the build follow build.pl rules/recipes?")
 +# Enabling Fortran if it is needed
 +# Enable MASM Compiler if it is needed (Windows only)
 +if(${LIBOMP_FORTRAN_MODULES})
@@ -367,12 +366,19 @@ Index: runtime/CMakeLists.txt
 +    enable_language(ASM_MASM)
 +endif()
  
--# - On multinode systems, larger alignment is desired to avoid false sharing
--set(LIBOMP_USE_INTERNODE_ALIGNMENT false CACHE BOOL
--    "Should larger alignment (4096 bytes) be used for some locks and data structures?")
+-# - Should the build use the predefined linker flags (OS-dependent) in CommonFlags.cmake?
+-# - these predefined linker flags should work for Windows, Mac, and True Linux for the most popular compilers/linkers
+-set(LIBOMP_USE_PREDEFINED_LINKER_FLAGS true CACHE BOOL
+-    "Should the build use the predefined linker flags in CommonFlags.cmake?")
 +# Getting legal type/arch
 +libomp_get_legal_type(LIBOMP_LEGAL_TYPE)
 +libomp_get_legal_arch(LIBOMP_LEGAL_ARCH)
+ 
+-# - On multinode systems, larger alignment is desired to avoid false sharing
+-set(LIBOMP_USE_INTERNODE_ALIGNMENT false CACHE BOOL
+-    "Should larger alignment (4096 bytes) be used for some locks and data structures?")
++# Compiler flag checks, library checks, threading check, etc.
++include(config-ix)
  
 -# - libgomp drop-in compatibility
 -if(${LINUX} AND NOT ${PPC64})
@@ -380,9 +386,13 @@ Index: runtime/CMakeLists.txt
 -        "Should version symbols be used? These provide binary compatibility with libgomp.")
 -else()
 -    set(LIBOMP_USE_VERSION_SYMBOLS false)
--endif()
-+# Compiler flag checks, library checks, threading check, etc.
-+include(config-ix)
++# Is there a quad precision data type available?
++# TODO: Make this a real feature check
++set(LIBOMP_USE_QUAD_PRECISION "${LIBOMP_HAVE_QUAD_PRECISION}" CACHE BOOL
++    "Should 128-bit precision entry points be built?")
++if(LIBOMP_USE_QUAD_PRECISION AND (NOT LIBOMP_HAVE_QUAD_PRECISION))
++    libomp_error_say("128-bit quad precision functionality requested but not available")
+ endif()
  
 -# - TSX based locks have __asm code which can be troublesome for some compilers.  This feature is also x86 specific.
 -if(${IA32} OR ${INTEL64})
@@ -390,12 +400,11 @@ Index: runtime/CMakeLists.txt
 -        "Should TSX-based lock be compiled (adaptive lock in kmp_lock.cpp).  These are x86 specific.")
 -else()
 -    set(LIBOMP_USE_ADAPTIVE_LOCKS false)
-+# Is there a quad precision data type available?
-+# TODO: Make this a real feature check
-+set(LIBOMP_USE_QUAD_PRECISION "${LIBOMP_HAVE_QUAD_PRECISION}" CACHE BOOL
-+    "Should 128-bit precision entry points be built?")
-+if(LIBOMP_USE_QUAD_PRECISION AND (NOT LIBOMP_HAVE_QUAD_PRECISION))
-+    libomp_error_say("128-bit quad precision functionality requested but not available")
++# libgomp drop-in compatibility requires versioned symbols
++set(LIBOMP_USE_VERSION_SYMBOLS "${LIBOMP_HAVE_VERSION_SYMBOLS}" CACHE BOOL
++    "Should version symbols be used? These provide binary compatibility with libgomp.")
++if(LIBOMP_USE_VERSION_SYMBOLS AND (NOT LIBOMP_HAVE_VERSION_SYMBOLS))
++    libomp_error_say("Version symbols functionality requested but not available")
  endif()
  
 -##################################
@@ -411,12 +420,10 @@ Index: runtime/CMakeLists.txt
 -endif()
 -if(${LIBOMP_OMPT_SUPPORT} AND ${WINDOWS})
 -    error_say("OpenMP Tools Interface is not supported on Windows")
-+# libgomp drop-in compatibility requires versioned symbols
-+set(LIBOMP_USE_VERSION_SYMBOLS "${LIBOMP_HAVE_VERSION_SYMBOLS}" CACHE BOOL
-+    "Should version symbols be used? These provide binary compatibility with libgomp.")
-+if(LIBOMP_USE_VERSION_SYMBOLS AND (NOT LIBOMP_HAVE_VERSION_SYMBOLS))
-+    libomp_error_say("Version symbols functionality requested but not available")
- endif()
+-endif()
++# On multinode systems, larger alignment is desired to avoid false sharing
++set(LIBOMP_USE_INTERNODE_ALIGNMENT FALSE CACHE BOOL
++    "Should larger alignment (4096 bytes) be used for some locks and data structures?")
  
 -###############################################
 -# - Create the suffix for the export directory
@@ -443,9 +450,9 @@ Index: runtime/CMakeLists.txt
 -        set(suffix "${suffix}.no-ompt-trace")
 -    endif()
 -endif()
-+# On multinode systems, larger alignment is desired to avoid false sharing
-+set(LIBOMP_USE_INTERNODE_ALIGNMENT FALSE CACHE BOOL
-+    "Should larger alignment (4096 bytes) be used for some locks and data structures?")
++# Build code that allows the OpenMP library to conveniently interface with debuggers
++set(LIBOMP_USE_DEBUGGER FALSE CACHE BOOL
++    "Enable debugger interface code?")
  
 -####################################
 -# Setting file extensions / suffixes
@@ -716,9 +723,11 @@ Index: runtime/CMakeLists.txt
      endif()
 -    say("LIBOMP: Build                -- ${build}")
 -    say("LIBOMP: Stats-Gathering      -- ${LIBOMP_STATS}")
+-    say("LIBOMP: Debugger-support     -- ${LIBOMP_USE_DEBUGGER}")
 -    say("LIBOMP: OMPT-support         -- ${LIBOMP_OMPT_SUPPORT}")
 +    libomp_say("Build                -- ${LIBOMP_BUILD}")
 +    libomp_say("Use Stats-gathering  -- ${LIBOMP_STATS}")
++    libomp_say("Use Debugger-support -- ${LIBOMP_USE_DEBUGGER}")
 +    libomp_say("Use OMPT-support     -- ${LIBOMP_OMPT_SUPPORT}")
      if(${LIBOMP_OMPT_SUPPORT})
 -        say("LIBOMP: OMPT-blame           -- ${LIBOMP_OMPT_BLAME}")
@@ -1086,7 +1095,7 @@ Index: runtime/cmake/Definitions.cmake
 ===================================================================
 --- runtime/cmake/Definitions.cmake
 +++ /dev/null
-@@ -1,162 +0,0 @@
+@@ -1,167 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
 -#//
@@ -1190,6 +1199,11 @@ Index: runtime/cmake/Definitions.cmake
 -        append_definitions("-D KMP_STATS_ENABLED=1")
 -    else()
 -        append_definitions("-D KMP_STATS_ENABLED=0")
+-    endif()
+-    if(${LIBOMP_USE_DEBUGGER})
+-        append_definitions("-D USE_DEBUGGER=1")
+-    else()
+-        append_definitions("-D USE_DEBUGGER=0")
 -    endif()
 -    if(${LIBOMP_OMPT_SUPPORT})
 -        append_definitions("-D OMPT_SUPPORT=1")
@@ -2129,7 +2143,7 @@ Index: runtime/cmake/LibompDefinitions.cmake
 ===================================================================
 --- /dev/null
 +++ runtime/cmake/LibompDefinitions.cmake
-@@ -0,0 +1,99 @@
+@@ -0,0 +1,100 @@
 +#
 +#//===----------------------------------------------------------------------===//
 +#//
@@ -2197,6 +2211,7 @@ Index: runtime/cmake/LibompDefinitions.cmake
 +    libomp_append(cppflags_local "-D _DEBUG" IF_TRUE DEBUG_BUILD)
 +    libomp_append(cppflags_local "-D BUILD_DEBUG" IF_TRUE DEBUG_BUILD)
 +    libomp_append(cppflags_local "-D KMP_STATS_ENABLED" IF_TRUE_1_0 LIBOMP_STATS)
++    libomp_append(cppflags_local "-D USE_DEBUGGER" IF_TRUE_1_0 LIBOMP_USE_DEBUGGER)
 +    libomp_append(cppflags_local "-D OMPT_SUPPORT" IF_TRUE_1_0 LIBOMP_OMPT_SUPPORT)
 +    libomp_append(cppflags_local "-D OMPT_BLAME" IF_TRUE_1_0 LIBOMP_OMPT_BLAME)
 +    libomp_append(cppflags_local "-D OMPT_TRACE" IF_TRUE_1_0 LIBOMP_OMPT_TRACE)
@@ -3485,7 +3500,7 @@ Index: runtime/cmake/SourceFiles.cmake
 ===================================================================
 --- runtime/cmake/SourceFiles.cmake
 +++ /dev/null
-@@ -1,114 +0,0 @@
+@@ -1,115 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
 -#//
@@ -3530,6 +3545,7 @@ Index: runtime/cmake/SourceFiles.cmake
 -        append_c_source_file("kmp_atomic.c")
 -        append_c_source_file("kmp_csupport.c")
 -        append_c_source_file("kmp_debug.c")
+-        append_c_source_file("kmp_debugger.c")
 -        append_c_source_file("kmp_itt.c")
 -        append_c_source_file("kmp_environment.c")
 -        append_c_source_file("kmp_error.c")
@@ -3790,7 +3806,7 @@ Index: runtime/src/CMakeLists.txt
 ===================================================================
 --- runtime/src/CMakeLists.txt
 +++ runtime/src/CMakeLists.txt
-@@ -9,294 +9,262 @@
+@@ -9,294 +9,263 @@
  #//===----------------------------------------------------------------------===//
  #
  
@@ -3968,6 +3984,7 @@ Index: runtime/src/CMakeLists.txt
 +        libomp_append(LIBOMP_ASMFILES z_Linux_asm.s) # Unix assembly file
 +    endif()
 +    libomp_append(LIBOMP_CFILES thirdparty/ittnotify/ittnotify_static.c LIBOMP_USE_ITT_NOTIFY)
++    libomp_append(LIBOMP_CFILES kmp_debugger.c LIBOMP_USE_DEBUGGER)
 +    # Get C++ files
 +    set(LIBOMP_CXXFILES
 +        kmp_barrier.cpp
@@ -4305,7 +4322,7 @@ Index: runtime/src/CMakeLists.txt
  # Install rules
  # We want to install libomp in DESTDIR/CMAKE_INSTALL_PREFIX/lib
  # We want to install headers in DESTDIR/CMAKE_INSTALL_PREFIX/include
-@@ -306,34 +274,41 @@
+@@ -306,34 +275,41 @@
      string(REGEX MATCH "[0-9]+\\.[0-9]+(\\.[0-9]+)?" CLANG_VERSION ${PACKAGE_VERSION})
      set(LIBOMP_HEADERS_INSTALL_PATH lib${LIBOMP_LIBDIR_SUFFIX}/clang/${CLANG_VERSION}/include)
  endif()
