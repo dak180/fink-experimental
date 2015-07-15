@@ -32,7 +32,7 @@ BuildConflicts: <<
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.bz2
 Source-MD5: 40e8b40863104e9d60a5e2778b5e4b2d
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.bz2
-Source2-MD5: e48a76febcc7944a99df2da050e153b0
+Source2-MD5: 3a7804ded862836d77019771ee4bb0e3
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.bz2
 Source3-MD5: c61b7631a16382fd8a270b6d486aca3b
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.bz2
@@ -40,7 +40,7 @@ Source4-MD5: d0ed1e852ae55bd5fde0b39ea5ac22ec
 Source5: http://llvm.org/releases/%v/libcxx-%v.src.tar.bz2
 Source5-MD5: 9f268d8453f7c36bbb2357ae6170c9cc 
 Source6: http://llvm.org/releases/%v/openmp-%v.src.tar.bz2
-Source6-MD5: 66daf58a547c4c9aa7b97bf3b1905265
+Source6-MD5: f8e62621d490b2f53a2ddb84c1fc1c34 
 Source7:  http://llvm.org/releases/%v/clang-tools-extra-%v.src.tar.bz2
 Source7-MD5: 15582cb671e7ddd61864a702b553c580
 # Source8: http://llvm.org/releases/%v/test-suite-%v.src.tar.xz
@@ -65,10 +65,8 @@ PatchFile5-MD5: 583ca4f6ad00b403bc4f0c8af02b187b
 #PatchFile6-MD5: 8067f4cc1f58030f7746521d58c776c2 
 PatchFile7: %n-clang-iomp5.patch
 PatchFile7-MD5: e5e0216c5190bb07e75179c20ac8a574
-PatchFile8: %n-openmp-cmake.patch
-PatchFile8-MD5: 07e391125f95331b674ff4b171417a9d
-PatchFile9: %n-openmp-testsuite.patch
-PatchFile9-MD5: 98bde19e3d84e052404c1c8a3dd72202
+PatchFile8: %n-openmp-testsuite.patch
+PatchFile8-MD5: 98bde19e3d84e052404c1c8a3dd72202
 
 PatchScript: <<
 	#!/bin/sh -ev
@@ -188,9 +186,8 @@ if ($1 == "cmd.append(exec_path)") {
 
 	# add experimental cmake support to openmp
 	pushd ../openmp-%v.src
-	  $patch_filter %{PatchFile8} | patch -p1
 	  # revert testsuite to compile and run
-	  $patch_filter %{PatchFile9} | patch -p1
+	  $patch_filter %{PatchFile8} | patch -p1
 	  rm -f testsuite/bin/Makefile
 	  sed -i.orig -e '/message-converter/s|--enum=|--enum-file=|' \
 		-e '/message-converter/s|--default=|--default-file=|' \
