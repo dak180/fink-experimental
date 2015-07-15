@@ -1,8 +1,7 @@
-Index: runtime/CMakeLists.txt
-===================================================================
---- runtime/CMakeLists.txt
-+++ runtime/CMakeLists.txt
-@@ -9,135 +9,97 @@
+diff -uNr openmp-3.7.0.src.orig/runtime/CMakeLists.txt openmp-3.7.0.src/runtime/CMakeLists.txt
+--- openmp-3.7.0.src.orig/runtime/CMakeLists.txt	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/CMakeLists.txt	2015-07-15 13:45:31.000000000 -0400
+@@ -9,224 +9,124 @@
  #//===----------------------------------------------------------------------===//
  #
  
@@ -23,8 +22,10 @@ Index: runtime/CMakeLists.txt
 -if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}" OR 
 +if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}" OR
     "${CMAKE_SOURCE_DIR}/runtime" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
-     project(libomp C CXX)
-     set(LIBOMP_STANDALONE_BUILD TRUE)
+-    project(libomp C CXX)
+-    set(LIBOMP_STANDALONE_BUILD TRUE)
++  project(libomp C CXX)
++  set(LIBOMP_STANDALONE_BUILD TRUE)
  endif()
  
 -# These include files are in cmake/ subdirectory except for FindPerl which is a cmake standard module
@@ -35,7 +36,12 @@ Index: runtime/CMakeLists.txt
 -include(PerlFlags)   # Perl flags for generate-def.pl and expand-vars.pl
 -include(FindPerl) # Standard cmake module to check for Perl
 -include(GetArchitecture) # get_architecture()
--
++# These include files are in the cmake/ subdirectory
++include(LibompUtils)
++include(LibompGetArchitecture)
++include(LibompHandleFlags)
++include(LibompDefinitions)
+ 
 -####################################################################
 -#                         CONFIGURATION
 -#
@@ -57,12 +63,7 @@ Index: runtime/CMakeLists.txt
 -set(omp_version_possible_values 41 40 30)
 -set(lib_type_possible_values normal profile stubs)
 -set(mic_arch_possible_values knf knc)
-+# These include files are in the cmake/ subdirectory
-+include(LibompUtils)
-+include(LibompGetArchitecture)
-+include(LibompHandleFlags)
-+include(LibompDefinitions)
- 
+-
 -# Below, cmake will try and determine the operating system and architecture for you.
 -# These values are set in CMakeCache.txt when cmake is first run (-Dvar_name=... will take precedence)
 -#  parameter  | default value             
@@ -78,53 +79,8 @@ Index: runtime/CMakeLists.txt
 -    set(temp_os win)
 -else()
 -    set(temp_os lin)
-+# Determine the target architecture
-+if(${LIBOMP_STANDALONE_BUILD})
-+    # If adding a new architecture, take a look at cmake/LibompGetArchitecture.cmake
-+    libomp_get_architecture(LIBOMP_DETECTED_ARCH)
-+    set(LIBOMP_ARCH ${LIBOMP_DETECTED_ARCH} CACHE STRING
-+        "The architecture to build for (x86_64/i386/arm/ppc64/ppc64le/aarch64/mic).")
-+    # Allow user to choose a suffix for the installation directory.
-+    set(LIBOMP_LIBDIR_SUFFIX "" CACHE STRING
-+        "suffix of lib installation directory e.g., 64 => lib64")
-+    # Should assertions be enabled?  They are on by default.
-+    set(LIBOMP_ENABLE_ASSERTIONS TRUE CACHE BOOL
-+        "enable assertions?")
-+    # CMAKE_BUILD_TYPE was not defined, set default to Release
-+    if(NOT CMAKE_BUILD_TYPE)
-+        set(CMAKE_BUILD_TYPE Release)
-+    endif()
-+else() # Part of LLVM build
-+    # Determine the native architecture from LLVM.
-+    string(TOLOWER "${LLVM_TARGET_ARCH}" LIBOMP_NATIVE_ARCH)
-+    if( LIBOMP_NATIVE_ARCH STREQUAL "host" )
-+      string(REGEX MATCH "^[^-]*" LIBOMP_NATIVE_ARCH ${LLVM_HOST_TRIPLE})
-+    endif ()
-+    if(LIBOMP_NATIVE_ARCH MATCHES "i[2-6]86")
-+      set(LIBOMP_ARCH i386)
-+    elseif(LIBOMP_NATIVE_ARCH STREQUAL "x86")
-+      set(LIBOMP_ARCH i386)
-+    elseif(LIBOMP_NATIVE_ARCH STREQUAL "amd64")
-+      set(LIBOMP_ARCH x86_64)
-+    elseif(LIBOMP_NATIVE_ARCH STREQUAL "x86_64")
-+      set(LIBOMP_ARCH x86_64)
-+    elseif(LIBOMP_NATIVE_ARCH MATCHES "powerpc")
-+      set(LIBOMP_ARCH ppc64)
-+    elseif(LIBOMP_NATIVE_ARCH MATCHES "aarch64")
-+      set(LIBOMP_ARCH aarch64)
-+    elseif(LIBOMP_NATIVE_ARCH MATCHES "arm64")
-+      set(LIBOMP_ARCH aarch64)
-+    elseif(LIBOMP_NATIVE_ARCH MATCHES "arm")
-+      set(LIBOMP_ARCH arm)
-+    else()
-+        # last ditch effort
-+        libomp_get_architecture(LIBOMP_ARCH)
-+    endif ()
-+    set(LIBOMP_LIBDIR_SUFFIX ${LLVM_LIBDIR_SUFFIX})
-+    set(LIBOMP_ENABLE_ASSERTIONS ${LLVM_ENABLE_ASSERTIONS})
- endif()
-+libomp_check_variable(LIBOMP_ARCH 32e x86_64 32 i386 arm ppc64 ppc64le aarch64 mic)
- 
+-endif()
+-
 -# If adding a new architecture, take a look at cmake/GetArchitecture.cmake
 -get_architecture(detected_arch)
 -
@@ -132,26 +88,17 @@ Index: runtime/CMakeLists.txt
 -    "The operating system to build for (lin/mac/win)")
 -set(LIBOMP_ARCH ${detected_arch} CACHE STRING
 -    "The architecture to build for (32e/32/arm/ppc64/ppc64le/aarch64/mic).  32e is Intel(R) 64 architecture, 32 is IA-32 architecture")
- set(LIBOMP_LIB_TYPE normal CACHE STRING
-     "Performance,Profiling,Stubs library (normal/profile/stubs)")
+-set(LIBOMP_LIB_TYPE normal CACHE STRING
+-    "Performance,Profiling,Stubs library (normal/profile/stubs)")
 -set(LIBOMP_VERSION 5 CACHE STRING 
-+libomp_check_variable(LIBOMP_LIB_TYPE normal profile stubs)
-+set(LIBOMP_VERSION 5 CACHE STRING
-     "Produce libguide (version 4) or libomp (version 5)")
+-    "Produce libguide (version 4) or libomp (version 5)")
 -set(LIBOMP_OMP_VERSION 41 CACHE STRING 
-+set(LIBOMP_OMP_VERSION 41 CACHE STRING
-     "The OpenMP version (41/40/30)")
+-    "The OpenMP version (41/40/30)")
 -set(LIBOMP_MIC_ARCH knc CACHE STRING 
-+libomp_check_variable(LIBOMP_OMP_VERSION 41 40 30)
-+set(LIBOMP_MIC_ARCH knc CACHE STRING
-     "Intel(R) Many Integrated Core Architecture (Intel(R) MIC Architecture) (knf/knc).  Ignored if not Intel(R) MIC Architecture build.")
+-    "Intel(R) Many Integrated Core Architecture (Intel(R) MIC Architecture) (knf/knc).  Ignored if not Intel(R) MIC Architecture build.")
 -set(LIBOMP_FORTRAN_MODULES false CACHE BOOL
-+if("${LIBOMP_ARCH}" STREQUAL "mic")
-+    libomp_check_variable(LIBOMP_MIC_ARCH knf knc)
-+endif()
-+set(LIBOMP_FORTRAN_MODULES FALSE CACHE BOOL
-     "Create Fortran module files? (requires fortran compiler)")
- 
+-    "Create Fortran module files? (requires fortran compiler)")
+-
 -# - These tests are little tests performed after the library is formed.
 -# - The library won't be copied to the exports directory 
 -#   until it has passed/skipped all below tests
@@ -168,18 +115,80 @@ Index: runtime/CMakeLists.txt
 -    "Perform a library dependency test?")
 -set(LIBOMP_MICRO_TESTS false CACHE BOOL
 -    "Perform touch, relo, execstack, instr, and deps tests?")
--
++# Determine the target architecture
++if(${LIBOMP_STANDALONE_BUILD})
++  # If adding a new architecture, take a look at cmake/LibompGetArchitecture.cmake
++  libomp_get_architecture(LIBOMP_DETECTED_ARCH)
++  set(LIBOMP_ARCH ${LIBOMP_DETECTED_ARCH} CACHE STRING
++    "The architecture to build for (x86_64/i386/arm/ppc64/ppc64le/aarch64/mic).")
++  # Allow user to choose a suffix for the installation directory.
++  set(LIBOMP_LIBDIR_SUFFIX "" CACHE STRING
++    "suffix of lib installation directory e.g., 64 => lib64")
++  # Should assertions be enabled?  They are on by default.
++  set(LIBOMP_ENABLE_ASSERTIONS TRUE CACHE BOOL
++    "enable assertions?")
++  # CMAKE_BUILD_TYPE was not defined, set default to Release
++  if(NOT CMAKE_BUILD_TYPE)
++    set(CMAKE_BUILD_TYPE Release)
++  endif()
++else() # Part of LLVM build
++  # Determine the native architecture from LLVM.
++  string(TOLOWER "${LLVM_TARGET_ARCH}" LIBOMP_NATIVE_ARCH)
++  if( LIBOMP_NATIVE_ARCH STREQUAL "host" )
++    string(REGEX MATCH "^[^-]*" LIBOMP_NATIVE_ARCH ${LLVM_HOST_TRIPLE})
++  endif ()
++  if(LIBOMP_NATIVE_ARCH MATCHES "i[2-6]86")
++    set(LIBOMP_ARCH i386)
++  elseif(LIBOMP_NATIVE_ARCH STREQUAL "x86")
++    set(LIBOMP_ARCH i386)
++  elseif(LIBOMP_NATIVE_ARCH STREQUAL "amd64")
++    set(LIBOMP_ARCH x86_64)
++  elseif(LIBOMP_NATIVE_ARCH STREQUAL "x86_64")
++    set(LIBOMP_ARCH x86_64)
++  elseif(LIBOMP_NATIVE_ARCH MATCHES "powerpc")
++    set(LIBOMP_ARCH ppc64)
++  elseif(LIBOMP_NATIVE_ARCH MATCHES "aarch64")
++    set(LIBOMP_ARCH aarch64)
++  elseif(LIBOMP_NATIVE_ARCH MATCHES "arm64")
++    set(LIBOMP_ARCH aarch64)
++  elseif(LIBOMP_NATIVE_ARCH MATCHES "arm")
++    set(LIBOMP_ARCH arm)
++  else()
++    # last ditch effort
++    libomp_get_architecture(LIBOMP_ARCH)
++  endif ()
++  set(LIBOMP_LIBDIR_SUFFIX ${LLVM_LIBDIR_SUFFIX})
++  set(LIBOMP_ENABLE_ASSERTIONS ${LLVM_ENABLE_ASSERTIONS})
++endif()
++libomp_check_variable(LIBOMP_ARCH 32e x86_64 32 i386 arm ppc64 ppc64le aarch64 mic)
+ 
 -# - stats-gathering enables OpenMP stats where things like the number of 
 -# parallel regions, clock ticks spent in particular openmp regions are recorded.
 -set(LIBOMP_STATS false CACHE BOOL
 -    "Stats-Gathering functionality?")
--
++set(LIBOMP_LIB_TYPE normal CACHE STRING
++  "Performance,Profiling,Stubs library (normal/profile/stubs)")
++libomp_check_variable(LIBOMP_LIB_TYPE normal profile stubs)
++set(LIBOMP_VERSION 5 CACHE STRING
++  "Produce libguide (version 4) or libomp (version 5)")
++set(LIBOMP_OMP_VERSION 41 CACHE STRING
++  "The OpenMP version (41/40/30)")
++libomp_check_variable(LIBOMP_OMP_VERSION 41 40 30)
++set(LIBOMP_MIC_ARCH knc CACHE STRING
++  "Intel(R) Many Integrated Core Architecture (Intel(R) MIC Architecture) (knf/knc).  Ignored if not Intel(R) MIC Architecture build.")
++if("${LIBOMP_ARCH}" STREQUAL "mic")
++  libomp_check_variable(LIBOMP_MIC_ARCH knf knc)
++endif()
++set(LIBOMP_FORTRAN_MODULES FALSE CACHE BOOL
++  "Create Fortran module files? (requires fortran compiler)")
+ 
  # - Support for universal fat binary builds on Mac
 -# - Having this extra variable allows people to build this library as a universal library 
 +# - Having this extra variable allows people to build this library as a universal library
  #   without forcing a universal build of the llvm/clang compiler.
  set(LIBOMP_OSX_ARCHITECTURES "${CMAKE_OSX_ARCHITECTURES}" CACHE STRING
-     "For Mac builds, semicolon separated list of architectures to build for universal fat binary.")
+-    "For Mac builds, semicolon separated list of architectures to build for universal fat binary.")
++  "For Mac builds, semicolon separated list of architectures to build for universal fat binary.")
  set(CMAKE_OSX_ARCHITECTURES ${LIBOMP_OSX_ARCHITECTURES})
  
 -# - Code that allows the OpenMP library to conveniently interface with debuggers
@@ -198,26 +207,33 @@ Index: runtime/CMakeLists.txt
 -# in CommonFlags.cmake and ${CMAKE_C_COMPILER_ID}/*Flags.cmake (e.g., GNU/CFlags.cmake)
 +# User specified flags.  These are appended to the configured flags.
  set(LIBOMP_CFLAGS "" CACHE STRING
-     "Appended user specified C compiler flags.")
+-    "Appended user specified C compiler flags.")
++  "Appended user specified C compiler flags.")
  set(LIBOMP_CXXFLAGS "" CACHE STRING
-@@ -150,83 +112,21 @@
-     "Appended user specified linker flags.")
+-    "Appended user specified C++ compiler flags.")
++  "Appended user specified C++ compiler flags.")
+ set(LIBOMP_CPPFLAGS "" CACHE STRING
+-    "Appended user specified C preprocessor flags.")
++  "Appended user specified C preprocessor flags.")
+ set(LIBOMP_ASMFLAGS "" CACHE STRING
+-    "Appended user specified assembler flags.")
++  "Appended user specified assembler flags.")
+ set(LIBOMP_LDFLAGS "" CACHE STRING
+-    "Appended user specified linker flags.")
++  "Appended user specified linker flags.")
  set(LIBOMP_LIBFLAGS "" CACHE STRING
-     "Appended user specified linked libs flags. (e.g., -lm)")
+-    "Appended user specified linked libs flags. (e.g., -lm)")
 -set(LIBOMP_FFLAGS "" CACHE STRING 
 -    "Appended user specified Fortran compiler flags.  These are only used if LIBOMP_FORTRAN_MODULES==true.")
++  "Appended user specified linked libs flags. (e.g., -lm)")
 +set(LIBOMP_FFLAGS "" CACHE STRING
-+    "Appended user specified Fortran compiler flags.  These are only used if LIBOMP_FORTRAN_MODULES==TRUE.")
++  "Appended user specified Fortran compiler flags.  These are only used if LIBOMP_FORTRAN_MODULES==TRUE.")
  
  # Should the libomp library and generated headers be copied into the original source exports/ directory
 -# Turning this to false aids parallel builds to not interfere with each other.
 -set(LIBOMP_COPY_EXPORTS true CACHE STRING
-+# Turning this to FALSE aids parallel builds to not interfere with each other.
-+# Currently, the testsuite module expects the just built OpenMP library to be located inside the exports/
-+# directory.  TODO: have testsuite run under llvm-lit directly.  We can then get rid of copying to exports/
-+set(LIBOMP_COPY_EXPORTS TRUE CACHE STRING
-     "Should exports be copied into source exports/ directory?")
- 
+-    "Should exports be copied into source exports/ directory?")
+-
 -# - Allow three build types: Release, Debug, RelWithDebInfo (these relate to build.pl's release, debug, and diag settings respectively)
 -# - default is Release (when CMAKE_BUILD_TYPE is not defined)
 -# - CMAKE_BUILD_TYPE affects the -O and -g flags (CMake magically includes correct version of them on per compiler basis)
@@ -236,7 +252,12 @@ Index: runtime/CMakeLists.txt
 -    string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_lowercase)
 -    check_variable(cmake_build_type_lowercase  "${build_type_possible_values}")
 -endif()
--
++# Turning this to FALSE aids parallel builds to not interfere with each other.
++# Currently, the testsuite module expects the just built OpenMP library to be located inside the exports/
++# directory.  TODO: have testsuite run under llvm-lit directly.  We can then get rid of copying to exports/
++set(LIBOMP_COPY_EXPORTS TRUE CACHE STRING
++  "Should exports be copied into source exports/ directory?")
+ 
 -if(${LIBOMP_STANDALONE_BUILD})
 -    # Allow user to choose a suffix for the installation directory, or if part of
 -    # LLVM build then just use LLVM_LIBDIR_SUFFIX
@@ -261,12 +282,12 @@ Index: runtime/CMakeLists.txt
 -endif()
  # Get the build number from kmp_version.c
 -get_build_number("${CMAKE_CURRENT_SOURCE_DIR}" build_number)
--
++libomp_get_build_number("${CMAKE_CURRENT_SOURCE_DIR}" LIBOMP_BUILD_NUMBER)
+ 
 -# Getting time and date 
 -# As of now, no timestamp will be created.
 -set(date "No Timestamp")
-+libomp_get_build_number("${CMAKE_CURRENT_SOURCE_DIR}" LIBOMP_BUILD_NUMBER)
- 
+-
 -#################################################################
 -# Set some useful flags variables for other parts of cmake to use
 -# Operating System
@@ -293,20 +314,38 @@ Index: runtime/CMakeLists.txt
  
  # Architecture
  set(IA32 FALSE)
-@@ -236,9 +136,10 @@
+@@ -236,35 +136,39 @@
  set(PPC64BE FALSE)
  set(PPC64LE FALSE)
  set(PPC64 FALSE)
 -if("${LIBOMP_ARCH}" STREQUAL "32")      # IA-32 architecture
-+set(MIC FALSE)
-+if("${LIBOMP_ARCH}" STREQUAL "i386" OR "${LIBOMP_ARCH}" STREQUAL "32")      # IA-32 architecture
-     set(IA32 TRUE)
+-    set(IA32 TRUE)
 -elseif("${LIBOMP_ARCH}" STREQUAL "32e") # Intel(R) 64 architecture
+-    set(INTEL64 TRUE)
++set(MIC FALSE)
++if("${LIBOMP_ARCH}" STREQUAL "i386" OR "${LIBOMP_ARCH}" STREQUAL "32")    # IA-32 architecture
++  set(IA32 TRUE)
 +elseif("${LIBOMP_ARCH}" STREQUAL "x86_64" OR "${LIBOMP_ARCH}" STREQUAL "32e") # Intel(R) 64 architecture
-     set(INTEL64 TRUE)
++  set(INTEL64 TRUE)
  elseif("${LIBOMP_ARCH}" STREQUAL "arm") # ARM architecture
-     set(ARM TRUE)
-@@ -255,16 +156,19 @@
+-    set(ARM TRUE)
++  set(ARM TRUE)
+ elseif("${LIBOMP_ARCH}" STREQUAL "ppc64") # PPC64BE architecture
+-    set(PPC64BE TRUE)
+-    set(PPC64 TRUE)
++  set(PPC64BE TRUE)
++  set(PPC64 TRUE)
+ elseif("${LIBOMP_ARCH}" STREQUAL "ppc64le") # PPC64LE architecture
+-    set(PPC64LE TRUE)
+-    set(PPC64 TRUE)
++  set(PPC64LE TRUE)
++  set(PPC64 TRUE)
+ elseif("${LIBOMP_ARCH}" STREQUAL "aarch64") # AARCH64 architecture
+-    set(AARCH64 TRUE)
++  set(AARCH64 TRUE)
+ elseif("${LIBOMP_ARCH}" STREQUAL "mic") # Intel(R) Many Integrated Core Architecture
+-    set(MIC TRUE)
++  set(MIC TRUE)
  endif()
  
  # Set some flags based on build_type
@@ -315,25 +354,37 @@ Index: runtime/CMakeLists.txt
  set(DEBUG_BUILD FALSE)
  set(RELWITHDEBINFO_BUILD FALSE)
 -if("${cmake_build_type_lowercase}" STREQUAL "release")
+-    set(RELEASE_BUILD TRUE)
+-elseif("${cmake_build_type_lowercase}" STREQUAL "debug")
+-    set(DEBUG_BUILD TRUE)
+-elseif("${cmake_build_type_lowercase}" STREQUAL "relwithdebinfo")
+-    set(RELWITHDEBINFO_BUILD TRUE)
 +set(MINSIZEREL_BUILD FALSE)
 +string(TOLOWER "${CMAKE_BUILD_TYPE}" libomp_build_type_lowercase)
 +if("${libomp_build_type_lowercase}" STREQUAL "release")
-     set(RELEASE_BUILD TRUE)
--elseif("${cmake_build_type_lowercase}" STREQUAL "debug")
++  set(RELEASE_BUILD TRUE)
 +elseif("${libomp_build_type_lowercase}" STREQUAL "debug")
-     set(DEBUG_BUILD TRUE)
--elseif("${cmake_build_type_lowercase}" STREQUAL "relwithdebinfo")
++  set(DEBUG_BUILD TRUE)
 +elseif("${libomp_build_type_lowercase}" STREQUAL "relwithdebinfo")
-     set(RELWITHDEBINFO_BUILD TRUE)
++  set(RELWITHDEBINFO_BUILD TRUE)
 +elseif("${libomp_build_type_lowercase}" STREQUAL "minsizerel")
-+    set(MINSIZEREL_BUILD TRUE)
++  set(MINSIZEREL_BUILD TRUE)
  endif()
  
  # Include itt notify interface? Right now, always.
-@@ -282,328 +186,122 @@
-     set(STUBS_LIBRARY TRUE)
- endif()
- 
+@@ -275,335 +179,129 @@
+ set(STUBS_LIBRARY FALSE)
+ set(PROFILE_LIBRARY FALSE)
+ if("${LIBOMP_LIB_TYPE}" STREQUAL "normal")
+-    set(NORMAL_LIBRARY TRUE)
++  set(NORMAL_LIBRARY TRUE)
+ elseif("${LIBOMP_LIB_TYPE}" STREQUAL "profile")
+-    set(PROFILE_LIBRARY TRUE)
++  set(PROFILE_LIBRARY TRUE)
+ elseif("${LIBOMP_LIB_TYPE}" STREQUAL "stubs")
+-    set(STUBS_LIBRARY TRUE)
+-endif()
+-
 -###############################################
 -# Features for compilation and build in general
 -
@@ -347,66 +398,37 @@ Index: runtime/CMakeLists.txt
 -    "*INCOMPLETE* Does the compiler support a 128-bit floating point type?")
 -set(LIBOMP_COMPILER_QUAD_TYPE "" CACHE STRING
 -    "*INCOMPLETE* The quad precision data type (e.g., for gcc, __float128)")
-+# Setting directory names
-+set(LIBOMP_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-+set(LIBOMP_SRC_DIR ${LIBOMP_BASE_DIR}/src)
-+set(LIBOMP_TOOLS_DIR ${LIBOMP_BASE_DIR}/tools)
-+set(LIBOMP_INC_DIR ${LIBOMP_SRC_DIR}/include/${LIBOMP_OMP_VERSION})
- 
+-
 -# - Should the orignal build rules for builds be used? (cmake/OriginalBuildRules.cmake).  This setting is off by default.
 -# - This always compiles with -g.  And if it is a release build, the debug info is stripped out via objcopy and put into libomp.dbg.
 -set(LIBOMP_USE_BUILDPL_RULES false CACHE BOOL
 -    "Should the build follow build.pl rules/recipes?")
-+# Enabling Fortran if it is needed
-+# Enable MASM Compiler if it is needed (Windows only)
-+if(${LIBOMP_FORTRAN_MODULES})
-+    enable_language(Fortran)
-+endif()
-+if(WIN32)
-+    enable_language(ASM_MASM)
-+endif()
- 
+-
 -# - Should the build use the predefined linker flags (OS-dependent) in CommonFlags.cmake?
 -# - these predefined linker flags should work for Windows, Mac, and True Linux for the most popular compilers/linkers
 -set(LIBOMP_USE_PREDEFINED_LINKER_FLAGS true CACHE BOOL
 -    "Should the build use the predefined linker flags in CommonFlags.cmake?")
-+# Getting legal type/arch
-+libomp_get_legal_type(LIBOMP_LEGAL_TYPE)
-+libomp_get_legal_arch(LIBOMP_LEGAL_ARCH)
- 
+-
 -# - On multinode systems, larger alignment is desired to avoid false sharing
 -set(LIBOMP_USE_INTERNODE_ALIGNMENT false CACHE BOOL
 -    "Should larger alignment (4096 bytes) be used for some locks and data structures?")
-+# Compiler flag checks, library checks, threading check, etc.
-+include(config-ix)
- 
+-
 -# - libgomp drop-in compatibility
 -if(${LINUX} AND NOT ${PPC64})
 -    set(LIBOMP_USE_VERSION_SYMBOLS true CACHE BOOL
 -        "Should version symbols be used? These provide binary compatibility with libgomp.")
 -else()
 -    set(LIBOMP_USE_VERSION_SYMBOLS false)
-+# Is there a quad precision data type available?
-+# TODO: Make this a real feature check
-+set(LIBOMP_USE_QUAD_PRECISION "${LIBOMP_HAVE_QUAD_PRECISION}" CACHE BOOL
-+    "Should 128-bit precision entry points be built?")
-+if(LIBOMP_USE_QUAD_PRECISION AND (NOT LIBOMP_HAVE_QUAD_PRECISION))
-+    libomp_error_say("128-bit quad precision functionality requested but not available")
- endif()
- 
+-endif()
+-
 -# - TSX based locks have __asm code which can be troublesome for some compilers.  This feature is also x86 specific.
 -if(${IA32} OR ${INTEL64})
 -    set(LIBOMP_USE_ADAPTIVE_LOCKS true CACHE BOOL
 -        "Should TSX-based lock be compiled (adaptive lock in kmp_lock.cpp).  These are x86 specific.")
 -else()
 -    set(LIBOMP_USE_ADAPTIVE_LOCKS false)
-+# libgomp drop-in compatibility requires versioned symbols
-+set(LIBOMP_USE_VERSION_SYMBOLS "${LIBOMP_HAVE_VERSION_SYMBOLS}" CACHE BOOL
-+    "Should version symbols be used? These provide binary compatibility with libgomp.")
-+if(LIBOMP_USE_VERSION_SYMBOLS AND (NOT LIBOMP_HAVE_VERSION_SYMBOLS))
-+    libomp_error_say("Version symbols functionality requested but not available")
- endif()
- 
+-endif()
+-
 -##################################
 -# Error checking the configuration 
 -if(${LIBOMP_STATS} AND (${WINDOWS} OR ${MAC}))
@@ -421,10 +443,7 @@ Index: runtime/CMakeLists.txt
 -if(${LIBOMP_OMPT_SUPPORT} AND ${WINDOWS})
 -    error_say("OpenMP Tools Interface is not supported on Windows")
 -endif()
-+# On multinode systems, larger alignment is desired to avoid false sharing
-+set(LIBOMP_USE_INTERNODE_ALIGNMENT FALSE CACHE BOOL
-+    "Should larger alignment (4096 bytes) be used for some locks and data structures?")
- 
+-
 -###############################################
 -# - Create the suffix for the export directory
 -# - Only add to suffix when not a default value
@@ -450,47 +469,29 @@ Index: runtime/CMakeLists.txt
 -        set(suffix "${suffix}.no-ompt-trace")
 -    endif()
 -endif()
-+# Build code that allows the OpenMP library to conveniently interface with debuggers
-+set(LIBOMP_USE_DEBUGGER FALSE CACHE BOOL
-+    "Enable debugger interface code?")
- 
+-
 -####################################
 -# Setting file extensions / suffixes
 -set(obj ${CMAKE_C_OUTPUT_EXTENSION})
 -set(lib ${CMAKE_STATIC_LIBRARY_SUFFIX})
 -set(dll ${CMAKE_SHARED_LIBRARY_SUFFIX})
 -set(exe ${CMAKE_EXECUTABLE_SUFFIX})
-+# Should we link to C++ library?
-+set(LIBOMP_USE_STDCPPLIB FALSE CACHE BOOL
-+    "Should we link to C++ library?")
- 
+-
 -######################
 -# Find perl executable
 -# Perl is used to create omp.h (and other headers) along with kmp_i18n_id.inc and kmp_i18n_default.inc (see below in Rules section)
 -if(NOT "${PERL_FOUND}") # variable is defined in FindPerl Standard CMake Module
 -    error_say("Error: Could not find valid perl")
-+# TSX (x86) based locks have __asm code which can be troublesome for some compilers.
-+# TODO: Make this a real feature check
-+set(LIBOMP_USE_ADAPTIVE_LOCKS "${LIBOMP_HAVE_ADAPTIVE_LOCKS}" CACHE BOOL
-+    "Should TSX-based lock be compiled (adaptive lock in kmp_lock.cpp).  These are x86 specific.")
-+if(LIBOMP_USE_ADAPTIVE_LOCKS AND (NOT LIBOMP_HAVE_ADAPTIVE_LOCKS))
-+    libomp_error_say("Adaptive locks (TSX) functionality requested but not available")
++  set(STUBS_LIBRARY TRUE)
  endif()
  
 -#########################
--# Setting directory names
+ # Setting directory names
 -if(${MIC})
 -    set(platform "${real_os}_${LIBOMP_MIC_ARCH}") # e.g., lin_knf, lin_knc
 -else()
 -    set(platform "${real_os}_${LIBOMP_ARCH}") # e.g., lin_32e, mac_32
-+# - stats-gathering enables OpenMP stats where things like the number of
-+# parallel regions, clock ticks spent in particular openmp regions are recorded.
-+# TODO: Make this a real feature check
-+set(LIBOMP_STATS FALSE CACHE BOOL
-+    "Stats-Gathering functionality?")
-+if(LIBOMP_STATS AND (NOT LIBOMP_HAVE_STATS))
-+    libomp_error_say("Stats-gathering functionality requested but not available")
- endif()
+-endif()
 -# build directory (Where CMakeCache.txt is created, build files generated)
 -set(build_dir "${CMAKE_CURRENT_BINARY_DIR}")
 -set(src_dir "${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -506,34 +507,52 @@ Index: runtime/CMakeLists.txt
 -    # macs use lib.thin/ subdirectory for non-fat libraries that only contain one architecture
 -    # macs use lib/ subdirectory for fat libraries that contain both IA-32 architecture and Intel(R) 64 architecture code.
 -    _export_lib_fat_dir(${platform} export_lib_fat_dir)
++set(LIBOMP_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
++set(LIBOMP_SRC_DIR ${LIBOMP_BASE_DIR}/src)
++set(LIBOMP_TOOLS_DIR ${LIBOMP_BASE_DIR}/tools)
++set(LIBOMP_INC_DIR ${LIBOMP_SRC_DIR}/include/${LIBOMP_OMP_VERSION})
 +
-+# OMPT-support
-+# TODO: Make this a real feature check
-+set(LIBOMP_OMPT_SUPPORT FALSE CACHE BOOL
-+    "OMPT-support?")
-+set(LIBOMP_OMPT_BLAME TRUE CACHE BOOL
-+    "OMPT-blame?")
-+set(LIBOMP_OMPT_TRACE TRUE CACHE BOOL
-+    "OMPT-trace?")
-+if(LIBOMP_OMPT_SUPPORT AND (NOT LIBOMP_HAVE_OMPT_SUPPORT))
-+    libomp_error_say("OpenMP Tools Interface requested but not available")
++# Enabling Fortran if it is needed
++if(${LIBOMP_FORTRAN_MODULES})
++  enable_language(Fortran)
++endif()
++# Enable MASM Compiler if it is needed (Windows only)
++if(WIN32)
++  enable_language(ASM_MASM)
  endif()
 -set(inc_dir "${src_dir}/include/${LIBOMP_OMP_VERSION}")
  
 -############################
- # Setting final library name
+-# Setting final library name
 -set(lib_item "libomp")
-+set(LIBOMP_DEFAULT_LIB_NAME libomp)
- if(${PROFILE_LIBRARY})
+-if(${PROFILE_LIBRARY})
 -    set(lib_item "${lib_item}prof")
-+    set(LIBOMP_DEFAULT_LIB_NAME ${LIBOMP_DEFAULT_LIB_NAME}prof)
- endif()
- if(${STUBS_LIBRARY})
--    set(lib_item "${lib_item}stubs")
 -endif()
+-if(${STUBS_LIBRARY})
+-    set(lib_item "${lib_item}stubs")
++# Getting legal type/arch
++libomp_get_legal_type(LIBOMP_LEGAL_TYPE)
++libomp_get_legal_arch(LIBOMP_LEGAL_ARCH)
++
++# Compiler flag checks, library checks, threading check, etc.
++include(config-ix)
++
++# Is there a quad precision data type available?
++# TODO: Make this a real feature check
++set(LIBOMP_USE_QUAD_PRECISION "${LIBOMP_HAVE_QUAD_PRECISION}" CACHE BOOL
++  "Should 128-bit precision entry points be built?")
++if(LIBOMP_USE_QUAD_PRECISION AND (NOT LIBOMP_HAVE_QUAD_PRECISION))
++  libomp_error_say("128-bit quad precision functionality requested but not available")
+ endif()
 -if(${WINDOWS})
 -    set(lib_item "${lib_item}md")
--endif()
++
++# libgomp drop-in compatibility requires versioned symbols
++set(LIBOMP_USE_VERSION_SYMBOLS "${LIBOMP_HAVE_VERSION_SYMBOLS}" CACHE BOOL
++  "Should version symbols be used? These provide binary compatibility with libgomp.")
++if(LIBOMP_USE_VERSION_SYMBOLS AND (NOT LIBOMP_HAVE_VERSION_SYMBOLS))
++  libomp_error_say("Version symbols functionality requested but not available")
+ endif()
 -set(LIBOMP_LIB_NAME "${lib_item}" CACHE STRING "OMP library name")
 -set(lib_ext "${dll}")
 -# ${lib_file} is real library name:
@@ -559,17 +578,54 @@ Index: runtime/CMakeLists.txt
 -
 -if(${LIBOMP_OMPT_SUPPORT})
 -    set(export_cmn_files ${export_cmn_files} "ompt.h")
--endif()
--
++
++# On multinode systems, larger alignment is desired to avoid false sharing
++set(LIBOMP_USE_INTERNODE_ALIGNMENT FALSE CACHE BOOL
++  "Should larger alignment (4096 bytes) be used for some locks and data structures?")
++
++# Build code that allows the OpenMP library to conveniently interface with debuggers
++set(LIBOMP_USE_DEBUGGER FALSE CACHE BOOL
++  "Enable debugger interface code?")
++
++# Should we link to C++ library?
++set(LIBOMP_USE_STDCPPLIB FALSE CACHE BOOL
++  "Should we link to C++ library?")
++
++# TSX (x86) based locks have __asm code which can be troublesome for some compilers.
++# TODO: Make this a real feature check
++set(LIBOMP_USE_ADAPTIVE_LOCKS "${LIBOMP_HAVE_ADAPTIVE_LOCKS}" CACHE BOOL
++  "Should TSX-based lock be compiled (adaptive lock in kmp_lock.cpp).  These are x86 specific.")
++if(LIBOMP_USE_ADAPTIVE_LOCKS AND (NOT LIBOMP_HAVE_ADAPTIVE_LOCKS))
++  libomp_error_say("Adaptive locks (TSX) functionality requested but not available")
+ endif()
+ 
 -if("${export_lib_fat_dir}")
 -    set(export_lib_fat_files "${lib_file}" "${imp_file}")
--endif()
--
++# - stats-gathering enables OpenMP stats where things like the number of
++# parallel regions, clock ticks spent in particular openmp regions are recorded.
++# TODO: Make this a real feature check
++set(LIBOMP_STATS FALSE CACHE BOOL
++  "Stats-Gathering functionality?")
++if(LIBOMP_STATS AND (NOT LIBOMP_HAVE_STATS))
++  libomp_error_say("Stats-gathering functionality requested but not available")
+ endif()
+ 
 -#########################
 -# Getting legal type/arch
 -set_legal_type(legal_type)
 -set_legal_arch(legal_arch)
--
++# OMPT-support
++# TODO: Make this a real feature check
++set(LIBOMP_OMPT_SUPPORT FALSE CACHE BOOL
++  "OMPT-support?")
++set(LIBOMP_OMPT_BLAME TRUE CACHE BOOL
++  "OMPT-blame?")
++set(LIBOMP_OMPT_TRACE TRUE CACHE BOOL
++  "OMPT-trace?")
++if(LIBOMP_OMPT_SUPPORT AND (NOT LIBOMP_HAVE_OMPT_SUPPORT))
++  libomp_error_say("OpenMP Tools Interface requested but not available")
++endif()
+ 
 -#################################################
 -# Preprocessor Definitions (cmake/Definitions.cmake)
 -# Preprocessor Includes 
@@ -664,8 +720,7 @@ Index: runtime/CMakeLists.txt
 -# Debug print outs.  Will print "variable = ${variable}" if GLOBAL_DEBUG == 1
 -if(GLOBAL_DEBUG)
 -    include(CMakePrintSystemInformation)
-+    set(LIBOMP_DEFAULT_LIB_NAME ${LIBOMP_DEFAULT_LIB_NAME}stubs)
- endif()
+-endif()
 -debug_say_var(CMAKE_ASM_COMPILE_OBJECT)
 -debug_say_var(CMAKE_RC_COMPILER)
 -debug_say_var(CMAKE_C_COMPILER_ID)
@@ -690,6 +745,14 @@ Index: runtime/CMakeLists.txt
 -debug_say_var(imp_c_items)
 -debug_say_var(lib_src_files)
 -debug_say_var(imp_src_files)
++# Setting final library name
++set(LIBOMP_DEFAULT_LIB_NAME libomp)
++if(${PROFILE_LIBRARY})
++  set(LIBOMP_DEFAULT_LIB_NAME ${LIBOMP_DEFAULT_LIB_NAME}prof)
++endif()
++if(${STUBS_LIBRARY})
++  set(LIBOMP_DEFAULT_LIB_NAME ${LIBOMP_DEFAULT_LIB_NAME}stubs)
++endif()
 +set(LIBOMP_LIB_NAME ${LIBOMP_DEFAULT_LIB_NAME} CACHE STRING "Base OMP library name")
 +set(LIBOMP_LIB_FILE ${LIBOMP_LIB_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX})
  
@@ -698,56 +761,62 @@ Index: runtime/CMakeLists.txt
  if(${LIBOMP_STANDALONE_BUILD})
 -    say("LIBOMP: Operating System     -- ${LIBOMP_OS}")
 -    say("LIBOMP: Target Architecture  -- ${LIBOMP_ARCH}")
-+    libomp_say("Operating System     -- ${CMAKE_SYSTEM_NAME}")
-+    libomp_say("Target Architecture  -- ${LIBOMP_ARCH}")
-     if(${MIC})
+-    if(${MIC})
 -        say("LIBOMP: Intel(R) MIC Architecture    -- ${LIBOMP_MIC_ARCH}")
-+        libomp_say("Intel(R) MIC Architecture    -- ${LIBOMP_MIC_ARCH}")
-     endif()
+-    endif()
 -    say("LIBOMP: Build Type           -- ${CMAKE_BUILD_TYPE}")
 -    say("LIBOMP: OpenMP Version       -- ${LIBOMP_OMP_VERSION}")
 -    say("LIBOMP: Lib Type             -- ${LIBOMP_LIB_TYPE}")
 -    say("LIBOMP: Fortran Modules      -- ${LIBOMP_FORTRAN_MODULES}")
-+    libomp_say("Build Type           -- ${CMAKE_BUILD_TYPE}")
-+    libomp_say("OpenMP Version       -- ${LIBOMP_OMP_VERSION}")
-+    libomp_say("Lib Type             -- ${LIBOMP_LIB_TYPE}")
-+    libomp_say("Fortran Modules      -- ${LIBOMP_FORTRAN_MODULES}")
-     # will say development if all zeros
+-    # will say development if all zeros
 -    if("${build_number}" STREQUAL "00000000")
 -        set(build "development")
-+    if(${LIBOMP_BUILD_NUMBER} STREQUAL 00000000)
-+        set(LIBOMP_BUILD Development)
-     else()
+-    else()
 -        set(build "${build_number}")
-+        set(LIBOMP_BUILD ${LIBOMP_BUILD_NUMBER})
-     endif()
+-    endif()
 -    say("LIBOMP: Build                -- ${build}")
 -    say("LIBOMP: Stats-Gathering      -- ${LIBOMP_STATS}")
 -    say("LIBOMP: Debugger-support     -- ${LIBOMP_USE_DEBUGGER}")
 -    say("LIBOMP: OMPT-support         -- ${LIBOMP_OMPT_SUPPORT}")
-+    libomp_say("Build                -- ${LIBOMP_BUILD}")
-+    libomp_say("Use Stats-gathering  -- ${LIBOMP_STATS}")
-+    libomp_say("Use Debugger-support -- ${LIBOMP_USE_DEBUGGER}")
-+    libomp_say("Use OMPT-support     -- ${LIBOMP_OMPT_SUPPORT}")
-     if(${LIBOMP_OMPT_SUPPORT})
+-    if(${LIBOMP_OMPT_SUPPORT})
 -        say("LIBOMP: OMPT-blame           -- ${LIBOMP_OMPT_BLAME}")
 -        say("LIBOMP: OMPT-trace           -- ${LIBOMP_OMPT_TRACE}")
-+        libomp_say("Use OMPT-blame       -- ${LIBOMP_OMPT_BLAME}")
-+        libomp_say("Use OMPT-trace       -- ${LIBOMP_OMPT_TRACE}")
-     endif()
+-    endif()
 -    say("LIBOMP: Use build.pl rules   -- ${LIBOMP_USE_BUILDPL_RULES}")
 -    say("LIBOMP: Adaptive locks       -- ${LIBOMP_USE_ADAPTIVE_LOCKS}")
 -    say("LIBOMP: Use predefined linker flags      -- ${LIBOMP_USE_PREDEFINED_LINKER_FLAGS}")
 -    say("LIBOMP: Compiler supports quad precision -- ${LIBOMP_COMPILER_SUPPORTS_QUAD_PRECISION}")
-+    libomp_say("Use Adaptive locks   -- ${LIBOMP_USE_ADAPTIVE_LOCKS}")
-+    libomp_say("Use quad precision   -- ${LIBOMP_USE_QUAD_PRECISION}")
++  libomp_say("Operating System     -- ${CMAKE_SYSTEM_NAME}")
++  libomp_say("Target Architecture  -- ${LIBOMP_ARCH}")
++  if(${MIC})
++    libomp_say("Intel(R) MIC Architecture    -- ${LIBOMP_MIC_ARCH}")
++  endif()
++  libomp_say("Build Type           -- ${CMAKE_BUILD_TYPE}")
++  libomp_say("OpenMP Version       -- ${LIBOMP_OMP_VERSION}")
++  libomp_say("Lib Type             -- ${LIBOMP_LIB_TYPE}")
++  libomp_say("Fortran Modules      -- ${LIBOMP_FORTRAN_MODULES}")
++  # will say development if all zeros
++  if(${LIBOMP_BUILD_NUMBER} STREQUAL 00000000)
++    set(LIBOMP_BUILD Development)
++  else()
++    set(LIBOMP_BUILD ${LIBOMP_BUILD_NUMBER})
++  endif()
++  libomp_say("Build                -- ${LIBOMP_BUILD}")
++  libomp_say("Use Stats-gathering  -- ${LIBOMP_STATS}")
++  libomp_say("Use Debugger-support -- ${LIBOMP_USE_DEBUGGER}")
++  libomp_say("Use OMPT-support     -- ${LIBOMP_OMPT_SUPPORT}")
++  if(${LIBOMP_OMPT_SUPPORT})
++    libomp_say("Use OMPT-blame       -- ${LIBOMP_OMPT_BLAME}")
++    libomp_say("Use OMPT-trace       -- ${LIBOMP_OMPT_TRACE}")
++  endif()
++  libomp_say("Use Adaptive locks   -- ${LIBOMP_USE_ADAPTIVE_LOCKS}")
++  libomp_say("Use quad precision   -- ${LIBOMP_USE_QUAD_PRECISION}")
  endif()
  
  add_subdirectory(src)
-Index: runtime/cmake/BuildPLRules.cmake
-===================================================================
---- runtime/cmake/BuildPLRules.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/BuildPLRules.cmake openmp-3.7.0.src/runtime/cmake/BuildPLRules.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/BuildPLRules.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/BuildPLRules.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,112 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -861,10 +930,9 @@ Index: runtime/cmake/BuildPLRules.cmake
 -    set(CMAKE_ASM_FLAGS_RELEASE ${CMAKE_ASM_FLAGS_RELWITHDEBINFO})
 -endif()
 -
-Index: runtime/cmake/Clang/AsmFlags.cmake
-===================================================================
---- runtime/cmake/Clang/AsmFlags.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/Clang/AsmFlags.cmake openmp-3.7.0.src/runtime/cmake/Clang/AsmFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/Clang/AsmFlags.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/Clang/AsmFlags.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,27 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -893,10 +961,9 @@ Index: runtime/cmake/Clang/AsmFlags.cmake
 -    set(${input_asm_flags} ${${input_asm_flags}} "${local_asm_flags}" PARENT_SCOPE)
 -endfunction()
 -
-Index: runtime/cmake/Clang/CFlags.cmake
-===================================================================
---- runtime/cmake/Clang/CFlags.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/Clang/CFlags.cmake openmp-3.7.0.src/runtime/cmake/Clang/CFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/Clang/CFlags.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/Clang/CFlags.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,50 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -948,10 +1015,9 @@ Index: runtime/cmake/Clang/CFlags.cmake
 -    set(${input_ld_flags_libs} ${${input_ld_flags_libs}} "${local_ld_flags_libs}"  PARENT_SCOPE)
 -endfunction()
 -
-Index: runtime/cmake/CommonFlags.cmake
-===================================================================
---- runtime/cmake/CommonFlags.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/CommonFlags.cmake openmp-3.7.0.src/runtime/cmake/CommonFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/CommonFlags.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/CommonFlags.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,138 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -1091,10 +1157,9 @@ Index: runtime/cmake/CommonFlags.cmake
 -    set(${input_ar_flags} "${${input_ar_flags}}" "${local_ar_flags}" PARENT_SCOPE)
 -endfunction()
 -
-Index: runtime/cmake/Definitions.cmake
-===================================================================
---- runtime/cmake/Definitions.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/Definitions.cmake openmp-3.7.0.src/runtime/cmake/Definitions.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/Definitions.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/Definitions.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,167 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -1263,10 +1328,9 @@ Index: runtime/cmake/Definitions.cmake
 -    set(${input_cpp_flags} "${${input_cpp_flags}}" "${local_cpp_flags}" "${LIBOMP_CPPFLAGS}" "$ENV{CPPFLAGS}" PARENT_SCOPE)
 -endfunction()
 -
-Index: runtime/cmake/GNU/AsmFlags.cmake
-===================================================================
---- runtime/cmake/GNU/AsmFlags.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/GNU/AsmFlags.cmake openmp-3.7.0.src/runtime/cmake/GNU/AsmFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/GNU/AsmFlags.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/GNU/AsmFlags.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,27 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -1295,10 +1359,9 @@ Index: runtime/cmake/GNU/AsmFlags.cmake
 -    set(${input_asm_flags} ${${input_asm_flags}} "${local_asm_flags}" PARENT_SCOPE)
 -endfunction()
 -
-Index: runtime/cmake/GNU/CFlags.cmake
-===================================================================
---- runtime/cmake/GNU/CFlags.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/GNU/CFlags.cmake openmp-3.7.0.src/runtime/cmake/GNU/CFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/GNU/CFlags.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/GNU/CFlags.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,56 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -1356,10 +1419,9 @@ Index: runtime/cmake/GNU/CFlags.cmake
 -    set(${input_ld_flags_libs} ${${input_ld_flags_libs}} "${local_ld_flags_libs}"  PARENT_SCOPE)
 -endfunction()
 -
-Index: runtime/cmake/GNU/FortranFlags.cmake
-===================================================================
---- runtime/cmake/GNU/FortranFlags.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/GNU/FortranFlags.cmake openmp-3.7.0.src/runtime/cmake/GNU/FortranFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/GNU/FortranFlags.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/GNU/FortranFlags.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,25 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -1386,10 +1448,9 @@ Index: runtime/cmake/GNU/FortranFlags.cmake
 -    endif()
 -    set(${input_fort_flags} ${${input_fort_flags}} "${local_fort_flags}" PARENT_SCOPE)
 -endfunction()
-Index: runtime/cmake/GetArchitecture.cmake
-===================================================================
---- runtime/cmake/GetArchitecture.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/GetArchitecture.cmake openmp-3.7.0.src/runtime/cmake/GetArchitecture.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/GetArchitecture.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/GetArchitecture.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,67 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -1458,10 +1519,9 @@ Index: runtime/cmake/GetArchitecture.cmake
 -    # Remove ${detect_arch_src_txt} from cmake/ subdirectory
 -    file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/detect_arch.c")
 -endfunction()
-Index: runtime/cmake/HelperFunctions.cmake
-===================================================================
---- runtime/cmake/HelperFunctions.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/HelperFunctions.cmake openmp-3.7.0.src/runtime/cmake/HelperFunctions.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/HelperFunctions.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/HelperFunctions.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,260 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -1723,10 +1783,9 @@ Index: runtime/cmake/HelperFunctions.cmake
 -    endif()
 -endmacro()
 -
-Index: runtime/cmake/Intel/AsmFlags.cmake
-===================================================================
---- runtime/cmake/Intel/AsmFlags.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/Intel/AsmFlags.cmake openmp-3.7.0.src/runtime/cmake/Intel/AsmFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/Intel/AsmFlags.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/Intel/AsmFlags.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,42 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -1770,10 +1829,9 @@ Index: runtime/cmake/Intel/AsmFlags.cmake
 -    endif()
 -    set(${input_asm_flags} ${${input_asm_flags}} "${local_asm_flags}" PARENT_SCOPE)
 -endfunction()
-Index: runtime/cmake/Intel/CFlags.cmake
-===================================================================
---- runtime/cmake/Intel/CFlags.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/Intel/CFlags.cmake openmp-3.7.0.src/runtime/cmake/Intel/CFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/Intel/CFlags.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/Intel/CFlags.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,160 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -1935,10 +1993,9 @@ Index: runtime/cmake/Intel/CFlags.cmake
 -    set(${input_ld_flags_libs} ${${input_ld_flags_libs}} "${local_ld_flags_libs}"  PARENT_SCOPE)
 -endfunction()
 -
-Index: runtime/cmake/Intel/FortranFlags.cmake
-===================================================================
---- runtime/cmake/Intel/FortranFlags.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/Intel/FortranFlags.cmake openmp-3.7.0.src/runtime/cmake/Intel/FortranFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/Intel/FortranFlags.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/Intel/FortranFlags.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,48 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -1988,10 +2045,9 @@ Index: runtime/cmake/Intel/FortranFlags.cmake
 -    endif()
 -    set(${input_fort_flags} ${${input_fort_flags}} "${local_fort_flags}" PARENT_SCOPE)
 -endfunction()
-Index: runtime/cmake/LibompCheckFortranFlag.cmake
-===================================================================
---- /dev/null
-+++ runtime/cmake/LibompCheckFortranFlag.cmake
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/LibompCheckFortranFlag.cmake openmp-3.7.0.src/runtime/cmake/LibompCheckFortranFlag.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/LibompCheckFortranFlag.cmake	1969-12-31 19:00:00.000000000 -0500
++++ openmp-3.7.0.src/runtime/cmake/LibompCheckFortranFlag.cmake	2015-07-15 13:45:31.000000000 -0400
 @@ -0,0 +1,73 @@
 +#
 +#//===----------------------------------------------------------------------===//
@@ -2015,61 +2071,60 @@ Index: runtime/cmake/LibompCheckFortranFlag.cmake
 +           print *, \"Hello World!\"
 +      end program hello")
 +
-+    set(failed_regexes "[Ee]rror;[Uu]nknown;[Ss]kipping")
-+    if(CMAKE_VERSION VERSION_GREATER 3.1 OR CMAKE_VERSION VERSION_EQUAL 3.1)
-+        include(CheckFortranSourceCompiles)
-+        check_fortran_source_compiles("${fortran_source}" ${boolean} FAIL_REGEX "${failed_regexes}")
-+        set(${boolean} ${${boolean}} PARENT_SCOPE)
-+        return()
++  set(failed_regexes "[Ee]rror;[Uu]nknown;[Ss]kipping")
++  if(CMAKE_VERSION VERSION_GREATER 3.1 OR CMAKE_VERSION VERSION_EQUAL 3.1)
++    include(CheckFortranSourceCompiles)
++    check_fortran_source_compiles("${fortran_source}" ${boolean} FAIL_REGEX "${failed_regexes}")
++    set(${boolean} ${${boolean}} PARENT_SCOPE)
++    return()
++  else()
++    # Our manual check for cmake versions that don't have CheckFortranSourceCompiles
++    set(base_dir ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/fortran_flag_check)
++    file(MAKE_DIRECTORY ${base_dir})
++    file(WRITE ${base_dir}/fortran_source.f "${fortran_source}")
++
++    message(STATUS "Performing Test ${boolean}")
++    execute_process(
++      COMMAND ${CMAKE_Fortran_COMPILER} "${flag}" ${base_dir}/fortran_source.f
++      WORKING_DIRECTORY ${base_dir}
++      RESULT_VARIABLE exit_code
++      OUTPUT_VARIABLE OUTPUT
++      ERROR_VARIABLE OUTPUT
++    )
++
++    if(${exit_code} EQUAL 0)
++      foreach(regex IN LISTS failed_regexes)
++        if("${OUTPUT}" MATCHES ${regex})
++          set(retval FALSE)
++        endif()
++      endforeach()
 +    else()
-+        # Our manual check for cmake versions that don't have CheckFortranSourceCompiles
-+        set(base_dir ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/fortran_flag_check)
-+        file(MAKE_DIRECTORY ${base_dir})
-+        file(WRITE ${base_dir}/fortran_source.f "${fortran_source}")
-+
-+        message(STATUS "Performing Test ${boolean}")
-+        execute_process(
-+            COMMAND ${CMAKE_Fortran_COMPILER} "${flag}" ${base_dir}/fortran_source.f
-+            WORKING_DIRECTORY ${base_dir}
-+            RESULT_VARIABLE exit_code
-+            OUTPUT_VARIABLE OUTPUT
-+            ERROR_VARIABLE OUTPUT
-+        )
-+
-+        if(${exit_code} EQUAL 0)
-+            foreach(regex IN LISTS failed_regexes)
-+                if("${OUTPUT}" MATCHES ${regex})
-+                    set(retval FALSE)
-+                endif()
-+            endforeach()
-+        else()
-+            set(retval FALSE)
-+        endif()
-+
-+        if(${retval})
-+            set(${boolean} 1 CACHE INTERNAL "Test ${boolean}")
-+            message(STATUS "Performing Test ${boolean} - Success")
-+            file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-+              "Performing Fortran Compiler Flag test ${boolean} succeeded with the following output:\n"
-+              "${OUTPUT}\n"
-+              "Source file was:\n${fortran_source}\n")
-+        else()
-+            set(${boolean} "" CACHE INTERNAL "Test ${boolean}")
-+            message(STATUS "Performing Test ${boolean} - Failed")
-+            file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
-+              "Performing Fortran Compiler Flag test ${boolean} failed with the following output:\n"
-+              "${OUTPUT}\n"
-+              "Source file was:\n${fortran_source}\n")
-+        endif()
++      set(retval FALSE)
 +    endif()
 +
-+    set(${boolean} ${retval} PARENT_SCOPE)
++    if(${retval})
++      set(${boolean} 1 CACHE INTERNAL "Test ${boolean}")
++      message(STATUS "Performing Test ${boolean} - Success")
++      file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
++        "Performing Fortran Compiler Flag test ${boolean} succeeded with the following output:\n"
++        "${OUTPUT}\n"
++        "Source file was:\n${fortran_source}\n")
++    else()
++      set(${boolean} "" CACHE INTERNAL "Test ${boolean}")
++      message(STATUS "Performing Test ${boolean} - Failed")
++      file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
++        "Performing Fortran Compiler Flag test ${boolean} failed with the following output:\n"
++        "${OUTPUT}\n"
++        "Source file was:\n${fortran_source}\n")
++    endif()
++  endif()
++
++  set(${boolean} ${retval} PARENT_SCOPE)
 +  endif()
 +endfunction()
-Index: runtime/cmake/LibompCheckLinkerFlag.cmake
-===================================================================
---- /dev/null
-+++ runtime/cmake/LibompCheckLinkerFlag.cmake
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/LibompCheckLinkerFlag.cmake openmp-3.7.0.src/runtime/cmake/LibompCheckLinkerFlag.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/LibompCheckLinkerFlag.cmake	1969-12-31 19:00:00.000000000 -0500
++++ openmp-3.7.0.src/runtime/cmake/LibompCheckLinkerFlag.cmake	2015-07-15 13:45:31.000000000 -0400
 @@ -0,0 +1,68 @@
 +#
 +#//===----------------------------------------------------------------------===//
@@ -2087,62 +2142,61 @@ Index: runtime/cmake/LibompCheckLinkerFlag.cmake
 +# this will have ${boolean} = TRUE if the flag succeeds, otherwise FALSE.
 +function(libomp_check_linker_flag flag boolean)
 +  if(NOT DEFINED "${boolean}")
-+    set(retval TRUE)
-+    set(library_source
-+        "int foo(int a) { return a*a; }")
-+    set(cmake_source
-+        "cmake_minimum_required(VERSION 2.8)
-+         project(foo C)
-+         set(CMAKE_SHARED_LINKER_FLAGS \"${flag}\")
-+         add_library(foo SHARED src_to_link.c)")
-+    set(failed_regexes "[Ee]rror;[Uu]nknown;[Ss]kipping;LINK : warning")
-+    set(base_dir ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/link_flag_check)
-+    file(MAKE_DIRECTORY ${base_dir})
-+    file(MAKE_DIRECTORY ${base_dir}/build)
-+    file(WRITE ${base_dir}/src_to_link.c "${library_source}")
-+    file(WRITE ${base_dir}/CMakeLists.txt "${cmake_source}")
++  set(retval TRUE)
++  set(library_source
++    "int foo(int a) { return a*a; }")
++  set(cmake_source
++    "cmake_minimum_required(VERSION 2.8)
++     project(foo C)
++     set(CMAKE_SHARED_LINKER_FLAGS \"${flag}\")
++     add_library(foo SHARED src_to_link.c)")
++  set(failed_regexes "[Ee]rror;[Uu]nknown;[Ss]kipping;LINK : warning")
++  set(base_dir ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/link_flag_check)
++  file(MAKE_DIRECTORY ${base_dir})
++  file(MAKE_DIRECTORY ${base_dir}/build)
++  file(WRITE ${base_dir}/src_to_link.c "${library_source}")
++  file(WRITE ${base_dir}/CMakeLists.txt "${cmake_source}")
 +
-+    message(STATUS "Performing Test ${boolean}")
-+    try_compile(
-+        try_compile_result
-+        ${base_dir}/build
-+        ${base_dir}
-+        foo
-+        OUTPUT_VARIABLE OUTPUT)
++  message(STATUS "Performing Test ${boolean}")
++  try_compile(
++    try_compile_result
++    ${base_dir}/build
++    ${base_dir}
++    foo
++    OUTPUT_VARIABLE OUTPUT)
 +
-+    if(try_compile_result)
-+        foreach(regex IN LISTS failed_regexes)
-+            if("${OUTPUT}" MATCHES ${regex})
-+                set(retval FALSE)
-+            endif()
-+        endforeach()
-+    else()
++  if(try_compile_result)
++    foreach(regex IN LISTS failed_regexes)
++      if("${OUTPUT}" MATCHES ${regex})
 +        set(retval FALSE)
-+    endif()
++      endif()
++    endforeach()
++  else()
++    set(retval FALSE)
++  endif()
 +
-+    if(${retval})
-+        set(${boolean} 1 CACHE INTERNAL "Test ${boolean}")
-+        message(STATUS "Performing Test ${boolean} - Success")
-+        file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-+          "Performing C Linker Flag test ${boolean} succeeded with the following output:\n"
-+          "${OUTPUT}\n"
-+          "Source file was:\n${library_source}\n")
-+    else()
-+        set(${boolean} "" CACHE INTERNAL "Test ${boolean}")
-+        message(STATUS "Performing Test ${boolean} - Failed")
-+        file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
-+          "Performing C Linker Flag test ${boolean} failed with the following output:\n"
-+          "${OUTPUT}\n"
-+          "Source file was:\n${library_source}\n")
-+    endif()
++  if(${retval})
++    set(${boolean} 1 CACHE INTERNAL "Test ${boolean}")
++    message(STATUS "Performing Test ${boolean} - Success")
++    file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
++      "Performing C Linker Flag test ${boolean} succeeded with the following output:\n"
++      "${OUTPUT}\n"
++      "Source file was:\n${library_source}\n")
++  else()
++    set(${boolean} "" CACHE INTERNAL "Test ${boolean}")
++    message(STATUS "Performing Test ${boolean} - Failed")
++    file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
++      "Performing C Linker Flag test ${boolean} failed with the following output:\n"
++      "${OUTPUT}\n"
++      "Source file was:\n${library_source}\n")
++  endif()
 +
-+    set(${boolean} ${retval} PARENT_SCOPE)
++  set(${boolean} ${retval} PARENT_SCOPE)
 +  endif()
 +endfunction()
-Index: runtime/cmake/LibompDefinitions.cmake
-===================================================================
---- /dev/null
-+++ runtime/cmake/LibompDefinitions.cmake
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/LibompDefinitions.cmake openmp-3.7.0.src/runtime/cmake/LibompDefinitions.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/LibompDefinitions.cmake	1969-12-31 19:00:00.000000000 -0500
++++ openmp-3.7.0.src/runtime/cmake/LibompDefinitions.cmake	2015-07-15 13:45:31.000000000 -0400
 @@ -0,0 +1,100 @@
 +#
 +#//===----------------------------------------------------------------------===//
@@ -2156,98 +2210,97 @@ Index: runtime/cmake/LibompDefinitions.cmake
 +#
 +
 +function(libomp_get_definitions_flags cppflags)
-+    set(cppflags_local)
-+    libomp_append(cppflags_local "-D USE_ITT_BUILD")
-+    # yes... you need 5 backslashes...
-+    libomp_append(cppflags_local "-D KMP_ARCH_STR=\"\\\\\"${LIBOMP_LEGAL_ARCH}\\\\\"\"")
-+    libomp_append(cppflags_local "-D BUILD_I8")
-+    libomp_append(cppflags_local "-D KMP_LIBRARY_FILE=\\\\\"${LIBOMP_LIB_FILE}\\\\\"")
-+    libomp_append(cppflags_local "-D KMP_VERSION_MAJOR=${LIBOMP_VERSION}")
-+    libomp_append(cppflags_local "-D KMP_NESTED_HOT_TEAMS")
++  set(cppflags_local)
++  libomp_append(cppflags_local "-D USE_ITT_BUILD")
++  # yes... you need 5 backslashes...
++  libomp_append(cppflags_local "-D KMP_ARCH_STR=\"\\\\\"${LIBOMP_LEGAL_ARCH}\\\\\"\"")
++  libomp_append(cppflags_local "-D BUILD_I8")
++  libomp_append(cppflags_local "-D KMP_LIBRARY_FILE=\\\\\"${LIBOMP_LIB_FILE}\\\\\"")
++  libomp_append(cppflags_local "-D KMP_VERSION_MAJOR=${LIBOMP_VERSION}")
++  libomp_append(cppflags_local "-D KMP_NESTED_HOT_TEAMS")
 +
-+    # customize to 128 bytes for ppc64
-+    if(${PPC64})
-+        libomp_append(cppflags_local "-D CACHE_LINE=128")
-+    else()
-+        libomp_append(cppflags_local "-D CACHE_LINE=64")
-+    endif()
++  # customize to 128 bytes for ppc64
++  if(${PPC64})
++    libomp_append(cppflags_local "-D CACHE_LINE=128")
++  else()
++    libomp_append(cppflags_local "-D CACHE_LINE=64")
++  endif()
 +
-+    libomp_append(cppflags_local "-D KMP_ADJUST_BLOCKTIME=1")
-+    libomp_append(cppflags_local "-D BUILD_PARALLEL_ORDERED")
-+    libomp_append(cppflags_local "-D KMP_ASM_INTRINS")
-+    libomp_append(cppflags_local "-D USE_ITT_NOTIFY" IF_TRUE_1_0 LIBOMP_USE_ITT_NOTIFY)
-+    libomp_append(cppflags_local "-D INTEL_NO_ITTNOTIFY_API" IF_FALSE LIBOMP_USE_ITT_NOTIFY)
-+    libomp_append(cppflags_local "-D INTEL_ITTNOTIFY_PREFIX=__kmp_itt_")
-+    libomp_append(cppflags_local "-D KMP_USE_VERSION_SYMBOLS" IF_TRUE LIBOMP_USE_VERSION_SYMBOLS)
++  libomp_append(cppflags_local "-D KMP_ADJUST_BLOCKTIME=1")
++  libomp_append(cppflags_local "-D BUILD_PARALLEL_ORDERED")
++  libomp_append(cppflags_local "-D KMP_ASM_INTRINS")
++  libomp_append(cppflags_local "-D USE_ITT_NOTIFY" IF_TRUE_1_0 LIBOMP_USE_ITT_NOTIFY)
++  libomp_append(cppflags_local "-D INTEL_NO_ITTNOTIFY_API" IF_FALSE LIBOMP_USE_ITT_NOTIFY)
++  libomp_append(cppflags_local "-D INTEL_ITTNOTIFY_PREFIX=__kmp_itt_")
++  libomp_append(cppflags_local "-D KMP_USE_VERSION_SYMBOLS" IF_TRUE LIBOMP_USE_VERSION_SYMBOLS)
 +
-+    if(WIN32)
-+        libomp_append(cppflags_local "-D _CRT_SECURE_NO_WARNINGS")
-+        libomp_append(cppflags_local "-D _CRT_SECURE_NO_DEPRECATE")
-+        libomp_append(cppflags_local "-D _WINDOWS")
-+        libomp_append(cppflags_local "-D _WINNT")
-+        libomp_append(cppflags_local "-D _WIN32_WINNT=0x0501")
-+        libomp_append(cppflags_local "-D KMP_WIN_CDECL")
-+        libomp_append(cppflags_local "-D _USRDLL")
-+        libomp_append(cppflags_local "-D _ITERATOR_DEBUG_LEVEL=0" IF_TRUE DEBUG_BUILD)
-+    else()
-+        libomp_append(cppflags_local "-D _GNU_SOURCE")
-+        libomp_append(cppflags_local "-D _REENTRANT")
-+        libomp_append(cppflags_local "-D BUILD_TV")
-+        libomp_append(cppflags_local "-D USE_CBLKDATA")
-+        libomp_append(cppflags_local "-D KMP_GOMP_COMPAT")
-+    endif()
++  if(WIN32)
++    libomp_append(cppflags_local "-D _CRT_SECURE_NO_WARNINGS")
++    libomp_append(cppflags_local "-D _CRT_SECURE_NO_DEPRECATE")
++    libomp_append(cppflags_local "-D _WINDOWS")
++    libomp_append(cppflags_local "-D _WINNT")
++    libomp_append(cppflags_local "-D _WIN32_WINNT=0x0501")
++    libomp_append(cppflags_local "-D KMP_WIN_CDECL")
++    libomp_append(cppflags_local "-D _USRDLL")
++    libomp_append(cppflags_local "-D _ITERATOR_DEBUG_LEVEL=0" IF_TRUE DEBUG_BUILD)
++  else()
++    libomp_append(cppflags_local "-D _GNU_SOURCE")
++    libomp_append(cppflags_local "-D _REENTRANT")
++    libomp_append(cppflags_local "-D BUILD_TV")
++    libomp_append(cppflags_local "-D USE_CBLKDATA")
++    libomp_append(cppflags_local "-D KMP_GOMP_COMPAT")
++  endif()
 +
-+    libomp_append(cppflags_local "-D USE_LOAD_BALANCE" IF_FALSE MIC)
-+    if(NOT WIN32 AND NOT APPLE)
-+        libomp_append(cppflags_local "-D KMP_TDATA_GTID")
-+    endif()
-+    libomp_append(cppflags_local "-D KMP_USE_ASSERT" IF_TRUE LIBOMP_ENABLE_ASSERTIONS)
-+    libomp_append(cppflags_local "-D KMP_DYNAMIC_LIB")
-+    libomp_append(cppflags_local "-D KMP_STUB" IF_TRUE STUBS_LIBRARY)
++  libomp_append(cppflags_local "-D USE_LOAD_BALANCE" IF_FALSE MIC)
++  if(NOT WIN32 AND NOT APPLE)
++    libomp_append(cppflags_local "-D KMP_TDATA_GTID")
++  endif()
++  libomp_append(cppflags_local "-D KMP_USE_ASSERT" IF_TRUE LIBOMP_ENABLE_ASSERTIONS)
++  libomp_append(cppflags_local "-D KMP_DYNAMIC_LIB")
++  libomp_append(cppflags_local "-D KMP_STUB" IF_TRUE STUBS_LIBRARY)
 +
-+    if(${DEBUG_BUILD} OR ${RELWITHDEBINFO_BUILD})
-+        libomp_append(cppflags_local "-D KMP_DEBUG")
-+    endif()
-+    libomp_append(cppflags_local "-D _DEBUG" IF_TRUE DEBUG_BUILD)
-+    libomp_append(cppflags_local "-D BUILD_DEBUG" IF_TRUE DEBUG_BUILD)
-+    libomp_append(cppflags_local "-D KMP_STATS_ENABLED" IF_TRUE_1_0 LIBOMP_STATS)
-+    libomp_append(cppflags_local "-D USE_DEBUGGER" IF_TRUE_1_0 LIBOMP_USE_DEBUGGER)
-+    libomp_append(cppflags_local "-D OMPT_SUPPORT" IF_TRUE_1_0 LIBOMP_OMPT_SUPPORT)
-+    libomp_append(cppflags_local "-D OMPT_BLAME" IF_TRUE_1_0 LIBOMP_OMPT_BLAME)
-+    libomp_append(cppflags_local "-D OMPT_TRACE" IF_TRUE_1_0 LIBOMP_OMPT_TRACE)
++  if(${DEBUG_BUILD} OR ${RELWITHDEBINFO_BUILD})
++    libomp_append(cppflags_local "-D KMP_DEBUG")
++  endif()
++  libomp_append(cppflags_local "-D _DEBUG" IF_TRUE DEBUG_BUILD)
++  libomp_append(cppflags_local "-D BUILD_DEBUG" IF_TRUE DEBUG_BUILD)
++  libomp_append(cppflags_local "-D KMP_STATS_ENABLED" IF_TRUE_1_0 LIBOMP_STATS)
++  libomp_append(cppflags_local "-D USE_DEBUGGER" IF_TRUE_1_0 LIBOMP_USE_DEBUGGER)
++  libomp_append(cppflags_local "-D OMPT_SUPPORT" IF_TRUE_1_0 LIBOMP_OMPT_SUPPORT)
++  libomp_append(cppflags_local "-D OMPT_BLAME" IF_TRUE_1_0 LIBOMP_OMPT_BLAME)
++  libomp_append(cppflags_local "-D OMPT_TRACE" IF_TRUE_1_0 LIBOMP_OMPT_TRACE)
 +
-+    # OpenMP version flags
-+    set(libomp_have_omp_50 0)
-+    set(libomp_have_omp_41 0)
-+    set(libomp_have_omp_40 0)
-+    set(libomp_have_omp_30 0)
-+    if(${LIBOMP_OMP_VERSION} EQUAL 50 OR ${LIBOMP_OMP_VERSION} GREATER 50)
-+        set(libomp_have_omp_50 1)
-+    endif()
-+    if(${LIBOMP_OMP_VERSION} EQUAL 41 OR ${LIBOMP_OMP_VERSION} GREATER 41)
-+        set(libomp_have_omp_41 1)
-+    endif()
-+    if(${LIBOMP_OMP_VERSION} EQUAL 40 OR ${LIBOMP_OMP_VERSION} GREATER 40)
-+        set(libomp_have_omp_40 1)
-+    endif()
-+    if(${LIBOMP_OMP_VERSION} EQUAL 30 OR ${LIBOMP_OMP_VERSION} GREATER 30)
-+        set(libomp_have_omp_30 1)
-+    endif()
-+    libomp_append(cppflags_local "-D OMP_50_ENABLED=${libomp_have_omp_50}")
-+    libomp_append(cppflags_local "-D OMP_41_ENABLED=${libomp_have_omp_41}")
-+    libomp_append(cppflags_local "-D OMP_40_ENABLED=${libomp_have_omp_40}")
-+    libomp_append(cppflags_local "-D OMP_30_ENABLED=${libomp_have_omp_30}")
-+    libomp_append(cppflags_local "-D KMP_USE_ADAPTIVE_LOCKS" IF_TRUE_1_0 LIBOMP_USE_ADAPTIVE_LOCKS)
-+    libomp_append(cppflags_local "-D KMP_DEBUG_ADAPTIVE_LOCKS=0")
-+    libomp_append(cppflags_local "-D KMP_USE_INTERNODE_ALIGNMENT" IF_TRUE_1_0 LIBOMP_USE_INTERNODE_ALIGNMENT)
-+    # CMake doesn't include CPPFLAGS from environment, but we will.
-+    set(${cppflags} ${cppflags_local} ${LIBOMP_CPPFLAGS} $ENV{CPPFLAGS} PARENT_SCOPE)
++  # OpenMP version flags
++  set(libomp_have_omp_50 0)
++  set(libomp_have_omp_41 0)
++  set(libomp_have_omp_40 0)
++  set(libomp_have_omp_30 0)
++  if(${LIBOMP_OMP_VERSION} EQUAL 50 OR ${LIBOMP_OMP_VERSION} GREATER 50)
++    set(libomp_have_omp_50 1)
++  endif()
++  if(${LIBOMP_OMP_VERSION} EQUAL 41 OR ${LIBOMP_OMP_VERSION} GREATER 41)
++    set(libomp_have_omp_41 1)
++  endif()
++  if(${LIBOMP_OMP_VERSION} EQUAL 40 OR ${LIBOMP_OMP_VERSION} GREATER 40)
++    set(libomp_have_omp_40 1)
++  endif()
++  if(${LIBOMP_OMP_VERSION} EQUAL 30 OR ${LIBOMP_OMP_VERSION} GREATER 30)
++    set(libomp_have_omp_30 1)
++  endif()
++  libomp_append(cppflags_local "-D OMP_50_ENABLED=${libomp_have_omp_50}")
++  libomp_append(cppflags_local "-D OMP_41_ENABLED=${libomp_have_omp_41}")
++  libomp_append(cppflags_local "-D OMP_40_ENABLED=${libomp_have_omp_40}")
++  libomp_append(cppflags_local "-D OMP_30_ENABLED=${libomp_have_omp_30}")
++  libomp_append(cppflags_local "-D KMP_USE_ADAPTIVE_LOCKS" IF_TRUE_1_0 LIBOMP_USE_ADAPTIVE_LOCKS)
++  libomp_append(cppflags_local "-D KMP_DEBUG_ADAPTIVE_LOCKS=0")
++  libomp_append(cppflags_local "-D KMP_USE_INTERNODE_ALIGNMENT" IF_TRUE_1_0 LIBOMP_USE_INTERNODE_ALIGNMENT)
++  # CMake doesn't include CPPFLAGS from environment, but we will.
++  set(${cppflags} ${cppflags_local} ${LIBOMP_CPPFLAGS} $ENV{CPPFLAGS} PARENT_SCOPE)
 +endfunction()
 +
-Index: runtime/cmake/LibompExports.cmake
-===================================================================
---- /dev/null
-+++ runtime/cmake/LibompExports.cmake
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/LibompExports.cmake openmp-3.7.0.src/runtime/cmake/LibompExports.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/LibompExports.cmake	1969-12-31 19:00:00.000000000 -0500
++++ openmp-3.7.0.src/runtime/cmake/LibompExports.cmake	2015-07-15 13:45:31.000000000 -0400
 @@ -0,0 +1,98 @@
 +#
 +#//===----------------------------------------------------------------------===//
@@ -2273,27 +2326,27 @@ Index: runtime/cmake/LibompExports.cmake
 +libomp_append(libomp_suffix .dia RELWITHDEBINFO_BUILD)
 +libomp_append(libomp_suffix .min MINSIZEREL_BUILD)
 +if(NOT "${LIBOMP_OMP_VERSION}" STREQUAL "41")
-+    libomp_append(libomp_suffix .${LIBOMP_OMP_VERSION})
++  libomp_append(libomp_suffix .${LIBOMP_OMP_VERSION})
 +endif()
 +libomp_append(libomp_suffix .s1 LIBOMP_STATS)
 +libomp_append(libomp_suffix .ompt LIBOMP_OMPT_SUPPORT)
 +if(${LIBOMP_OMPT_SUPPORT})
-+    libomp_append(libomp_suffix .no-ompt-blame IF_FALSE LIBOMP_OMPT_BLAME)
-+    libomp_append(libomp_suffix .no-ompt-trace IF_FALSE LIBOMP_OMPT_TRACE)
++  libomp_append(libomp_suffix .no-ompt-blame IF_FALSE LIBOMP_OMPT_BLAME)
++  libomp_append(libomp_suffix .no-ompt-trace IF_FALSE LIBOMP_OMPT_TRACE)
 +endif()
 +string(REPLACE ";" "" libomp_suffix "${libomp_suffix}")
 +
 +# Set exports locations
 +if(${MIC})
-+    set(libomp_platform "${LIBOMP_PERL_SCRIPT_OS}_${LIBOMP_MIC_ARCH}") # e.g., lin_knf, lin_knc
++  set(libomp_platform "${LIBOMP_PERL_SCRIPT_OS}_${LIBOMP_MIC_ARCH}") # e.g., lin_knf, lin_knc
 +else()
-+    if(${IA32})
-+        set(libomp_platform "${LIBOMP_PERL_SCRIPT_OS}_32")
-+    elseif(${INTEL64})
-+        set(libomp_platform "${LIBOMP_PERL_SCRIPT_OS}_32e")
-+    else()
-+        set(libomp_platform "${LIBOMP_PERL_SCRIPT_OS}_${LIBOMP_ARCH}") # e.g., lin_arm, lin_ppc64
-+    endif()
++  if(${IA32})
++    set(libomp_platform "${LIBOMP_PERL_SCRIPT_OS}_32")
++  elseif(${INTEL64})
++    set(libomp_platform "${LIBOMP_PERL_SCRIPT_OS}_32e")
++  else()
++    set(libomp_platform "${LIBOMP_PERL_SCRIPT_OS}_${LIBOMP_ARCH}") # e.g., lin_arm, lin_ppc64
++  endif()
 +endif()
 +set(LIBOMP_EXPORTS_DIR "${LIBOMP_BASE_DIR}/exports")
 +set(LIBOMP_EXPORTS_PLATFORM_DIR "${LIBOMP_EXPORTS_DIR}/${libomp_platform}${libomp_suffix}")
@@ -2304,54 +2357,53 @@ Index: runtime/cmake/LibompExports.cmake
 +
 +# Put headers in exports/ directory post build
 +add_custom_command(TARGET omp POST_BUILD
-+    COMMAND ${CMAKE_COMMAND} -E make_directory ${LIBOMP_EXPORTS_CMN_DIR}
-+    COMMAND ${CMAKE_COMMAND} -E copy omp.h ${LIBOMP_EXPORTS_CMN_DIR}
++  COMMAND ${CMAKE_COMMAND} -E make_directory ${LIBOMP_EXPORTS_CMN_DIR}
++  COMMAND ${CMAKE_COMMAND} -E copy omp.h ${LIBOMP_EXPORTS_CMN_DIR}
 +)
 +if(${LIBOMP_OMPT_SUPPORT})
-+    add_custom_command(TARGET omp POST_BUILD
-+        COMMAND ${CMAKE_COMMAND} -E copy ompt.h ${LIBOMP_EXPORTS_CMN_DIR}
-+    )
++  add_custom_command(TARGET omp POST_BUILD
++    COMMAND ${CMAKE_COMMAND} -E copy ompt.h ${LIBOMP_EXPORTS_CMN_DIR}
++  )
 +endif()
 +if(${LIBOMP_FORTRAN_MODULES})
-+    add_custom_command(TARGET libomp-mod POST_BUILD
-+        COMMAND ${CMAKE_COMMAND} -E make_directory ${LIBOMP_EXPORTS_MOD_DIR}
-+        COMMAND ${CMAKE_COMMAND} -E copy omp_lib.h ${LIBOMP_EXPORTS_CMN_DIR}
-+        COMMAND ${CMAKE_COMMAND} -E copy omp_lib.mod ${LIBOMP_EXPORTS_MOD_DIR}
-+        COMMAND ${CMAKE_COMMAND} -E copy omp_lib_kinds.mod ${LIBOMP_EXPORTS_MOD_DIR}
-+    )
++  add_custom_command(TARGET libomp-mod POST_BUILD
++    COMMAND ${CMAKE_COMMAND} -E make_directory ${LIBOMP_EXPORTS_MOD_DIR}
++    COMMAND ${CMAKE_COMMAND} -E copy omp_lib.h ${LIBOMP_EXPORTS_CMN_DIR}
++    COMMAND ${CMAKE_COMMAND} -E copy omp_lib.mod ${LIBOMP_EXPORTS_MOD_DIR}
++    COMMAND ${CMAKE_COMMAND} -E copy omp_lib_kinds.mod ${LIBOMP_EXPORTS_MOD_DIR}
++  )
 +endif()
 +
 +# Copy OpenMP library into exports/ directory post build
 +if(WIN32)
-+    get_target_property(LIBOMP_OUTPUT_DIRECTORY omp RUNTIME_OUTPUT_DIRECTORY)
++  get_target_property(LIBOMP_OUTPUT_DIRECTORY omp RUNTIME_OUTPUT_DIRECTORY)
 +else()
-+    get_target_property(LIBOMP_OUTPUT_DIRECTORY omp LIBRARY_OUTPUT_DIRECTORY)
++  get_target_property(LIBOMP_OUTPUT_DIRECTORY omp LIBRARY_OUTPUT_DIRECTORY)
 +endif()
 +if(NOT LIBOMP_OUTPUT_DIRECTORY)
-+    set(LIBOMP_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
++  set(LIBOMP_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 +endif()
 +add_custom_command(TARGET omp POST_BUILD
-+    COMMAND ${CMAKE_COMMAND} -E make_directory ${LIBOMP_EXPORTS_LIB_DIR}
-+    COMMAND ${CMAKE_COMMAND} -E copy ${LIBOMP_OUTPUT_DIRECTORY}/${LIBOMP_LIB_FILE} ${LIBOMP_EXPORTS_LIB_DIR}
++  COMMAND ${CMAKE_COMMAND} -E make_directory ${LIBOMP_EXPORTS_LIB_DIR}
++  COMMAND ${CMAKE_COMMAND} -E copy ${LIBOMP_OUTPUT_DIRECTORY}/${LIBOMP_LIB_FILE} ${LIBOMP_EXPORTS_LIB_DIR}
 +)
 +
 +# Copy Windows import library into exports/ directory post build
 +if(WIN32)
-+    get_target_property(LIBOMPIMP_OUTPUT_DIRECTORY ompimp ARCHIVE_OUTPUT_DIRECTORY)
-+    if(NOT LIBOMPIMP_OUTPUT_DIRECTORY)
-+        set(LIBOMPIMP_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-+    endif()
-+    add_custom_command(TARGET ompimp POST_BUILD
-+        COMMAND ${CMAKE_COMMAND} -E make_directory ${LIBOMP_EXPORTS_LIB_DIR}
-+        COMMAND ${CMAKE_COMMAND} -E copy ${LIBOMPIMP_OUTPUT_DIRECTORY}/${LIBOMP_IMP_LIB_FILE} ${LIBOMP_EXPORTS_LIB_DIR}
-+    )
++  get_target_property(LIBOMPIMP_OUTPUT_DIRECTORY ompimp ARCHIVE_OUTPUT_DIRECTORY)
++  if(NOT LIBOMPIMP_OUTPUT_DIRECTORY)
++    set(LIBOMPIMP_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
++  endif()
++  add_custom_command(TARGET ompimp POST_BUILD
++    COMMAND ${CMAKE_COMMAND} -E make_directory ${LIBOMP_EXPORTS_LIB_DIR}
++    COMMAND ${CMAKE_COMMAND} -E copy ${LIBOMPIMP_OUTPUT_DIRECTORY}/${LIBOMP_IMP_LIB_FILE} ${LIBOMP_EXPORTS_LIB_DIR}
++  )
 +endif()
 +
-Index: runtime/cmake/LibompGetArchitecture.cmake
-===================================================================
---- /dev/null
-+++ runtime/cmake/LibompGetArchitecture.cmake
-@@ -0,0 +1,67 @@
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/LibompGetArchitecture.cmake openmp-3.7.0.src/runtime/cmake/LibompGetArchitecture.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/LibompGetArchitecture.cmake	1969-12-31 19:00:00.000000000 -0500
++++ openmp-3.7.0.src/runtime/cmake/LibompGetArchitecture.cmake	2015-07-15 13:45:31.000000000 -0400
+@@ -0,0 +1,66 @@
 +#
 +#//===----------------------------------------------------------------------===//
 +#//
@@ -2369,60 +2421,58 @@ Index: runtime/cmake/LibompGetArchitecture.cmake
 +# void get_architecture(string* return_arch)
 +# - Returns the architecture in return_arch
 +function(libomp_get_architecture return_arch)
-+    set(detect_arch_src_txt "
++  set(detect_arch_src_txt "
 +    #if defined(__KNC__)
-+        #error ARCHITECTURE=mic
++      #error ARCHITECTURE=mic
 +    #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_M_AMD64)
-+        #error ARCHITECTURE=x86_64
++      #error ARCHITECTURE=x86_64
 +    #elif defined(__i386) || defined(__i386__) || defined(__IA32__) || defined(_M_I86) || defined(_M_IX86) || defined(__X86__) || defined(_X86_)
-+        #error ARCHITECTURE=i386
++      #error ARCHITECTURE=i386
 +    #elif defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7R__) ||  defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7M__)  || defined(__ARM_ARCH_7S__)
-+        #error ARCHITECTURE=arm
++      #error ARCHITECTURE=arm
 +    #elif defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__)  || defined(__ARM_ARCH_6Z__)  || defined(__ARM_ARCH_6T2__) || defined(__ARM_ARCH_6ZK__)
-+        #error ARCHITECTURE=arm
++      #error ARCHITECTURE=arm
 +    #elif defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_5T__) || defined(__ARM_ARCH_5E__)  || defined(__ARM_ARCH_5TE__) || defined(__ARM_ARCH_5TEJ__)
-+        #error ARCHITECTURE=arm
++      #error ARCHITECTURE=arm
 +    #elif defined(__ARM_ARCH_4__) || defined(__ARM_ARCH_4T__)
-+        #error ARCHITECTURE=arm
++      #error ARCHITECTURE=arm
 +    #elif defined(__ARM_ARCH_3__) || defined(__ARM_ARCH_3M__)
-+        #error ARCHITECTURE=arm
++      #error ARCHITECTURE=arm
 +    #elif defined(__ARM_ARCH_2__)
-+        #error ARCHITECTURE=arm
++      #error ARCHITECTURE=arm
 +    #elif defined(__arm__) || defined(_M_ARM) || defined(_ARM)
-+        #error ARCHITECTURE=arm
++      #error ARCHITECTURE=arm
 +    #elif defined(__aarch64__)
-+        #error ARCHITECTURE=aarch64
++      #error ARCHITECTURE=aarch64
 +    #elif defined(__powerpc64__) && defined(__LITTLE_ENDIAN__)
-+        #error ARCHITECTURE=ppc64le
++      #error ARCHITECTURE=ppc64le
 +    #elif defined(__powerpc64__)
-+        #error ARCHITECTURE=ppc64
++      #error ARCHITECTURE=ppc64
 +    #else
-+        #error ARCHITECTURE=UnknownArchitecture
++      #error ARCHITECTURE=UnknownArchitecture
 +    #endif
-+    "
-+    )
-+    # Write out ${detect_arch_src_txt} to a file within the cmake/ subdirectory
-+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/libomp_detect_arch.c" ${detect_arch_src_txt})
++  ")
++  # Write out ${detect_arch_src_txt} to a file within the cmake/ subdirectory
++  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/libomp_detect_arch.c" ${detect_arch_src_txt})
 +
-+    # Try to compile using the C Compiler.  It will always error out with an #error directive, so store error output to ${local_architecture}
-+    try_run(run_dummy compile_dummy "${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/libomp_detect_arch.c" COMPILE_OUTPUT_VARIABLE local_architecture)
++  # Try to compile using the C Compiler.  It will always error out with an #error directive, so store error output to ${local_architecture}
++  try_run(run_dummy compile_dummy "${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/libomp_detect_arch.c" COMPILE_OUTPUT_VARIABLE local_architecture)
 +
-+    # Match the important architecture line and store only that matching string in ${local_architecture}
-+    string(REGEX MATCH "ARCHITECTURE=([a-zA-Z0-9_]+)" local_architecture "${local_architecture}")
++  # Match the important architecture line and store only that matching string in ${local_architecture}
++  string(REGEX MATCH "ARCHITECTURE=([a-zA-Z0-9_]+)" local_architecture "${local_architecture}")
 +
-+    # Get rid of the ARCHITECTURE= part of the string
-+    string(REPLACE "ARCHITECTURE=" "" local_architecture "${local_architecture}")
++  # Get rid of the ARCHITECTURE= part of the string
++  string(REPLACE "ARCHITECTURE=" "" local_architecture "${local_architecture}")
 +
-+    # set the return value to the architecture detected (e.g., 32e, 32, arm, ppc64, etc.)
-+    set(${return_arch} "${local_architecture}" PARENT_SCOPE)
++  # set the return value to the architecture detected (e.g., 32e, 32, arm, ppc64, etc.)
++  set(${return_arch} "${local_architecture}" PARENT_SCOPE)
 +
-+    # Remove ${detect_arch_src_txt} from cmake/ subdirectory
-+    file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/libomp_detect_arch.c")
++  # Remove ${detect_arch_src_txt} from cmake/ subdirectory
++  file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/libomp_detect_arch.c")
 +endfunction()
-Index: runtime/cmake/LibompHandleFlags.cmake
-===================================================================
---- /dev/null
-+++ runtime/cmake/LibompHandleFlags.cmake
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/LibompHandleFlags.cmake openmp-3.7.0.src/runtime/cmake/LibompHandleFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/LibompHandleFlags.cmake	1969-12-31 19:00:00.000000000 -0500
++++ openmp-3.7.0.src/runtime/cmake/LibompHandleFlags.cmake	2015-07-15 13:45:31.000000000 -0400
 @@ -0,0 +1,213 @@
 +#
 +#//===----------------------------------------------------------------------===//
@@ -2439,208 +2489,207 @@ Index: runtime/cmake/LibompHandleFlags.cmake
 +# Pretty them up (STRIP any beginning and trailing whitespace,
 +# remove duplicates, remove empty entries)
 +macro(libomp_setup_flags flags)
-+    if(NOT "${${flags}}" STREQUAL "") # if flags are empty, don't do anything
-+        set(flags_local)
-+        list(REMOVE_DUPLICATES ${flags}) # remove duplicates
-+        list(REMOVE_ITEM ${flags} "") # remove empty items
-+        libomp_list_to_string("${${flags}}" flags_local)
-+        string(STRIP "${flags_local}" flags_local)
-+        set(${flags} "${flags_local}")
-+    endif()
++  if(NOT "${${flags}}" STREQUAL "") # if flags are empty, don't do anything
++    set(flags_local)
++    list(REMOVE_DUPLICATES ${flags}) # remove duplicates
++    list(REMOVE_ITEM ${flags} "") # remove empty items
++    libomp_list_to_string("${${flags}}" flags_local)
++    string(STRIP "${flags_local}" flags_local)
++    set(${flags} "${flags_local}")
++  endif()
 +endmacro()
 +
 +# Gets flags common to both the C and C++ compiler
 +function(libomp_get_c_and_cxxflags_common flags)
-+    set(flags_local)
-+    libomp_append(flags_local -std=c++11 LIBOMP_HAVE_STD_CPP11_FLAG)
-+    libomp_append(flags_local -fno-exceptions LIBOMP_HAVE_FNO_EXCEPTIONS_FLAG)
-+    libomp_append(flags_local -Wsign-compare LIBOMP_HAVE_WSIGN_COMPARE_FLAG)
-+    libomp_append(flags_local -Wno-unused-value LIBOMP_HAVE_WNO_UNUSED_VALUE_FLAG)
-+    libomp_append(flags_local -Wno-switch LIBOMP_HAVE_WNO_SWITCH_FLAG)
-+    libomp_append(flags_local -Wno-deprecated-register LIBOMP_HAVE_WNO_DEPRECATED_REGISTER_FLAG)
-+    libomp_append(flags_local /GS LIBOMP_HAVE_GS_FLAG)
-+    libomp_append(flags_local /EHsc LIBOMP_HAVE_EHSC_FLAG)
-+    libomp_append(flags_local /Oy- LIBOMP_HAVE_OY__FLAG)
-+    # Intel(R) C Compiler flags
-+    libomp_append(flags_local /Qsafeseh LIBOMP_HAVE_QSAFESEH_FLAG)
-+    libomp_append(flags_local -Qoption,cpp,--extended_float_types LIBOMP_HAVE_EXTENDED_FLOAT_TYPES_FLAG)
-+    libomp_append(flags_local -Qlong_double LIBOMP_HAVE_LONG_DOUBLE_FLAG)
-+    libomp_append(flags_local -Qdiag-disable:177 LIBOMP_HAVE_DIAG_DISABLE_177_FLAG)
-+    if(${RELEASE_BUILD} OR ${RELWITHDEBINFO_BUILD})
-+        libomp_append(flags_local -Qinline-min-size=1 LIBOMP_HAVE_INLINE_MIN_SIZE_FLAG)
++  set(flags_local)
++  libomp_append(flags_local -std=c++11 LIBOMP_HAVE_STD_CPP11_FLAG)
++  libomp_append(flags_local -fno-exceptions LIBOMP_HAVE_FNO_EXCEPTIONS_FLAG)
++  libomp_append(flags_local -Wsign-compare LIBOMP_HAVE_WSIGN_COMPARE_FLAG)
++  libomp_append(flags_local -Wno-unused-value LIBOMP_HAVE_WNO_UNUSED_VALUE_FLAG)
++  libomp_append(flags_local -Wno-switch LIBOMP_HAVE_WNO_SWITCH_FLAG)
++  libomp_append(flags_local -Wno-deprecated-register LIBOMP_HAVE_WNO_DEPRECATED_REGISTER_FLAG)
++  libomp_append(flags_local /GS LIBOMP_HAVE_GS_FLAG)
++  libomp_append(flags_local /EHsc LIBOMP_HAVE_EHSC_FLAG)
++  libomp_append(flags_local /Oy- LIBOMP_HAVE_OY__FLAG)
++  # Intel(R) C Compiler flags
++  libomp_append(flags_local /Qsafeseh LIBOMP_HAVE_QSAFESEH_FLAG)
++  libomp_append(flags_local -Qoption,cpp,--extended_float_types LIBOMP_HAVE_EXTENDED_FLOAT_TYPES_FLAG)
++  libomp_append(flags_local -Qlong_double LIBOMP_HAVE_LONG_DOUBLE_FLAG)
++  libomp_append(flags_local -Qdiag-disable:177 LIBOMP_HAVE_DIAG_DISABLE_177_FLAG)
++  if(${RELEASE_BUILD} OR ${RELWITHDEBINFO_BUILD})
++    libomp_append(flags_local -Qinline-min-size=1 LIBOMP_HAVE_INLINE_MIN_SIZE_FLAG)
++  endif()
++  # Architectural C and C++ flags
++  if(${IA32})
++    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
++      libomp_append(flags_local -m32 LIBOMP_HAVE_M32_FLAG)
 +    endif()
-+    # Architectural C and C++ flags
-+    if(${IA32})
-+        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-+            libomp_append(flags_local -m32 LIBOMP_HAVE_M32_FLAG)
-+        endif()
-+        libomp_append(flags_local /arch:SSE2 LIBOMP_HAVE_ARCH_SSE2_FLAG)
-+        libomp_append(flags_local -msse2 LIBOMP_HAVE_MSSE2_FLAG)
-+        libomp_append(flags_local -falign-stack=maintain-16-byte LIBOMP_HAVE_FALIGN_STACK_FLAG)
-+    elseif(${MIC})
-+        libomp_append(flags_local -mmic LIBOMP_HAVE_MMIC_FLAG)
-+        libomp_append(flags_local -ftls-model=initial-exec LIBOMP_HAVE_FTLS_MODEL_FLAG)
-+        libomp_append(flags_local "-opt-streaming-stores never" LIBOMP_HAVE_OPT_STREAMING_STORES_FLAG)
-+    endif()
-+    set(${flags} ${flags_local} PARENT_SCOPE)
++    libomp_append(flags_local /arch:SSE2 LIBOMP_HAVE_ARCH_SSE2_FLAG)
++    libomp_append(flags_local -msse2 LIBOMP_HAVE_MSSE2_FLAG)
++    libomp_append(flags_local -falign-stack=maintain-16-byte LIBOMP_HAVE_FALIGN_STACK_FLAG)
++  elseif(${MIC})
++    libomp_append(flags_local -mmic LIBOMP_HAVE_MMIC_FLAG)
++    libomp_append(flags_local -ftls-model=initial-exec LIBOMP_HAVE_FTLS_MODEL_FLAG)
++    libomp_append(flags_local "-opt-streaming-stores never" LIBOMP_HAVE_OPT_STREAMING_STORES_FLAG)
++  endif()
++  set(${flags} ${flags_local} PARENT_SCOPE)
 +endfunction()
 +
 +# C compiler flags
 +function(libomp_get_cflags cflags)
-+    set(cflags_local)
-+    libomp_get_c_and_cxxflags_common(cflags_local)
-+    # flags only for the C Compiler
-+    libomp_append(cflags_local /TP LIBOMP_HAVE_TP_FLAG)
-+    libomp_append(cflags_local "-x c++" LIBOMP_HAVE_X_CPP_FLAG)
-+    set(cflags_local ${cflags_local} ${LIBOMP_CFLAGS})
-+    libomp_setup_flags(cflags_local)
-+    set(${cflags} ${cflags_local} PARENT_SCOPE)
++  set(cflags_local)
++  libomp_get_c_and_cxxflags_common(cflags_local)
++  # flags only for the C Compiler
++  libomp_append(cflags_local /TP LIBOMP_HAVE_TP_FLAG)
++  libomp_append(cflags_local "-x c++" LIBOMP_HAVE_X_CPP_FLAG)
++  set(cflags_local ${cflags_local} ${LIBOMP_CFLAGS})
++  libomp_setup_flags(cflags_local)
++  set(${cflags} ${cflags_local} PARENT_SCOPE)
 +endfunction()
 +
 +# C++ compiler flags
 +function(libomp_get_cxxflags cxxflags)
-+    set(cxxflags_local)
-+    libomp_get_c_and_cxxflags_common(cxxflags_local)
-+    set(cxxflags_local ${cxxflags_local} ${LIBOMP_CXXFLAGS})
-+    libomp_setup_flags(cxxflags_local)
-+    set(${cxxflags} ${cxxflags_local} PARENT_SCOPE)
++  set(cxxflags_local)
++  libomp_get_c_and_cxxflags_common(cxxflags_local)
++  set(cxxflags_local ${cxxflags_local} ${LIBOMP_CXXFLAGS})
++  libomp_setup_flags(cxxflags_local)
++  set(${cxxflags} ${cxxflags_local} PARENT_SCOPE)
 +endfunction()
 +
 +# Assembler flags
 +function(libomp_get_asmflags asmflags)
-+    set(asmflags_local)
-+    libomp_append(asmflags_local "-x assembler-with-cpp" LIBOMP_HAVE_X_ASSEMBLER_WITH_CPP_FLAG)
-+    # Architectural assembler flags
-+    if(${IA32})
-+        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-+            libomp_append(asmflags_local -m32 LIBOMP_HAVE_M32_FLAG)
-+        endif()
-+        libomp_append(asmflags_local /safeseh LIBOMP_HAVE_SAFESEH_MASM_FLAG)
-+        libomp_append(asmflags_local /coff LIBOMP_HAVE_COFF_MASM_FLAG)
-+    elseif(${MIC})
-+        libomp_append(asmflags_local -mmic LIBOMP_HAVE_MMIC_FLAG)
++  set(asmflags_local)
++  libomp_append(asmflags_local "-x assembler-with-cpp" LIBOMP_HAVE_X_ASSEMBLER_WITH_CPP_FLAG)
++  # Architectural assembler flags
++  if(${IA32})
++    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
++      libomp_append(asmflags_local -m32 LIBOMP_HAVE_M32_FLAG)
 +    endif()
-+    set(asmflags_local ${asmflags_local} ${LIBOMP_ASMFLAGS})
-+    libomp_setup_flags(asmflags_local)
-+    set(${asmflags} ${asmflags_local} PARENT_SCOPE)
++    libomp_append(asmflags_local /safeseh LIBOMP_HAVE_SAFESEH_MASM_FLAG)
++    libomp_append(asmflags_local /coff LIBOMP_HAVE_COFF_MASM_FLAG)
++  elseif(${MIC})
++    libomp_append(asmflags_local -mmic LIBOMP_HAVE_MMIC_FLAG)
++  endif()
++  set(asmflags_local ${asmflags_local} ${LIBOMP_ASMFLAGS})
++  libomp_setup_flags(asmflags_local)
++  set(${asmflags} ${asmflags_local} PARENT_SCOPE)
 +endfunction()
 +
 +# Linker flags
 +function(libomp_get_ldflags ldflags)
-+    set(ldflags_local)
-+    libomp_append(ldflags_local "${CMAKE_LINK_DEF_FILE_FLAG}${CMAKE_CURRENT_BINARY_DIR}/${LIBOMP_LIB_NAME}.def"
-+        IF_DEFINED CMAKE_LINK_DEF_FILE_FLAG)
-+    libomp_append(ldflags_local "${CMAKE_C_OSX_CURRENT_VERSION_FLAG}${LIBOMP_VERSION}.0"
-+        IF_DEFINED CMAKE_C_OSX_CURRENT_VERSION_FLAG)
-+    libomp_append(ldflags_local "${CMAKE_C_OSX_COMPATIBILITY_VERSION_FLAG}${LIBOMP_VERSION}.0"
-+        IF_DEFINED CMAKE_C_OSX_COMPATIBILITY_VERSION_FLAG)
-+    libomp_append(ldflags_local -Wl,--warn-shared-textrel LIBOMP_HAVE_WARN_SHARED_TEXTREL_FLAG)
-+    libomp_append(ldflags_local -Wl,--as-needed LIBOMP_HAVE_AS_NEEDED_FLAG)
-+    libomp_append(ldflags_local "-Wl,--version-script=${LIBOMP_SRC_DIR}/exports_so.txt" LIBOMP_HAVE_VERSION_SCRIPT_FLAG)
-+    libomp_append(ldflags_local -static-libgcc LIBOMP_HAVE_STATIC_LIBGCC_FLAG)
-+    libomp_append(ldflags_local -Wl,-z,noexecstack LIBOMP_HAVE_Z_NOEXECSTACK_FLAG)
-+    libomp_append(ldflags_local -Wl,-fini=__kmp_internal_end_fini LIBOMP_HAVE_FINI_FLAG)
-+    libomp_append(ldflags_local -no-intel-extensions LIBOMP_HAVE_NO_INTEL_EXTENSIONS_FLAG)
-+    libomp_append(ldflags_local -static-intel LIBOMP_HAVE_STATIC_INTEL_FLAG)
-+    libomp_append(ldflags_local /SAFESEH LIBOMP_HAVE_SAFESEH_FLAG)
-+    # Architectural linker flags
-+    if(${IA32})
-+        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-+            libomp_append(ldflags_local -m32 LIBOMP_HAVE_M32_FLAG)
-+        endif()
-+        libomp_append(ldflags_local -msse2 LIBOMP_HAVE_MSSE2_FLAG)
-+    elseif(${MIC})
-+        libomp_append(ldflags_local -mmic LIBOMP_HAVE_MMIC_FLAG)
-+        libomp_append(ldflags_local -Wl,-x LIBOMP_HAVE_X_FLAG)
++  set(ldflags_local)
++  libomp_append(ldflags_local "${CMAKE_LINK_DEF_FILE_FLAG}${CMAKE_CURRENT_BINARY_DIR}/${LIBOMP_LIB_NAME}.def"
++    IF_DEFINED CMAKE_LINK_DEF_FILE_FLAG)
++  libomp_append(ldflags_local "${CMAKE_C_OSX_CURRENT_VERSION_FLAG}${LIBOMP_VERSION}.0"
++    IF_DEFINED CMAKE_C_OSX_CURRENT_VERSION_FLAG)
++  libomp_append(ldflags_local "${CMAKE_C_OSX_COMPATIBILITY_VERSION_FLAG}${LIBOMP_VERSION}.0"
++    IF_DEFINED CMAKE_C_OSX_COMPATIBILITY_VERSION_FLAG)
++  libomp_append(ldflags_local -Wl,--warn-shared-textrel LIBOMP_HAVE_WARN_SHARED_TEXTREL_FLAG)
++  libomp_append(ldflags_local -Wl,--as-needed LIBOMP_HAVE_AS_NEEDED_FLAG)
++  libomp_append(ldflags_local "-Wl,--version-script=${LIBOMP_SRC_DIR}/exports_so.txt" LIBOMP_HAVE_VERSION_SCRIPT_FLAG)
++  libomp_append(ldflags_local -static-libgcc LIBOMP_HAVE_STATIC_LIBGCC_FLAG)
++  libomp_append(ldflags_local -Wl,-z,noexecstack LIBOMP_HAVE_Z_NOEXECSTACK_FLAG)
++  libomp_append(ldflags_local -Wl,-fini=__kmp_internal_end_fini LIBOMP_HAVE_FINI_FLAG)
++  libomp_append(ldflags_local -no-intel-extensions LIBOMP_HAVE_NO_INTEL_EXTENSIONS_FLAG)
++  libomp_append(ldflags_local -static-intel LIBOMP_HAVE_STATIC_INTEL_FLAG)
++  libomp_append(ldflags_local /SAFESEH LIBOMP_HAVE_SAFESEH_FLAG)
++  # Architectural linker flags
++  if(${IA32})
++    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
++      libomp_append(ldflags_local -m32 LIBOMP_HAVE_M32_FLAG)
 +    endif()
-+    set(ldflags_local ${ldflags_local} ${LIBOMP_LDFLAGS})
-+    libomp_setup_flags(ldflags_local)
-+    set(${ldflags} ${ldflags_local} PARENT_SCOPE)
++    libomp_append(ldflags_local -msse2 LIBOMP_HAVE_MSSE2_FLAG)
++  elseif(${MIC})
++    libomp_append(ldflags_local -mmic LIBOMP_HAVE_MMIC_FLAG)
++    libomp_append(ldflags_local -Wl,-x LIBOMP_HAVE_X_FLAG)
++  endif()
++  set(ldflags_local ${ldflags_local} ${LIBOMP_LDFLAGS})
++  libomp_setup_flags(ldflags_local)
++  set(${ldflags} ${ldflags_local} PARENT_SCOPE)
 +endfunction()
 +
 +# Library flags
 +function(libomp_get_libflags libflags)
-+    set(libflags_local)
-+    libomp_append(libflags_local "${CMAKE_THREAD_LIBS_INIT}")
-+    if(${IA32})
-+        libomp_append(libflags_local -lirc_pic LIBOMP_HAVE_IRC_PIC_LIBRARY)
-+    endif()
-+    set(libflags_local ${libflags_local} ${LIBOMP_LIBFLAGS})
-+    libomp_setup_flags(libflags_local)
-+    set(${libflags} ${libflags_local} PARENT_SCOPE)
++  set(libflags_local)
++  libomp_append(libflags_local "${CMAKE_THREAD_LIBS_INIT}")
++  if(${IA32})
++    libomp_append(libflags_local -lirc_pic LIBOMP_HAVE_IRC_PIC_LIBRARY)
++  endif()
++  set(libflags_local ${libflags_local} ${LIBOMP_LIBFLAGS})
++  libomp_setup_flags(libflags_local)
++  set(${libflags} ${libflags_local} PARENT_SCOPE)
 +endfunction()
 +
 +# Fortran flags
 +function(libomp_get_fflags fflags)
-+    set(fflags_local)
-+    if(${IA32})
-+        libomp_append(fflags_local -m32 LIBOMP_HAVE_M32_FORTRAN_FLAG)
-+    endif()
-+    set(fflags_local ${fflags_local} ${LIBOMP_FFLAGS})
-+    libomp_setup_flags(fflags_local)
-+    set(${fflags} ${fflags_local} PARENT_SCOPE)
++  set(fflags_local)
++  if(${IA32})
++    libomp_append(fflags_local -m32 LIBOMP_HAVE_M32_FORTRAN_FLAG)
++  endif()
++  set(fflags_local ${fflags_local} ${LIBOMP_FFLAGS})
++  libomp_setup_flags(fflags_local)
++  set(${fflags} ${fflags_local} PARENT_SCOPE)
 +endfunction()
 +
 +# Perl expand-vars.pl flags
 +function(libomp_get_evflags evflags)
-+    set(evflags_local)
-+    libomp_append(evflags_local "-D KMP_TYPE=\"${LIBOMP_LEGAL_TYPE}\"")
-+    libomp_append(evflags_local "-D KMP_ARCH=\"${LIBOMP_LEGAL_ARCH}\"")
-+    libomp_append(evflags_local "-D KMP_VERSION_MAJOR=${LIBOMP_VERSION}")
-+    libomp_append(evflags_local "-D KMP_VERSION_MINOR=0")
-+    libomp_append(evflags_local "-D KMP_VERSION_BUILD=${LIBOMP_BUILD_NUMBER}")
-+    libomp_append(evflags_local "-D KMP_BUILD_DATE=\"${LIBOMP_DATE}\"")
-+    if(${DEBUG_BUILD} OR ${RELWITHDEBINFO_BUILD})
-+        libomp_append(evflags_local "-D KMP_DIAG=1")
-+        libomp_append(evflags_local "-D KMP_DEBUG_INFO=1")
-+    else()
-+        libomp_append(evflags_local "-D KMP_DIAG=0")
-+        libomp_append(evflags_local "-D KMP_DEBUG_INFO=0")
-+    endif()
-+    if(${LIBOMP_OMP_VERSION} EQUAL 40 OR ${LIBOMP_OMP_VERSION} GREATER 40)
-+        libomp_append(evflags_local "-D OMP_VERSION=201307")
-+    elseif(${LIBOMP_OMP_VERSION} EQUAL 30 OR ${LIBOMP_OMP_VERSION} GREATER 30)
-+        libomp_append(evflags_local "-D OMP_VERSION=201107")
-+    else()
-+        libomp_append(evflags_local "-D OMP_VERSION=200505")
-+    endif()
-+    set(${evflags} ${evflags_local} PARENT_SCOPE)
++  set(evflags_local)
++  libomp_append(evflags_local "-D KMP_TYPE=\"${LIBOMP_LEGAL_TYPE}\"")
++  libomp_append(evflags_local "-D KMP_ARCH=\"${LIBOMP_LEGAL_ARCH}\"")
++  libomp_append(evflags_local "-D KMP_VERSION_MAJOR=${LIBOMP_VERSION}")
++  libomp_append(evflags_local "-D KMP_VERSION_MINOR=0")
++  libomp_append(evflags_local "-D KMP_VERSION_BUILD=${LIBOMP_BUILD_NUMBER}")
++  libomp_append(evflags_local "-D KMP_BUILD_DATE=\"${LIBOMP_DATE}\"")
++  if(${DEBUG_BUILD} OR ${RELWITHDEBINFO_BUILD})
++    libomp_append(evflags_local "-D KMP_DIAG=1")
++    libomp_append(evflags_local "-D KMP_DEBUG_INFO=1")
++  else()
++    libomp_append(evflags_local "-D KMP_DIAG=0")
++    libomp_append(evflags_local "-D KMP_DEBUG_INFO=0")
++  endif()
++  if(${LIBOMP_OMP_VERSION} EQUAL 40 OR ${LIBOMP_OMP_VERSION} GREATER 40)
++    libomp_append(evflags_local "-D OMP_VERSION=201307")
++  elseif(${LIBOMP_OMP_VERSION} EQUAL 30 OR ${LIBOMP_OMP_VERSION} GREATER 30)
++    libomp_append(evflags_local "-D OMP_VERSION=201107")
++  else()
++    libomp_append(evflags_local "-D OMP_VERSION=200505")
++  endif()
++  set(${evflags} ${evflags_local} PARENT_SCOPE)
 +endfunction()
 +
 +# Perl generate-defs.pl flags (For Windows only)
 +function(libomp_get_gdflags gdflags)
-+    set(gdflags_local)
-+    if(${IA32})
-+        set(libomp_gdflag_arch arch_32)
-+    elseif(${INTEL64})
-+        set(libomp_gdflag_arch arch_32e)
-+    else()
-+        set(libomp_gdflag_arch arch_${LIBOMP_ARCH})
-+    endif()
-+    libomp_append(gdflags_local "-D ${libomp_gdflag_arch}")
-+    libomp_append(gdflags_local "-D msvc_compat")
-+    libomp_append(gdflags_local "-D norm" NORMAL_LIBRARY)
-+    libomp_append(gdflags_local "-D prof" PROFILE_LIBRARY)
-+    libomp_append(gdflags_local "-D stub" STUBS_LIBRARY)
-+    libomp_append(gdflags_local "-D HAVE_QUAD" LIBOMP_USE_QUAD_PRECISION)
-+    if(${LIBOMP_OMP_VERSION} GREATER 41 OR ${LIBOMP_OMP_VERSION} EQUAL 41)
-+        libomp_append(gdflags_local "-D OMP_41")
-+    endif()
-+    if(${LIBOMP_OMP_VERSION} GREATER 40 OR ${LIBOMP_OMP_VERSION} EQUAL 40)
-+        libomp_append(gdflags_local "-D OMP_40")
-+    endif()
-+    if(${LIBOMP_OMP_VERSION} GREATER 30 OR ${LIBOMP_OMP_VERSION} EQUAL 30)
-+        libomp_append(gdflags_local "-D OMP_30")
-+    endif()
-+    if(${DEBUG_BUILD} OR ${RELWITHDEBINFO_BUILD})
-+        libomp_append(gdflags_local "-D KMP_DEBUG")
-+    endif()
-+    set(${gdflags} ${gdflags_local} PARENT_SCOPE)
++  set(gdflags_local)
++  if(${IA32})
++    set(libomp_gdflag_arch arch_32)
++  elseif(${INTEL64})
++    set(libomp_gdflag_arch arch_32e)
++  else()
++    set(libomp_gdflag_arch arch_${LIBOMP_ARCH})
++  endif()
++  libomp_append(gdflags_local "-D ${libomp_gdflag_arch}")
++  libomp_append(gdflags_local "-D msvc_compat")
++  libomp_append(gdflags_local "-D norm" NORMAL_LIBRARY)
++  libomp_append(gdflags_local "-D prof" PROFILE_LIBRARY)
++  libomp_append(gdflags_local "-D stub" STUBS_LIBRARY)
++  libomp_append(gdflags_local "-D HAVE_QUAD" LIBOMP_USE_QUAD_PRECISION)
++  if(${LIBOMP_OMP_VERSION} GREATER 41 OR ${LIBOMP_OMP_VERSION} EQUAL 41)
++    libomp_append(gdflags_local "-D OMP_41")
++  endif()
++  if(${LIBOMP_OMP_VERSION} GREATER 40 OR ${LIBOMP_OMP_VERSION} EQUAL 40)
++    libomp_append(gdflags_local "-D OMP_40")
++  endif()
++  if(${LIBOMP_OMP_VERSION} GREATER 30 OR ${LIBOMP_OMP_VERSION} EQUAL 30)
++    libomp_append(gdflags_local "-D OMP_30")
++  endif()
++  if(${DEBUG_BUILD} OR ${RELWITHDEBINFO_BUILD})
++    libomp_append(gdflags_local "-D KMP_DEBUG")
++  endif()
++  set(${gdflags} ${gdflags_local} PARENT_SCOPE)
 +endfunction()
-Index: runtime/cmake/LibompMicroTests.cmake
-===================================================================
---- /dev/null
-+++ runtime/cmake/LibompMicroTests.cmake
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/LibompMicroTests.cmake openmp-3.7.0.src/runtime/cmake/LibompMicroTests.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/LibompMicroTests.cmake	1969-12-31 19:00:00.000000000 -0500
++++ openmp-3.7.0.src/runtime/cmake/LibompMicroTests.cmake	2015-07-15 13:45:31.000000000 -0400
 @@ -0,0 +1,215 @@
 +#
 +#//===----------------------------------------------------------------------===//
@@ -2656,211 +2705,210 @@ Index: runtime/cmake/LibompMicroTests.cmake
 +# The following micro-tests are small tests to perform on the library just created.
 +# There are currently five micro-tests:
 +# (1) test-touch
-+#    - Compile and run a small program using newly created libomp library
-+#    - Fails if test-touch.c does not compile or if test-touch.c does not run after compilation
-+#    - Program dependencies: gcc or g++, grep, bourne shell
-+#    - Available for all Unix,Mac,Windows builds.  Not available on Intel(R) MIC Architecture builds.
++#  - Compile and run a small program using newly created libomp library
++#  - Fails if test-touch.c does not compile or if test-touch.c does not run after compilation
++#  - Program dependencies: gcc or g++, grep, bourne shell
++#  - Available for all Unix,Mac,Windows builds.  Not available on Intel(R) MIC Architecture builds.
 +# (2) test-relo
-+#    - Tests dynamic libraries for position-dependent code (can not have any position dependent code)
-+#    - Fails if TEXTREL is in output of readelf -d libomp.so command
-+#    - Program dependencies: readelf, grep, bourne shell
-+#    - Available for Unix, Intel(R) MIC Architecture dynamic library builds. Not available otherwise.
++#  - Tests dynamic libraries for position-dependent code (can not have any position dependent code)
++#  - Fails if TEXTREL is in output of readelf -d libomp.so command
++#  - Program dependencies: readelf, grep, bourne shell
++#  - Available for Unix, Intel(R) MIC Architecture dynamic library builds. Not available otherwise.
 +# (3) test-execstack
-+#    - Tests if stack is executable
-+#    - Fails if stack is executable. Should only be readable and writable. Not exectuable.
-+#    - Program dependencies: perl, readelf
-+#    - Available for Unix dynamic library builds. Not available otherwise.
++#  - Tests if stack is executable
++#  - Fails if stack is executable. Should only be readable and writable. Not exectuable.
++#  - Program dependencies: perl, readelf
++#  - Available for Unix dynamic library builds. Not available otherwise.
 +# (4) test-instr (Intel(R) MIC Architecutre only)
-+#    - Tests Intel(R) MIC Architecture libraries for valid instruction set
-+#    - Fails if finds invalid instruction for Intel(R) MIC Architecture (wasn't compiled with correct flags)
-+#    - Program dependencies: perl, objdump
-+#    - Available for Intel(R) MIC Architecture and i386 builds. Not available otherwise.
++#  - Tests Intel(R) MIC Architecture libraries for valid instruction set
++#  - Fails if finds invalid instruction for Intel(R) MIC Architecture (wasn't compiled with correct flags)
++#  - Program dependencies: perl, objdump
++#  - Available for Intel(R) MIC Architecture and i386 builds. Not available otherwise.
 +# (5) test-deps
-+#    - Tests newly created libomp for library dependencies
-+#    - Fails if sees a dependence not listed in td_exp variable below
-+#    - Program dependencies: perl, (unix)readelf, (mac)otool[64], (windows)link.exe
-+#    - Available for Unix,Mac,Windows, Intel(R) MIC Architecture dynamic builds and Windows
-+#      static builds. Not available otherwise.
++#  - Tests newly created libomp for library dependencies
++#  - Fails if sees a dependence not listed in td_exp variable below
++#  - Program dependencies: perl, (unix)readelf, (mac)otool[64], (windows)link.exe
++#  - Available for Unix,Mac,Windows, Intel(R) MIC Architecture dynamic builds and Windows
++#    static builds. Not available otherwise.
 +
 +# get library location
 +if(WIN32)
-+    get_target_property(LIBOMP_OUTPUT_DIRECTORY omp RUNTIME_OUTPUT_DIRECTORY)
-+    get_target_property(LIBOMPIMP_OUTPUT_DIRECTORY ompimp ARCHIVE_OUTPUT_DIRECTORY)
-+    if(NOT LIBOMPIMP_OUTPUT_DIRECTORY)
-+        set(LIBOMPIMP_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-+    endif()
++  get_target_property(LIBOMP_OUTPUT_DIRECTORY omp RUNTIME_OUTPUT_DIRECTORY)
++  get_target_property(LIBOMPIMP_OUTPUT_DIRECTORY ompimp ARCHIVE_OUTPUT_DIRECTORY)
++  if(NOT LIBOMPIMP_OUTPUT_DIRECTORY)
++    set(LIBOMPIMP_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
++  endif()
 +else()
-+    get_target_property(LIBOMP_OUTPUT_DIRECTORY omp LIBRARY_OUTPUT_DIRECTORY)
++  get_target_property(LIBOMP_OUTPUT_DIRECTORY omp LIBRARY_OUTPUT_DIRECTORY)
 +endif()
 +if(NOT LIBOMP_OUTPUT_DIRECTORY)
-+    set(LIBOMP_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
++  set(LIBOMP_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 +endif()
 +
 +# test-touch
 +find_program(LIBOMP_SHELL sh)
 +if(WIN32)
-+    if(LIBOMP_SHELL)
-+        set(libomp_test_touch_targets test-touch-md/.success test-touch-mt/.success)
-+    endif()
-+    # pick test-touch compiler
-+    set(libomp_test_touch_compiler ${CMAKE_C_COMPILER})
-+    # test-touch compilation flags
-+    libomp_append(libomp_test_touch_cflags /nologo)
-+    libomp_append(libomp_test_touch_libs ${LIBOMPIMP_OUTPUT_DIRECTORY}/${LIBOMP_IMP_LIB_FILE})
-+    if(${IA32})
-+        libomp_append(libomp_test_touch_ldflags /safeseh)
-+    endif()
++  if(LIBOMP_SHELL)
++    set(libomp_test_touch_targets test-touch-md/.success test-touch-mt/.success)
++  endif()
++  # pick test-touch compiler
++  set(libomp_test_touch_compiler ${CMAKE_C_COMPILER})
++  # test-touch compilation flags
++  libomp_append(libomp_test_touch_cflags /nologo)
++  libomp_append(libomp_test_touch_libs ${LIBOMPIMP_OUTPUT_DIRECTORY}/${LIBOMP_IMP_LIB_FILE})
++  if(${IA32})
++    libomp_append(libomp_test_touch_ldflags /safeseh)
++  endif()
 +else() # (Unix based systems, Intel(R) MIC Architecture, and Mac)
-+    if(LIBOMP_SHELL)
-+        set(libomp_test_touch_targets test-touch-rt/.success)
-+    endif()
-+    # pick test-touch compiler
-+    if(${LIBOMP_USE_STDCPPLIB})
-+        set(libomp_test_touch_compiler ${CMAKE_CXX_COMPILER})
-+    else()
-+        set(libomp_test_touch_compiler ${CMAKE_C_COMPILER})
-+    endif()
-+    # test-touch compilation flags
-+    libomp_append(libomp_test_touch_libs "${CMAKE_THREAD_LIBS_INIT}")
-+    if(${IA32})
-+        libomp_append(libomp_test_touch_cflags -m32 LIBOMP_HAVE_M32_FLAG)
-+    endif()
-+    libomp_append(libomp_test_touch_libs ${LIBOMP_OUTPUT_DIRECTORY}/${LIBOMP_LIB_FILE})
-+    if(APPLE)
-+        set(libomp_test_touch_env "DYLD_LIBRARY_PATH=.:${LIBOMP_OUTPUT_DIRECTORY}:$ENV{DYLD_LIBRARY_PATH}")
-+    else()
-+        set(libomp_test_touch_env "LD_LIBRARY_PATH=.:${LIBOMP_OUTPUT_DIRECTORY}:$ENV{LD_LIBRARY_PATH}")
-+    endif()
++  if(LIBOMP_SHELL)
++    set(libomp_test_touch_targets test-touch-rt/.success)
++  endif()
++  # pick test-touch compiler
++  if(${LIBOMP_USE_STDCPPLIB})
++    set(libomp_test_touch_compiler ${CMAKE_CXX_COMPILER})
++  else()
++    set(libomp_test_touch_compiler ${CMAKE_C_COMPILER})
++  endif()
++  # test-touch compilation flags
++  libomp_append(libomp_test_touch_libs "${CMAKE_THREAD_LIBS_INIT}")
++  if(${IA32})
++    libomp_append(libomp_test_touch_cflags -m32 LIBOMP_HAVE_M32_FLAG)
++  endif()
++  libomp_append(libomp_test_touch_libs ${LIBOMP_OUTPUT_DIRECTORY}/${LIBOMP_LIB_FILE})
++  if(APPLE)
++    set(libomp_test_touch_env "DYLD_LIBRARY_PATH=.:${LIBOMP_OUTPUT_DIRECTORY}:$ENV{DYLD_LIBRARY_PATH}")
++  else()
++    set(libomp_test_touch_env "LD_LIBRARY_PATH=.:${LIBOMP_OUTPUT_DIRECTORY}:$ENV{LD_LIBRARY_PATH}")
++  endif()
 +endif()
 +macro(libomp_test_touch_recipe test_touch_dir)
-+    set(libomp_test_touch_dependencies ${LIBOMP_SRC_DIR}/test-touch.c omp)
-+    set(libomp_test_touch_exe ${test_touch_dir}/test-touch${CMAKE_EXECUTABLE_SUFFIX})
-+    set(libomp_test_touch_obj ${test_touch_dir}/test-touch${CMAKE_C_OUTPUT_EXTENSION})
-+    if(WIN32)
-+        if(${RELEASE_BUILD} OR ${RELWITHDEBINFO_BUILD})
-+            if(${test_touch_dir} MATCHES "test-touch-mt")
-+                libomp_append(libomp_test_touch_cflags /MT)
-+            else()
-+                libomp_append(libomp_test_touch_cflags /MD)
-+            endif()
-+        else()
-+            if(${test_touch_dir} MATCHES "test-touch-mt")
-+                libomp_append(libomp_test_touch_cflags /MTd)
-+            else()
-+                libomp_append(libomp_test_touch_cflags /MDd)
-+            endif()
-+        endif()
-+        set(libomp_test_touch_out_flags -Fe${libomp_test_touch_exe} -Fo${libomp_test_touch_obj})
-+        list(APPEND libomp_test_touch_dependencies ompimp)
++  set(libomp_test_touch_dependencies ${LIBOMP_SRC_DIR}/test-touch.c omp)
++  set(libomp_test_touch_exe ${test_touch_dir}/test-touch${CMAKE_EXECUTABLE_SUFFIX})
++  set(libomp_test_touch_obj ${test_touch_dir}/test-touch${CMAKE_C_OUTPUT_EXTENSION})
++  if(WIN32)
++    if(${RELEASE_BUILD} OR ${RELWITHDEBINFO_BUILD})
++      if(${test_touch_dir} MATCHES "test-touch-mt")
++        libomp_append(libomp_test_touch_cflags /MT)
++      else()
++        libomp_append(libomp_test_touch_cflags /MD)
++      endif()
 +    else()
-+        set(libomp_test_touch_out_flags -o ${libomp_test_touch_exe})
++      if(${test_touch_dir} MATCHES "test-touch-mt")
++        libomp_append(libomp_test_touch_cflags /MTd)
++      else()
++        libomp_append(libomp_test_touch_cflags /MDd)
++      endif()
 +    endif()
-+    add_custom_command(
-+        OUTPUT  ${test_touch_dir}/.success ${libomp_test_touch_exe} ${libomp_test_touch_obj}
-+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${test_touch_dir}
-+        COMMAND ${CMAKE_COMMAND} -E remove -f ${test_touch_dir}/*
-+        COMMAND ${libomp_test_touch_compiler} ${libomp_test_touch_out_flags} ${libomp_test_touch_cflags}
-+            ${LIBOMP_SRC_DIR}/test-touch.c ${libomp_test_touch_ldflags} ${libomp_test_touch_libs}
-+        COMMAND ${LIBOMP_SHELL} -c \"${libomp_test_touch_env} ${libomp_test_touch_exe}\"
-+        COMMAND ${CMAKE_COMMAND} -E touch ${test_touch_dir}/.success
-+        DEPENDS ${libomp_test_touch_dependencies}
-+    )
++    set(libomp_test_touch_out_flags -Fe${libomp_test_touch_exe} -Fo${libomp_test_touch_obj})
++    list(APPEND libomp_test_touch_dependencies ompimp)
++  else()
++    set(libomp_test_touch_out_flags -o ${libomp_test_touch_exe})
++  endif()
++  add_custom_command(
++    OUTPUT  ${test_touch_dir}/.success ${libomp_test_touch_exe} ${libomp_test_touch_obj}
++    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${test_touch_dir}
++    COMMAND ${CMAKE_COMMAND} -E remove -f ${test_touch_dir}/*
++    COMMAND ${libomp_test_touch_compiler} ${libomp_test_touch_out_flags} ${libomp_test_touch_cflags}
++      ${LIBOMP_SRC_DIR}/test-touch.c ${libomp_test_touch_ldflags} ${libomp_test_touch_libs}
++    COMMAND ${LIBOMP_SHELL} -c \"${libomp_test_touch_env} ${libomp_test_touch_exe}\"
++    COMMAND ${CMAKE_COMMAND} -E touch ${test_touch_dir}/.success
++    DEPENDS ${libomp_test_touch_dependencies}
++  )
 +endmacro()
 +libomp_append(libomp_test_touch_env "KMP_VERSION=1")
 +add_custom_target(libomp-test-touch DEPENDS ${libomp_test_touch_targets})
 +if(WIN32)
-+    libomp_test_touch_recipe(test-touch-mt)
-+    libomp_test_touch_recipe(test-touch-md)
++  libomp_test_touch_recipe(test-touch-mt)
++  libomp_test_touch_recipe(test-touch-md)
 +else()
-+    libomp_test_touch_recipe(test-touch-rt)
++  libomp_test_touch_recipe(test-touch-rt)
 +endif()
 +
 +# test-relo
 +add_custom_target(libomp-test-relo DEPENDS test-relo/.success)
 +add_custom_command(
-+    OUTPUT  test-relo/.success test-relo/readelf.log
-+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/test-relo
-+    COMMAND readelf -d ${LIBOMP_OUTPUT_DIRECTORY}/${LIBOMP_LIB_FILE} > test-relo/readelf.log
-+    COMMAND grep -e TEXTREL test-relo/readelf.log \; [ $$? -eq 1 ]
-+    COMMAND ${CMAKE_COMMAND} -E touch test-relo/.success
-+    DEPENDS omp
++  OUTPUT  test-relo/.success test-relo/readelf.log
++  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/test-relo
++  COMMAND readelf -d ${LIBOMP_OUTPUT_DIRECTORY}/${LIBOMP_LIB_FILE} > test-relo/readelf.log
++  COMMAND grep -e TEXTREL test-relo/readelf.log \; [ $$? -eq 1 ]
++  COMMAND ${CMAKE_COMMAND} -E touch test-relo/.success
++  DEPENDS omp
 +)
 +
 +# test-execstack
 +add_custom_target(libomp-test-execstack DEPENDS test-execstack/.success)
 +add_custom_command(
-+    OUTPUT  test-execstack/.success
-+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/test-execstack
-+    COMMAND ${PERL_EXECUTABLE} ${LIBOMP_TOOLS_DIR}/check-execstack.pl --os=${LIBOMP_PERL_SCRIPT_OS}
-+        --arch=${LIBOMP_ARCH} ${LIBOMP_OUTPUT_DIRECTORY}/${LIBOMP_LIB_FILE}
-+    COMMAND ${CMAKE_COMMAND} -E touch test-execstack/.success
-+    DEPENDS omp
++  OUTPUT  test-execstack/.success
++  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/test-execstack
++  COMMAND ${PERL_EXECUTABLE} ${LIBOMP_TOOLS_DIR}/check-execstack.pl --os=${LIBOMP_PERL_SCRIPT_OS}
++    --arch=${LIBOMP_ARCH} ${LIBOMP_OUTPUT_DIRECTORY}/${LIBOMP_LIB_FILE}
++  COMMAND ${CMAKE_COMMAND} -E touch test-execstack/.success
++  DEPENDS omp
 +)
 +
 +# test-instr
 +add_custom_target(libomp-test-instr DEPENDS test-instr/.success)
 +add_custom_command(
-+    OUTPUT  test-instr/.success
-+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/test-instr
-+    COMMAND ${PERL_EXECUTABLE} ${LIBOMP_TOOLS_DIR}/check-instruction-set.pl --os=${LIBOMP_PERL_SCRIPT_OS}
-+        --arch=${LIBOMP_ARCH} --show --mic-arch=${LIBOMP_MIC_ARCH} ${LIBOMP_OUTPUT_DIRECTORY}/${LIBOMP_LIB_FILE}
-+    COMMAND ${CMAKE_COMMAND} -E touch test-instr/.success
-+    DEPENDS omp ${LIBOMP_TOOLS_DIR}/check-instruction-set.pl
++  OUTPUT  test-instr/.success
++  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/test-instr
++  COMMAND ${PERL_EXECUTABLE} ${LIBOMP_TOOLS_DIR}/check-instruction-set.pl --os=${LIBOMP_PERL_SCRIPT_OS}
++    --arch=${LIBOMP_ARCH} --show --mic-arch=${LIBOMP_MIC_ARCH} ${LIBOMP_OUTPUT_DIRECTORY}/${LIBOMP_LIB_FILE}
++  COMMAND ${CMAKE_COMMAND} -E touch test-instr/.success
++  DEPENDS omp ${LIBOMP_TOOLS_DIR}/check-instruction-set.pl
 +)
 +
 +# test-deps
 +add_custom_target(libomp-test-deps DEPENDS test-deps/.success)
 +set(libomp_expected_library_deps)
 +if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-+    set(libomp_expected_library_deps libc.so.7 libthr.so.3)
++  set(libomp_expected_library_deps libc.so.7 libthr.so.3)
 +elseif(APPLE)
-+    set(libomp_expected_library_deps /usr/lib/libSystem.B.dylib)
++  set(libomp_expected_library_deps /usr/lib/libSystem.B.dylib)
 +elseif(WIN32)
-+    set(libomp_expected_library_deps kernel32.dll)
++  set(libomp_expected_library_deps kernel32.dll)
 +else()
-+    if(${MIC})
-+        set(libomp_expected_library_deps libc.so.6 libpthread.so.0 libdl.so.2)
-+        if("${LIBOMP_MIC_ARCH}" STREQUAL "knf")
-+            libomp_append(libomp_expected_library_deps ld-linux-l1om.so.2)
-+            libomp_append(libomp_expected_library_deps libgcc_s.so.1)
-+        elseif("${LIBOMP_MIC_ARCH}" STREQUAL "knc")
-+            libomp_append(libomp_expected_library_deps ld-linux-k1om.so.2)
-+        endif()
-+    else()
-+        set(libomp_expected_library_deps libdl.so.2 libgcc_s.so.1)
-+        if(${IA32})
-+            libomp_append(libomp_expected_library_deps libc.so.6)
-+            libomp_append(libomp_expected_library_deps ld-linux.so.2)
-+        elseif(${INTEL64})
-+            libomp_append(libomp_expected_library_deps libc.so.6)
-+            libomp_append(libomp_expected_library_deps ld-linux-x86-64.so.2)
-+        elseif(${ARM})
-+            libomp_append(libomp_expected_library_deps libc.so.6)
-+            libomp_append(libomp_expected_library_deps libffi.so.6)
-+            libomp_append(libomp_expected_library_deps libffi.so.5)
-+            libomp_append(libomp_expected_library_deps ld-linux-armhf.so.3)
-+        elseif(${PPC64})
-+            libomp_append(libomp_expected_library_deps libc.so.6)
-+            libomp_append(libomp_expected_library_deps ld64.so.1)
-+        endif()
-+        libomp_append(libomp_expected_library_deps libpthread.so.0 IF_FALSE STUBS_LIBRARY)
++  if(${MIC})
++    set(libomp_expected_library_deps libc.so.6 libpthread.so.0 libdl.so.2)
++    if("${LIBOMP_MIC_ARCH}" STREQUAL "knf")
++      libomp_append(libomp_expected_library_deps ld-linux-l1om.so.2)
++      libomp_append(libomp_expected_library_deps libgcc_s.so.1)
++    elseif("${LIBOMP_MIC_ARCH}" STREQUAL "knc")
++      libomp_append(libomp_expected_library_deps ld-linux-k1om.so.2)
 +    endif()
-+    libomp_append(libomp_expected_library_deps libstdc++.so.6 LIBOMP_USE_STDCPPLIB)
++  else()
++    set(libomp_expected_library_deps libdl.so.2 libgcc_s.so.1)
++    if(${IA32})
++      libomp_append(libomp_expected_library_deps libc.so.6)
++      libomp_append(libomp_expected_library_deps ld-linux.so.2)
++    elseif(${INTEL64})
++      libomp_append(libomp_expected_library_deps libc.so.6)
++      libomp_append(libomp_expected_library_deps ld-linux-x86-64.so.2)
++    elseif(${ARM})
++      libomp_append(libomp_expected_library_deps libc.so.6)
++      libomp_append(libomp_expected_library_deps libffi.so.6)
++      libomp_append(libomp_expected_library_deps libffi.so.5)
++      libomp_append(libomp_expected_library_deps ld-linux-armhf.so.3)
++    elseif(${PPC64})
++      libomp_append(libomp_expected_library_deps libc.so.6)
++      libomp_append(libomp_expected_library_deps ld64.so.1)
++    endif()
++    libomp_append(libomp_expected_library_deps libpthread.so.0 IF_FALSE STUBS_LIBRARY)
++  endif()
++  libomp_append(libomp_expected_library_deps libstdc++.so.6 LIBOMP_USE_STDCPPLIB)
 +endif()
 +# Perl script expects comma separated list
 +string(REPLACE ";" "," libomp_expected_library_deps "${libomp_expected_library_deps}")
 +add_custom_command(
-+    OUTPUT  test-deps/.success
-+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/test-deps
-+    COMMAND ${PERL_EXECUTABLE} ${LIBOMP_TOOLS_DIR}/check-depends.pl --os=${LIBOMP_PERL_SCRIPT_OS}
-+        --arch=${LIBOMP_ARCH} --expected="${libomp_expected_library_deps}" ${LIBOMP_OUTPUT_DIRECTORY}/${LIBOMP_LIB_FILE}
-+    COMMAND ${CMAKE_COMMAND} -E touch test-deps/.success
-+    DEPENDS omp ${LIBOMP_TOOLS_DIR}/check-depends.pl
++  OUTPUT  test-deps/.success
++  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/test-deps
++  COMMAND ${PERL_EXECUTABLE} ${LIBOMP_TOOLS_DIR}/check-depends.pl --os=${LIBOMP_PERL_SCRIPT_OS}
++    --arch=${LIBOMP_ARCH} --expected="${libomp_expected_library_deps}" ${LIBOMP_OUTPUT_DIRECTORY}/${LIBOMP_LIB_FILE}
++  COMMAND ${CMAKE_COMMAND} -E touch test-deps/.success
++  DEPENDS omp ${LIBOMP_TOOLS_DIR}/check-depends.pl
 +)
-Index: runtime/cmake/LibompUtils.cmake
-===================================================================
---- /dev/null
-+++ runtime/cmake/LibompUtils.cmake
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/LibompUtils.cmake openmp-3.7.0.src/runtime/cmake/LibompUtils.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/LibompUtils.cmake	1969-12-31 19:00:00.000000000 -0500
++++ openmp-3.7.0.src/runtime/cmake/LibompUtils.cmake	2015-07-15 13:45:31.000000000 -0400
 @@ -0,0 +1,191 @@
 +#
 +#//===----------------------------------------------------------------------===//
@@ -2876,19 +2924,19 @@ Index: runtime/cmake/LibompUtils.cmake
 +# void libomp_say(string message_to_user);
 +# - prints out message_to_user
 +macro(libomp_say message_to_user)
-+    message(STATUS "LIBOMP: ${message_to_user}")
++  message(STATUS "LIBOMP: ${message_to_user}")
 +endmacro()
 +
 +# void libomp_warning_say(string message_to_user);
 +# - prints out message_to_user with a warning
 +macro(libomp_warning_say message_to_user)
-+    message(WARNING "LIBOMP: ${message_to_user}")
++  message(WARNING "LIBOMP: ${message_to_user}")
 +endmacro()
 +
 +# void libomp_error_say(string message_to_user);
 +# - prints out message_to_user with an error and exits cmake
 +macro(libomp_error_say message_to_user)
-+    message(FATAL_ERROR "LIBOMP: ${message_to_user}")
++  message(FATAL_ERROR "LIBOMP: ${message_to_user}")
 +endmacro()
 +
 +# libomp_append(<flag> <flags_list> [(IF_TRUE | IF_FALSE | IF_TRUE_1_0 ) BOOLEAN])
@@ -2911,65 +2959,65 @@ Index: runtime/cmake/LibompUtils.cmake
 +# libomp_append(<flag> <flags_list> IF_TRUE_1_0 <BOOLEAN>)
 +#   - appends <flag>=1 to the list of definitions if <BOOLEAN> is true, <flag>=0 otherwise
 +# e.g., libomp_append("-D USE_FEATURE" IF_TRUE_1_0 HAVE_FEATURE)
-+#       appends "-D USE_FEATURE=1" if HAVE_FEATURE is true
-+#       or "-D USE_FEATURE=0" if HAVE_FEATURE is false
++#     appends "-D USE_FEATURE=1" if HAVE_FEATURE is true
++#     or "-D USE_FEATURE=0" if HAVE_FEATURE is false
 +macro(libomp_append flags flag)
-+    if(NOT (${ARGC} EQUAL 2 OR ${ARGC} EQUAL 3 OR ${ARGC} EQUAL 4))
-+        libomp_error_say("libomp_append: takes 2, 3, or 4 arguments")
++  if(NOT (${ARGC} EQUAL 2 OR ${ARGC} EQUAL 3 OR ${ARGC} EQUAL 4))
++    libomp_error_say("libomp_append: takes 2, 3, or 4 arguments")
++  endif()
++  if(${ARGC} EQUAL 2)
++    list(APPEND ${flags} "${flag}")
++  elseif(${ARGC} EQUAL 3)
++    if(${ARGV2})
++      list(APPEND ${flags} "${flag}")
 +    endif()
-+    if(${ARGC} EQUAL 2)
++  else()
++    if(${ARGV2} STREQUAL "IF_TRUE")
++      if(${ARGV3})
 +        list(APPEND ${flags} "${flag}")
-+    elseif(${ARGC} EQUAL 3)
-+        if(${ARGV2})
-+            list(APPEND ${flags} "${flag}")
-+        endif()
++      endif()
++    elseif(${ARGV2} STREQUAL "IF_FALSE")
++      if(NOT ${ARGV3})
++        list(APPEND ${flags} "${flag}")
++      endif()
++    elseif(${ARGV2} STREQUAL "IF_DEFINED")
++      if(DEFINED ${ARGV3})
++        list(APPEND ${flags} "${flag}")
++      endif()
++    elseif(${ARGV2} STREQUAL "IF_TRUE_1_0")
++      if(${ARGV3})
++        list(APPEND ${flags} "${flag}=1")
++      else()
++        list(APPEND ${flags} "${flag}=0")
++      endif()
 +    else()
-+        if(${ARGV2} STREQUAL "IF_TRUE")
-+            if(${ARGV3})
-+                list(APPEND ${flags} "${flag}")
-+            endif()
-+        elseif(${ARGV2} STREQUAL "IF_FALSE")
-+            if(NOT ${ARGV3})
-+                list(APPEND ${flags} "${flag}")
-+            endif()
-+        elseif(${ARGV2} STREQUAL "IF_DEFINED")
-+            if(DEFINED ${ARGV3})
-+                list(APPEND ${flags} "${flag}")
-+            endif()
-+        elseif(${ARGV2} STREQUAL "IF_TRUE_1_0")
-+            if(${ARGV3})
-+                list(APPEND ${flags} "${flag}=1")
-+            else()
-+                list(APPEND ${flags} "${flag}=0")
-+            endif()
-+        else()
-+            libomp_error_say("libomp_append: third argument must be one of IF_TRUE, IF_FALSE, IF_DEFINED, IF_TRUE_1_0")
-+        endif()
++      libomp_error_say("libomp_append: third argument must be one of IF_TRUE, IF_FALSE, IF_DEFINED, IF_TRUE_1_0")
 +    endif()
++  endif()
 +endmacro()
 +
 +# void libomp_get_legal_arch(string* return_arch_string);
 +# - returns (through return_arch_string) the formal architecture
 +#   string or warns user of unknown architecture
 +function(libomp_get_legal_arch return_arch_string)
-+    if(${IA32})
-+        set(${return_arch_string} "IA-32" PARENT_SCOPE)
-+    elseif(${INTEL64})
-+        set(${return_arch_string} "Intel(R) 64" PARENT_SCOPE)
-+    elseif(${MIC})
-+        set(${return_arch_string} "Intel(R) Many Integrated Core Architecture" PARENT_SCOPE)
-+    elseif(${ARM})
-+        set(${return_arch_string} "ARM" PARENT_SCOPE)
-+    elseif(${PPC64BE})
-+        set(${return_arch_string} "PPC64BE" PARENT_SCOPE)
-+    elseif(${PPC64LE})
-+        set(${return_arch_string} "PPC64LE" PARENT_SCOPE)
-+    elseif(${AARCH64})
-+        set(${return_arch_string} "AARCH64" PARENT_SCOPE)
-+    else()
-+        set(${return_arch_string} "${LIBOMP_ARCH}" PARENT_SCOPE)
-+        libomp_warning_say("libomp_get_legal_arch(): Warning: Unknown architecture: Using ${LIBOMP_ARCH}")
-+    endif()
++  if(${IA32})
++    set(${return_arch_string} "IA-32" PARENT_SCOPE)
++  elseif(${INTEL64})
++    set(${return_arch_string} "Intel(R) 64" PARENT_SCOPE)
++  elseif(${MIC})
++    set(${return_arch_string} "Intel(R) Many Integrated Core Architecture" PARENT_SCOPE)
++  elseif(${ARM})
++    set(${return_arch_string} "ARM" PARENT_SCOPE)
++  elseif(${PPC64BE})
++    set(${return_arch_string} "PPC64BE" PARENT_SCOPE)
++  elseif(${PPC64LE})
++    set(${return_arch_string} "PPC64LE" PARENT_SCOPE)
++  elseif(${AARCH64})
++    set(${return_arch_string} "AARCH64" PARENT_SCOPE)
++  else()
++    set(${return_arch_string} "${LIBOMP_ARCH}" PARENT_SCOPE)
++    libomp_warning_say("libomp_get_legal_arch(): Warning: Unknown architecture: Using ${LIBOMP_ARCH}")
++  endif()
 +endfunction()
 +
 +# void libomp_check_variable(string var, ...);
@@ -2978,69 +3026,69 @@ Index: runtime/cmake/LibompUtils.cmake
 +# - if the var is found, then just print it out
 +# - if the var is not found, then error out
 +function(libomp_check_variable var)
-+    set(valid_flag 0)
-+    string(TOLOWER "${${var}}" var_lower)
-+    foreach(value IN LISTS ARGN)
-+        string(TOLOWER "${value}" value_lower)
-+        if("${var_lower}" STREQUAL "${value_lower}")
-+            set(valid_flag 1)
-+            set(the_value "${value}")
-+        endif()
-+    endforeach()
-+    if(${valid_flag} EQUAL 0)
-+        libomp_error_say("libomp_check_variable(): ${var} = ${${var}} is unknown")
++  set(valid_flag 0)
++  string(TOLOWER "${${var}}" var_lower)
++  foreach(value IN LISTS ARGN)
++    string(TOLOWER "${value}" value_lower)
++    if("${var_lower}" STREQUAL "${value_lower}")
++      set(valid_flag 1)
++      set(the_value "${value}")
 +    endif()
++  endforeach()
++  if(${valid_flag} EQUAL 0)
++    libomp_error_say("libomp_check_variable(): ${var} = ${${var}} is unknown")
++  endif()
 +endfunction()
 +
 +# void libomp_get_build_number(string src_dir, string* return_build_number);
 +# - grab the eight digit build number (or 00000000) from kmp_version.c
 +function(libomp_get_build_number src_dir return_build_number)
-+    # sets file_lines_list to a list of all lines in kmp_version.c
-+    file(STRINGS "${src_dir}/src/kmp_version.c" file_lines_list)
++  # sets file_lines_list to a list of all lines in kmp_version.c
++  file(STRINGS "${src_dir}/src/kmp_version.c" file_lines_list)
 +
-+    # runs through each line in kmp_version.c
-+    foreach(line IN LISTS file_lines_list)
-+        # if the line begins with "#define KMP_VERSION_BUILD" then we take not of the build number
-+        string(REGEX MATCH "^[ \t]*#define[ \t]+KMP_VERSION_BUILD" valid "${line}")
-+        if(NOT "${valid}" STREQUAL "") # if we matched "#define KMP_VERSION_BUILD", then grab the build number
-+            string(REGEX REPLACE "^[ \t]*#define[ \t]+KMP_VERSION_BUILD[ \t]+([0-9]+)" "\\1"
-+                   build_number "${line}"
-+            )
-+        endif()
-+    endforeach()
-+    set(${return_build_number} "${build_number}" PARENT_SCOPE) # return build number
++  # runs through each line in kmp_version.c
++  foreach(line IN LISTS file_lines_list)
++    # if the line begins with "#define KMP_VERSION_BUILD" then we take not of the build number
++    string(REGEX MATCH "^[ \t]*#define[ \t]+KMP_VERSION_BUILD" valid "${line}")
++    if(NOT "${valid}" STREQUAL "") # if we matched "#define KMP_VERSION_BUILD", then grab the build number
++      string(REGEX REPLACE "^[ \t]*#define[ \t]+KMP_VERSION_BUILD[ \t]+([0-9]+)" "\\1"
++           build_number "${line}"
++      )
++    endif()
++  endforeach()
++  set(${return_build_number} "${build_number}" PARENT_SCOPE) # return build number
 +endfunction()
 +
 +# void libomp_get_legal_type(string* return_legal_type);
 +# - set the legal type name Performance/Profiling/Stub
 +function(libomp_get_legal_type return_legal_type)
-+    if(${NORMAL_LIBRARY})
-+        set(${return_legal_type} "Performance" PARENT_SCOPE)
-+    elseif(${PROFILE_LIBRARY})
-+        set(${return_legal_type} "Profiling" PARENT_SCOPE)
-+    elseif(${STUBS_LIBRARY})
-+        set(${return_legal_type} "Stub" PARENT_SCOPE)
-+    endif()
++  if(${NORMAL_LIBRARY})
++    set(${return_legal_type} "Performance" PARENT_SCOPE)
++  elseif(${PROFILE_LIBRARY})
++    set(${return_legal_type} "Profiling" PARENT_SCOPE)
++  elseif(${STUBS_LIBRARY})
++    set(${return_legal_type} "Stub" PARENT_SCOPE)
++  endif()
 +endfunction()
 +
 +# void libomp_add_suffix(string suffix, list<string>* list_of_items);
 +# - returns list_of_items with suffix appended to all items
 +# - original list is modified
 +function(libomp_add_suffix suffix list_of_items)
-+    set(local_list "")
-+    foreach(item IN LISTS "${list_of_items}")
-+        if(NOT "${item}" STREQUAL "")
-+            list(APPEND local_list "${item}${suffix}")
-+        endif()
-+    endforeach()
-+    set(${list_of_items} "${local_list}" PARENT_SCOPE)
++  set(local_list "")
++  foreach(item IN LISTS "${list_of_items}")
++    if(NOT "${item}" STREQUAL "")
++      list(APPEND local_list "${item}${suffix}")
++    endif()
++  endforeach()
++  set(${list_of_items} "${local_list}" PARENT_SCOPE)
 +endfunction()
 +
 +# void libomp_list_to_string(list<string> list_of_things, string* return_string);
 +# - converts a list to a space separated string
 +function(libomp_list_to_string list_of_things return_string)
-+    string(REPLACE ";" " " output_variable "${list_of_things}")
-+    set(${return_string} "${output_variable}" PARENT_SCOPE)
++  string(REPLACE ";" " " output_variable "${list_of_things}")
++  set(${return_string} "${output_variable}" PARENT_SCOPE)
 +endfunction()
 +
 +# void libomp_string_to_list(string str, list<string>* return_list);
@@ -3048,15 +3096,14 @@ Index: runtime/cmake/LibompUtils.cmake
 +# - what it really does is just string_replace all running whitespace to a semicolon
 +# - in cmake, a list is strings separated by semicolons: i.e., list of four items, list = "item1;item2;item3;item4"
 +function(libomp_string_to_list str return_list)
-+    set(outstr)
-+    string(REGEX REPLACE "[ \t]+" ";" outstr "${str}")
-+    set(${return_list} "${outstr}" PARENT_SCOPE)
++  set(outstr)
++  string(REGEX REPLACE "[ \t]+" ";" outstr "${str}")
++  set(${return_list} "${outstr}" PARENT_SCOPE)
 +endfunction()
 +
-Index: runtime/cmake/MSVC/AsmFlags.cmake
-===================================================================
---- runtime/cmake/MSVC/AsmFlags.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/MSVC/AsmFlags.cmake openmp-3.7.0.src/runtime/cmake/MSVC/AsmFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/MSVC/AsmFlags.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/MSVC/AsmFlags.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,37 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -3095,10 +3142,9 @@ Index: runtime/cmake/MSVC/AsmFlags.cmake
 -    replace_md_with_mt(CMAKE_ASM_MASM_FLAGS_DEBUG)
 -    set(${input_asm_flags} ${${input_asm_flags}} "${local_asm_flags}" PARENT_SCOPE)
 -endfunction()
-Index: runtime/cmake/MSVC/CFlags.cmake
-===================================================================
---- runtime/cmake/MSVC/CFlags.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/MSVC/CFlags.cmake openmp-3.7.0.src/runtime/cmake/MSVC/CFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/MSVC/CFlags.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/MSVC/CFlags.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,75 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -3175,10 +3221,9 @@ Index: runtime/cmake/MSVC/CFlags.cmake
 -    set(${input_ld_flags_libs} ${${input_ld_flags_libs}} "${local_ld_flags_libs}"  PARENT_SCOPE)
 -endfunction()
 -
-Index: runtime/cmake/MicroTests.cmake
-===================================================================
---- runtime/cmake/MicroTests.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/MicroTests.cmake openmp-3.7.0.src/runtime/cmake/MicroTests.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/MicroTests.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/MicroTests.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,218 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -3398,10 +3443,9 @@ Index: runtime/cmake/MicroTests.cmake
 -)
 -# END OF TESTS
 -######################################################
-Index: runtime/cmake/PerlFlags.cmake
-===================================================================
---- runtime/cmake/PerlFlags.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/PerlFlags.cmake openmp-3.7.0.src/runtime/cmake/PerlFlags.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/PerlFlags.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/PerlFlags.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,93 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -3496,10 +3540,9 @@ Index: runtime/cmake/PerlFlags.cmake
 -    endif()
 -    set(${input_gd_flags} "${local_gd_flags}" PARENT_SCOPE)
 -endfunction()
-Index: runtime/cmake/SourceFiles.cmake
-===================================================================
---- runtime/cmake/SourceFiles.cmake
-+++ /dev/null
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/SourceFiles.cmake openmp-3.7.0.src/runtime/cmake/SourceFiles.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/SourceFiles.cmake	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/cmake/SourceFiles.cmake	1969-12-31 19:00:00.000000000 -0500
 @@ -1,115 +0,0 @@
 -#
 -#//===----------------------------------------------------------------------===//
@@ -3616,10 +3659,9 @@ Index: runtime/cmake/SourceFiles.cmake
 -    endif()
 -    set(${input_imp_c_files} "${local_imp_c_files}" PARENT_SCOPE)
 -endfunction()
-Index: runtime/cmake/config-ix.cmake
-===================================================================
---- /dev/null
-+++ runtime/cmake/config-ix.cmake
+diff -uNr openmp-3.7.0.src.orig/runtime/cmake/config-ix.cmake openmp-3.7.0.src/runtime/cmake/config-ix.cmake
+--- openmp-3.7.0.src.orig/runtime/cmake/config-ix.cmake	1969-12-31 19:00:00.000000000 -0500
++++ openmp-3.7.0.src/runtime/cmake/config-ix.cmake	2015-07-15 13:45:31.000000000 -0400
 @@ -0,0 +1,181 @@
 +#
 +#//===----------------------------------------------------------------------===//
@@ -3641,30 +3683,30 @@ Index: runtime/cmake/config-ix.cmake
 +
 +# Check for versioned symbols
 +function(libomp_check_version_symbols retval)
-+    set(source_code
-+"#include <stdio.h>
-+void func1() { printf(\"Hello\"); }
-+void func2() { printf(\"World\"); }
-+__asm__(\".symver func1, func@VER1\");
-+__asm__(\".symver func2, func@VER2\");
-+int main() {
-+    func1();
-+    func2();
-+    return 0;
-+}")
-+    set(version_script_source "VER1 { }; VER2 { } VER1;")
-+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__version_script.txt "${version_script_source}")
-+    set(CMAKE_REQUIRED_FLAGS -Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/__version_script.txt)
-+    check_c_source_compiles("${source_code}" ${retval})
-+    set(${retval} ${${retval}} PARENT_SCOPE)
-+    file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/__version_script.txt)
++  set(source_code
++    "#include <stdio.h>
++    void func1() { printf(\"Hello\"); }
++    void func2() { printf(\"World\"); }
++    __asm__(\".symver func1, func@VER1\");
++    __asm__(\".symver func2, func@VER2\");
++    int main() {
++      func1();
++      func2();
++      return 0;
++    }")
++  set(version_script_source "VER1 { }; VER2 { } VER1;")
++  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__version_script.txt "${version_script_source}")
++  set(CMAKE_REQUIRED_FLAGS -Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/__version_script.txt)
++  check_c_source_compiles("${source_code}" ${retval})
++  set(${retval} ${${retval}} PARENT_SCOPE)
++  file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/__version_script.txt)
 +endfunction()
 +
 +# Includes the architecture flag in both compile and link phase
 +function(libomp_check_architecture_flag flag retval)
-+    set(CMAKE_REQUIRED_FLAGS "${flag}")
-+    check_c_compiler_flag("${flag}" ${retval})
-+    set(${retval} ${${retval}} PARENT_SCOPE)
++  set(CMAKE_REQUIRED_FLAGS "${flag}")
++  check_c_compiler_flag("${flag}" ${retval})
++  set(${retval} ${${retval}} PARENT_SCOPE)
 +endfunction()
 +
 +# Checking C, CXX, Linker Flags
@@ -3680,73 +3722,73 @@ Index: runtime/cmake/config-ix.cmake
 +libomp_check_architecture_flag(-mmic LIBOMP_HAVE_MMIC_FLAG)
 +libomp_check_architecture_flag(-m32 LIBOMP_HAVE_M32_FLAG)
 +if(WIN32)
-+    # Check Windows MSVC style flags.
-+    check_c_compiler_flag(/TP LIBOMP_HAVE_TP_FLAG)
-+    check_cxx_compiler_flag(/EHsc LIBOMP_HAVE_EHSC_FLAG)
-+    check_cxx_compiler_flag(/GS LIBOMP_HAVE_GS_FLAG)
-+    check_cxx_compiler_flag(/Oy- LIBOMP_HAVE_Oy__FLAG)
-+    check_cxx_compiler_flag(/arch:SSE2 LIBOMP_HAVE_ARCH_SSE2_FLAG)
-+    check_cxx_compiler_flag(/Qsafeseh LIBOMP_HAVE_QSAFESEH_FLAG)
-+    # It is difficult to create a dummy masm assembly file
-+    # and then check the MASM assembler to see if these flags exist and work,
-+    # so we assume they do for Windows.
-+    set(LIBOMP_HAVE_SAFESEH_MASM_FLAG TRUE)
-+    set(LIBOMP_HAVE_COFF_MASM_FLAG TRUE)
-+    # Change Windows flags /MDx to /MTx
-+    foreach(libomp_lang IN ITEMS C CXX)
-+        foreach(libomp_btype IN ITEMS DEBUG RELWITHDEBINFO RELEASE MINSIZEREL)
-+            string(REPLACE "/MD" "/MT"
-+                CMAKE_${libomp_lang}_FLAGS_${libomp_btype}
-+                "${CMAKE_${libomp_lang}_FLAGS_${libomp_btype}}"
-+            )
-+        endforeach()
++  # Check Windows MSVC style flags.
++  check_c_compiler_flag(/TP LIBOMP_HAVE_TP_FLAG)
++  check_cxx_compiler_flag(/EHsc LIBOMP_HAVE_EHSC_FLAG)
++  check_cxx_compiler_flag(/GS LIBOMP_HAVE_GS_FLAG)
++  check_cxx_compiler_flag(/Oy- LIBOMP_HAVE_Oy__FLAG)
++  check_cxx_compiler_flag(/arch:SSE2 LIBOMP_HAVE_ARCH_SSE2_FLAG)
++  check_cxx_compiler_flag(/Qsafeseh LIBOMP_HAVE_QSAFESEH_FLAG)
++  # It is difficult to create a dummy masm assembly file
++  # and then check the MASM assembler to see if these flags exist and work,
++  # so we assume they do for Windows.
++  set(LIBOMP_HAVE_SAFESEH_MASM_FLAG TRUE)
++  set(LIBOMP_HAVE_COFF_MASM_FLAG TRUE)
++  # Change Windows flags /MDx to /MTx
++  foreach(libomp_lang IN ITEMS C CXX)
++    foreach(libomp_btype IN ITEMS DEBUG RELWITHDEBINFO RELEASE MINSIZEREL)
++      string(REPLACE "/MD" "/MT"
++        CMAKE_${libomp_lang}_FLAGS_${libomp_btype}
++        "${CMAKE_${libomp_lang}_FLAGS_${libomp_btype}}"
++      )
 +    endforeach()
++  endforeach()
 +else()
-+    # It is difficult to create a dummy assembly file that compiles into an
-+    # exectuable for every architecture and then check the C compiler to
-+    # see if -x assembler-with-cpp exists and works, so we assume it does for non-Windows.
-+    set(LIBOMP_HAVE_X_ASSEMBLER_WITH_CPP_FLAG TRUE)
++  # It is difficult to create a dummy assembly file that compiles into an
++  # exectuable for every architecture and then check the C compiler to
++  # see if -x assembler-with-cpp exists and works, so we assume it does for non-Windows.
++  set(LIBOMP_HAVE_X_ASSEMBLER_WITH_CPP_FLAG TRUE)
 +endif()
 +if(${LIBOMP_FORTRAN_MODULES})
-+    libomp_check_fortran_flag(-m32 LIBOMP_HAVE_M32_FORTRAN_FLAG)
++  libomp_check_fortran_flag(-m32 LIBOMP_HAVE_M32_FORTRAN_FLAG)
 +endif()
 +
 +# Check linker flags
 +if(WIN32)
-+    libomp_check_linker_flag(/SAFESEH LIBOMP_HAVE_SAFESEH_FLAG)
++  libomp_check_linker_flag(/SAFESEH LIBOMP_HAVE_SAFESEH_FLAG)
 +elseif(NOT APPLE)
-+    libomp_check_linker_flag(-Wl,-x LIBOMP_HAVE_X_FLAG)
-+    libomp_check_linker_flag(-Wl,--warn-shared-textrel LIBOMP_HAVE_WARN_SHARED_TEXTREL_FLAG)
-+    libomp_check_linker_flag(-Wl,--as-needed LIBOMP_HAVE_AS_NEEDED_FLAG)
-+    libomp_check_linker_flag("-Wl,--version-script=${LIBOMP_SRC_DIR}/exports_so.txt" LIBOMP_HAVE_VERSION_SCRIPT_FLAG)
-+    libomp_check_linker_flag(-static-libgcc LIBOMP_HAVE_STATIC_LIBGCC_FLAG)
-+    libomp_check_linker_flag(-Wl,-z,noexecstack LIBOMP_HAVE_Z_NOEXECSTACK_FLAG)
-+    libomp_check_linker_flag(-Wl,-fini=__kmp_internal_end_fini LIBOMP_HAVE_FINI_FLAG)
++  libomp_check_linker_flag(-Wl,-x LIBOMP_HAVE_X_FLAG)
++  libomp_check_linker_flag(-Wl,--warn-shared-textrel LIBOMP_HAVE_WARN_SHARED_TEXTREL_FLAG)
++  libomp_check_linker_flag(-Wl,--as-needed LIBOMP_HAVE_AS_NEEDED_FLAG)
++  libomp_check_linker_flag("-Wl,--version-script=${LIBOMP_SRC_DIR}/exports_so.txt" LIBOMP_HAVE_VERSION_SCRIPT_FLAG)
++  libomp_check_linker_flag(-static-libgcc LIBOMP_HAVE_STATIC_LIBGCC_FLAG)
++  libomp_check_linker_flag(-Wl,-z,noexecstack LIBOMP_HAVE_Z_NOEXECSTACK_FLAG)
++  libomp_check_linker_flag(-Wl,-fini=__kmp_internal_end_fini LIBOMP_HAVE_FINI_FLAG)
 +endif()
 +
 +# Check Intel(R) C Compiler specific flags
 +if(CMAKE_C_COMPILER_ID STREQUAL "Intel")
-+    check_cxx_compiler_flag(/Qlong_double LIBOMP_HAVE_LONG_DOUBLE_FLAG)
-+    check_cxx_compiler_flag(/Qdiag-disable:177 LIBOMP_HAVE_DIAG_DISABLE_177_FLAG)
-+    check_cxx_compiler_flag(/Qinline-min-size=1 LIBOMP_HAVE_INLINE_MIN_SIZE_FLAG)
-+    check_cxx_compiler_flag(-Qoption,cpp,--extended_float_types LIBOMP_HAVE_EXTENDED_FLOAT_TYPES_FLAG)
-+    check_cxx_compiler_flag(-falign-stack=maintain-16-byte LIBOMP_HAVE_FALIGN_STACK_FLAG)
-+    check_cxx_compiler_flag("-opt-streaming-stores never" LIBOMP_HAVE_OPT_STREAMING_STORES_FLAG)
-+    libomp_check_linker_flag(-static-intel LIBOMP_HAVE_STATIC_INTEL_FLAG)
-+    libomp_check_linker_flag(-no-intel-extensions LIBOMP_HAVE_NO_INTEL_EXTENSIONS_FLAG)
-+    check_library_exists(irc_pic _intel_fast_memcpy "" LIBOMP_HAVE_IRC_PIC_LIBRARY)
++  check_cxx_compiler_flag(/Qlong_double LIBOMP_HAVE_LONG_DOUBLE_FLAG)
++  check_cxx_compiler_flag(/Qdiag-disable:177 LIBOMP_HAVE_DIAG_DISABLE_177_FLAG)
++  check_cxx_compiler_flag(/Qinline-min-size=1 LIBOMP_HAVE_INLINE_MIN_SIZE_FLAG)
++  check_cxx_compiler_flag(-Qoption,cpp,--extended_float_types LIBOMP_HAVE_EXTENDED_FLOAT_TYPES_FLAG)
++  check_cxx_compiler_flag(-falign-stack=maintain-16-byte LIBOMP_HAVE_FALIGN_STACK_FLAG)
++  check_cxx_compiler_flag("-opt-streaming-stores never" LIBOMP_HAVE_OPT_STREAMING_STORES_FLAG)
++  libomp_check_linker_flag(-static-intel LIBOMP_HAVE_STATIC_INTEL_FLAG)
++  libomp_check_linker_flag(-no-intel-extensions LIBOMP_HAVE_NO_INTEL_EXTENSIONS_FLAG)
++  check_library_exists(irc_pic _intel_fast_memcpy "" LIBOMP_HAVE_IRC_PIC_LIBRARY)
 +endif()
 +
 +# Checking Threading requirements
 +find_package(Threads REQUIRED)
 +if(WIN32)
-+    if(NOT CMAKE_USE_WIN32_THREADS_INIT)
-+        libomp_error_say("Need Win32 thread interface on Windows.")
-+    endif()
++  if(NOT CMAKE_USE_WIN32_THREADS_INIT)
++    libomp_error_say("Need Win32 thread interface on Windows.")
++  endif()
 +else()
-+    if(NOT CMAKE_USE_PTHREADS_INIT)
-+        libomp_error_say("Need pthread interface on Unix-like systems.")
-+    endif()
++  if(NOT CMAKE_USE_PTHREADS_INIT)
++    libomp_error_say("Need pthread interface on Unix-like systems.")
++  endif()
 +endif()
 +
 +# Find perl executable
@@ -3758,11 +3800,11 @@ Index: runtime/cmake/config-ix.cmake
 +# in that all the Perl scripts check the operating system and will fail if it isn't "valid".  This
 +# temporary solution lets us avoid trying to enumerate all the possible OS values inside the Perl modules.
 +if(WIN32)
-+    set(LIBOMP_PERL_SCRIPT_OS win)
++  set(LIBOMP_PERL_SCRIPT_OS win)
 +elseif(APPLE)
-+    set(LIBOMP_PERL_SCRIPT_OS mac)
++  set(LIBOMP_PERL_SCRIPT_OS mac)
 +else()
-+    set(LIBOMP_PERL_SCRIPT_OS lin)
++  set(LIBOMP_PERL_SCRIPT_OS lin)
 +endif()
 +
 +# Checking features
@@ -3771,42 +3813,41 @@ Index: runtime/cmake/config-ix.cmake
 +
 +# Check if quad precision types are available
 +if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-+    set(LIBOMP_HAVE_QUAD_PRECISION TRUE)
++  set(LIBOMP_HAVE_QUAD_PRECISION TRUE)
 +elseif(CMAKE_C_COMPILER_ID STREQUAL "Intel")
-+    if(LIBOMP_HAVE_EXTENDED_FLOAT_TYPES_FLAG)
-+        set(LIBOMP_HAVE_QUAD_PRECISION TRUE)
-+    else()
-+        set(LIBOMP_HAVE_QUAD_PRECISION TRUE)
-+    endif()
++  if(LIBOMP_HAVE_EXTENDED_FLOAT_TYPES_FLAG)
++    set(LIBOMP_HAVE_QUAD_PRECISION TRUE)
++  else()
++    set(LIBOMP_HAVE_QUAD_PRECISION TRUE)
++  endif()
 +else()
-+    set(LIBOMP_HAVE_QUAD_PRECISION FALSE)
++  set(LIBOMP_HAVE_QUAD_PRECISION FALSE)
 +endif()
 +
 +# Check if adaptive locks are available
 +if((${IA32} OR ${INTEL64}) AND NOT MSVC)
-+    set(LIBOMP_HAVE_ADAPTIVE_LOCKS TRUE)
++  set(LIBOMP_HAVE_ADAPTIVE_LOCKS TRUE)
 +else()
-+    set(LIBOMP_HAVE_ADAPTIVE_LOCKS FALSE)
++  set(LIBOMP_HAVE_ADAPTIVE_LOCKS FALSE)
 +endif()
 +
 +# Check if stats-gathering is available
 +if(NOT (WIN32 OR APPLE) AND (${IA32} OR ${INTEL64} OR ${MIC}))
-+    set(LIBOMP_HAVE_STATS TRUE)
++  set(LIBOMP_HAVE_STATS TRUE)
 +else()
-+    set(LIBOMP_HAVE_STATS FALSE)
++  set(LIBOMP_HAVE_STATS FALSE)
 +endif()
 +
 +# Check if OMPT support is available
 +if(NOT WIN32)
-+    set(LIBOMP_HAVE_OMPT_SUPPORT TRUE)
++  set(LIBOMP_HAVE_OMPT_SUPPORT TRUE)
 +else()
-+    set(LIBOMP_HAVE_OMPT_SUPPORT FALSE)
++  set(LIBOMP_HAVE_OMPT_SUPPORT FALSE)
 +endif()
-Index: runtime/src/CMakeLists.txt
-===================================================================
---- runtime/src/CMakeLists.txt
-+++ runtime/src/CMakeLists.txt
-@@ -9,294 +9,263 @@
+diff -uNr openmp-3.7.0.src.orig/runtime/src/CMakeLists.txt openmp-3.7.0.src/runtime/src/CMakeLists.txt
+--- openmp-3.7.0.src.orig/runtime/src/CMakeLists.txt	2015-07-15 13:46:51.000000000 -0400
++++ openmp-3.7.0.src/runtime/src/CMakeLists.txt	2015-07-15 13:45:30.000000000 -0400
+@@ -9,331 +9,307 @@
  #//===----------------------------------------------------------------------===//
  #
  
@@ -3830,35 +3871,36 @@ Index: runtime/src/CMakeLists.txt
 -        COMMAND ${CMAKE_COMMAND} -E copy omp_lib.h ${export_cmn_dir}
 -        COMMAND ${CMAKE_COMMAND} -E copy omp_lib.f ${export_cmn_dir}
 -        COMMAND ${CMAKE_COMMAND} -E copy omp_lib.f90 ${export_cmn_dir}
--    )
--    if(${LIBOMP_OMPT_SUPPORT})
--        add_custom_command(TARGET common POST_BUILD
--            COMMAND ${CMAKE_COMMAND} -E copy ompt.h ${export_cmn_dir}
--        )
 +# Using expand-vars.pl to generate files
 +# - 'file' is generated using expand-vars.pl and 'file'.var
 +# - Any .var file should use this recipe
 +# TODO: Use CMake's configure_file() instead
 +macro(libomp_expand_vars_recipe file_dir filename)
-+    get_source_file_property(libomp_extra_evflags ${filename} EV_COMPILE_DEFINITIONS)
-+    if("${libomp_extra_evflags}" MATCHES "NOTFOUND")
-+        set(libomp_extra_evflags)
-+    else()
-+        libomp_string_to_list("${libomp_extra_evflags}" libomp_extra_evflags)
-     endif()
++  get_source_file_property(libomp_extra_evflags ${filename} EV_COMPILE_DEFINITIONS)
++  if("${libomp_extra_evflags}" MATCHES "NOTFOUND")
++    set(libomp_extra_evflags)
++  else()
++    libomp_string_to_list("${libomp_extra_evflags}" libomp_extra_evflags)
++  endif()
++  if(NOT "${filename}" STREQUAL "")
++    add_custom_command(
++      OUTPUT  ${filename}
++      COMMAND ${PERL_EXECUTABLE} ${LIBOMP_TOOLS_DIR}/expand-vars.pl
++        --strict ${LIBOMP_EVFLAGS} ${libomp_extra_evflags} ${file_dir}/${filename}.var ${filename}
++      DEPENDS ${file_dir}/${filename}.var kmp_version.c ${LIBOMP_TOOLS_DIR}/expand-vars.pl
+     )
+-    if(${LIBOMP_OMPT_SUPPORT})
+-        add_custom_command(TARGET common POST_BUILD
+-            COMMAND ${CMAKE_COMMAND} -E copy ompt.h ${export_cmn_dir}
+-        )
+-    endif()
 -    if(${LIBOMP_FORTRAN_MODULES})
 -        add_custom_command(TARGET mod POST_BUILD
 -            COMMAND ${CMAKE_COMMAND} -E make_directory ${export_mod_dir}
 -            COMMAND ${CMAKE_COMMAND} -E copy omp_lib.mod ${export_mod_dir}
 -            COMMAND ${CMAKE_COMMAND} -E copy omp_lib_kinds.mod ${export_mod_dir}
-+    if(NOT "${filename}" STREQUAL "")
-+        add_custom_command(
-+            OUTPUT  ${filename}
-+            COMMAND ${PERL_EXECUTABLE} ${LIBOMP_TOOLS_DIR}/expand-vars.pl
-+                --strict ${LIBOMP_EVFLAGS} ${libomp_extra_evflags} ${file_dir}/${filename}.var ${filename}
-+            DEPENDS ${file_dir}/${filename}.var kmp_version.c ${LIBOMP_TOOLS_DIR}/expand-vars.pl
-         )
-     endif()
+-        )
+-    endif()
 -endif()
 -
 -######################################################
@@ -3869,10 +3911,7 @@ Index: runtime/src/CMakeLists.txt
 -# Grab environment variable CPPFLAGS and append those to definitions
 -set(include_dirs ${CMAKE_CURRENT_BINARY_DIR} ${src_dir} ${src_dir}/i18n ${inc_dir} ${src_dir}/thirdparty/ittnotify)
 -include_directories(${include_dirs})
--
--# objects depend on : .inc files and omp.h
--# This way the *.inc and omp.h are generated before any compilations take place
--add_custom_target(libomp-needed-headers DEPENDS kmp_i18n_id.inc kmp_i18n_default.inc omp.h)
++  endif()
 +endmacro()
 +libomp_get_evflags(LIBOMP_EVFLAGS)
 +libomp_string_to_list("${LIBOMP_EVFLAGS}" LIBOMP_EVFLAGS)
@@ -3885,25 +3924,29 @@ Index: runtime/src/CMakeLists.txt
 +libomp_expand_vars_recipe(${LIBOMP_INC_DIR} omp_lib.f90)
 +libomp_expand_vars_recipe(${LIBOMP_SRC_DIR} libomp.rc)
  
+-# objects depend on : .inc files and omp.h
+-# This way the *.inc and omp.h are generated before any compilations take place
+-add_custom_target(libomp-needed-headers DEPENDS kmp_i18n_id.inc kmp_i18n_default.inc omp.h)
++# Generate message catalog files: kmp_i18n_id.inc and kmp_i18n_default.inc
++add_custom_command(
++  OUTPUT  kmp_i18n_id.inc
++  COMMAND ${PERL_EXECUTABLE} ${LIBOMP_TOOLS_DIR}/message-converter.pl --os=${LIBOMP_PERL_SCRIPT_OS}
++    --arch=${LIBOMP_ARCH} --prefix=kmp_i18n --enum=kmp_i18n_id.inc ${LIBOMP_SRC_DIR}/i18n/en_US.txt
++  DEPENDS ${LIBOMP_SRC_DIR}/i18n/en_US.txt ${LIBOMP_TOOLS_DIR}/message-converter.pl
++)
++add_custom_command(
++  OUTPUT  kmp_i18n_default.inc
++  COMMAND ${PERL_EXECUTABLE} ${LIBOMP_TOOLS_DIR}/message-converter.pl --os=${LIBOMP_PERL_SCRIPT_OS}
++    --arch=${LIBOMP_ARCH} --prefix=kmp_i18n --default=kmp_i18n_default.inc ${LIBOMP_SRC_DIR}/i18n/en_US.txt
++  DEPENDS ${LIBOMP_SRC_DIR}/i18n/en_US.txt ${LIBOMP_TOOLS_DIR}/message-converter.pl
++)
+ 
 -# For Windows, there is a definitions file (.def) and resource file (.res) created using generate-def.pl and rc.exe respectively.
 -if(${WINDOWS})
 -    add_custom_target(libomp-needed-windows-files DEPENDS ${def_file} ${CMAKE_CURRENT_BINARY_DIR}/libomp.rc)
 -    list(APPEND lib_src_files ${CMAKE_CURRENT_BINARY_DIR}/libomp.rc)
 -endif()
-+# Generate message catalog files: kmp_i18n_id.inc and kmp_i18n_default.inc
-+add_custom_command(
-+    OUTPUT  kmp_i18n_id.inc
-+    COMMAND ${PERL_EXECUTABLE} ${LIBOMP_TOOLS_DIR}/message-converter.pl --os=${LIBOMP_PERL_SCRIPT_OS}
-+        --arch=${LIBOMP_ARCH} --prefix=kmp_i18n --enum=kmp_i18n_id.inc ${LIBOMP_SRC_DIR}/i18n/en_US.txt
-+    DEPENDS ${LIBOMP_SRC_DIR}/i18n/en_US.txt ${LIBOMP_TOOLS_DIR}/message-converter.pl
-+)
-+add_custom_command(
-+    OUTPUT  kmp_i18n_default.inc
-+    COMMAND ${PERL_EXECUTABLE} ${LIBOMP_TOOLS_DIR}/message-converter.pl --os=${LIBOMP_PERL_SCRIPT_OS}
-+        --arch=${LIBOMP_ARCH} --prefix=kmp_i18n --default=kmp_i18n_default.inc ${LIBOMP_SRC_DIR}/i18n/en_US.txt
-+    DEPENDS ${LIBOMP_SRC_DIR}/i18n/en_US.txt ${LIBOMP_TOOLS_DIR}/message-converter.pl
-+)
- 
+-
 -# Remove any cmake-automatic linking of libraries by linker, This is so linux 
 -# and mac don't include libstdc++ just because we compile c++ files.
 -if(${LIBOMP_USE_PREDEFINED_LINKER_FLAGS})
@@ -3911,10 +3954,7 @@ Index: runtime/src/CMakeLists.txt
 -    set(CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "")
 -    set(CMAKE_ASM_IMPLICIT_LINK_LIBRARIES "")
 -endif()
-+# Set the -D definitions for all sources
-+libomp_get_definitions_flags(LIBOMP_CONFIGURED_DEFINITIONS_FLAGS)
-+add_definitions(${LIBOMP_CONFIGURED_DEFINITIONS_FLAGS})
- 
+-
 -# --- ${lib_file} rule ---
 -add_library(omp SHARED ${lib_src_files})
 -set_target_properties(omp PROPERTIES 
@@ -3923,13 +3963,17 @@ Index: runtime/src/CMakeLists.txt
 -    LINK_FLAGS  "${LD_FLAGS}"   
 -    LINKER_LANGUAGE C          # use C Compiler for linking step
 -    SKIP_BUILD_RPATH true      # have Mac linker -install_name just be "-install_name libomp.dylib"
++# Set the -D definitions for all sources
++libomp_get_definitions_flags(LIBOMP_CONFIGURED_DEFINITIONS_FLAGS)
++add_definitions(${LIBOMP_CONFIGURED_DEFINITIONS_FLAGS})
++
 +# Set the -I includes for all sources
 +include_directories(
-+    ${CMAKE_CURRENT_BINARY_DIR}
-+    ${LIBOMP_SRC_DIR}
-+    ${LIBOMP_SRC_DIR}/i18n
-+    ${LIBOMP_INC_DIR}
-+    ${LIBOMP_SRC_DIR}/thirdparty/ittnotify
++  ${CMAKE_CURRENT_BINARY_DIR}
++  ${LIBOMP_SRC_DIR}
++  ${LIBOMP_SRC_DIR}/i18n
++  ${LIBOMP_INC_DIR}
++  ${LIBOMP_SRC_DIR}/thirdparty/ittnotify
  )
  
 -# --- Copy libomp into exports directory post build ---
@@ -3940,7 +3984,7 @@ Index: runtime/src/CMakeLists.txt
 +set(LIBOMP_CXXFILES)
 +set(LIBOMP_ASMFILES)
 +if(${STUBS_LIBRARY})
-+    set(LIBOMP_CFILES kmp_stub.c)
++  set(LIBOMP_CFILES kmp_stub.c)
  else()
 -    get_target_property(LIBOMP_OUTPUT_DIRECTORY omp LIBRARY_OUTPUT_DIRECTORY)
 -endif()
@@ -3952,79 +3996,115 @@ Index: runtime/src/CMakeLists.txt
 -    add_custom_command(TARGET omp POST_BUILD
 -        COMMAND ${CMAKE_COMMAND} -E make_directory ${export_lib_dir}
 -        COMMAND ${CMAKE_COMMAND} -E copy ${LIBOMP_OUTPUT_DIRECTORY}/${lib_file} ${export_lib_dir}
-+    # Get C files
-+    set(LIBOMP_CFILES
-+        kmp_alloc.c
-+        kmp_atomic.c
-+        kmp_csupport.c
-+        kmp_debug.c
-+        kmp_itt.c
-+        kmp_environment.c
-+        kmp_error.c
-+        kmp_global.c
-+        kmp_i18n.c
-+        kmp_io.c
-+        kmp_runtime.c
-+        kmp_settings.c
-+        kmp_str.c
-+        kmp_tasking.c
-+        kmp_taskq.c
-+        kmp_threadprivate.c
-+        kmp_utility.c
-     )
-+    if(WIN32)
-+        # Windows specific files
-+        libomp_append(LIBOMP_CFILES z_Windows_NT_util.c)
-+        libomp_append(LIBOMP_CFILES z_Windows_NT-586_util.c)
-+        libomp_append(LIBOMP_ASMFILES z_Windows_NT-586_asm.asm) # Windows assembly file
-+    else()
-+        # Unix specific files
-+        libomp_append(LIBOMP_CFILES z_Linux_util.c)
-+        libomp_append(LIBOMP_CFILES kmp_gsupport.c)
-+        libomp_append(LIBOMP_ASMFILES z_Linux_asm.s) # Unix assembly file
-+    endif()
-+    libomp_append(LIBOMP_CFILES thirdparty/ittnotify/ittnotify_static.c LIBOMP_USE_ITT_NOTIFY)
-+    libomp_append(LIBOMP_CFILES kmp_debugger.c LIBOMP_USE_DEBUGGER)
-+    # Get C++ files
-+    set(LIBOMP_CXXFILES
-+        kmp_barrier.cpp
-+        kmp_wait_release.cpp
-+        kmp_affinity.cpp
-+        kmp_dispatch.cpp
-+        kmp_lock.cpp
-+        kmp_sched.cpp
-+    )
-+    libomp_append(LIBOMP_CXXFILES kmp_stats.cpp LIBOMP_STATS)
-+    libomp_append(LIBOMP_CXXFILES kmp_stats_timing.cpp LIBOMP_STATS)
-+    if(${LIBOMP_OMP_VERSION} GREATER 40 OR ${LIBOMP_OMP_VERSION} EQUAL 40)
-+        libomp_append(LIBOMP_CXXFILES kmp_taskdeps.cpp)
-+        libomp_append(LIBOMP_CXXFILES kmp_cancel.cpp)
-+    endif()
- endif()
+-    )
+-endif()
++  # Get C files
++  set(LIBOMP_CFILES
++    kmp_alloc.c
++    kmp_atomic.c
++    kmp_csupport.c
++    kmp_debug.c
++    kmp_itt.c
++    kmp_environment.c
++    kmp_error.c
++    kmp_global.c
++    kmp_i18n.c
++    kmp_io.c
++    kmp_runtime.c
++    kmp_settings.c
++    kmp_str.c
++    kmp_tasking.c
++    kmp_taskq.c
++    kmp_threadprivate.c
++    kmp_utility.c
++  )
++  if(WIN32)
++    # Windows specific files
++    libomp_append(LIBOMP_CFILES z_Windows_NT_util.c)
++    libomp_append(LIBOMP_CFILES z_Windows_NT-586_util.c)
++    libomp_append(LIBOMP_ASMFILES z_Windows_NT-586_asm.asm) # Windows assembly file
++  else()
++    # Unix specific files
++    libomp_append(LIBOMP_CFILES z_Linux_util.c)
++    libomp_append(LIBOMP_CFILES kmp_gsupport.c)
++    libomp_append(LIBOMP_ASMFILES z_Linux_asm.s) # Unix assembly file
++  endif()
++  libomp_append(LIBOMP_CFILES thirdparty/ittnotify/ittnotify_static.c LIBOMP_USE_ITT_NOTIFY)
++  libomp_append(LIBOMP_CFILES kmp_debugger.c LIBOMP_USE_DEBUGGER)
++  # Get C++ files
++  set(LIBOMP_CXXFILES
++    kmp_barrier.cpp
++    kmp_wait_release.cpp
++    kmp_affinity.cpp
++    kmp_dispatch.cpp
++    kmp_lock.cpp
++    kmp_sched.cpp
++  )
++  libomp_append(LIBOMP_CXXFILES kmp_stats.cpp LIBOMP_STATS)
++  libomp_append(LIBOMP_CXXFILES kmp_stats_timing.cpp LIBOMP_STATS)
++  if(${LIBOMP_OMP_VERSION} GREATER 40 OR ${LIBOMP_OMP_VERSION} EQUAL 40)
++    libomp_append(LIBOMP_CXXFILES kmp_taskdeps.cpp)
++    libomp_append(LIBOMP_CXXFILES kmp_cancel.cpp)
++  endif()
++endif()
 +# Files common to stubs and normal library
 +libomp_append(LIBOMP_CFILES kmp_ftn_cdecl.c)
 +libomp_append(LIBOMP_CFILES kmp_ftn_extra.c)
 +libomp_append(LIBOMP_CFILES kmp_version.c)
 +libomp_append(LIBOMP_CFILES ompt-general.c IF_TRUE LIBOMP_OMPT_SUPPORT)
- 
--# Linking command will include libraries in LD_LIB_FLAGS
--target_link_libraries(omp ${LD_LIB_FLAGS} ${CMAKE_DL_LIBS})
--
--# Create *.inc and omp.h before compiling any sources
--add_dependencies(omp libomp-needed-headers)
--if(${WINDOWS})
--# Create .def and .rc file before compiling any sources
--    add_dependencies(omp libomp-needed-windows-files)
--endif()
++
 +set(LIBOMP_SOURCE_FILES ${LIBOMP_CFILES} ${LIBOMP_CXXFILES} ${LIBOMP_ASMFILES})
 +# For Windows, there is a resource file (.rc -> .res) that is also compiled
 +libomp_append(LIBOMP_SOURCE_FILES libomp.rc WIN32)
- 
++
 +# Get compiler and assembler flags
 +libomp_get_cflags(LIBOMP_CONFIGURED_CFLAGS)
 +libomp_get_cxxflags(LIBOMP_CONFIGURED_CXXFLAGS)
 +libomp_get_asmflags(LIBOMP_CONFIGURED_ASMFLAGS)
- # Set the compiler flags for each type of source
++# Set the compiler flags for each type of source
++set_source_files_properties(${LIBOMP_CFILES} PROPERTIES COMPILE_FLAGS "${LIBOMP_CONFIGURED_CFLAGS}")
++set_source_files_properties(${LIBOMP_CXXFILES} PROPERTIES COMPILE_FLAGS "${LIBOMP_CONFIGURED_CXXFLAGS}")
++set_source_files_properties(${LIBOMP_ASMFILES} PROPERTIES COMPILE_FLAGS "${LIBOMP_CONFIGURED_ASMFLAGS}")
++# Let the compiler handle the assembly files on Unix-like systems
++if(NOT WIN32)
++  set_source_files_properties(${LIBOMP_ASMFILES} PROPERTIES LANGUAGE C)
++endif()
++
++# Remove any cmake-automatic linking of the standard C++ library.
++# We neither need (nor want) the standard C++ library dependency even though we compile c++ files.
++if(NOT ${LIBOMP_USE_STDCPPLIB})
++  set(CMAKE_CXX_IMPLICIT_LINK_LIBRARIES)
++endif()
++
++# Add the OpenMP library
++libomp_get_ldflags(LIBOMP_CONFIGURED_LDFLAGS)
++add_library(omp SHARED ${LIBOMP_SOURCE_FILES})
++set_target_properties(omp PROPERTIES
++  PREFIX "" SUFFIX "" OUTPUT_NAME "${LIBOMP_LIB_FILE}"
++  LINK_FLAGS "${LIBOMP_CONFIGURED_LDFLAGS}"
++  LINKER_LANGUAGE C # use C Compiler for linking step
++  SKIP_BUILD_RPATH true # have Mac linker -install_name just be "-install_name libomp.dylib"
++)
+ 
+-# Linking command will include libraries in LD_LIB_FLAGS
+-target_link_libraries(omp ${LD_LIB_FLAGS} ${CMAKE_DL_LIBS})
++# Linking command will include libraries in LIBOMP_CONFIGURED_LIBFLAGS
++libomp_get_libflags(LIBOMP_CONFIGURED_LIBFLAGS)
++target_link_libraries(omp ${LIBOMP_CONFIGURED_LIBFLAGS} ${CMAKE_DL_LIBS})
+ 
+ # Create *.inc and omp.h before compiling any sources
++# objects depend on : .inc files and omp.h (and ompt.h if LIBOMP_OMPT_SUPPORT is on)
++# This way the *.inc and omp.h are generated before any compilations take place
++set(LIBOMP_NEEDED_HEADERS kmp_i18n_id.inc kmp_i18n_default.inc omp.h)
++libomp_append(LIBOMP_NEEDED_HEADERS ompt.h LIBOMP_OMPT_SUPPORT)
++add_custom_target(libomp-needed-headers DEPENDS ${LIBOMP_NEEDED_HEADERS})
+ add_dependencies(omp libomp-needed-headers)
+-if(${WINDOWS})
+-# Create .def and .rc file before compiling any sources
+-    add_dependencies(omp libomp-needed-windows-files)
+-endif()
+ 
+-# Set the compiler flags for each type of source
 -set_source_files_properties(${lib_c_items} 
 -                            ${imp_c_items} PROPERTIES COMPILE_FLAGS "${C_FLAGS}")
 -set_source_files_properties(${lib_cxx_items} PROPERTIES COMPILE_FLAGS "${CXX_FLAGS}")
@@ -4034,12 +4114,56 @@ Index: runtime/src/CMakeLists.txt
 -else()
 -    # Non-Windows operating systems can use compiler to assemble the assembly files
 -    set_source_files_properties(${lib_asm_items} PROPERTIES COMPILE_FLAGS "${ASM_FLAGS}" LANGUAGE C)
-+set_source_files_properties(${LIBOMP_CFILES} PROPERTIES COMPILE_FLAGS "${LIBOMP_CONFIGURED_CFLAGS}")
-+set_source_files_properties(${LIBOMP_CXXFILES} PROPERTIES COMPILE_FLAGS "${LIBOMP_CONFIGURED_CXXFLAGS}")
-+set_source_files_properties(${LIBOMP_ASMFILES} PROPERTIES COMPILE_FLAGS "${LIBOMP_CONFIGURED_ASMFLAGS}")
-+# Let the compiler handle the assembly files on Unix-like systems
-+if(NOT WIN32)
-+    set_source_files_properties(${LIBOMP_ASMFILES} PROPERTIES LANGUAGE C)
++# Windows specific build rules
++if(WIN32)
++  # Create .def and .rc file before compiling any sources
++  add_custom_target(libomp-needed-windows-files DEPENDS ${LIBOMP_LIB_NAME}.def libomp.rc)
++  add_dependencies(omp libomp-needed-windows-files)
++  # z_Windows_NT-586_asm.asm (masm file) send it i386 or x86_64 architecture definition flag
++  if(${IA32})
++    set_source_files_properties(z_Windows_NT-586_asm.asm PROPERTIES COMPILE_DEFINITIONS "_M_IA32")
++  elseif(${INTEL64})
++    set_source_files_properties(z_Windows_NT-586_asm.asm PROPERTIES COMPILE_DEFINITIONS "_M_AMD64")
++  endif()
++  set_source_files_properties(thirdparty/ittnotify/ittnotify_static.c PROPERTIES COMPILE_DEFINITIONS "UNICODE")
++
++  # Create Windows import library
++  # the import library is "re-linked" to include kmp_import.c which prevents
++  # linking of both Visual Studio OpenMP and newly built OpenMP
++  set_source_files_properties(kmp_import.c PROPERTIES COMPILE_FLAGS "${LIBOMP_CONFIGURED_CFLAGS}")
++  set(LIBOMP_IMP_LIB_FILE ${LIBOMP_LIB_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX})
++  set(LIBOMP_GENERATED_IMP_LIB_FILENAME ${LIBOMP_LIB_FILE}${CMAKE_STATIC_LIBRARY_SUFFIX})
++  set_target_properties(omp PROPERTIES
++    VERSION ${LIBOMP_VERSION}.0 # uses /version flag
++    IMPORT_PREFIX "" IMPORT_SUFFIX "" # control generated import library name when building omp
++    ARCHIVE_OUTPUT_NAME ${LIBOMP_GENERATED_IMP_LIB_FILENAME}
++  )
++  # Get generated import library from creating omp
++  get_target_property(LIBOMP_IMPORT_LIB_DIRECTORY omp ARCHIVE_OUTPUT_DIRECTORY)
++  if(LIBOMP_IMPORT_LIB_DIRECTORY)
++    set(LIBOMP_GENERATED_IMP_LIB ${LIBOMP_IMPORT_LIB_DIRECTORY}/${LIBOMP_GENERATED_IMP_LIB_FILENAME})
++  else()
++    set(LIBOMP_GENERATED_IMP_LIB ${CMAKE_CURRENT_BINARY_DIR}/${LIBOMP_GENERATED_IMP_LIB_FILENAME})
++  endif()
++  set_source_files_properties(${LIBOMP_GENERATED_IMP_LIB} PROPERTIES GENERATED TRUE EXTERNAL_OBJECT TRUE)
++  # Create new import library that is just the previously created one + kmp_import.c
++  add_library(ompimp STATIC ${LIBOMP_GENERATED_IMP_LIB} kmp_import.c)
++  set_target_properties(ompimp PROPERTIES
++    PREFIX "" SUFFIX "" OUTPUT_NAME "${LIBOMP_IMP_LIB_FILE}"
++    LINKER_LANGUAGE C
++    SKIP_BUILD_RPATH true
++  )
++  add_dependencies(ompimp omp) # ensure generated import library is created first
++
++  # Create def file to designate exported functions
++  libomp_get_gdflags(LIBOMP_GDFLAGS) # generate-def.pl flags (Windows only)
++  libomp_string_to_list("${LIBOMP_GDFLAGS}" LIBOMP_GDFLAGS)
++  add_custom_command(
++    OUTPUT  ${LIBOMP_LIB_NAME}.def
++    COMMAND ${PERL_EXECUTABLE} ${LIBOMP_TOOLS_DIR}/generate-def.pl ${LIBOMP_GDFLAGS}
++      -o ${LIBOMP_LIB_NAME}.def ${CMAKE_CURRENT_SOURCE_DIR}/dllexports
++    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dllexports ${LIBOMP_TOOLS_DIR}/generate-def.pl
++  )
  endif()
 -# Set the -D definitions for all sources
 -add_definitions(${DEFINITIONS_FLAGS})
@@ -4047,33 +4171,17 @@ Index: runtime/src/CMakeLists.txt
 -# If creating a build that imitates build.pl's rules then set USE_BUILDPL_RULES to true
 -if(${LIBOMP_USE_BUILDPL_RULES})
 -    include(BuildPLRules)
-+# Remove any cmake-automatic linking of the standard C++ library.
-+# We neither need (nor want) the standard C++ library dependency even though we compile c++ files.
-+if(NOT ${LIBOMP_USE_STDCPPLIB})
-+    set(CMAKE_CXX_IMPLICIT_LINK_LIBRARIES)
- endif()
- 
+-endif()
+-
 -######################################################
 -# --- Source file specific flags ---
 -# kmp_version.o : -D _KMP_BUILD_TIME="\"$(date)}\""
 -set_source_files_properties(kmp_version.c  PROPERTIES COMPILE_DEFINITIONS "_KMP_BUILD_TIME=\"\\\"${date}\\\"\"")
-+# Add the OpenMP library
-+libomp_get_ldflags(LIBOMP_CONFIGURED_LDFLAGS)
-+add_library(omp SHARED ${LIBOMP_SOURCE_FILES})
-+set_target_properties(omp PROPERTIES
-+    PREFIX "" SUFFIX "" OUTPUT_NAME "${LIBOMP_LIB_FILE}"
-+    LINK_FLAGS "${LIBOMP_CONFIGURED_LDFLAGS}"
-+    LINKER_LANGUAGE C # use C Compiler for linking step
-+    SKIP_BUILD_RPATH true # have Mac linker -install_name just be "-install_name libomp.dylib"
-+)
- 
+-
 -if(${WINDOWS})
 -    set_source_files_properties(thirdparty/ittnotify/ittnotify_static.c PROPERTIES COMPILE_DEFINITIONS "UNICODE")
 -endif()
-+# Linking command will include libraries in LIBOMP_CONFIGURED_LIBFLAGS
-+libomp_get_libflags(LIBOMP_CONFIGURED_LIBFLAGS)
-+target_link_libraries(omp ${LIBOMP_CONFIGURED_LIBFLAGS} ${CMAKE_DL_LIBS})
- 
+-
 -######################################################
 -# MAC specific build rules
 -if(${MAC})
@@ -4089,17 +4197,26 @@ Index: runtime/src/CMakeLists.txt
 -            COMMAND lipo -create -output ${export_fat_mac_32e}/${lib_file} ${export_mac_32}/${lib_file} ${export_mac_32e}/${lib_file}
 -        )
 -    endif()
--endif()
-+# Create *.inc and omp.h before compiling any sources
-+# objects depend on : .inc files and omp.h (and ompt.h if LIBOMP_OMPT_SUPPORT is on)
-+# This way the *.inc and omp.h are generated before any compilations take place
-+set(LIBOMP_NEEDED_HEADERS kmp_i18n_id.inc kmp_i18n_default.inc omp.h)
-+libomp_append(LIBOMP_NEEDED_HEADERS ompt.h LIBOMP_OMPT_SUPPORT)
-+add_custom_target(libomp-needed-headers DEPENDS ${LIBOMP_NEEDED_HEADERS})
-+add_dependencies(omp libomp-needed-headers)
++# Building the Fortran module files
++# One compilation step creates both omp_lib.mod and omp_lib_kinds.mod
++if(${LIBOMP_FORTRAN_MODULES})
++  add_custom_target(libomp-mod ALL DEPENDS omp_lib.mod omp_lib_kinds.mod)
++  libomp_get_fflags(LIBOMP_CONFIGURED_FFLAGS)
++  if(CMAKE_Fortran_COMPILER_SUPPORTS_F90)
++    set(LIBOMP_FORTRAN_SOURCE_FILE omp_lib.f90)
++  else()
++    set(LIBOMP_FORTRAN_SOURCE_FILE omp_lib.f)
++  endif()
++  add_custom_command(
++    OUTPUT omp_lib.mod omp_lib_kinds.mod
++    COMMAND ${CMAKE_Fortran_COMPILER} -c ${LIBOMP_CONFIGURED_FFLAGS} ${LIBOMP_FORTRAN_SOURCE_FILE}
++    DEPENDS ${LIBOMP_FORTRAN_SOURCE_FILE} omp_lib.h
++  )
++  set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES omp_lib${CMAKE_C_OUTPUT_EXTENSION})
+ endif()
  
 -######################################################
- # Windows specific build rules
+-# Windows specific build rules
 -if(${WINDOWS})
 -
 -    # --- Create $(imp_file) ---
@@ -4128,18 +4245,8 @@ Index: runtime/src/CMakeLists.txt
 -                COMMAND ${CMAKE_COMMAND} -E copy ${LIBOMPIMP_OUTPUT_DIRECTORY}/${imp_file} ${export_lib_dir}
 -            )
 -        endif()
-+if(WIN32)
-+    # Create .def and .rc file before compiling any sources
-+    add_custom_target(libomp-needed-windows-files DEPENDS ${LIBOMP_LIB_NAME}.def libomp.rc)
-+    add_dependencies(omp libomp-needed-windows-files)
-+    # z_Windows_NT-586_asm.asm (masm file) send it i386 or x86_64 architecture definition flag
-+    if(${IA32})
-+        set_source_files_properties(z_Windows_NT-586_asm.asm PROPERTIES COMPILE_DEFINITIONS "_M_IA32")
-+    elseif(${INTEL64})
-+        set_source_files_properties(z_Windows_NT-586_asm.asm PROPERTIES COMPILE_DEFINITIONS "_M_AMD64")
-     endif()
-+    set_source_files_properties(thirdparty/ittnotify/ittnotify_static.c PROPERTIES COMPILE_DEFINITIONS "UNICODE")
- 
+-    endif()
+-
 -    # --- Create $(def_file) ---
 -    if(NOT "${def_file}" STREQUAL "")
 -        string_to_list("${gd_flags}" gd_flags)
@@ -4148,43 +4255,11 @@ Index: runtime/src/CMakeLists.txt
 -            COMMAND ${PERL_EXECUTABLE} ${tools_dir}/generate-def.pl ${gd_flags} -o ${def_file} ${CMAKE_CURRENT_SOURCE_DIR}/dllexports
 -            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dllexports ${tools_dir}/generate-def.pl
 -        )
-+    # Create Windows import library
-+    # the import library is "re-linked" to include kmp_import.c which prevents
-+    # linking of both Visual Studio OpenMP and newly built OpenMP
-+    set_source_files_properties(kmp_import.c PROPERTIES COMPILE_FLAGS "${LIBOMP_CONFIGURED_CFLAGS}")
-+    set(LIBOMP_IMP_LIB_FILE ${LIBOMP_LIB_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX})
-+    set(LIBOMP_GENERATED_IMP_LIB_FILENAME ${LIBOMP_LIB_FILE}${CMAKE_STATIC_LIBRARY_SUFFIX})
-+    set_target_properties(omp PROPERTIES
-+        VERSION ${LIBOMP_VERSION}.0 # uses /version flag
-+        IMPORT_PREFIX "" IMPORT_SUFFIX "" # control generated import library name when building omp
-+        ARCHIVE_OUTPUT_NAME ${LIBOMP_GENERATED_IMP_LIB_FILENAME}
-+    )
-+    # Get generated import library from creating omp
-+    get_target_property(LIBOMP_IMPORT_LIB_DIRECTORY omp ARCHIVE_OUTPUT_DIRECTORY)
-+    if(LIBOMP_IMPORT_LIB_DIRECTORY)
-+        set(LIBOMP_GENERATED_IMP_LIB ${LIBOMP_IMPORT_LIB_DIRECTORY}/${LIBOMP_GENERATED_IMP_LIB_FILENAME})
-+    else()
-+        set(LIBOMP_GENERATED_IMP_LIB ${CMAKE_CURRENT_BINARY_DIR}/${LIBOMP_GENERATED_IMP_LIB_FILENAME})
-     endif()
-+    set_source_files_properties(${LIBOMP_GENERATED_IMP_LIB} PROPERTIES GENERATED TRUE EXTERNAL_OBJECT TRUE)
-+    # Create new import library that is just the previously created one + kmp_import.c
-+    add_library(ompimp STATIC ${LIBOMP_GENERATED_IMP_LIB} kmp_import.c)
-+    set_target_properties(ompimp PROPERTIES
-+        PREFIX "" SUFFIX "" OUTPUT_NAME "${LIBOMP_IMP_LIB_FILE}"
-+        LINKER_LANGUAGE C
-+        SKIP_BUILD_RPATH true
-+    )
-+    add_dependencies(ompimp omp) # ensure generated import library is created first
- 
-+    # Create def file to designate exported functions
-+    libomp_get_gdflags(LIBOMP_GDFLAGS) # generate-def.pl flags (Windows only)
-+    libomp_string_to_list("${LIBOMP_GDFLAGS}" LIBOMP_GDFLAGS)
-+    add_custom_command(
-+        OUTPUT  ${LIBOMP_LIB_NAME}.def
-+        COMMAND ${PERL_EXECUTABLE} ${LIBOMP_TOOLS_DIR}/generate-def.pl ${LIBOMP_GDFLAGS}
-+            -o ${LIBOMP_LIB_NAME}.def ${CMAKE_CURRENT_SOURCE_DIR}/dllexports
-+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dllexports ${LIBOMP_TOOLS_DIR}/generate-def.pl
-+    )
+-    endif()
+-
++# Move files to exports/ directory if requested
++if(${LIBOMP_COPY_EXPORTS})
++  include(LibompExports)
  endif()
  
 -######################################################
@@ -4228,9 +4303,7 @@ Index: runtime/src/CMakeLists.txt
 -######################################################
 -# --- Create Fortran Files ---
 -# omp_lib.mod
-+# Building the Fortran module files
-+# One compilation step creates both omp_lib.mod and omp_lib_kinds.mod
- if(${LIBOMP_FORTRAN_MODULES})
+-if(${LIBOMP_FORTRAN_MODULES})
 -    # Grab fortran-compiler-dependent flags
 -    # Cmake will look for cmake/${CMAKE_Fortran_COMPILER_ID}/FortranFlags.cmake to append additional fortran flags.
 -    enable_language(Fortran)
@@ -4239,32 +4312,38 @@ Index: runtime/src/CMakeLists.txt
 -    if(fortran_specific_include_file_found)
 -        include(FortranFlags)
 -        append_fortran_compiler_specific_fort_flags(F_FLAGS)
-+    add_custom_target(libomp-mod ALL DEPENDS omp_lib.mod omp_lib_kinds.mod)
-+    libomp_get_fflags(LIBOMP_CONFIGURED_FFLAGS)
-+    if(CMAKE_Fortran_COMPILER_SUPPORTS_F90)
-+        set(LIBOMP_FORTRAN_SOURCE_FILE omp_lib.f90)
-     else()
+-    else()
 -        warning_say("Could not find cmake/${CMAKE_Fortran_COMPILER_ID}/FortranFlags.cmake: will only use default flags in CommonFlags.cmake")
-+        set(LIBOMP_FORTRAN_SOURCE_FILE omp_lib.f)
-     endif()
+-    endif()
 -    set(omp_lib_f "omp_lib.f90" )
 -    add_custom_command(
 -        OUTPUT "omp_lib.mod"
 -        COMMAND ${CMAKE_Fortran_COMPILER} -c ${F_FLAGS} ${omp_lib_f}
 -        DEPENDS ${omp_lib_f}
 -    )
-     add_custom_command(
+-    add_custom_command(
 -        OUTPUT "omp_lib_kinds.mod"
 -        COMMAND ${CMAKE_Fortran_COMPILER} -c ${F_FLAGS} ${omp_lib_f}
 -        DEPENDS ${omp_lib_f}
-+        OUTPUT omp_lib.mod omp_lib_kinds.mod
-+        COMMAND ${CMAKE_Fortran_COMPILER} -c ${LIBOMP_CONFIGURED_FFLAGS} ${LIBOMP_FORTRAN_SOURCE_FILE}
-+        DEPENDS ${LIBOMP_FORTRAN_SOURCE_FILE} omp_lib.h
-     )
+-    )
 -    # clean omp_lib.o from build directory when "make clean" 
 -    set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES omp_lib${obj})
-+    set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES omp_lib${CMAKE_C_OUTPUT_EXTENSION})
++# Micro test rules for after library has been built (cmake/LibompMicroTests.cmake)
++include(LibompMicroTests)
++add_custom_target(libomp-micro-tests)
++if(NOT ${MIC} AND NOT CMAKE_CROSSCOMPILING)
++  add_dependencies(libomp-micro-tests libomp-test-touch)
  endif()
++if(NOT WIN32 AND NOT APPLE)
++  add_dependencies(libomp-micro-tests libomp-test-relo)
++endif()
++if(NOT WIN32 AND NOT APPLE)
++  add_dependencies(libomp-micro-tests libomp-test-execstack)
++endif()
++if(${MIC})
++  add_dependencies(libomp-micro-tests libomp-test-instr)
++endif()
++add_dependencies(libomp-micro-tests libomp-test-deps)
  
 -###############################################################
 -# --- Using expand-vars.pl to generate files ---
@@ -4296,84 +4375,79 @@ Index: runtime/src/CMakeLists.txt
 -expand_vars_recipe(${CMAKE_CURRENT_SOURCE_DIR}/include/${LIBOMP_OMP_VERSION} omp_lib.f)
 -expand_vars_recipe(${CMAKE_CURRENT_SOURCE_DIR}/include/${LIBOMP_OMP_VERSION} omp_lib.f90)
 -expand_vars_recipe(${CMAKE_CURRENT_SOURCE_DIR} libomp.rc)
-+# Move files to exports/ directory if requested
-+if(${LIBOMP_COPY_EXPORTS})
-+    include(LibompExports)
-+endif()
-+
-+# Micro test rules for after library has been built (cmake/LibompMicroTests.cmake)
-+include(LibompMicroTests)
-+add_custom_target(libomp-micro-tests)
-+if(NOT ${MIC} AND NOT CMAKE_CROSSCOMPILING)
-+    add_dependencies(libomp-micro-tests libomp-test-touch)
-+endif()
-+if(NOT WIN32 AND NOT APPLE)
-+    add_dependencies(libomp-micro-tests libomp-test-relo)
-+endif()
-+if(NOT WIN32 AND NOT APPLE)
-+    add_dependencies(libomp-micro-tests libomp-test-execstack)
-+endif()
-+if(${MIC})
-+    add_dependencies(libomp-micro-tests libomp-test-instr)
-+endif()
-+add_dependencies(libomp-micro-tests libomp-test-deps)
- 
+-
 -####################################################################
  # Install rules
  # We want to install libomp in DESTDIR/CMAKE_INSTALL_PREFIX/lib
  # We want to install headers in DESTDIR/CMAKE_INSTALL_PREFIX/include
-@@ -306,34 +275,41 @@
-     string(REGEX MATCH "[0-9]+\\.[0-9]+(\\.[0-9]+)?" CLANG_VERSION ${PACKAGE_VERSION})
-     set(LIBOMP_HEADERS_INSTALL_PATH lib${LIBOMP_LIBDIR_SUFFIX}/clang/${CLANG_VERSION}/include)
+ if(${LIBOMP_STANDALONE_BUILD})
+-    set(LIBOMP_HEADERS_INSTALL_PATH include)
++  set(LIBOMP_HEADERS_INSTALL_PATH include)
+ else()
+-    string(REGEX MATCH "[0-9]+\\.[0-9]+(\\.[0-9]+)?" CLANG_VERSION ${PACKAGE_VERSION})
+-    set(LIBOMP_HEADERS_INSTALL_PATH lib${LIBOMP_LIBDIR_SUFFIX}/clang/${CLANG_VERSION}/include)
++  string(REGEX MATCH "[0-9]+\\.[0-9]+(\\.[0-9]+)?" CLANG_VERSION ${PACKAGE_VERSION})
++  set(LIBOMP_HEADERS_INSTALL_PATH lib${LIBOMP_LIBDIR_SUFFIX}/clang/${CLANG_VERSION}/include)
  endif()
 -if(${WINDOWS})
-+if(WIN32)
-     install(TARGETS omp RUNTIME DESTINATION bin)
+-    install(TARGETS omp RUNTIME DESTINATION bin)
 -    if(NOT "${imp_file}" STREQUAL "")
 -        install(TARGETS ompimp ARCHIVE DESTINATION lib${LIBOMP_LIBDIR_SUFFIX})
 -    endif()
-+    install(TARGETS ompimp ARCHIVE DESTINATION lib${LIBOMP_LIBDIR_SUFFIX})
-     # Create aliases (regular copies) of the library for backwards compatibility
-     set(LIBOMP_ALIASES "libiomp5md")
-     foreach(alias IN LISTS LIBOMP_ALIASES)
+-    # Create aliases (regular copies) of the library for backwards compatibility
+-    set(LIBOMP_ALIASES "libiomp5md")
+-    foreach(alias IN LISTS LIBOMP_ALIASES)
 -        install(CODE "execute_process(COMMAND \"\${CMAKE_COMMAND}\" -E copy \"${lib_file}\" \"${alias}${dll}\"
 -            WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}/bin)")
 -        install(CODE "execute_process(COMMAND \"\${CMAKE_COMMAND}\" -E copy \"${imp_file}\" \"${alias}${lib}\"
 -            WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}/lib${LIBOMP_LIBDIR_SUFFIX})")
-+        install(CODE "execute_process(COMMAND \"\${CMAKE_COMMAND}\" -E copy \"${LIBOMP_LIB_FILE}\"
-+            \"${alias}${CMAKE_SHARED_LIBRARY_SUFFIX}\" WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}/bin)")
-+        install(CODE "execute_process(COMMAND \"\${CMAKE_COMMAND}\" -E copy \"${LIBOMP_IMP_LIB_FILE}\"
-+            \"${alias}${CMAKE_STATIC_LIBRARY_SUFFIX}\" WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}/lib${LIBOMP_LIBDIR_SUFFIX})")
-     endforeach()
+-    endforeach()
++if(WIN32)
++  install(TARGETS omp RUNTIME DESTINATION bin)
++  install(TARGETS ompimp ARCHIVE DESTINATION lib${LIBOMP_LIBDIR_SUFFIX})
++  # Create aliases (regular copies) of the library for backwards compatibility
++  set(LIBOMP_ALIASES "libiomp5md")
++  foreach(alias IN LISTS LIBOMP_ALIASES)
++    install(CODE "execute_process(COMMAND \"\${CMAKE_COMMAND}\" -E copy \"${LIBOMP_LIB_FILE}\"
++      \"${alias}${CMAKE_SHARED_LIBRARY_SUFFIX}\" WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}/bin)")
++    install(CODE "execute_process(COMMAND \"\${CMAKE_COMMAND}\" -E copy \"${LIBOMP_IMP_LIB_FILE}\"
++      \"${alias}${CMAKE_STATIC_LIBRARY_SUFFIX}\" WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}/lib${LIBOMP_LIBDIR_SUFFIX})")
++  endforeach()
  else()
 -    install(TARGETS omp LIBRARY DESTINATION lib${LIBOMP_LIBDIR_SUFFIX}) 
-+    install(TARGETS omp LIBRARY DESTINATION lib${LIBOMP_LIBDIR_SUFFIX})
-     # Create aliases (symlinks) of the library for backwards compatibility
-     set(LIBOMP_ALIASES "libgomp;libiomp5")
-     foreach(alias IN LISTS LIBOMP_ALIASES)
+-    # Create aliases (symlinks) of the library for backwards compatibility
+-    set(LIBOMP_ALIASES "libgomp;libiomp5")
+-    foreach(alias IN LISTS LIBOMP_ALIASES)
 -        install(CODE "execute_process(COMMAND \"\${CMAKE_COMMAND}\" -E create_symlink \"${lib_file}\" \"${alias}${dll}\"
 -            WORKING_DIRECTORY \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib${LIBOMP_LIBDIR_SUFFIX})")
-+        install(CODE "execute_process(COMMAND \"\${CMAKE_COMMAND}\" -E create_symlink \"${LIBOMP_LIB_FILE}\"
-+            \"${alias}${CMAKE_SHARED_LIBRARY_SUFFIX}\" WORKING_DIRECTORY
-+            \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib${LIBOMP_LIBDIR_SUFFIX})")
-     endforeach()
+-    endforeach()
++  install(TARGETS omp LIBRARY DESTINATION lib${LIBOMP_LIBDIR_SUFFIX})
++  # Create aliases (symlinks) of the library for backwards compatibility
++  set(LIBOMP_ALIASES "libgomp;libiomp5")
++  foreach(alias IN LISTS LIBOMP_ALIASES)
++    install(CODE "execute_process(COMMAND \"\${CMAKE_COMMAND}\" -E create_symlink \"${LIBOMP_LIB_FILE}\"
++      \"${alias}${CMAKE_SHARED_LIBRARY_SUFFIX}\" WORKING_DIRECTORY
++      \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib${LIBOMP_LIBDIR_SUFFIX})")
++  endforeach()
  endif()
  install(
 -    FILES 
 -    ${CMAKE_CURRENT_BINARY_DIR}/omp.h 
-+    FILES
-+    ${CMAKE_CURRENT_BINARY_DIR}/omp.h
-     DESTINATION ${LIBOMP_HEADERS_INSTALL_PATH}
+-    DESTINATION ${LIBOMP_HEADERS_INSTALL_PATH}
++  FILES
++  ${CMAKE_CURRENT_BINARY_DIR}/omp.h
++  DESTINATION ${LIBOMP_HEADERS_INSTALL_PATH}
  )
  if(${LIBOMP_OMPT_SUPPORT})
-     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ompt.h DESTINATION ${LIBOMP_HEADERS_INSTALL_PATH})
- endif()
-+if(${LIBOMP_FORTRAN_MODULES})
-+    install(FILES
-+        ${CMAKE_CURRENT_BINARY_DIR}/omp_lib.h
-+        ${CMAKE_CURRENT_BINARY_DIR}/omp_lib.mod
-+        ${CMAKE_CURRENT_BINARY_DIR}/omp_lib_kinds.mod
-+        DESTINATION ${LIBOMP_HEADERS_INSTALL_PATH}
-+    )
+-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ompt.h DESTINATION ${LIBOMP_HEADERS_INSTALL_PATH})
++  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ompt.h DESTINATION ${LIBOMP_HEADERS_INSTALL_PATH})
 +endif()
++if(${LIBOMP_FORTRAN_MODULES})
++  install(FILES
++    ${CMAKE_CURRENT_BINARY_DIR}/omp_lib.h
++    ${CMAKE_CURRENT_BINARY_DIR}/omp_lib.mod
++    ${CMAKE_CURRENT_BINARY_DIR}/omp_lib_kinds.mod
++    DESTINATION ${LIBOMP_HEADERS_INSTALL_PATH}
++  )
+ endif()
  

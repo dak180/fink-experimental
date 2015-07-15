@@ -30,19 +30,19 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.bz2
-Source-MD5: ffedb47f7f0fab3340766ed68f7330e6
+Source-MD5: 40e8b40863104e9d60a5e2778b5e4b2d
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.bz2
-Source2-MD5: d3fe62074d4dc8bd4374a2996a36926a
+Source2-MD5: e48a76febcc7944a99df2da050e153b0
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.bz2
-Source3-MD5: d935024ce28b24da804fa37f1e8bb328
+Source3-MD5: c61b7631a16382fd8a270b6d486aca3b
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.bz2
-Source4-MD5: 838c60cd6ab64b79ff1c398e4c0cf640
+Source4-MD5: d0ed1e852ae55bd5fde0b39ea5ac22ec 
 Source5: http://llvm.org/releases/%v/libcxx-%v.src.tar.bz2
-Source5-MD5: fb3e44c4590fb6f9955335ec38b63b10
+Source5-MD5: 9f268d8453f7c36bbb2357ae6170c9cc 
 Source6: http://llvm.org/releases/%v/openmp-%v.src.tar.bz2
-Source6-MD5: b9d0961a98f8924f8c2c02666ce18838
+Source6-MD5: 66daf58a547c4c9aa7b97bf3b1905265
 Source7:  http://llvm.org/releases/%v/clang-tools-extra-%v.src.tar.bz2
-Source7-MD5: b665ca934c696ee584334f41848d8a4f
+Source7-MD5: 15582cb671e7ddd61864a702b553c580
 # Source8: http://llvm.org/releases/%v/test-suite-%v.src.tar.xz
 # Source8-MD5: 
 # libcxxabi is not needed, use system's libc++abi or libsupc++
@@ -66,7 +66,7 @@ PatchFile5-MD5: 583ca4f6ad00b403bc4f0c8af02b187b
 PatchFile7: %n-clang-iomp5.patch
 PatchFile7-MD5: e5e0216c5190bb07e75179c20ac8a574
 PatchFile8: %n-openmp-cmake.patch
-PatchFile8-MD5: 0ca7cd6c5c2783ee38a8d9d145da312f
+PatchFile8-MD5: 07e391125f95331b674ff4b171417a9d
 PatchFile9: %n-openmp-testsuite.patch
 PatchFile9-MD5: 98bde19e3d84e052404c1c8a3dd72202
 
@@ -188,7 +188,7 @@ if ($1 == "cmd.append(exec_path)") {
 
 	# add experimental cmake support to openmp
 	pushd ../openmp-%v.src
-	  $patch_filter %{PatchFile8} | patch -p0
+	  $patch_filter %{PatchFile8} | patch -p1
 	  # revert testsuite to compile and run
 	  $patch_filter %{PatchFile9} | patch -p1
 	  rm -f testsuite/bin/Makefile
@@ -1378,7 +1378,6 @@ SplitOff12: <<
 		!%p/opt/llvm-3.7/lib/libLLVMBitWriter.3.7.0.dylib
 		!%p/opt/llvm-3.7/lib/libLLVMCodeGen.3.7.0.dylib
 		!%p/opt/llvm-3.7/lib/libLLVMCore.3.7.0.dylib
-		!%p/opt/llvm-3.7/lib/libLLVMDebugInfo.3.7.0.dylib
 		!%p/opt/llvm-3.7/lib/libLLVMDebugInfoDWARF.3.7.0.dylib
 		!%p/opt/llvm-3.7/lib/libLLVMDebugInfoPDB.3.7.0.dylib
 		!%p/opt/llvm-3.7/lib/libLLVMExecutionEngine.3.7.0.dylib
@@ -1386,12 +1385,10 @@ SplitOff12: <<
 		!%p/opt/llvm-3.7/lib/libLLVMInstrumentation.3.7.0.dylib
 		!%p/opt/llvm-3.7/lib/libLLVMInterpreter.3.7.0.dylib
 		!%p/opt/llvm-3.7/lib/libLLVMIRReader.3.7.0.dylib
-		!%p/opt/llvm-3.7/lib/libLLVMJIT.3.7.0.dylib
 		!%p/opt/llvm-3.7/lib/libLLVMLibDriver.3.7.0.dylib
 		!%p/opt/llvm-3.7/lib/libLLVMLinker.3.7.0.dylib
 		!%p/opt/llvm-3.7/lib/libLLVMLTO.3.7.0.dylib
 		!%p/opt/llvm-3.7/lib/libLLVMMC.3.7.0.dylib
-		!%p/opt/llvm-3.7/lib/libLLVMMCAnalysis.3.7.0.dylib
 		!%p/opt/llvm-3.7/lib/libLLVMMCDisassembler.3.7.0.dylib
 		!%p/opt/llvm-3.7/lib/libLLVMLineEditor.3.7.0.dylib
 		!%p/opt/llvm-3.7/lib/libLLVMMCJIT.3.7.0.dylib
