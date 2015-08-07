@@ -30,17 +30,17 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.bz2
-Source-MD5: 40e8b40863104e9d60a5e2778b5e4b2d
+Source-MD5: 478394fad639ba4b3820862cdb22903d
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.bz2
-Source2-MD5: 3a7804ded862836d77019771ee4bb0e3
+Source2-MD5: 4139a0ddb09934418cb76bd0570ea187
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.bz2
-Source3-MD5: c61b7631a16382fd8a270b6d486aca3b
+Source3-MD5: eaa63a5c321aab762b58ff5b0d60041a
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.bz2
 Source4-MD5: d0ed1e852ae55bd5fde0b39ea5ac22ec 
 Source5: http://llvm.org/releases/%v/libcxx-%v.src.tar.bz2
-Source5-MD5: 9f268d8453f7c36bbb2357ae6170c9cc 
+Source5-MD5: fbb61e17ffb313f25f639c61cc339a35
 Source6: http://llvm.org/releases/%v/openmp-%v.src.tar.bz2
-Source6-MD5: f8e62621d490b2f53a2ddb84c1fc1c34 
+Source6-MD5: ae77aada333f602ba92765923ca1d59d
 Source7:  http://llvm.org/releases/%v/clang-tools-extra-%v.src.tar.bz2
 Source7-MD5: 15582cb671e7ddd61864a702b553c580
 # Source8: http://llvm.org/releases/%v/test-suite-%v.src.tar.xz
@@ -359,9 +359,12 @@ EOF
 	# This is needed because llvm3x-shlibs links to the built
 	# libc++ in the bootstrap process.
 	# Keep this path in sync with libcxx_install_dir elsewhere in this file.
+	# I've confirmed that the LLVM_CXXFLAGS variable is only used in llvm-config
+	# reporting, and is not actually used during the build process, so it is safe
+	# to hack this during bootstrap -- it is intended for post-install use.
 	fix_llvm_config_build_variables() {
 		sed -i.orig -e "/LLVM_CXXFLAGS/s|$llvm_abs_srcdir[^ ]*/include|%p/include/c++/v1|" \
-			-e "/LLVM_LDFLAGS/s|$llvm_abs_srcdir[^ ]*/lib|%p/lib/c++|" \
+			-e "/LLVM_CXXFLAGS/s|$llvm_abs_srcdir[^ ]*/lib|%p/lib/c++|" \
 			tools/llvm-config/BuildVariables.inc
 	}
 
