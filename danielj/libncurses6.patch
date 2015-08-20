@@ -1,0 +1,49 @@
+diff -ru ncurses-6.0.orig/configure ncurses-6.0/configure
+--- ncurses-6.0.orig/configure	2015-08-05 05:20:32.000000000 -0400
++++ ncurses-6.0/configure	2015-08-19 21:09:28.000000000 -0400
+@@ -3571,9 +3571,6 @@
+ echo "$as_me: WARNING: pkg-config is not installed" >&2;}
+ fi
+ 
+-if test "x$PKG_CONFIG" = xnone ; then
+-	PKG_CONFIG_LIBDIR=no
+-else
+ 	echo "$as_me:3577: checking for $PKG_CONFIG library directory" >&5
+ echo $ECHO_N "checking for $PKG_CONFIG library directory... $ECHO_C" >&6
+ 
+@@ -3582,9 +3579,12 @@
+   withval="$with_pkg_config_libdir"
+   PKG_CONFIG_LIBDIR=$withval
+ else
+-  PKG_CONFIG_LIBDIR=yes
++  if test "x$PKG_CONFIG" = xnone ; then
++    PKG_CONFIG_LIBDIR=no
++  else
++    PKG_CONFIG_LIBDIR=yes
++  fi
+ fi;
+-fi
+ 
+ case x$PKG_CONFIG_LIBDIR in
+ (x/*)
+diff -ru ncurses-6.0.orig/misc/terminfo.src ncurses-6.0/misc/terminfo.src
+--- ncurses-6.0.orig/misc/terminfo.src	2015-07-25 15:27:20.000000000 -0400
++++ ncurses-6.0/misc/terminfo.src	2015-08-19 21:10:42.000000000 -0400
+@@ -7408,7 +7408,7 @@
+ # hp2621 with function labels. Most of the time they are off,
+ # but inside vi, the function key labels appear. You have to
+ # hold down shift to get them to xmit.
+-hp2621|hp2621a|hp2621A|2621|2621a|2621A|hp2621-wl|2621-wl|hp 2621 w/labels,
++hp2621|hp2621a|2621|2621a|hp2621-wl|2621-wl|hp 2621 w/labels,
+ 	is2=\E&jA\r, rmkx=\E&jA, use=hp2621-fl,
+ hp2621-fl|hp 2621,
+ 	xhp@, xon,
+@@ -7901,7 +7901,7 @@
+ 	ri=\Ej, rmir=\Er, rmso=\EG0$<10/>, rmul=\EG0$<10/>,
+ 	sgr0=\EG0$<10/>, smir=\Eq, smso=\EG4$<10/>,
+ 	smul=\EG8$<10/>, tbc=\E0, vpa=\E[%p1%{32}%+%c,
+-hp70092|hp70092a|hp70092A|HP 700/92,
++hp70092|hp70092a|HP 700/92,
+ 	am, da, db, xhp,
+ 	cols#80, lh#2, lines#24, lm#0, lw#8, nlab#8,
+ 	acsc=0cjgktlrmfn/q\,t5u6v8w7x., bel=^G, blink=\E&dA,

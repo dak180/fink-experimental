@@ -1,0 +1,97 @@
+Package: libncurses6
+Version: 6.0
+Revision: 1
+
+GCC: 4.0
+Source: mirror:gnu:ncurses/ncurses-%v.tar.gz
+#Source: mirror:sourceforge:fink/ncurses-%v.tgz
+Source-MD5: ee13d052e1ead260d7c28071f46eefb1
+BuildDepends: fink (>= 0.13.0)
+Depends: %N-shlibs (= %v-%r)
+Conflicts: libncurses5, libncursesw5, libncurses6
+Replaces: libncurses5, libncursesw5, libncurses6
+Essential: false
+BuildDependsOnly: true
+
+# Patches shamelessly stolen from MacPorts.
+PatchFile: libncurses6.patch
+PatchFile-MD5: 8ac2236d24f5364bcc37418a815e3a01
+
+ConfigureParams: <<
+  --without-ada \
+  --with-shared \
+  --without-normal \
+  --without-debug \
+  --without-tests \
+  --enable-termcap \
+  --mandir=%p/share/man \
+  --with-terminfo-dirs="%p/share/terminfo:/usr/share/terminfo" \
+  --with-default-terminfo-dir="%p/share/terminfo" \
+  --enable-no-padding \
+  --enable-sigwinch \
+  --enable-tcap-names \
+  --enable-hard-tabs \
+  --enable-widec \
+  --disable-mixed-case \
+  --with-abi-version=6 \
+  --disable-lib-suffixes \
+  --with-pthread \
+  --enable-pthreads-eintr \
+  --with-cxx-shared \
+  --enable-pc-files \
+  --with-pkg-config-libdir='${prefix}/lib/pkgconfig'
+<<
+NoSetCFLAGS: true
+NoSetLDFLAGS: true
+NoSetCPPFLAGS: true
+NoSetMAKEFLAGS: true
+SetMAKEFLAGS: -j1
+InstallScript: <<
+#!/bin/sh -ev
+  make install.libs DESTDIR=%d DYLD_LIBRARY_PATH=`pwd`/lib:`pwd`/lib/ncurses
+  
+  # Install some compatibility symlinks.
+  ln -s ncurses6-config %i/bin/ncurses5-config
+  ln -s ncurses6-config %i/bin/ncurses5w-config
+  ln -s ncurses6-config %i/bin/ncurses6w-config
+  ln -s ncurses %i/include/ncursesw
+  ln -s libform.dylib %i/lib/libformw.dylib
+  ln -s libmenu.dylib %i/lib/libmenuw.dylib
+  ln -s libncurses++.dylib %i/lib/libncurses++w.dylib
+  ln -s libncurses.dylib %i/lib/libncursesw.dylib
+  ln -s libpanel.dylib %i/lib/libpanelw.dylib
+<<
+SplitOff: <<
+ Package: %N-shlibs
+ Depends: base-files
+ Essential: false
+ Files: <<
+  lib/libform.*.dylib
+  lib/libmenu.*.dylib
+  lib/libncurses.*.dylib
+  lib/libncurses++.*.dylib
+  lib/libpanel.*.dylib
+ <<
+ DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
+ Shlibs: <<
+  %p/lib/libform.6.dylib 6.0.0 %n (>= 6.0-1)
+  %p/lib/libmenu.6.dylib 6.0.0 %n (>= 6.0-1)
+  %p/lib/libncurses.6.dylib 6.0.0 %n (>= 6.0-1)
+  %p/lib/libncurses++.6.dylib 6.0.0 %n (>= 6.0-1)
+  %p/lib/libpanel.6.dylib 6.0.0 %n (>= 6.0-1)
+ <<
+ Description: Shared libraries for libncurses6 package
+<<
+DocFiles: README ANNOUNCE NEWS INSTALL TO-DO MANIFEST
+Description: Full-screen ascii drawing (wchar version)
+DescPort: <<
+More changes by Chris Zubrzycki to be more compatable with apple's lib
+-udates to the (sometimes) monthly releases of ncurses (in patch form)
+
+The --enable-overwrite flag creates the libcurses.dylib symlink.
+
+Added patchscript to avoid failure on case sensitive file systems.
+<<
+License: OSI-Approved
+Maintainer: Fink Core Group <fink-core@lists.sourceforge.net>
+Homepage: http://www.gnu.org/software/ncurses/ncurses.html
