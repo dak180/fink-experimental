@@ -193,6 +193,7 @@ if ($1 == "cmd.append(exec_path)") {
 		-e '/message-converter/s|--default=|--default-file=|' \
 		runtime/CMakeLists.txt
 	  sed -i.orig -e "s|= gcc|= $build_root/last/bin/clang-3.7|g" testsuite/Makefile
+	  sed -i.orig -e "s|CFLAGS = -fopenmp -lm -O3|CFLAGS = -fopenmp -lm -O3 -Wl,-rpath,%b/../build/last/lib|g" testsuite/Makefile
 	popd
 	
 # needed for gcc-fsf-4.x only
