@@ -907,11 +907,6 @@ InfoTest: <<
 	popd
 	cd ../build/last
 
-	# create symlink to ld so newly built libLTO.dylib is found
-	ln -sf /usr/bin/ld bin/ld
-	# use it to work around SIP pruning DYLD_LIBRARY_PATH
-	perl -pi -e 's,%%ld64,ld,s' %b/test/tools/lto/opt-level.ll
-
 #	echo "******** Running included LLVM and clang tests ... ********"
 #	{ make -k TESTARGS=-v check-all 2>&1 || : ;} | tee llvm-clang-%v-check.log
 
