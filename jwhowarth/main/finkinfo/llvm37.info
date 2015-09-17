@@ -59,8 +59,8 @@ PatchFile3: %n-compiler-rt.patch
 PatchFile3-MD5: 92ceb63b5c854507028d7e80190646c6
 PatchFile4: %n-polly.patch
 PatchFile4-MD5: 3667aedcd5a76805c7209b469030cc26
-PatchFile5: %n-libcxx.patch
-PatchFile5-MD5: 583ca4f6ad00b403bc4f0c8af02b187b
+#PatchFile5: %n-libcxx.patch
+#PatchFile5-MD5: 583ca4f6ad00b403bc4f0c8af02b187b
 #PatchFile6: %n-clang-omp.patch
 #PatchFile6-MD5: 8067f4cc1f58030f7746521d58c776c2 
 PatchFile7: %n-clang-iomp5.patch
@@ -128,10 +128,10 @@ PatchScript: <<
 	  # or do actual symbol check on nm /usr/lib/libc.dylib /usr/lib/system/libsystem_c.dylib
 	popd
 	pushd ../libcxx-%v.src
-	  if test "$darwin_vers" -lt 11
-	  then
-	    $patch_filter %{PatchFile5} | patch -p1
-	  fi
+	  #if test "$darwin_vers" -lt 11
+	  #then
+	  #  $patch_filter %{PatchFile5} | patch -p1
+	  #fi
 	  # add a timeout to libc++ test, in case of hanging
 	  mv test/lit.cfg{,.orig}
 	  awk '{
@@ -906,6 +906,11 @@ InfoTest: <<
 	  export PATH=`pwd`:$PATH
 	popd
 	cd ../build/last
+
+	# create symlink to ld so newly built libLTO.dylib is found
+	ln -sf /usr/bin/ld bin/ld
+	# use it to work around SIP pruning DYLD_LIBRARY_PATH
+	perl -pi -e 's,%%ld64,ld,s' %b/test/tools/lto/opt-level.ll
 
 #	echo "******** Running included LLVM and clang tests ... ********"
 #	{ make -k TESTARGS=-v check-all 2>&1 || : ;} | tee llvm-clang-%v-check.log
