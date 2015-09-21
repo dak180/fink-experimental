@@ -1,0 +1,30 @@
+diff -uNr polly-3.8.0.src.orig/lib/CMakeLists.txt polly-3.8.0.src/lib/CMakeLists.txt
+--- polly-3.8.0.src.orig/lib/CMakeLists.txt	2015-09-21 09:00:19.000000000 -0400
++++ polly-3.8.0.src/lib/CMakeLists.txt	2015-09-21 09:54:19.000000000 -0400
+@@ -322,6 +322,26 @@
+   )
+ endif()
+ 
++if (APPLE)
++# apparently, this is not wanted on linux
++target_link_libraries(Polly
++  LLVMAnalysis
++  LLVMBitReader
++  LLVMCore
++  LLVMInstCombine
++  LLVMMC
++  LLVMMCParser
++  LLVMObject
++  LLVMProfileData
++  LLVMSupport
++  LLVMScalarOpts
++  LLVMTarget
++  LLVMTransformUtils
++  LLVMVectorize
++  LLVMipo
++)
++endif()
++
+ # Build a monolithic Polly.a and a thin module LLVMPolly.moduleext that links to
+ # that static library.
+ if (MSVC)
