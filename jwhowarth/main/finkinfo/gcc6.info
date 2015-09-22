@@ -3,12 +3,12 @@ Package: gcc6
 Version: 6.0.0
 Revision: 1
 #Source: ftp://gcc.gnu.org/pub/gcc/releases/gcc-%v/gcc-%v.tar.bz2
-Source: ftp://gcc.gnu.org/pub/gcc/snapshots/6-20150425/gcc-6-20150425.tar.bz2
-Source-MD5: 22183b9b7d53923472d0fb97bf4b2bb4
+Source: ftp://gcc.gnu.org/pub/gcc/snapshots/6-20150707/gcc-6-20150921.tar.bz2
+Source-MD5: 0ee329c8c8df5a1944c378731fb0cdf1
 Source2: ftp://sourceware.org/pub/java/ecj-4.9.jar
 Source2-MD5: 7339f199ba11c941890031fd9981d7be
 PatchFile: %n.patch
-PatchFile-MD5: 488d6cf3ab9ceb5b94a3332422edb2c3 
+PatchFile-MD5: 90399aa5534e1ad88f5f7beebb7c6217 
 Type: -64bit .
 NoSetCPPFLAGS: True
 NoSetLDFLAGS: True
@@ -54,8 +54,8 @@ ConfigureParams: <<
 	--with-isl=%p \
 	--with-mpc=%p \
 	--with-system-zlib \
-	--x-includes=/usr/X11/include \
-	--x-libraries=/usr/X11/lib \
+	--x-includes=$X11DIR/include \
+	--x-libraries=$X11DIR/lib \
 	--program-suffix=-fsf-6
 <<
 InfoTest: <<
@@ -91,15 +91,21 @@ CompileScript: <<
 	mv ../ecj-4.9.jar ecj.jar
 	mkdir ../darwin_objdir
 	cd ../darwin_objdir
+	darwin_vers=`uname -r | cut -d. -f1`
+	if [ "$darwin_vers" -ge 12 ]; then
+		X11DIR=/opt/X11
+	else
+		X11DIR=/usr/X11
+	fi
 	# check for incompatible clang
 	clangvers=`clang --version | cut -d\  -f4`
 	$(`dpkg --compare-versions $clangvers '>>' 6.0`) && clangcheck='y'
 	if [ "$clangcheck" = "y" ]; then
 		#../gcc-%v/configure %c
-		../gcc-6-20150425/configure %c --with-build-config=bootstrap-debug
+		../gcc-6-20150921/configure %c --with-build-config=bootstrap-debug
 	else
 		#../gcc-%v/configure %c
-		../gcc-6-20150425/configure %c
+		../gcc-6-20150921/configure %c
 	fi
 	# Use bootstrap-lean to reduce disk usage.
 	# Note that this causes plugin testsuite failures
@@ -121,7 +127,7 @@ InstallScript: <<
 	for binfile in $binfiles ; do
 		ln -s %p/lib/gcc6/bin/$binfile-fsf-6 %i/lib/gcc6/bin/$binfile-6
 		ln -s %p/lib/gcc6/bin/$binfile-fsf-6 %i/bin/$binfile-6
-		ln -s %p/lib/gcc7/bin/$binfile-fsf-6 %i/bin/$binfile-fsf-6
+		ln -s %p/lib/gcc6/bin/$binfile-fsf-6 %i/bin/$binfile-fsf-6
 	done
 	binfiles="aot-compile gappletviewer gc-analyze gcj gcj-dbtool gcjh gfortran gij gjar gjarsigner gjavah gkeytool gnative2ascii gorbd grmic grmid grmiregistry gserialver gtnameserv jcf-dump jv-convert rebuild-gcj-db"
 	for binfile in $binfiles ; do
@@ -197,7 +203,6 @@ SplitOff: <<
 		lib/gcc6/lib/libssp.0*.dylib
 		lib/gcc6/lib/libobjc-gnu.4*.dylib
 		lib/gcc6/lib/libgomp.1*.dylib
-		lib/gcc6/lib/libgomp-plugin-host_nonshm.1*.dylib
 		lib/gcc6/lib/libquadmath.0*.dylib
 		lib/gcc6/lib/libatomic.1*.dylib
 		lib/gcc6/lib/libasan.2*.dylib
@@ -213,7 +218,6 @@ SplitOff: <<
 		lib/gcc6/lib/i386/libssp.0*.dylib
 		lib/gcc6/lib/i386/libobjc-gnu.4*.dylib
 		lib/gcc6/lib/i386/libgomp.1*.dylib
-		lib/gcc6/lib/i386/libgomp-plugin-host_nonshm.1*.dylib
 		lib/gcc6/lib/i386/libquadmath.0*.dylib
 		lib/gcc6/lib/i386/libatomic.1*.dylib
 		lib/gcc6/lib/i386/libasan.2*.dylib
@@ -232,7 +236,6 @@ SplitOff: <<
 		%p/lib/gcc6/lib/libssp.0.dylib 1.0.0 %n (>= 6.0.0-1) 
 		%p/lib/gcc6/lib/libobjc-gnu.4.dylib 5.0.0 %n (>= 6.0.0-1)
 		%p/lib/gcc6/lib/libgomp.1.dylib 2.0.0 %n (>= 6.0.0-1) 
-		%p/lib/gcc6/lib/libgomp-plugin-host_nonshm.1.dylib 2.0.0 %n (>= 6.0.0-1)
 		%p/lib/gcc6/lib/libquadmath.0.dylib 1.0.0 %n (>= 6.0.0-1)
 		%p/lib/gcc6/lib/libatomic.1.dylib 3.0.0  %n (>= 6.0.0-1)
 		%p/lib/gcc6/lib/libasan.2.dylib 3.0.0  %n (>= 6.0.0-1)
@@ -248,7 +251,6 @@ SplitOff: <<
 		%p/lib/gcc6/lib/i386/libssp.0.dylib 1.0.0 %n (>= 6.0.0-1) 32
 		%p/lib/gcc6/lib/i386/libobjc-gnu.4.dylib 5.0.0 %n (>= 6.0.0-1) 32
 		%p/lib/gcc6/lib/i386/libgomp.1.dylib 2.0.0 %n (>= 6.0.0-1) 32
-		%p/lib/gcc6/lib/i386/libgomp-plugin-host_nonshm.1.dylib 2.0.0 %n (>= 6.0.0-1) 32
 		%p/lib/gcc6/lib/i386/libquadmath.0.dylib 1.0.0 %n (>= 6.0.0-1) 32
 		%p/lib/gcc6/lib/i386/libatomic.1.dylib 3.0.0 %n (>= 6.0.0-1) 32
 		%p/lib/gcc6/lib/i386/libasan.2.dylib 3.0.0  %n (>= 6.0.0-1) 32
