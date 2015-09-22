@@ -974,7 +974,7 @@ EOF
 	esac
 	if test "$build_clang_omp" = 1
 	then
-	      make -k check-libomp 2>&1 || : ;) | tee openmp-%v-check.log
+	      ( make -k check-libomp 2>&1 || : ;) | tee openmp-%v-check.log
 	fi
 	popd
 
