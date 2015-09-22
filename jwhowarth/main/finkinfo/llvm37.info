@@ -188,8 +188,6 @@ if ($1 == "cmd.append(exec_path)") {
 	pushd ../openmp-%v.src
 	  # backport openmp lit testsuite support
 	  $patch_filter %{PatchFile8} | patch -p0
-	  # use rpath to work around SIP on El Capitan
-	  sed -i.orig -e "s|LIBOMP_TEST_OPENMP_FLAG -fopenmp=libomp|LIBOMP_TEST_OPENMP_FLAG -fopenmp=libomp -Wl,-rpath,%b/../build/last/lib|g" runtime/test/CMakeLists.txt
 	popd
 	
 # needed for gcc-fsf-4.x only
@@ -235,6 +233,7 @@ CompileScript: <<
 	LLVM_CMAKE_OPTIONS=( -DLLVM_ENABLE_ASSERTIONS:BOOL=$enable_assertions )
 	# test "$darwin_vers" -ge 10 ||
 	LLVM_CMAKE_OPTIONS=( "${LLVM_CMAKE_OPTIONS[@]}" \
+		-DLIBOMP_TEST_CFLAGS="-Wl,-rpath,%b/../build/last/lib" \
 		-DCMAKE_OSX_SYSROOT:STRING=/ \
 		-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING= )
 
