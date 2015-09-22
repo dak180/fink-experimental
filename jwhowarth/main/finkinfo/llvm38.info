@@ -30,17 +30,17 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.bz2
-Source-MD5: 630b4e343900e248b623071ec7dfd1ab
+Source-MD5: 3479af6a5c4fadfb15155a9b894b0cd0
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.bz2
-Source2-MD5: ac16f4e3b55fbb069c25bceacd6b5cb2
+Source2-MD5: 217b452ac68bd903f74319371575130c
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.bz2
 Source3-MD5: 0cf44019faf6ec92fa6a651fe243c6c2
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.bz2
-Source4-MD5: a19a74310701f575b428be27ba3f7413
+Source4-MD5: c25ebbe22686e9914194fa3e026f3435
 Source5: http://llvm.org/releases/%v/libcxx-%v.src.tar.bz2
 Source5-MD5: 16c805421ae1e45155bce98aee14cc39
 Source6: http://llvm.org/releases/%v/openmp-%v.src.tar.bz2
-Source6-MD5: bdb2d64429608b8c69df34c73ac84dc9
+Source6-MD5: 6969857df6dd2459887289c5705d9a16
 Source7:  http://llvm.org/releases/%v/clang-tools-extra-%v.src.tar.bz2
 Source7-MD5: bc56458733c96a2517e4103d5800d070 
 # Source8: http://llvm.org/releases/%v/test-suite-%v.src.tar.bz2
@@ -472,7 +472,7 @@ EOF
 	export CCACHE_COMPILERCHECK=content
 	export CC=cc-st1-clang
 	export CXX=cc-st1-clang++
-	LIBCXX_CMAKE_OPTIONS=( -DCMAKE_BUILD_TYPE:STRING=$build_type )
+	LIBCXX_CMAKE_OPTIONS=( -DLLVM_CONFIG=%b/../build/last/bin/llvm-config -DLIBCXX_INCLUDE_TEST=ON -DCMAKE_BUILD_TYPE:STRING=$build_type )
 	if test $darwin_vers -le 10
 	then flags="$int_as_flag -DDARWIN_LIBSUPCXX=$darwin_vers"
 		abi=libsupc++
@@ -962,7 +962,8 @@ EOF
 	popd
 
 # pwd: ../build/last
-	cd ../build/last/projects/openmp
+	pwd
+	pushd %b/../build/last/projects/openmp/runtime/test
 	echo "******** Running included openmp tests ... ********"
 # test clang-openmp
 	# build_clang_omp=0
@@ -971,10 +972,11 @@ EOF
 	powerpc) build_clang_omp=0 ;;
 	powerpc64) build_clang_omp=0 ;;
 	esac
-#	if test "$build_clang_omp" = 1
-#	then
-#	      make -k check 2>&1 || : ;) | tee openmp-%v-check.log
-#	fi
+	if test "$build_clang_omp" = 1
+	then
+	      make -k check-libomp 2>&1 || : ;) | tee openmp-%v-check.log
+	fi
+	popd
 
 #	echo "******** Running massive test-suite ... ********"
 #	( cd projects/test-suite ; make -k 2>&1 || : ;) | tee test-suite-%v-check.log
