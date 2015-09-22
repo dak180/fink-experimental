@@ -184,13 +184,8 @@ if ($1 == "cmd.append(exec_path)") {
 
 	# add experimental cmake support to openmp
 	pushd ../openmp-%v.src
-	  # revert testsuite to compile and run
-#	  rm -f testsuite/bin/Makefile
-#	  sed -i.orig -e '/message-converter/s|--enum=|--enum-file=|' \
-	#	-e '/message-converter/s|--default=|--default-file=|' \
-	#	runtime/CMakeLists.txt
-	#  sed -i.orig -e "s|= gcc|= $build_root/last/bin/clang-3.8|g" testsuite/Makefile
-	#  sed -i.orig -e "s|CFLAGS = -fopenmp -lm -O3|CFLAGS = -fopenmp -lm -O3 -Wl,-rpath,%b/../build/last/lib|g" testsuite/Makefile
+	# use rpath to work around SIP on El Capitan
+	sed -i.orig -e "s|LIBOMP_TEST_OPENMP_FLAG -fopenmp=libomp|LIBOMP_TEST_OPENMP_FLAG -fopenmp=libomp -Wl,-rpath,%b/../build/last/lib|g" runtime/test/CMakeLists.txt
 	popd
 	
 # needed for gcc-fsf-4.x only

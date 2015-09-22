@@ -188,6 +188,8 @@ if ($1 == "cmd.append(exec_path)") {
 	pushd ../openmp-%v.src
 	  # backport openmp lit testsuite support
 	  $patch_filter %{PatchFile8} | patch -p0
+	  # use rpath to work around SIP on El Capitan
+	  sed -i.orig -e "s|LIBOMP_TEST_OPENMP_FLAG -fopenmp=libomp|LIBOMP_TEST_OPENMP_FLAG -fopenmp=libomp -Wl,-rpath,%b/../build/last/lib|g" runtime/test/CMakeLists.txt
 	popd
 	
 # needed for gcc-fsf-4.x only
