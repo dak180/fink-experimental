@@ -962,8 +962,7 @@ EOF
 	popd
 
 # pwd: ../build/last
-	pwd
-	pushd %b/../build/last/projects/openmp/runtime/test
+	pushd projects/openmp/runtime/test
 	echo "******** Running included openmp tests ... ********"
 # test clang-openmp
 	# build_clang_omp=0
@@ -974,7 +973,7 @@ EOF
 	esac
 	if test "$build_clang_omp" = 1
 	then
-	      ( make -k check-libomp 2>&1 || : ;) | tee openmp-%v-check.log
+	      ( make -k check-libomp 2>&1 || : popd ) | tee openmp-%v-check.log
 	fi
 	popd
 
