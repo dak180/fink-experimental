@@ -183,8 +183,10 @@ if ($1 == "cmd.append(exec_path)") {
 	}
 
 	# add experimental cmake support to openmp
-	# pushd ../openmp-%v.src
-	# popd
+	pushd ../openmp-%v.src
+	# open tolerances on runtime/test/api/omp_get_wtime.c for 10.11
+	sed -i -e 's|0.99|0.97|g' -e 's|1.01|1.03|g' runtime/test/api/omp_get_wtime.c
+	popd
 	
 # needed for gcc-fsf-4.x only
 #	sed -i.orig2 -e 's|compatibility_version|dylib_&|' tools/clang/tools/libclang/CMakeLists.txt

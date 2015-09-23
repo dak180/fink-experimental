@@ -188,6 +188,8 @@ if ($1 == "cmd.append(exec_path)") {
 	pushd ../openmp-%v.src
 	  # backport openmp lit testsuite support
 	  $patch_filter %{PatchFile8} | patch -p0
+	  # open tolerances on runtime/test/api/omp_get_wtime.c for 10.11
+	  sed -i -e 's|0.99|0.97|g' -e 's|1.01|1.03|g' runtime/test/api/omp_get_wtime.c
 	popd
 	
 # needed for gcc-fsf-4.x only
