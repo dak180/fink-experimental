@@ -30,19 +30,19 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.bz2
-Source-MD5: 6a377901c015a9814c9be6cbdc1b3992
+Source-MD5: 4a155b478b18cb7d9078ef329de169c3
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.bz2
-Source2-MD5: e04ac53c82b6ba62c677df06490b8ddb
+Source2-MD5: c3748ba8ed4a64be991455479f6632d2
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.bz2
-Source3-MD5: 2b1935939a4067e0d6900f18542a742d 
+Source3-MD5: 2b1935939a4067e0d6900f18542a742d
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.bz2
-Source4-MD5: 050e3a4abbbe4c181a0eaa4cc85ab4d2 
+Source4-MD5: 050e3a4abbbe4c181a0eaa4cc85ab4d2
 Source5: http://llvm.org/releases/%v/libcxx-%v.src.tar.bz2
-Source5-MD5: 4353c7fd03fa16aab04f9d2eefba63b8 
+Source5-MD5: 4353c7fd03fa16aab04f9d2eefba63b8
 Source6: http://llvm.org/releases/%v/openmp-%v.src.tar.bz2
-Source6-MD5: 7961469e5be6749863e1fdedad33a66c 
+Source6-MD5: f7b3b8c00986e4a3479da075f952ed8e
 Source7:  http://llvm.org/releases/%v/clang-tools-extra-%v.src.tar.bz2
-Source7-MD5: 1eee27a15885a4833ac9de543059a76d 
+Source7-MD5: b2d2ef3249da5d124202542a9734ae6c
 # Source8: http://llvm.org/releases/%v/test-suite-%v.src.tar.bz2
 # Source8-MD5: 
 # libcxxabi is not needed, use system's libc++abi or libsupc++
@@ -182,11 +182,8 @@ if ($1 == "cmd.append(exec_path)") {
 		tools/clang/lib/Frontend/InitHeaderSearch.cpp
 	}
 
-	# add experimental cmake support to openmp
-	pushd ../openmp-%v.src
-	# open tolerances on runtime/test/api/omp_get_wtime.c for 10.11
-	sed -i -e 's|0.99|0.97|g' -e 's|1.01|1.03|g' runtime/test/api/omp_get_wtime.c
-	popd
+	#pushd ../openmp-%v.src
+	#popd
 	
 # needed for gcc-fsf-4.x only
 #	sed -i.orig2 -e 's|compatibility_version|dylib_&|' tools/clang/tools/libclang/CMakeLists.txt
@@ -231,7 +228,6 @@ CompileScript: <<
 	LLVM_CMAKE_OPTIONS=( -DLLVM_ENABLE_ASSERTIONS:BOOL=$enable_assertions )
 	# test "$darwin_vers" -ge 10 ||
 	LLVM_CMAKE_OPTIONS=( "${LLVM_CMAKE_OPTIONS[@]}" \
-		-DLIBOMP_TEST_CFLAGS="-Wl,-rpath,%b/../build/last/lib" \
 		-DCMAKE_OSX_SYSROOT:STRING=/ \
 		-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING= )
 
@@ -912,30 +908,17 @@ InfoTest: <<
 	echo "******** Running included clang-tools tests ... ********"
 	{ make -k TESTARGS=-v check-clang-tools 2>&1 || : ;} | tee clang-tools-%v-check.log
 
-	echo "******** Running included polly tests ... ********"
-	( cd tools/polly/test ; make -k TESTARGS=-v polly-test 2>&1 || : ;) | tee polly-%v-check.log
+#	allow  tests to find c++ headers
+	sed -i -e 's|config.cxx_mode_flags = \[\"--driver-mode=g++\"\]|config.cxx_mode_flags = \[\"--driver-mode=g++\", \"-I%b/../build/last-libcxx/include/c\+\+/v1\", \"-Wl,-rpath,%b/../build/last-libcxx/lib\"\]|g' %b/projects/compiler-rt/test/lit.common.cfg	
+	{ make -k TESTARGS=-v check-asan 2>&1 || : ;}| tee compiler-rt-%v-check.log
+	{ make -k TESTARGS=-v check-profile 2>&1 || : ;}| tee -a compiler-rt-%v-check.log
+	{ make -k TESTARGS=-v check-sanitizer 2>&1 || : ;}| tee -a compiler-rt-%v-check.log
+	{ make -k TESTARGS=-v check-ubsan 2>&1 || : ;}| tee -a compiler-rt-%v-check.log
+	{ make -k TESTARGS=-v check-cfi-and-supported 2>&1 || : ;}| tee -a compiler-rt-%v-check.log
+	{ make -k TESTARGS=-v check-safestack 2>&1 || : ;}| tee -a compiler-rt-%v-check.log
 
-	echo "******** Running included compiler-rt/libclang_rt tests ... ********"
-	CC=`grep "CMAKE_C_COMPILER:FILEPATH" CMakeCache.txt | cut -d= -f2`
-	( mkdir -p projects/compiler-rt/test
-	cd projects/compiler-rt/test
-	syslib="-lSystem"
-	clang_arch=%m
-	case "%m" in
-	powerpc) clang_arch=ppc ;;
-	powerpc64) clang_arch=ppc64 ;;
-	esac
-	test $darwin_vers -gt 10 || syslib="$syslib -lSystemStubs"
-	cat >Makefile.custom <<EOF
-ARCH = $clang_arch
-OS = darwin
-CC = $CC
-LIBS = $syslib
-LLVM_SRCDIR = %b
-VERSION = %v
-include \$(LLVM_SRCDIR)/projects/compiler-rt/test/builtins/Unit/test.mk
-EOF
-	make -k && make -f Makefile.custom check 2>&1 || : ;) | tee compiler-rt-%v-check.log
+	echo "******** Running included polly tests ... ********"
+	( make -k TESTARGS=-v check-polly 2>&1 || : ;) | tee polly-%v-check.log
 
 	echo "******** Running included libc++ tests ... ********"
 	pushd ../last-libcxx
