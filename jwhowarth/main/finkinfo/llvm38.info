@@ -30,19 +30,19 @@ BuildConflicts: <<
 <<
 
 Source: http://llvm.org/releases/%v/llvm-%v.src.tar.bz2
-Source-MD5: 4a155b478b18cb7d9078ef329de169c3
+Source-MD5: 5d3998e6f5bf406a2cfce733a36014f1
 Source2: http://llvm.org/releases/%v/cfe-%v.src.tar.bz2
-Source2-MD5: c3748ba8ed4a64be991455479f6632d2
+Source2-MD5: ec681a969f53767220c679c47950b1c7
 Source3: http://llvm.org/releases/%v/compiler-rt-%v.src.tar.bz2
-Source3-MD5: 2b1935939a4067e0d6900f18542a742d
+Source3-MD5: 3ebf73b36c6e01afdeb22c7e64d06c51
 Source4: http://llvm.org/releases/%v/polly-%v.src.tar.bz2
-Source4-MD5: 050e3a4abbbe4c181a0eaa4cc85ab4d2
+Source4-MD5: 7a4d498b27e7ed6194361f28eee855cc
 Source5: http://llvm.org/releases/%v/libcxx-%v.src.tar.bz2
 Source5-MD5: 4353c7fd03fa16aab04f9d2eefba63b8
 Source6: http://llvm.org/releases/%v/openmp-%v.src.tar.bz2
-Source6-MD5: f7b3b8c00986e4a3479da075f952ed8e
+Source6-MD5: aa03756d9aead93e8d8a262a0a51b925
 Source7:  http://llvm.org/releases/%v/clang-tools-extra-%v.src.tar.bz2
-Source7-MD5: b2d2ef3249da5d124202542a9734ae6c
+Source7-MD5: daa73c51fc88043e2bea13e8ee8fd431 
 # Source8: http://llvm.org/releases/%v/test-suite-%v.src.tar.bz2
 # Source8-MD5: 
 # libcxxabi is not needed, use system's libc++abi or libsupc++
@@ -55,8 +55,8 @@ PatchFile: %n.patch
 PatchFile-MD5: 6014270a8e0568b903f0d5759f4f7de1
 #PatchFile2: %n-clang.patch
 #PatchFile2-MD5: d2a2b4207c19b7f09f197ae9769a51d2
-PatchFile3: %n-compiler-rt.patch
-PatchFile3-MD5: aff8a955c5f437440d84d675e15ad6d6 
+#PatchFile3: %n-compiler-rt.patch
+#PatchFile3-MD5: 60ed1415e15b1781f2d58c0db17aab78
 PatchFile4: %n-polly.patch
 PatchFile4-MD5: de080e47d3b8375cb707119e84c2a55f 
 #PatchFile5: %n-libcxx.patch
@@ -120,7 +120,9 @@ PatchScript: <<
 	  fi
 	popd
 	pushd projects/compiler-rt
-	  $patch_filter %{PatchFile3} | patch -p1
+	  # $patch_filter %{PatchFile3} | patch -p1
+	  sed -i.orig -e 's,find_darwin_sdk_dir(DARWIN_iossim_SYSROOT ,# find_darwin_sdk_dir(DARWIN_iossim_SYSROOT ,g' \
+	  -e 's,find_darwin_sdk_dir(DARWIN_ios_SYSROOT ,# find_darwin_sdk_dir(DARWIN_ios_SYSROOT ,g' cmake/config-ix.cmake
 	  sed -i.orig -e '/http.*Article/s|^|// |' lib/asan/asan_malloc_mac.cc
 	  test "$darwin_vers" -gt 9 || sed -i.orig -e 's|__bzero|bzero|g' lib/sanitizer_common/sanitizer_common_interceptors.inc
 	  # or do actual symbol check on nm /usr/lib/libc.dylib /usr/lib/system/libsystem_c.dylib
@@ -325,24 +327,6 @@ EOF
 	i386) other_arch=x86_64 ;;
 	x86_64) other_arch=i386 ;;
 	esac
-	# script to assemble/link in missing .S units into libclang_rt
-	asm_link_clang_rt() {
-		# $CC, $CCAS_FLAGS already set
-		# $1 is $clang_arch or $other_arch
-		arch=$1
-		builddir=projects/compiler-rt/lib
-		crtsrcdir=$llvm_abs_srcdir/projects/compiler-rt
-		objdir=CMakeFiles/clang_rt.builtins-$arch.dir/$arch
-		libdir=../../../lib/clang/$version/lib/darwin
-		libcrt=$libdir/libclang_rt.builtins-$arch.a
-		. $crtsrcdir/lib/link-asm-libclang_rt.sh
-		assemble_clang_rt
-	}
-	# link both 32b and 64b builtin libs
-	asm_link_clang_rts() {
-		asm_link_clang_rt $clang_arch
-		asm_link_clang_rt $other_arch
-	}
 
 	# need to fix llvm-config to not point to build-dir, but instead
 	# where libc++ headers and libs will be installed.
@@ -421,8 +405,6 @@ EOF
 	# fix_llvm_config_build_variables # not needed b/c not using libc++ yet
 	# first make fails, but we have to run it first and then fix some deps
 	make -k || make -j1 VERBOSE=1
-	asm_link_clang_rts
-	make
 	# tests hardcode the .dylib extension for modules
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
@@ -545,8 +527,6 @@ then
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	export CCAS_FLAGS="$int_as_flag" ; asm_link_clang_rts
-	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
 	  ln -s LLVMPolly.{so,dylib}
@@ -599,8 +579,6 @@ then
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	export CCAS_FLAGS="$int_as_flag" ; asm_link_clang_rts
-	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
 	  ln -s LLVMPolly.{so,dylib}
@@ -823,8 +801,6 @@ else
 	cmake "${COMMON_CMAKE_OPTIONS[@]}" "${LLVM_CMAKE_OPTIONS[@]}" "${STAGE2_CMAKE_OPTIONS[@]}" $relsrcdir
 	fix_llvm_config_build_variables
 	make -k || make VERBOSE=1
-	export CCAS_FLAGS="$int_as_flag" ; asm_link_clang_rts
-	make
 	pushd lib
 	  ln -s BugpointPasses.{dylib,so}
 	  ln -s LLVMPolly.{so,dylib}
