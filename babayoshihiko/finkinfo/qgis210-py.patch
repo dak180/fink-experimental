@@ -1,0 +1,13 @@
+diff -ruN qgis-2.10.0-orig/src/providers/grass/qgsgrassdatafile.cpp qgis-2.10.0/src/providers/grass/qgsgrassdatafile.cpp
+--- qgis-2.10.0-orig/src/providers/grass/qgsgrassdatafile.cpp	2015-10-06 16:45:08.000000000 +0900
++++ qgis-2.10.0/src/providers/grass/qgsgrassdatafile.cpp	2015-10-06 16:49:35.000000000 +0900
+@@ -13,9 +13,7 @@
+  *   (at your option) any later version.                                   *
+  *                                                                         *
+  ***************************************************************************/
+-#ifdef Q_OS_UNIX
+ #include <sys/select.h>
+-#endif
+ 
+ #include "qgsgrassdatafile.h"
+ 
