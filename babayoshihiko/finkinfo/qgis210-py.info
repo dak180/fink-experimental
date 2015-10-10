@@ -4,7 +4,7 @@ Package: qgis210-py%type_pkg[python]
 Type: python (2.7)
 
 Version: 2.10.0
-Revision: 0.3
+Revision: 0.9
 Description: User friendly Open Source GIS
 License: GPL
 Homepage: http://qgis.org
@@ -285,6 +285,11 @@ InstallScript: <<
 <<
 
 AppBundles: Applications/QGIS-py%type_pkg[python]-%v.app
+
+PreInstScript: <<        
+ # Work around for replacment problem with 10.10         
+ rm -f  %p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/PkgInfo    
+<<
 
 SplitOff: <<
   Package: %N-shlibs
