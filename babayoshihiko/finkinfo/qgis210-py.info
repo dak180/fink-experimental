@@ -3,7 +3,7 @@ Info2: <<
 Package: qgis210-py%type_pkg[python]
 Type: python (2.7)
 
-Version: 2.10.0
+Version: 2.10.1
 Revision: 0.9
 Description: User friendly Open Source GIS
 License: GPL
@@ -44,7 +44,7 @@ BuildDepends: <<
 	libiconv-dev, giflib7, libtiff5, libjpeg9, libogdi3, libpng16,
 	cfitsio,
 	unixodbc2-nox | unixodbc2, 
-	libgeos3.4.2,
+	libgeos3.5.0,
 	gdal-dev (>=1.11.0-1) | gdal-pgsql-dev (>=1.11.0-1), 
 	postgresql92-dev, 
 	grass70-x11,
@@ -56,7 +56,7 @@ BuildDepends: <<
 
 # Unpack Phase.
 Source: http://qgis.org/downloads/qgis-%v.tar.bz2
-Source-MD5: f0a1cd6cbb85e650f4fd049d8b9ba56c
+Source-MD5: 8d719b6013ba0e2adb9a2dd642e9e9c5
 PatchFile: qgis28-processing.patch
 PatchFile-MD5: 3026240b4bb63d053bb6eb4137927b55
 PatchFile2: qgis28-python.patch
@@ -297,12 +297,12 @@ SplitOff: <<
   Depends: <<
 	qt4-base-mac-qtcore-shlibs (>=4.8.6-4), 
 	python%type_pkg[python], 
-	sip-py%type_pkg[python] (>=4.16.6-1), pyqt4-mac-py%type_pkg[python] (>=4.11.3-1), 
+	sip-py%type_pkg[python] (>=4.17-1), pyqt4-mac-py%type_pkg[python] (>=4.11.4-1), 
 	qscintilla2.11-qt4-mac-shlibs (>= 2.8.4-1),
-	qscintilla2-qt4-mac-py%type_pkg[python] (>= 2.8.4-1),
+	qscintilla2-qt4-mac-py%type_pkg[python] (>= 2.9.1-1),
 	gsl-shlibs,
 	xerces-c31-shlibs,
-	libgeos3.4.2-shlibs,
+	libgeos3.5.0-shlibs,
 	gdal-shlibs (>=1.11.0-1) | gdal-pgsql-shlibs (>=1.11.0-1), 
 	grass70-x11,
 	proj-shlibs (>= 4.4),
