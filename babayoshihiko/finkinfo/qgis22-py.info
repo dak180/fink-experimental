@@ -4,8 +4,8 @@ Package: qgis22-py%type_pkg[python]
 Type: python (3.3 2.7)
 
 Version: 2.2.0
-Revision: 3.2
-Description: OBSOLETE: User friendly Open Source GIS
+Revision: 4
+Description: OBSOLETE use qgis210-py27
 License: GPL
 Homepage: http://qgis.org
 Maintainer: BABA Yoshihiko <babayoshihiko@mac.com>
@@ -37,16 +37,16 @@ Depends: %n-shlibs (=%v-%r), fink-obsolete-packages
 BuildDepends: << 
 	fink (>= 0.32), cmake, bison,
 	gsl,
-	qt4-base-mac (>=4.8.6-4), qt4-base-mac-linguist (>=4.8.6-4), 
-	sip-py%type_pkg[python]-bin (>=4.16.6-1), pyqt4-mac-py%type_pkg[python] (>=4.11.3-1), 
-	qscintilla2.11-qt4-mac,
+	qt4-base-mac (>=4.8.7-2), qt4-base-mac-linguist (>=4.8.7-2), 
+	sip-py%type_pkg[python]-bin (>=4.17-1), pyqt4-mac-py%type_pkg[python] (>=4.11.4-1), 
+	qscintilla2.12-qt4-mac,
 	xerces-c31-dev,
 	libiconv-dev, giflib7, libtiff5, libjpeg9, libogdi3, libpng16,
 	cfitsio,
 	unixodbc2-nox | unixodbc2, 
-	libgeos3.4.2,
+	libgeos3.5.0,
 	gdal-dev | gdal-pgsql-dev, 
-	postgresql91-dev, 
+	postgresql94-dev, 
 	grass64-x11-dev | grass64-mac-dev,
 	proj,
 	qwt6-qt4-mac,
@@ -319,10 +319,9 @@ SplitOff: <<
 	qscintilla2-qt4-mac-py%type_pkg[python] (>= 2.8.1-1),
 	gsl-shlibs,
 	xerces-c31-shlibs,
-	libgeos3.4.2-shlibs (>= 3.0),
+	libgeos3.5.0-shlibs (>= 3.0),
 	gdal-shlibs (>= 1.4) | gdal-pgsql-shlibs (>= 1.4), 
 	grass64-x11 | grass64-mac,
-	libspatialite5-shlibs,
 	proj-shlibs (>= 4.4),
 	qwt6-qt4-mac-shlibs (>= 5.0),
 	libspatialindex4-shlibs,
