@@ -4,7 +4,7 @@ Package: qgis210-py%type_pkg[python]
 Type: python (2.7)
 
 Version: 2.10.1
-Revision: 0.9
+Revision: 2
 Description: User friendly Open Source GIS
 License: GPL
 Homepage: http://qgis.org
@@ -37,16 +37,16 @@ Depends: fink (>= 0.32), %n-shlibs (=%v-%r), gdal-py%type_pkg[python], psycopg2-
 BuildDepends: << 
 	fink (>= 0.32), cmake, bison,
 	gsl,
-	qt4-base-mac (>=4.8.6-4), qt4-base-mac-linguist (>=4.8.6-4), 
-	sip-py%type_pkg[python]-bin (>=4.16.6-1), pyqt4-mac-py%type_pkg[python] (>=4.11.3-1), 
-	qscintilla2.11-qt4-mac,
+	qt4-base-mac (>=4.8.7-2), qt4-base-mac-linguist (>=4.8.7-2), 
+	sip-py%type_pkg[python]-bin (>=4.17-1), pyqt4-mac-py%type_pkg[python] (>=4.11.4-1), 
+	qscintilla2.12-qt4-mac (>= 2.9.1-1),
 	xerces-c31-dev,
 	libiconv-dev, giflib7, libtiff5, libjpeg9, libogdi3, libpng16,
 	cfitsio,
 	unixodbc2-nox | unixodbc2, 
 	libgeos3.5.0,
 	gdal-dev (>=1.11.0-1) | gdal-pgsql-dev (>=1.11.0-1), 
-	postgresql92-dev, 
+	postgresql94-dev, 
 	grass70-x11,
 	proj,
 	qwt6-qt4-mac,
@@ -62,7 +62,7 @@ PatchFile-MD5: 3026240b4bb63d053bb6eb4137927b55
 PatchFile2: qgis28-python.patch
 PatchFile2-MD5: 7b292431a13288d09bcac729f0bee93c
 PatchFile3: qgis210-py.patch
-PatchFile3-MD5: 17c4e91678f1bd9f6bd900ff570ea3c8
+PatchFile3-MD5: ca221735805f2607b96af01aa36c74fc
 PatchScript: <<
 #!/bin/bash -ev
     sed 's|@PREFIX@|%p|g' < %{PatchFile} | patch -p1
@@ -75,17 +75,17 @@ PatchScript: <<
     
     
     # 2.0.0
-    perl -pi -e "s|^.*osascript.*$|#|g" images/icons/mac/browser/CMakeLists.txt
+    #perl -pi -e "s|^.*osascript.*$|#|g" images/icons/mac/browser/CMakeLists.txt
     
     # 2.6.0
-    perl -pi -e "s|Qsci/qsciglobal.h|qsciglobal.h|g" cmake/FindQScintilla.cmake
+    #perl -pi -e "s|Qsci/qsciglobal.h|qsciglobal.h|g" cmake/FindQScintilla.cmake
     
     # 2.8.0 
     #perl -pi -e "s|spatialindex/SpatialIndex.h|SpatialIndex.h|" src/core/qgspointlocator.cpp
     #perl -pi -e "s|spatialindex/SpatialIndex.h|SpatialIndex.h|" src/core/qgspointlocator.h
     
     # SIP related fixes
-    perl -pi -e "s/SET\(SIP_TAGS\)/SET(SIP_TAGS WS_MACX Qt_4_8_6)/" cmake/SIPMacros.cmake
+    perl -pi -e "s/SET\(SIP_TAGS\)/SET(SIP_TAGS WS_MACX Qt_4_8_7)/" cmake/SIPMacros.cmake
     
 <<
 
@@ -138,7 +138,7 @@ CompileScript: <<
 					-D PYQT4_SIP_DIR=%p/share/sip-py%type_pkg[python]/pyqt4-mac
 					-D PYQT4_SIP_FLAGS='-I %p/share/sip-py%type_pkg[python]/pyqt4-mac'
 					-D QSCINTILLA_INCLUDE_DIR:PATH=%p/lib/qt4-mac/include/Qsci/
-					-D QSCINTILLA_LIBRARY:FILEPATH=%p/lib/qt4-mac/lib/libqscintilla2.11.dylib
+					-D QSCINTILLA_LIBRARY:FILEPATH=%p/lib/qt4-mac/lib/libqscintilla2.12.dylib
 					-D POSTGRES_CONFIG=%p/bin/pg_config
 					-D GRASS_PREFIX7=%p/Applications/GRASS-7.0.app/Contents/MacOS"
 	QGIS_VERSION_OPTIONS="-D CMAKE_BUILD_TYPE=Release
@@ -295,10 +295,10 @@ SplitOff: <<
   Package: %N-shlibs
   Description: Shared libraries for QGIS
   Depends: <<
-	qt4-base-mac-qtcore-shlibs (>=4.8.6-4), 
+	qt4-base-mac-qtcore-shlibs (>=4.8.7-2), 
 	python%type_pkg[python], 
 	sip-py%type_pkg[python] (>=4.17-1), pyqt4-mac-py%type_pkg[python] (>=4.11.4-1), 
-	qscintilla2.11-qt4-mac-shlibs (>= 2.8.4-1),
+	qscintilla2.12-qt4-mac-shlibs (>= 2.9.1-1),
 	qscintilla2-qt4-mac-py%type_pkg[python] (>= 2.9.1-1),
 	gsl-shlibs,
 	xerces-c31-shlibs,
@@ -321,12 +321,12 @@ SplitOff: <<
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/PlugIns/qgis/*.so
   <<
   Shlibs: <<
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/2.10/qgis_analysis               2.10.0 %n (>= 2.10.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/2.10/qgis_core                       2.10.0 %n (>= 2.10.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/2.10/qgis_gui                         2.10.0 %n (>= 2.10.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/2.10/qgis_networkanalysis 2.10.0 %n (>= 2.10.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass7.framework/Versions/2.10/qgisgrass7                     2.10.0 %n (>= 2.10.0-1)
-	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.2.10.0.dylib                                         2.10.0 %n (>= 2.10.0-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/2.10/qgis_analysis               2.10.1 %n (>= 2.10.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_core.framework/Versions/2.10/qgis_core                       2.10.1 %n (>= 2.10.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_gui.framework/Versions/2.10/qgis_gui                         2.10.1 %n (>= 2.10.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_networkanalysis.framework/Versions/2.10/qgis_networkanalysis 2.10.1 %n (>= 2.10.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgisgrass7.framework/Versions/2.10/qgisgrass7                     2.10.1 %n (>= 2.10.1-1)
+	%p/Applications/QGIS-py%type_pkg[python]-%v.app/Contents/MacOS/lib/libqgispython.2.10.1.dylib                                         2.10.1 %n (>= 2.10.1-1)
   <<
 # End of SplitOff
 <<
@@ -372,10 +372,10 @@ DescPackaging: <<
 	
 	For consistency, qgis and relevant packages are strongly recommended to depend on 
 the latest stable versions, e.g.:
-	  postgresql92, postgis91
+	  postgresql94, postgis91
 	  grass70,
 	  libgeos3.4.2,
-	  libjpeg9, libogdi3, libpng15, libtiff5,
+	  libjpeg9, libogdi3, libpng16, libtiff5,
 	  libspatialite5
 <<
 DescPort: <<
