@@ -157,13 +157,11 @@ CompileScript: <<
 	pushd build
 	cmake $QGIS_OPTIONS $QGIS_VERSION_OPTIONS $QGIS_PYTHON_OPTIONS ..
 	
-	# 1.8.5 & 10.9
-	if [[ $( sw_vers -productVersion|cut -f2 -d. ) == 9 ]]; then
+	# 1.8.5
 	perl -pi -e "s|-I %p/share/sip-py%type_pkg[python] |-I %p/share/sip-py%type_pkg[python] -I %p/share/sip-py%type_pkg[python]/pyqt4-mac |" python/CMakeFiles/python_module_qgis__analysis.dir/build.make
 	perl -pi -e "s|-I %p/share/sip-py%type_pkg[python] |-I %p/share/sip-py%type_pkg[python] -I %p/share/sip-py%type_pkg[python]/pyqt4-mac |" python/CMakeFiles/python_module_qgis__core.dir/build.make
 	perl -pi -e "s|-I %p/share/sip-py%type_pkg[python] |-I %p/share/sip-py%type_pkg[python] -I %p/share/sip-py%type_pkg[python]/pyqt4-mac |" python/CMakeFiles/python_module_qgis__gui.dir/build.make
 	perl -pi -e "s|-I %p/share/sip-py%type_pkg[python] |-I %p/share/sip-py%type_pkg[python] -I %p/share/sip-py%type_pkg[python]/pyqt4-mac |" python/CMakeFiles/python_module_qgis__networkanalysis.dir/build.make
-	fi
 	
 	# 1.8.0 Fix hardcoded application name
 	for filename in src/app/cmake_install.cmake src/app/CMakeFiles/QGIS.dir/build.make src/app/CMakeFiles/QGIS.dir/link.txt
