@@ -41,11 +41,12 @@ BuildDepends: <<
 	sip-py%type_pkg[python]-bin (>=4.17-1), pyqt4-mac-py%type_pkg[python] (>=4.11.4-1), 
 	qscintilla2.12-qt4-mac (>= 2.9.1-1),
 	xerces-c31-dev,
+	expat1,
 	libiconv-dev, giflib7, libtiff5, libjpeg9, libogdi3, libpng16,
 	cfitsio,
 	unixodbc2-nox | unixodbc2, 
 	libgeos3.5.0,
-	gdal-dev (>=1.11.0-1) | gdal-pgsql-dev (>=1.11.0-1), 
+	gdal-dev, 
 	postgresql94-dev, 
 	grass70-x11,
 	proj,
@@ -124,6 +125,8 @@ CompileScript: <<
 					-D CMAKE_PREFIX_PATH=%p
 					-D EXECUTABLE_OUTPUT_PATH=%b/build/src/mac/Contents/MacOS
 					-D CMAKE_INSTALL_PREFIX=%b/Applications
+					-D EXPAT_INCLUDE_DIR:PATH=%p/include
+					-D EXPAT_LIBRARY:FILEPATH=%p/lib/libexpat.1.dylib
 					-D FLEX_EXECUTABLE=/usr/bin/flex
 					-D GDAL_INCLUDE_DIR=%p/include/gdal1
 					-D GEOS_CONFIG=%p/opt/libgeos3.4.2/bin/geos-config
@@ -302,13 +305,14 @@ SplitOff: <<
 	qscintilla2-qt4-mac-py%type_pkg[python] (>= 2.9.1-1),
 	gsl-shlibs,
 	xerces-c31-shlibs,
+	expat1-shlibs,
 	libgeos3.5.0-shlibs,
-	gdal-shlibs (>=1.11.0-1) | gdal-pgsql-shlibs (>=1.11.0-1), 
+	gdal-shlibs, 
 	grass70-x11,
-	proj-shlibs (>= 4.4),
-	qwt6-qt4-mac-shlibs (>= 5.0),
+	proj-shlibs,
+	qwt6-qt4-mac-shlibs,
 	libspatialindex4-shlibs,
-	libspatialite5-shlibs (>= 3.0)
+	libspatialite5-shlibs
   <<
   Files: <<
 	Applications/QGIS-py%type_pkg[python]-%v.app/Contents/Frameworks/qgis_analysis.framework/Versions/2.10/qgis_analysis
