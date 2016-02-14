@@ -1,11 +1,12 @@
 Package: ncurses
-Version: 6.0
+Version: 6.0-20160213
 Revision: 1
 
 GCC: 4.0
-Source: mirror:gnu:%n/%n-%v.tar.gz
+Source: http://invisible-mirror.net/archives/%n/current/%n-%v.tgz
+#Source: mirror:gnu:%n/%n-%v.tar.gz
 #Source: mirror:sourceforge:fink/ncurses-%v.tgz
-Source-MD5: ee13d052e1ead260d7c28071f46eefb1
+Source-MD5: 0f73987ee8ccc2a56d611112e31bee0f
 BuildDepends: fink (>= 0.13.0)
 Depends: libncurses5-shlibs (>= %v-%r)
 Replaces: libncurses5 (<< 5.4-20041023-4)
@@ -13,7 +14,7 @@ Essential: true
 
 # Patches shamelessly stolen from MacPorts.
 PatchFile: libncurses6.patch
-PatchFile-MD5: 8ac2236d24f5364bcc37418a815e3a01
+PatchFile-MD5: c69b3462688398683d675258c77fdfee
 
 ConfigureParams: <<
   --without-ada \
