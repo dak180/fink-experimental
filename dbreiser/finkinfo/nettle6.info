@@ -1,5 +1,5 @@
 Package: nettle6
-Version: 3.1
+Version: 3.2
 Revision: 0.9
 #
 License: GPL
@@ -7,15 +7,15 @@ Maintainer: Dave Reiser <dbreiser@users.sourceforge.net>
 Homepage: http://www.lysator.liu.se/~nisse/nettle/
 #
 Source: mirror:gnu:nettle/nettle-%v.tar.gz
-Source-MD5: 075a3699cbab48ffa2ea6f9aad91e123
-Source2:mirror:debian:pool/main/n/nettle/nettle_3.1.1-4.debian.tar.xz
-Source2-MD5: df3e1a3e406501c3171dc49f302ed0cf
+Source-MD5: afb15b4764ebf1b4e6d06c62bd4d29e4
+Source2:mirror:debian:pool/main/n/nettle/nettle_3.2-1.debian.tar.xz
+Source2-MD5: bdf1a1c6f46bdf62ba7bd47d70f00737
 #
 PatchScript: <<
 	perl -pi -e 's,-L\.\.,,g' */Makefile.in
 	perl -pi -e 's,-l(hogweed|nettle),../lib\1.dylib,g' */Makefile.in
-	perl -pi -e 's|SEXP\\-CONV|NETTLE\\-HASH|g; s|July 2011|October 2014|g; s|2.7|%v|g' ../debian/nettle-hash.1
-	perl -pi -e 's|June 2007|October 2014|g; s|1.15|%v|g' ../debian/nettle-lfib-stream.1 ../debian/pkcs1-conv.1 ../debian/sexp-conv.1	
+	perl -pi -e 's|SEXP\\-CONV|NETTLE\\-HASH|g; s|July 2011|February 2016|g; s|2.7|%v|g' ../debian/nettle-hash.1
+	perl -pi -e 's|June 2007|February 2016|g; s|1.15|%v|g' ../debian/nettle-lfib-stream.1 ../debian/pkcs1-conv.1 ../debian/sexp-conv.1	
 <<
 #
 Depends: %N-shlibs (= %v-%r), libhogweed4-shlibs (= %v-%r), fink (>= 0.32)
@@ -61,7 +61,7 @@ SplitOff2: <<
   Depends: gmp5-shlibs
   Replaces: nettle4-shlibs, nettle4a-shlibs
   Files: <<
-    lib/libnettle.6.0.dylib
+    lib/libnettle.6.2.dylib
     lib/libnettle.6.dylib
   <<
   Shlibs: <<
@@ -74,7 +74,7 @@ SplitOff3: <<
   Depends: gmp5-shlibs, %N-shlibs (>= %v-%r)
   Replaces: libhogweed
   Files: <<
-    lib/libhogweed.4.0.dylib
+    lib/libhogweed.4.2.dylib
     lib/libhogweed.4.dylib
   <<
   Shlibs: <<
