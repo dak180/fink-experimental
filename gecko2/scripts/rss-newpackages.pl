@@ -79,17 +79,17 @@ use vars qw(
 );
 
 $basepath  = $userdir . '/sw';
-$TOPDIR    = abs_path( dirname($0) );
+$TOPDIR    = $workdir . '/fink-rdf';
 $DAYS      = 5;                                     # number of days to look back
 $NOW       = time;
 $CUTOFF    = ( $NOW - ( 60 * 60 * 24 * $DAYS ) );
 $PREFIX    = $workdir . '/fink-rss';
-$CVSROOT   = '/home/fink/cvs/fink/';
+$CVSROOT   = $userdir . '/cvs/fink/';
 $SYNC_WAIT = 60 * 60 * 1;
 $DISTDIR   = $PREFIX . '/dists';
 $EXPDIR    = $PREFIX . '/experimental';
 $logdir    = $userdir . '/log';
-$webdir    = '/home/fink/web/xml/';
+$webdir    = $userdir . '/web/xml/';
 $DOCCO     = 1;
 $DOSCP     = 1;
 $DOCVS     = 1;
