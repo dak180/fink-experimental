@@ -4,8 +4,9 @@ use strict;
 use warnings;
 
 my $basepath = '/sw';
-#my $basepath = '/home/f/fink/fink';
 my $rsyncfile = "$basepath/lib/fink/mirror/rsync";
+#my $basepath = '/home/fink/fink';
+#my $basepath = '/home/mirror/rsync';
 
 my $mirror_FH;
 my $timestamp_FH;

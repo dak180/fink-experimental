@@ -7,7 +7,7 @@ use strict;
 # Config vars
 my $userdir;
 BEGIN {
-	$userdir = '/home/f/fink';
+	$userdir = '/home/fink';
 }
 use lib $userdir . '/fink/perlmod';
 
@@ -84,12 +84,12 @@ $DAYS      = 5;                                     # number of days to look bac
 $NOW       = time;
 $CUTOFF    = ( $NOW - ( 60 * 60 * 24 * $DAYS ) );
 $PREFIX    = $workdir . '/fink-rss';
-$CVSROOT   = '/srv/fink/cvs/fink';
+$CVSROOT   = '/home/fink/cvs/fink/';
 $SYNC_WAIT = 60 * 60 * 1;
 $DISTDIR   = $PREFIX . '/dists';
 $EXPDIR    = $PREFIX . '/experimental';
 $logdir    = $userdir . '/log';
-$webdir    = '/srv/fink/web/xml';
+$webdir    = '/home/fink/web/xml/';
 $DOCCO     = 1;
 $DOSCP     = 1;
 $DOCVS     = 1;
