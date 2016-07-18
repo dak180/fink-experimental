@@ -6,7 +6,7 @@ use warnings;
 my $basepath = '/sw';
 my $rsyncfile = "$basepath/lib/fink/mirror/rsync";
 #my $basepath = '/home/fink/fink';
-#my $basepath = '/home/mirror/rsync';
+#my $rsyncfile = '/home/mirror/rsync';
 
 my $mirror_FH;
 my $timestamp_FH;

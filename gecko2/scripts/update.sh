@@ -1,5 +1,5 @@
-#!/bin/sh -e
-# $Id: update.sh,v 1.4 2014/03/27 21:45:28 gecko2 Exp $
+#!/bin/sh
+# $Id: update.sh,v 1.5 2016/07/18 21:35:36 gecko2 Exp $
 
 # Required: libfile-mmagic-perl liburi-find-perl libxml-rss-perl php-xml-rss
 
