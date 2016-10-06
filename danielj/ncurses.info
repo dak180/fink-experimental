@@ -1,12 +1,12 @@
 Package: ncurses
-Version: 6.0-20160213
+Version: 6.0-20161001
 Revision: 1
 
 GCC: 4.0
 Source: http://invisible-mirror.net/archives/%n/current/%n-%v.tgz
 #Source: mirror:gnu:%n/%n-%v.tar.gz
 #Source: mirror:sourceforge:fink/ncurses-%v.tgz
-Source-MD5: 0f73987ee8ccc2a56d611112e31bee0f
+Source-MD5: 69648c3b3a3f2943f7baeb7557ab5f2a
 BuildDepends: fink (>= 0.13.0)
 Depends: libncurses5-shlibs (>= %v-%r)
 Replaces: libncurses5 (<< 5.4-20041023-4)
