@@ -1,8 +1,8 @@
 Info2: <<
-Package: grass70%type_pkg[gui]
+Package: grass72%type_pkg[gui]
 Type: gui (-x11 -mac)
-Version: 7.0.5
-Revision: 4
+Version: 7.2.0
+Revision: 1
 
 Description: Powerful GIS software
 License: GPL
@@ -41,8 +41,8 @@ BuildDepends: <<
   (%type_pkg[gui] = -x11) x11-dev
 <<
 
-Source: http://grass.osgeo.org/grass70/source/grass-%{v}.tar.gz
-Source-MD5: 55d781e3ea99d1d8b3225dd4adcb3b16
+Source: http://grass.osgeo.org/grass72/source/grass-%{v}.tar.gz
+Source-MD5: 9ba295bbf2d8d84ad46fced1597814df
 
 PatchFile: grass70.patch
 PatchFile-MD5: f0446c5f91eff02c21eeae7117c1bae6
