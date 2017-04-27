@@ -98,10 +98,48 @@ diff -ruN grass-7.2.0-orig/lib/python/ctypes/loader.py grass-7.2.0/lib/python/ct
  
          return dirs
  
+diff -ruN grass-7.2.0-orig/lib/python/script/utils.py grass-7.2.0/lib/python/script/utils.py
+--- grass-7.2.0-orig/lib/python/script/utils.py	2017-04-22 08:00:47.000000000 +0900
++++ grass-7.2.0/lib/python/script/utils.py	2017-04-27 18:48:04.000000000 +0900
+@@ -158,7 +158,10 @@
+     :param bytes bytes_: the bytes to decode
+     """
+     if isinstance(bytes_, bytes):
+-        enc = locale.getdefaultlocale()[1]
++        try:
++            enc = locale.getdefaultlocale()[1]
++        except:
++            enc = 'UTF-8'
+         return bytes_.decode(enc) if enc else bytes_.decode()
+     return bytes_
+ 
+@@ -173,7 +176,10 @@
+     """
+     if isinstance(string, bytes):
+         return string
+-    enc = locale.getdefaultlocale()[1]
++    try:
++        enc = locale.getdefaultlocale()[1]
++    except:
++        enc = 'UTF-8'
+     return string.encode(enc) if enc else string.encode()
+ 
+ 
+Binary files grass-7.2.0-orig/macosx/.DS_Store and grass-7.2.0/macosx/.DS_Store differ
 diff -ruN grass-7.2.0-orig/macosx/app/grass.sh.in grass-7.2.0/macosx/app/grass.sh.in
 --- grass-7.2.0-orig/macosx/app/grass.sh.in	2017-04-22 08:00:47.000000000 +0900
-+++ grass-7.2.0/macosx/app/grass.sh.in	2017-04-25 11:02:59.000000000 +0900
-@@ -32,11 +32,12 @@
++++ grass-7.2.0/macosx/app/grass.sh.in	2017-04-27 18:47:34.000000000 +0900
+@@ -20,6 +20,9 @@
+ 
+ trap "echo 'User break!' ; exit" 2 3 9 15
+ 
++LC_ALL=$LANG
++export LC_ALL
++
+ # dummy for now - just saying we're starting GRASS.app on OSX
+ GRASS_OS_STARTUP="Mac.app"
+ export GRASS_OS_STARTUP
+@@ -32,11 +35,12 @@
  grass_ver=`cut -d . -f 1-2 "$GISBASE/etc/VERSIONNUMBER"`
  
  #override config dir.
@@ -116,7 +154,7 @@ diff -ruN grass-7.2.0-orig/macosx/app/grass.sh.in grass-7.2.0/macosx/app/grass.s
  export GISBASE_SYSTEM
  
  # for extra utils
-@@ -142,62 +143,15 @@
+@@ -142,65 +146,18 @@
  # change GRASS_WXBUNDLED and pyver_want here from bundle.make, or manually
  GRASS_WXBUNDLED=
  export GRASS_WXBUNDLED
@@ -183,4 +221,8 @@ diff -ruN grass-7.2.0-orig/macosx/app/grass.sh.in grass-7.2.0/macosx/app/grass.s
 +GRASS_PYTHONWX="@PREFIX@/bin/python@PY_VER@"
  export GRASS_PYTHONWX
  # we will execute python scripts from the python wrapper script
- GRASS_PYTHON="python"
+-GRASS_PYTHON="python"
++GRASS_PYTHON="@PREFIX@/bin/python@PY_VER@"
+ export GRASS_PYTHON
+ 
+ # if grassrc has text startup, switch back to Terminal (gotta duplicate some init.sh stuff)

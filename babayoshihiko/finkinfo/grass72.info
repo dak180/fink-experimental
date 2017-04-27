@@ -46,7 +46,7 @@ Source: http://grass.osgeo.org/grass72/source/grass-%{v}.tar.gz
 Source-MD5: 9ba295bbf2d8d84ad46fced1597814df
 
 PatchFile: grass72.patch
-PatchFile-MD5: 399acb290045544c4d2f2f70651fb855
+PatchFile-MD5: 920660117af13599297c66e01389514a
 
 
 # Patch Phase.
@@ -62,6 +62,7 @@ PatchScript: <<
     perl -pi -e "s|/usr/bin/env python|%p/bin/python%type_raw[py_ver]|" $line
   done
   
+  # grass.sh.in
   perl -pi -e "s|\@PREFIX\@|%p|" macosx/app/grass.sh.in
   perl -pi -e "s|\@GUI\@|%type_raw[gui]|" macosx/app/grass.sh.in
   perl -pi -e "s|\@PY_VER\@|%type_raw[py_ver]|" macosx/app/grass.sh.in
